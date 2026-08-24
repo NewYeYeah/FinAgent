@@ -1,43 +1,53 @@
 # FinAgent
 
-FinAgent is a typed, auditable quantitative-research and portfolio infrastructure in which an Agent may orchestrate approved research actions without entering the numerical trading hot path.
+FinAgent is a typed, auditable quantitative-research and portfolio infrastructure in which language models may plan approved research without entering the numerical trading hot path.
 
-Current status: **Phase 3B — Deterministic Scripted Research Agent**.
+Current status: **Phase 3C — Provider-Agnostic LLM Research Planning**.
 
 The project rule is:
 
 ```text
-Agent / future LLM:
-  plans research and requests finite registered tools.
+LLM:
+  proposes bounded research plans.
 
-Deterministic code:
-  owns point-in-time data, numerical models, statistical validation,
-  portfolio weights, risk approval, execution semantics and model lifecycle.
+Deterministic Agent runtime:
+  executes only finite registered tools.
+
+Deterministic quantitative code:
+  owns PIT data, models, statistical validation, portfolio weights,
+  hard risk approval, execution semantics and model lifecycle.
 ```
-
-No LLM or Agent framework is required by the package through Phase 3B.
 
 ## Architecture
 
 ```text
-                       Research Agent layer
-                              |
-                  ResearchPlan / ToolRegistry
-                              |
-                  AgentPolicy + Audit / Replay
-                              |
-                 Research Control Plane
-                              |
-      ExperimentFamily / Runner / Validation / Registry
-                              |
-                         Quant Engine
-                              |
+Natural-language research task
+          |
+          v
+  LLMResearchPlanner
+          |
+   strict ResearchPlan
+          |
+          v
+ ScriptedResearchAgent
+          |
+ ToolRegistry + Policy
+          |
+ Audit / Replay / Budget
+          |
+ Research Control Plane
+          |
+ExperimentFamily / Runner / Validation / Registry
+          |
+          v
+      Quant Engine
+          |
 Data -> Alpha -> Risk -> Portfolio -> RiskGate -> Timed Execution
 ```
 
-The Agent is intentionally outside the numerical trading hot path.
+The LLM is intentionally outside the numerical trading hot path.
 
-## Quant Engine
+## Quant and research foundations
 
 The frozen numerical path remains:
 
@@ -57,101 +67,91 @@ DataAdapter
 
 Implemented reference components include PIT-safe data adapters, random-walk/AR/ARMA alpha models, GARCH/EWMA covariance risk models, mean-variance optimization, deterministic risk gates, timed execution and event-driven backtesting.
 
-## Research governance
-
-Phase 2/2.5 established:
+Research governance includes purged/embargoed and nested walk-forward validation, `ExperimentFamily` lifecycle control, multiple-testing correction, Deflated Sharpe Ratio, CSCV PBO, a White-style Reality Check and governed model stages:
 
 ```text
-purged / embargoed walk-forward
-nested validation
-ExperimentFamily: OPEN -> FROZEN -> CLOSED
-multiple-testing correction
-Deflated Sharpe Ratio
-CSCV Probability of Backtest Overfitting
-White-style Reality Check
-model lifecycle: CANDIDATE -> VALIDATED -> PAPER -> SHADOW -> LIVE -> RETIRED
+CANDIDATE -> VALIDATED -> PAPER -> SHADOW -> LIVE -> RETIRED
 ```
 
-Failed trials remain in the research record and frozen family membership cannot be reduced after observing results.
+## Phase 3A — governed Agent surface
 
-## Phase 3A — governed Agent control surface
-
-Phase 3A added framework-independent Agent contracts and a finite ToolRegistry. The Agent can inspect research state, create/register/run approved experiments, freeze/validate experiment families and request model promotion. It cannot set portfolio weights, bypass the risk gate, choose fills, delete failed experiments, remove frozen family members, directly promote a model or execute broker orders.
-
-`DefaultResearchAgentPolicy` and `SQLiteAgentAuditStore` provide deterministic authorization and durable action logging. `AgentRunContext` is immutable after registration, including tool allowlists and tool-call budgets.
-
-See:
-
-- [`docs/ADR-011_PHASE3A_AGENT_CONTROL_SURFACE.md`](docs/ADR-011_PHASE3A_AGENT_CONTROL_SURFACE.md)
-- [`docs/PHASE3A.md`](docs/PHASE3A.md)
+Phase 3A established the finite Agent action vocabulary, ToolRegistry, deterministic policy, immutable AgentRunContext and SQLite audit trail. The Agent cannot set portfolio weights, bypass risk, choose fills, delete failed trials, remove frozen family members, directly promote models or execute broker orders.
 
 ## Phase 3B — deterministic scripted Agent
 
-Phase 3B provides the first complete `AgentRuntime` implementation without an LLM.
+Phase 3B added `ResearchBudget`, `ResearchPlan`, `ExperimentTemplateRegistry`, `ScriptedResearchAgent`, `AgentRunCoordinator`, `SQLiteAgentPlanStore` and `AgentReplayEngine`.
 
-```text
-AgentTask
- -> AgentRunCoordinator
- -> immutable AgentRunContext + ResearchPlan
- -> ScriptedResearchAgent
- -> ToolRegistry
- -> AgentPolicyEngine
- -> Research Control Plane
- -> AgentDecision
-```
-
-New components:
-
-```text
-ResearchBudget
-ExperimentVariant
-PromotionIntent
-ResearchPlan
-SQLiteAgentPlanStore
-ExperimentTemplate
-ExperimentTemplateRegistry
-ScriptedResearchAgent
-AgentRunCoordinator
-AgentReplayEngine
-```
-
-A plan is SHA-256 fingerprinted and bound to the task, planner version, approved template, ordered variants, parameters and immutable search budget. Plans that require more experiments or tool calls than their budget are rejected before execution.
-
-Approved experiment templates own evaluator ids, data/code artifacts, universe, parameter allowlists and seed. Phase 3B still does not permit arbitrary Agent-generated Python.
-
-The reference scripted workflow is:
+The scripted workflow is:
 
 ```text
 inspect families
  -> create family
  -> register approved variants
  -> run variants
- -> compare primary metric
- -> compare tie-break metric
+ -> compare approved metrics
  -> seal deterministic winner
  -> freeze family
  -> validate full family
- -> optional model-promotion request
- -> terminal decision
+ -> optional non-mutating promotion request
 ```
 
-Reference winner policy:
+Plans are SHA-256 fingerprinted and poor results cannot silently expand their research budget.
+
+## Phase 3C — LLM planning boundary
+
+Phase 3C adds provider-neutral LLM contracts:
 
 ```text
-primary metric descending
- -> tie-break metric ascending
- -> experiment_id
+LLMRequest
+LLMResponse
+LLMUsage
+LLMProvider
+SQLiteLLMCallStore
+LLMResearchPlanner
+LLMResearchAgent
+AgentEvaluationMetrics
 ```
 
-The selection is sealed before family validation. Poor results cannot silently expand the experiment or tool-call budget.
+The LLM only proposes an approved-template `ResearchPlan`. FinAgent then revalidates the plan locally and delegates execution to the deterministic Phase 3B runtime.
 
-`AgentReplayEngine` reconstructs tool names, arguments, policy outcomes, terminal tool statuses and the sealed selection without re-running mutations. Isolated deterministic runs can be normalized and compared.
+The structured planner cannot supply validation thresholds, multiple-testing settings, research budgets, promotion stages, portfolio weights, risk overrides, fill prices, broker actions or Python code. Selection metrics and experiment templates are allowlisted.
 
-See:
+### Provider support
 
-- [`docs/ADR-012_PHASE3B_SCRIPTED_AGENT.md`](docs/ADR-012_PHASE3B_SCRIPTED_AGENT.md)
-- [`docs/PHASE3B.md`](docs/PHASE3B.md)
-- [`docs/PHASE3B_PLAN.md`](docs/PHASE3B_PLAN.md)
+The default install has no provider SDK dependency. Deterministic tests use `StaticLLMProvider`.
+
+An optional OpenAI Responses API adapter is available through:
+
+```bash
+python -m pip install -e ".[llm-openai]"
+```
+
+Example construction:
+
+```python
+from finagent.agents import LLMPlanningPolicy, LLMResearchPlanner, OpenAIResponsesProvider
+
+provider = OpenAIResponsesProvider()
+planner = LLMResearchPlanner(
+    provider=provider,
+    templates=template_registry,
+    policy=LLMPlanningPolicy(model="YOUR_SUPPORTED_MODEL"),
+)
+```
+
+The provider adapter uses strict JSON-schema structured output and does not expose SDK types outside the adapter.
+
+## Audit and evaluation
+
+Three durable stores have distinct responsibilities:
+
+```text
+SQLiteResearchRegistry  -> experiments/models/results
+SQLiteAgentAuditStore   -> governed tool actions and decisions
+SQLiteLLMCallStore      -> provider/model/prompt-hash/token/latency telemetry
+```
+
+Agent quality is evaluated by orchestration correctness, invalid-plan/tool rates, policy denials, completion, reproducibility, token use and latency. PnL remains a quantitative research outcome, not an Agent-quality score.
 
 ## Repository layout
 
@@ -161,8 +161,12 @@ src/finagent/
 │   ├── audit.py
 │   ├── coordinator.py
 │   ├── domain.py
+│   ├── llm_planner.py
+│   ├── llm_research.py
+│   ├── metrics.py
 │   ├── planning.py
 │   ├── policy.py
+│   ├── providers/
 │   ├── replay.py
 │   ├── runtime.py
 │   ├── scripted.py
@@ -191,15 +195,22 @@ python -m pip install -e ".[dev]"
 pytest -q
 ```
 
-GitHub Actions runs the full suite on Python 3.11, 3.12 and 3.13.
-
-Phase 3B's first complete CI validation passed all three environments with **90 tests**.
+GitHub Actions runs the complete suite on Python 3.11, 3.12 and 3.13. External provider calls are never required by CI.
 
 ## Next milestone
 
-The next milestone is **Phase 3C — provider-agnostic LLM Research Agent**. The LLM will replace only the deterministic planning/orchestration intelligence. It must emit the same typed plans/tool requests and remain subject to the same ToolRegistry, research budgets, policy, statistical validation, audit and model-governance boundaries.
+The next milestone is **Phase 3D — sandboxed feature/factor code generation**.
 
-Phase 3C should not add portfolio-weight authority, broker access, risk-gate bypasses or arbitrary code execution. Sandboxed feature-code generation remains a later Phase 3D capability.
+```text
+LLM hypothesis
+ -> generated feature artifact
+ -> static validation
+ -> isolated sandbox
+ -> approved ExperimentTemplate/ArtifactRef
+ -> existing research governance
+```
+
+Phase 3D should not add broker access, direct portfolio-weight authority or risk-gate bypasses.
 
 ## Design documents
 
@@ -209,9 +220,8 @@ Phase 3C should not add portfolio-weight authority, broker access, risk-gate byp
 - [`docs/ADR-010_PHASE25_RESEARCH_MULTIPLICITY.md`](docs/ADR-010_PHASE25_RESEARCH_MULTIPLICITY.md)
 - [`docs/ADR-011_PHASE3A_AGENT_CONTROL_SURFACE.md`](docs/ADR-011_PHASE3A_AGENT_CONTROL_SURFACE.md)
 - [`docs/ADR-012_PHASE3B_SCRIPTED_AGENT.md`](docs/ADR-012_PHASE3B_SCRIPTED_AGENT.md)
-- [`docs/PHASE1.md`](docs/PHASE1.md)
-- [`docs/PHASE2.md`](docs/PHASE2.md)
-- [`docs/PHASE2_5.md`](docs/PHASE2_5.md)
+- [`docs/ADR-013_PHASE3C_LLM_PLANNING_BOUNDARY.md`](docs/ADR-013_PHASE3C_LLM_PLANNING_BOUNDARY.md)
 - [`docs/PHASE3A.md`](docs/PHASE3A.md)
 - [`docs/PHASE3B.md`](docs/PHASE3B.md)
+- [`docs/PHASE3C.md`](docs/PHASE3C.md)
 - [`docs/DEVLOG.md`](docs/DEVLOG.md)
