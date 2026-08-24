@@ -1,4 +1,16 @@
 from .family_validation import ExperimentFamilyValidator, RegisteredFamilyValidation
+from .generated_feature_eval import (
+    GeneratedFeatureEvaluationConfig,
+    GeneratedFeatureEvaluator,
+    GeneratedFeatureFamilyValidationInputProvider,
+    GeneratedFeatureMaterializer,
+    GeneratedFeatureNestedWalkForwardStudy,
+    GeneratedFeatureResearchTrace,
+    NestedGeneratedFeatureFoldResult,
+    NestedGeneratedFeatureStudyResult,
+    SQLiteGeneratedFeatureResearchStore,
+    evaluate_generated_feature_dataset,
+)
 from .query import ExperimentQuerySnapshot, SQLiteResearchQueryService
 from .registry import SQLiteResearchRegistry
 from .runner import ExperimentEvaluation, ExperimentRunner
@@ -24,14 +36,24 @@ __all__ = [
     "ExperimentQuerySnapshot",
     "ExperimentRunner",
     "FamilyValidationReport",
+    "GeneratedFeatureEvaluationConfig",
+    "GeneratedFeatureEvaluator",
+    "GeneratedFeatureFamilyValidationInputProvider",
+    "GeneratedFeatureMaterializer",
+    "GeneratedFeatureNestedWalkForwardStudy",
+    "GeneratedFeatureResearchTrace",
     "MultipleTestingResult",
+    "NestedGeneratedFeatureFoldResult",
+    "NestedGeneratedFeatureStudyResult",
     "PBOResult",
     "RealityCheckResult",
     "RegisteredFamilyValidation",
+    "SQLiteGeneratedFeatureResearchStore",
     "SQLiteResearchQueryService",
     "SQLiteResearchRegistry",
     "adjust_pvalues",
     "deflated_sharpe_ratio",
+    "evaluate_generated_feature_dataset",
     "expected_maximum_sharpe",
     "probability_of_backtest_overfitting",
     "sharpe_ratio",
