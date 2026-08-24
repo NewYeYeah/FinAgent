@@ -1,4 +1,5 @@
 from .family_validation import ExperimentFamilyValidator, RegisteredFamilyValidation
+from .query import ExperimentQuerySnapshot, SQLiteResearchQueryService
 from .registry import SQLiteResearchRegistry
 from .runner import ExperimentEvaluation, ExperimentRunner
 from .validation import (
@@ -20,12 +21,14 @@ __all__ = [
     "DeflatedSharpeResult",
     "ExperimentEvaluation",
     "ExperimentFamilyValidator",
-    "FamilyValidationReport",
+    "ExperimentQuerySnapshot",
     "ExperimentRunner",
+    "FamilyValidationReport",
     "MultipleTestingResult",
     "PBOResult",
     "RealityCheckResult",
     "RegisteredFamilyValidation",
+    "SQLiteResearchQueryService",
     "SQLiteResearchRegistry",
     "adjust_pvalues",
     "deflated_sharpe_ratio",
