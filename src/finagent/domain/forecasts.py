@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Mapping
 
+import numpy as np
+
 from ._validation import (
     freeze_mapping,
     require_aware_datetime,
@@ -64,11 +66,10 @@ class AlphaForecast:
 
 @dataclass(frozen=True, slots=True)
 class RiskForecast:
-    """Volatility/covariance forecast with explicit matrix validation.
+    """Volatility/covariance forecast with explicit numerical validation.
 
-    Phase 0.5 validates completeness, symmetry and non-negative diagonal terms.
-    Positive-semidefinite validation is intentionally deferred to numerical risk
-    implementations in Phase 1, where a linear algebra dependency is justified.
+    Phase 1 adds positive-semidefinite validation in addition to completeness,
+    symmetry and diagonal/volatility consistency.
     """
 
     asof: datetime
@@ -111,6 +112,7 @@ class RiskForecast:
         if missing:
             raise ValueError(f"covariance matrix is incomplete; missing: {', '.join(sorted(missing))}")
 
+        ordered_assets = tuple(sorted(assets))
         for left in assets:
             diagonal = cov[(left, left)]
             if diagonal < 0:
@@ -123,6 +125,16 @@ class RiskForecast:
             for right in assets:
                 if abs(cov[(left, right)] - cov[(right, left)]) > self.symmetry_tolerance:
                     raise ValueError(f"covariance matrix is not symmetric for {left.key}, {right.key}")
+
+        matrix = np.asarray(
+            [[cov[(left, right)] for right in ordered_assets] for left in ordered_assets],
+            dtype=float,
+        )
+        minimum_eigenvalue = float(np.min(np.linalg.eigvalsh(matrix)))
+        if minimum_eigenvalue < -max(self.symmetry_tolerance, 1e-10):
+            raise ValueError(
+                f"covariance matrix must be positive semidefinite; minimum eigenvalue={minimum_eigenvalue}"
+            )
 
         object.__setattr__(self, "asof", asof)
         object.__setattr__(self, "volatilities", freeze_mapping(vols))

@@ -1,9 +1,4 @@
-"""FinAgent domain kernel.
-
-Phase 0.5 intentionally contains no LLM, broker, dataframe, or external market-data
-framework dependency. Third-party systems are expected to connect through adapters
-in later phases.
-"""
+"""FinAgent quantitative research and portfolio infrastructure."""
 
 from .domain.assets import AssetId, AssetType
 from .domain.execution import ExecutionReport, Fill, OrderRejection
@@ -25,7 +20,13 @@ from .domain.portfolio import (
     RiskStatus,
     RiskViolation,
 )
-from .domain.research import ResearchDataset, TimeRange
+from .domain.research import (
+    DatasetRequest,
+    FeatureWindow,
+    ResearchDataset,
+    ResearchSplit,
+    TimeRange,
+)
 
 __all__ = [
     "AlphaForecast",
@@ -33,11 +34,13 @@ __all__ = [
     "ArtifactType",
     "AssetId",
     "AssetType",
+    "DatasetRequest",
     "ExecutionReport",
     "ExperimentResult",
     "ExperimentRun",
     "ExperimentRunStatus",
     "ExperimentSpec",
+    "FeatureWindow",
     "Fill",
     "MarketSnapshot",
     "ModelRef",
@@ -49,6 +52,7 @@ __all__ = [
     "PortfolioTarget",
     "PriceBar",
     "ResearchDataset",
+    "ResearchSplit",
     "RiskDecision",
     "RiskForecast",
     "RiskStatus",

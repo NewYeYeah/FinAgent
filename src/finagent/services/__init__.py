@@ -1,6 +1,6 @@
-"""Reference Phase 0.5 services used to exercise the domain contracts end to end."""
+"""Deterministic portfolio and execution services."""
 
-from .execution import AccountLedger, SimulatedExchange
+from .execution import AccountLedger, SimulatedExchange, VolumeAwareSimulatedExchange
 from .portfolio import EqualWeightTargetBuilder, OrderPlanner, StaticRiskGate
 
 __all__ = [
@@ -9,4 +9,5 @@ __all__ = [
     "OrderPlanner",
     "SimulatedExchange",
     "StaticRiskGate",
+    "VolumeAwareSimulatedExchange",
 ]

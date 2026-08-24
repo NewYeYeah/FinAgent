@@ -4,14 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "finagent"
-version = "0.0.1"
-description = "Typed domain kernel for an auditable quantitative research and portfolio agent system."
+version = "0.1.0"
+description = "Auditable quantitative research, portfolio construction and agent infrastructure."
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
   {name = "FinAgent contributors"},
 ]
-dependencies = []
+dependencies = [
+  "numpy>=1.26,<3",
+  "scipy>=1.11,<2",
+]
 
 [project.optional-dependencies]
 dev = [

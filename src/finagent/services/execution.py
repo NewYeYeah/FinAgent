@@ -145,3 +145,91 @@ class AccountLedger:
             positions=positions,
             marks=marks,
         )
+
+
+@dataclass(frozen=True, slots=True)
+class VolumeAwareSimulatedExchange:
+    """Deterministic Phase 1 simulator with liquidity clipping and market impact.
+
+    Orders are capped to ``max_participation_rate * snapshot.volume``. Adverse
+    slippage in basis points is ``base_slippage_bps + impact_bps * sqrt(participation)``.
+    This remains a research approximation, not an exchange microstructure model.
+    """
+
+    commission_bps: float = 0.0
+    base_slippage_bps: float = 0.0
+    impact_bps: float = 10.0
+    max_participation_rate: float = 0.10
+
+    def __post_init__(self) -> None:
+        if self.commission_bps < 0 or self.base_slippage_bps < 0 or self.impact_bps < 0:
+            raise ValueError("cost parameters must be >= 0")
+        if not 0 < self.max_participation_rate <= 1:
+            raise ValueError("max_participation_rate must be in (0, 1]")
+
+    def execute(
+        self,
+        orders: tuple[OrderIntent, ...],
+        snapshot: MarketSnapshot,
+    ) -> ExecutionReport:
+        import math
+
+        fills: list[Fill] = []
+        rejections: list[OrderRejection] = []
+        commission_rate = self.commission_bps / 10_000.0
+        for order in orders:
+            if order.order_type is not OrderType.MARKET:
+                rejections.append(OrderRejection(order.client_order_id, "unsupported order type"))
+                continue
+            try:
+                bar = snapshot.bars[order.asset]
+            except KeyError:
+                rejections.append(OrderRejection(order.client_order_id, "missing market bar"))
+                continue
+            if bar.volume <= 0:
+                rejections.append(OrderRejection(order.client_order_id, "non-positive market volume"))
+                continue
+            max_quantity = bar.volume * self.max_participation_rate
+            fill_quantity = min(order.quantity, max_quantity)
+            if fill_quantity <= 0:
+                rejections.append(OrderRejection(order.client_order_id, "zero executable quantity"))
+                continue
+            participation = fill_quantity / bar.volume
+            slip_bps = self.base_slippage_bps + self.impact_bps * math.sqrt(participation)
+            slip_rate = slip_bps / 10_000.0
+            sign = 1.0 if order.side is OrderSide.BUY else -1.0
+            reference_price = bar.close
+            execution_price = reference_price * (1.0 + sign * slip_rate)
+            notional = execution_price * fill_quantity
+            commission = abs(notional) * commission_rate
+            slippage = abs(execution_price - reference_price) * fill_quantity
+            fills.append(
+                Fill(
+                    client_order_id=order.client_order_id,
+                    asset=order.asset,
+                    side=order.side,
+                    quantity=fill_quantity,
+                    price=execution_price,
+                    executed_at=snapshot.asof,
+                    commission=commission,
+                    slippage=slippage,
+                    metadata={
+                        "reference_price": repr(reference_price),
+                        "participation_rate": repr(participation),
+                        "slippage_bps": repr(slip_bps),
+                        "requested_quantity": repr(order.quantity),
+                    },
+                )
+            )
+        return ExecutionReport(
+            started_at=snapshot.asof,
+            finished_at=snapshot.asof,
+            orders=orders,
+            fills=tuple(fills),
+            rejections=tuple(rejections),
+            metadata={
+                "venue": "volume_aware_simulated",
+                "max_participation_rate": repr(self.max_participation_rate),
+                "impact_bps": repr(self.impact_bps),
+            },
+        )
