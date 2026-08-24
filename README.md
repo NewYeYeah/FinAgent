@@ -2,7 +2,7 @@
 
 FinAgent is a typed, auditable quantitative-research and portfolio infrastructure designed so that a future Agent can orchestrate research without entering the numerical trading hot path.
 
-Current status: **Phase 2 — Validation, Execution Timing, and Model Governance**.
+Current status: **Phase 2.5 — Nested Validation and Anti-Overfitting Controls**.
 
 The architectural rule is:
 
@@ -51,12 +51,14 @@ information_at
 Research-governance path:
 
 ```text
-ArtifactRef + ExperimentSpec
+ExperimentFamily(OPEN)
+    -> ExperimentSpec[]
+    -> nested inner validation
     -> ExperimentRunner
-    -> RUNNING
-    -> numerical evaluator
-    -> ExperimentResult
-    -> SUCCEEDED / FAILED
+    -> ExperimentResult[]
+    -> ExperimentFamily(FROZEN)
+    -> multiplicity / DSR / PBO / reality check
+    -> outer holdout evaluation
     -> RegisteredModel
     -> candidate -> validated -> paper -> shadow -> live -> retired
 ```
@@ -279,6 +281,48 @@ Stage skipping is rejected. A model stage cannot be changed by overwriting the r
 
 Phase 2 also fixes a subtle SQLite lifecycle bug: run-state updates use UPSERT rather than `INSERT OR REPLACE`, because SQLite `REPLACE` can delete the parent run row and cascade-delete its already stored result.
 
+## Phase 2.5: nested validation and research multiplicity
+
+See [`docs/ADR-010_PHASE25_RESEARCH_MULTIPLICITY.md`](docs/ADR-010_PHASE25_RESEARCH_MULTIPLICITY.md) and [`docs/PHASE2_5.md`](docs/PHASE2_5.md).
+
+Phase 2.5 governs the research search process itself. A point-in-time-safe backtest can still be overfit if many valid trials are run and only the winner is reported.
+
+Nested chronological validation is now explicit:
+
+```text
+outer train
+    -> inner train | purge | embargo | validation
+    -> model/config selection
+outer purge | outer embargo | outer test
+```
+
+New walk-forward types:
+
+```text
+NestedWalkForwardConfig
+NestedWalkForwardFold
+NestedWalkForwardDatasets
+NestedPurgedWalkForwardSplitter
+```
+
+Related research trials are pre-registered as an `ExperimentFamily` with lifecycle:
+
+```text
+OPEN -> FROZEN -> CLOSED
+```
+
+Only OPEN families may accept new trials. Family-level inference requires FROZEN status, and `ExperimentFamilyValidator` rejects any return/p-value input that does not contain exactly the registered family denominator.
+
+Implemented anti-overfitting statistics:
+
+- Bonferroni, Holm and Benjamini-Hochberg p-value correction;
+- Deflated Sharpe Ratio probability;
+- CSCV Probability of Backtest Overfitting;
+- White-style reality check with circular moving-block bootstrap;
+- decomposed `FamilyValidationReport` and deterministic pass/fail gate.
+
+Phase 2.5 also replaces `INSERT OR REPLACE` on experiment/family/model parent records with UPSERT so idempotent registration cannot cascade-delete family membership or model-stage audit history.
+
 ## Repository layout
 
 ```text
@@ -296,6 +340,7 @@ FinAgent/
 │   ├── domain/
 │   │   ├── assets.py
 │   │   ├── execution.py
+│   │   ├── experiment_family.py
 │   │   ├── experiments.py
 │   │   ├── forecasts.py
 │   │   ├── market.py
@@ -309,8 +354,10 @@ FinAgent/
 │   ├── portfolio/
 │   │   └── mean_variance.py
 │   ├── research/
+│   │   ├── family_validation.py
 │   │   ├── registry.py
-│   │   └── runner.py
+│   │   ├── runner.py
+│   │   └── validation.py
 │   ├── services/
 │   │   ├── execution.py
 │   │   └── portfolio.py
@@ -321,8 +368,11 @@ FinAgent/
 │   ├── ADR-007_PHASE1_NUMERICAL_DATA_CONTRACT.md
 │   ├── ADR-008_PHASE2_VALIDATION_AND_EXECUTION_CLOCK.md
 │   ├── ADR-009_PHASE2_MODEL_GOVERNANCE.md
+│   ├── ADR-010_PHASE25_RESEARCH_MULTIPLICITY.md
 │   ├── PHASE1.md
 │   ├── PHASE2.md
+│   ├── PHASE2_5.md
+│   ├── PHASE3_PLAN.md
 │   └── DEVLOG.md
 ├── pyproject.toml
 └── README.md
@@ -348,7 +398,7 @@ PYTHONPATH=src pytest -q
 
 ## Test status
 
-Phase 0.5 + Phase 1 + Phase 2 currently contain **55 tests**.
+Phase 0.5 + Phase 1 + Phase 2 + Phase 2.5 currently contain **69 tests**.
 
 Coverage includes:
 
@@ -364,35 +414,42 @@ Coverage includes:
 - information/execution-time separation;
 - experiment success/failure lifecycle;
 - model promotion policy and audit history;
-- complete Phase 1 and Phase 2 numerical vertical slices.
+- complete Phase 1/2 numerical vertical slices;
+- nested inner/outer isolation and experiment-family denominator locking;
+- multiple-testing, DSR, PBO and White reality-check controls.
 
 Current local result:
 
 ```text
-55 passed
+69 passed
 ```
 
 ## Current limitations / next engineering layer
 
-Phase 2 is still research infrastructure, not a live trading platform. The next priority is statistical model-selection control rather than adding more predictors:
+Phase 2.5 completes the deterministic statistical substrate required before introducing an LLM Research Agent. Remaining non-Agent quant-platform work includes point-in-time universe membership/corporate actions, exchange-session calendars, multi-currency/borrow constraints, persistent model binaries and broker adapters.
 
-- nested walk-forward hyperparameter selection;
-- multiple-hypothesis correction and experiment-family tracking;
-- Deflated Sharpe Ratio / Probability of Backtest Overfitting;
-- White Reality Check / SPA-style benchmark comparison;
-- point-in-time universe membership and corporate actions;
-- exchange calendars and session-aware clocks;
-- multi-currency and borrow/locate constraints;
-- persistent model binary serialization;
-- live broker adapters.
+The immediate next engineering layer is **Phase 3 — Research Agent Control Plane**. The implementation order is intentionally:
 
-The first Research Agent should be added only after those controls provide a deterministic tool surface. The Agent should orchestrate approved experiments and model-governance calls; it should not calculate weights, bypass the risk gate, select executable prices, or mutate model stages directly.
+```text
+Agent contracts
+ -> deterministic research tools
+ -> policy-as-code
+ -> single Research Agent
+ -> structured Agent audit/memory
+ -> sandboxed feature code generation
+ -> optional LangGraph adapter
+```
+
+The Agent will orchestrate approved experiments and governance requests. It will not calculate weights, bypass the risk gate, select executable prices, reduce a frozen experiment-family denominator or promote a model directly to LIVE. See [`docs/PHASE3_PLAN.md`](docs/PHASE3_PLAN.md).
 
 ## Design documentation
 
 - [`docs/ADR-007_PHASE1_NUMERICAL_DATA_CONTRACT.md`](docs/ADR-007_PHASE1_NUMERICAL_DATA_CONTRACT.md)
 - [`docs/ADR-008_PHASE2_VALIDATION_AND_EXECUTION_CLOCK.md`](docs/ADR-008_PHASE2_VALIDATION_AND_EXECUTION_CLOCK.md)
 - [`docs/ADR-009_PHASE2_MODEL_GOVERNANCE.md`](docs/ADR-009_PHASE2_MODEL_GOVERNANCE.md)
+- [`docs/ADR-010_PHASE25_RESEARCH_MULTIPLICITY.md`](docs/ADR-010_PHASE25_RESEARCH_MULTIPLICITY.md)
 - [`docs/PHASE1.md`](docs/PHASE1.md)
 - [`docs/PHASE2.md`](docs/PHASE2.md)
+- [`docs/PHASE2_5.md`](docs/PHASE2_5.md)
+- [`docs/PHASE3_PLAN.md`](docs/PHASE3_PLAN.md)
 - [`docs/DEVLOG.md`](docs/DEVLOG.md)

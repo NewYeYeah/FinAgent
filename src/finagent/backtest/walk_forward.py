@@ -151,3 +151,132 @@ class PurgedWalkForwardSplitter:
             )
             results.append((fold, adapter.build_dataset(request)))
         return tuple(results)
+
+
+@dataclass(frozen=True, slots=True)
+class NestedWalkForwardConfig:
+    """Outer unbiased evaluation plus inner model-selection walk-forward."""
+
+    outer: WalkForwardConfig
+    inner: WalkForwardConfig
+
+
+@dataclass(frozen=True, slots=True)
+class NestedWalkForwardFold:
+    outer_fold: WalkForwardFold
+    inner_folds: tuple[WalkForwardFold, ...]
+
+    def __post_init__(self) -> None:
+        if not self.inner_folds:
+            raise ValueError("nested fold must contain at least one inner fold")
+        outer_train = self.outer_fold.train
+        for fold in self.inner_folds:
+            if fold.train.start < outer_train.start or fold.test.end > outer_train.end:
+                raise ValueError("inner folds must remain entirely inside outer training range")
+
+
+@dataclass(frozen=True, slots=True)
+class NestedWalkForwardDatasets:
+    fold: NestedWalkForwardFold
+    outer_dataset: ResearchDataset
+    inner_datasets: tuple[ResearchDataset, ...]
+
+
+class NestedPurgedWalkForwardSplitter:
+    """Create nested chronological folds without exposing outer test observations.
+
+    Inner folds are generated exclusively from the chronological observations inside
+    each outer training range.  Hyperparameter/model selection belongs to the inner
+    folds; the corresponding outer test split is reserved for one final evaluation.
+    """
+
+    def __init__(self, config: NestedWalkForwardConfig) -> None:
+        self.config = config
+        self.outer_splitter = PurgedWalkForwardSplitter(config.outer)
+        self.inner_splitter = PurgedWalkForwardSplitter(config.inner)
+
+    @staticmethod
+    def _calendar_in_range(
+        calendar: tuple[datetime, ...],
+        time_range: TimeRange,
+    ) -> tuple[datetime, ...]:
+        return tuple(ts for ts in calendar if time_range.contains(ts))
+
+    def split(
+        self,
+        calendar: tuple[datetime, ...],
+        *,
+        labels: tuple[str, ...] = (),
+    ) -> tuple[NestedWalkForwardFold, ...]:
+        outer_folds = self.outer_splitter.split(calendar, labels=labels)
+        nested: list[NestedWalkForwardFold] = []
+        for outer in outer_folds:
+            inner_calendar = self._calendar_in_range(calendar, outer.train)
+            try:
+                inner_folds = self.inner_splitter.split(inner_calendar, labels=labels)
+            except ValueError as exc:
+                raise ValueError(
+                    f"outer fold {outer.fold_index} does not contain enough observations "
+                    "for the configured inner walk-forward"
+                ) from exc
+            nested.append(NestedWalkForwardFold(outer_fold=outer, inner_folds=inner_folds))
+        return tuple(nested)
+
+    def build_datasets(
+        self,
+        adapter: DataAdapter,
+        *,
+        universe: tuple[AssetId, ...],
+        features: tuple[str, ...],
+        labels: tuple[str, ...],
+        start: datetime,
+        end: datetime,
+        dataset_id_prefix: str = "nested-walk-forward",
+    ) -> tuple[NestedWalkForwardDatasets, ...]:
+        calendar = adapter.calendar(start, end, universe)
+        nested_folds = self.split(calendar, labels=labels)
+        output: list[NestedWalkForwardDatasets] = []
+        for nested in nested_folds:
+            outer = nested.outer_fold
+            outer_request = DatasetRequest(
+                universe=universe,
+                features=features,
+                labels=labels,
+                splits={"train": outer.train, "test": outer.test},
+                dataset_id=f"{dataset_id_prefix}-outer-{outer.fold_index:03d}",
+                metadata={
+                    "nested_role": "outer",
+                    "outer_fold": str(outer.fold_index),
+                    "purge_bars": str(outer.purge_bars),
+                    "embargo_bars": str(outer.embargo_bars),
+                },
+            )
+            outer_dataset = adapter.build_dataset(outer_request)
+            inner_datasets: list[ResearchDataset] = []
+            for inner in nested.inner_folds:
+                inner_request = DatasetRequest(
+                    universe=universe,
+                    features=features,
+                    labels=labels,
+                    splits={"train": inner.train, "validation": inner.test},
+                    dataset_id=(
+                        f"{dataset_id_prefix}-outer-{outer.fold_index:03d}"
+                        f"-inner-{inner.fold_index:03d}"
+                    ),
+                    metadata={
+                        "nested_role": "inner",
+                        "outer_fold": str(outer.fold_index),
+                        "inner_fold": str(inner.fold_index),
+                        "purge_bars": str(inner.purge_bars),
+                        "embargo_bars": str(inner.embargo_bars),
+                    },
+                )
+                inner_datasets.append(adapter.build_dataset(inner_request))
+            output.append(
+                NestedWalkForwardDatasets(
+                    fold=nested,
+                    outer_dataset=outer_dataset,
+                    inner_datasets=tuple(inner_datasets),
+                )
+            )
+        return tuple(output)

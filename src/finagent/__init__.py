@@ -8,6 +8,12 @@ from .domain.execution import (
     Fill,
     OrderRejection,
 )
+from .domain.experiment_family import (
+    CorrectionMethod,
+    ExperimentFamily,
+    ExperimentFamilyStatus,
+    FamilyMembership,
+)
 from .domain.experiments import (
     ArtifactRef,
     ArtifactType,
@@ -41,14 +47,18 @@ __all__ = [
     "ArtifactType",
     "AssetId",
     "AssetType",
+    "CorrectionMethod",
     "DatasetRequest",
     "ExecutionQuote",
     "ExecutionReport",
     "ExecutionSnapshot",
+    "ExperimentFamily",
+    "ExperimentFamilyStatus",
     "ExperimentResult",
     "ExperimentRun",
     "ExperimentRunStatus",
     "ExperimentSpec",
+    "FamilyMembership",
     "FeatureWindow",
     "Fill",
     "MarketSnapshot",

@@ -51,3 +51,21 @@ def test_model_registry_rejects_stage_jump_and_direct_rewrite(tmp_path, now):
             RegisteredModel("risk-1", "GARCH", artifact, ModelStage.VALIDATED, now)
         )
     assert registry.get_model("risk-1").stage is ModelStage.CANDIDATE
+
+
+def test_reregistering_current_model_record_preserves_stage_history(tmp_path, now):
+    registry = SQLiteResearchRegistry(tmp_path / "registry.db")
+    artifact = ArtifactRef("model:stable:1", ArtifactType.MODEL, "phase25", "e" * 64)
+    model = RegisteredModel("stable-1", "AR", artifact, ModelStage.CANDIDATE, now)
+    registry.register_model(model)
+    registry.promote_model(
+        model.model_id,
+        ModelStage.VALIDATED,
+        changed_at=now,
+        reason="validated",
+    )
+    current = registry.get_model(model.model_id)
+    registry.register_model(current)
+    assert [event.to_stage for event in registry.model_history(model.model_id)] == [
+        ModelStage.VALIDATED
+    ]

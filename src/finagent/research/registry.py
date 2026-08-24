@@ -5,6 +5,13 @@ import sqlite3
 from pathlib import Path
 
 from finagent.domain.assets import AssetId, AssetType
+from finagent.domain.experiment_family import (
+    CorrectionMethod,
+    ExperimentFamily,
+    ExperimentFamilyStatus,
+    FamilyMembership,
+    validate_family_transition,
+)
 from finagent.domain.experiments import (
     ArtifactRef,
     ArtifactType,
@@ -109,6 +116,18 @@ class SQLiteResearchRegistry:
                     payload_json TEXT NOT NULL,
                     FOREIGN KEY (model_id) REFERENCES models(model_id) ON DELETE CASCADE
                 );
+                CREATE TABLE IF NOT EXISTS experiment_families (
+                    family_id TEXT PRIMARY KEY,
+                    payload_json TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS family_memberships (
+                    family_id TEXT NOT NULL,
+                    experiment_id TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    PRIMARY KEY (family_id, experiment_id),
+                    FOREIGN KEY (family_id) REFERENCES experiment_families(family_id) ON DELETE CASCADE,
+                    FOREIGN KEY (experiment_id) REFERENCES experiments(experiment_id) ON DELETE CASCADE
+                );
                 """
             )
 
@@ -158,7 +177,10 @@ class SQLiteResearchRegistry:
         }
         with self._connect() as con:
             con.execute(
-                "INSERT OR REPLACE INTO experiments (experiment_id, fingerprint, payload_json) VALUES (?, ?, ?)",
+                """INSERT INTO experiments (experiment_id, fingerprint, payload_json) VALUES (?, ?, ?)
+                   ON CONFLICT(experiment_id) DO UPDATE SET
+                       fingerprint=excluded.fingerprint,
+                       payload_json=excluded.payload_json""",
                 (spec.experiment_id, spec.fingerprint, json.dumps(payload, sort_keys=True)),
             )
 
@@ -256,7 +278,6 @@ class SQLiteResearchRegistry:
             notes=payload["notes"],
         )
 
-
     def register_model(self, model: RegisteredModel) -> None:
         self.register_artifact(model.artifact)
         payload = {
@@ -279,7 +300,8 @@ class SQLiteResearchRegistry:
                 if existing_payload["stage"] != payload["stage"]:
                     raise ValueError("model stage changes must use promote_model")
             con.execute(
-                "INSERT OR REPLACE INTO models (model_id, payload_json) VALUES (?, ?)",
+                """INSERT INTO models (model_id, payload_json) VALUES (?, ?)
+                   ON CONFLICT(model_id) DO UPDATE SET payload_json=excluded.payload_json""",
                 (model.model_id, json.dumps(payload, sort_keys=True)),
             )
 
@@ -379,3 +401,149 @@ class SQLiteResearchRegistry:
             )
             for row in rows
         )
+
+    def register_family(self, family: ExperimentFamily) -> None:
+        payload = {
+            "family_id": family.family_id,
+            "research_question": family.research_question,
+            "primary_metric": family.primary_metric,
+            "created_at": family.created_at.isoformat(),
+            "alpha": family.alpha,
+            "correction_method": family.correction_method.value,
+            "status": family.status.value,
+            "metadata": dict(family.metadata),
+        }
+        with self._connect() as con:
+            existing = con.execute(
+                "SELECT payload_json FROM experiment_families WHERE family_id=?",
+                (family.family_id,),
+            ).fetchone()
+            if existing is not None:
+                current = json.loads(existing[0])
+                immutable = (
+                    "research_question",
+                    "primary_metric",
+                    "created_at",
+                    "alpha",
+                    "correction_method",
+                )
+                if any(current[key] != payload[key] for key in immutable):
+                    raise ValueError("family_id already exists with a different pre-registration")
+                if current["status"] != payload["status"]:
+                    raise ValueError("family status changes must use transition_family")
+            con.execute(
+                """INSERT INTO experiment_families (family_id, payload_json) VALUES (?, ?)
+                   ON CONFLICT(family_id) DO UPDATE SET payload_json=excluded.payload_json""",
+                (family.family_id, json.dumps(payload, sort_keys=True)),
+            )
+
+    def get_family(self, family_id: str) -> ExperimentFamily:
+        from datetime import datetime
+
+        with self._connect() as con:
+            row = con.execute(
+                "SELECT payload_json FROM experiment_families WHERE family_id=?",
+                (family_id,),
+            ).fetchone()
+        if row is None:
+            raise KeyError(family_id)
+        payload = json.loads(row[0])
+        return ExperimentFamily(
+            family_id=payload["family_id"],
+            research_question=payload["research_question"],
+            primary_metric=payload["primary_metric"],
+            created_at=datetime.fromisoformat(payload["created_at"]),
+            alpha=float(payload["alpha"]),
+            correction_method=CorrectionMethod(payload["correction_method"]),
+            status=ExperimentFamilyStatus(payload["status"]),
+            metadata=payload["metadata"],
+        )
+
+    def add_experiment_to_family(
+        self,
+        family_id: str,
+        experiment_id: str,
+        *,
+        added_at,
+        role: str = "variant",
+    ) -> FamilyMembership:
+        family = self.get_family(family_id)
+        if family.status is not ExperimentFamilyStatus.OPEN:
+            raise ValueError("experiments can only be added to an OPEN family")
+        self.get_experiment(experiment_id)
+        membership = FamilyMembership(
+            family_id=family_id,
+            experiment_id=experiment_id,
+            added_at=added_at,
+            role=role,
+        )
+        payload = {
+            "family_id": membership.family_id,
+            "experiment_id": membership.experiment_id,
+            "added_at": membership.added_at.isoformat(),
+            "role": membership.role,
+        }
+        with self._connect() as con:
+            con.execute(
+                "INSERT INTO family_memberships (family_id, experiment_id, payload_json) VALUES (?, ?, ?)",
+                (family_id, experiment_id, json.dumps(payload, sort_keys=True)),
+            )
+        return membership
+
+    def family_members(self, family_id: str) -> tuple[FamilyMembership, ...]:
+        from datetime import datetime
+
+        self.get_family(family_id)
+        with self._connect() as con:
+            rows = con.execute(
+                "SELECT payload_json FROM family_memberships WHERE family_id=? ORDER BY experiment_id",
+                (family_id,),
+            ).fetchall()
+        members: list[FamilyMembership] = []
+        for row in rows:
+            payload = json.loads(row[0])
+            members.append(
+                FamilyMembership(
+                    family_id=payload["family_id"],
+                    experiment_id=payload["experiment_id"],
+                    added_at=datetime.fromisoformat(payload["added_at"]),
+                    role=payload["role"],
+                )
+            )
+        return tuple(members)
+
+    def transition_family(
+        self,
+        family_id: str,
+        to_status: ExperimentFamilyStatus,
+    ) -> ExperimentFamily:
+        current = self.get_family(family_id)
+        validate_family_transition(current.status, to_status)
+        if to_status is ExperimentFamilyStatus.FROZEN and not self.family_members(family_id):
+            raise ValueError("cannot freeze an empty experiment family")
+        updated = ExperimentFamily(
+            family_id=current.family_id,
+            research_question=current.research_question,
+            primary_metric=current.primary_metric,
+            created_at=current.created_at,
+            alpha=current.alpha,
+            correction_method=current.correction_method,
+            status=to_status,
+            metadata=current.metadata,
+        )
+        payload = {
+            "family_id": updated.family_id,
+            "research_question": updated.research_question,
+            "primary_metric": updated.primary_metric,
+            "created_at": updated.created_at.isoformat(),
+            "alpha": updated.alpha,
+            "correction_method": updated.correction_method.value,
+            "status": updated.status.value,
+            "metadata": dict(updated.metadata),
+        }
+        with self._connect() as con:
+            con.execute(
+                "UPDATE experiment_families SET payload_json=? WHERE family_id=?",
+                (json.dumps(payload, sort_keys=True), family_id),
+            )
+        return updated

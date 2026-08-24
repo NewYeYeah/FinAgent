@@ -6,6 +6,10 @@ from .timed import (
     TimedEventDrivenBacktestEngine,
 )
 from .walk_forward import (
+    NestedPurgedWalkForwardSplitter,
+    NestedWalkForwardConfig,
+    NestedWalkForwardDatasets,
+    NestedWalkForwardFold,
     PurgedWalkForwardSplitter,
     WalkForwardConfig,
     WalkForwardFold,
@@ -17,6 +21,10 @@ __all__ = [
     "BacktestPoint",
     "BacktestResult",
     "EventDrivenBacktestEngine",
+    "NestedPurgedWalkForwardSplitter",
+    "NestedWalkForwardConfig",
+    "NestedWalkForwardDatasets",
+    "NestedWalkForwardFold",
     "PurgedWalkForwardSplitter",
     "TimedBacktestConfig",
     "TimedBacktestPoint",
