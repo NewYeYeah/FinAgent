@@ -1,20 +1,20 @@
 # FinAgent
 
-FinAgent is a typed, auditable quantitative-research and portfolio infrastructure in which language models may plan approved research without entering the numerical trading hot path.
+FinAgent is a typed, auditable quantitative-research and portfolio infrastructure in which language models may plan approved research and generate narrowly constrained feature programs without entering the numerical trading hot path.
 
-Current status: **Phase 3C — Provider-Agnostic LLM Research Planning**.
+Current status: **Phase 3D — Restricted Generated Feature Programs** (`0.4.0a1`).
 
-The project rule is:
+The governing rule is:
 
 ```text
 LLM:
-  proposes bounded research plans.
+  proposes bounded research plans and feature implementations.
 
-Deterministic Agent runtime:
-  executes only finite registered tools.
+Deterministic Agent/runtime code:
+  validates plans/code and executes finite registered tools.
 
 Deterministic quantitative code:
-  owns PIT data, models, statistical validation, portfolio weights,
+  owns PIT data, statistical validation, portfolio weights,
   hard risk approval, execution semantics and model lifecycle.
 ```
 
@@ -23,33 +23,43 @@ Deterministic quantitative code:
 ```text
 Natural-language research task
           |
-          v
-  LLMResearchPlanner
-          |
-   strict ResearchPlan
-          |
-          v
- ScriptedResearchAgent
-          |
- ToolRegistry + Policy
-          |
- Audit / Replay / Budget
-          |
- Research Control Plane
-          |
-ExperimentFamily / Runner / Validation / Registry
-          |
-          v
-      Quant Engine
-          |
+          +------------------------------+
+          |                              |
+          v                              v
+  LLMResearchPlanner              LLMFeatureGenerator
+          |                              |
+   strict ResearchPlan            strict FeatureSpec/source
+          |                              |
+          |                       AST validation
+          |                              |
+          |                       restricted subprocess
+          |                              |
+          |                       GeneratedFeatureArtifact
+          |                              |
+          +-------------+----------------+
+                        |
+                        v
+               ScriptedResearchAgent
+                        |
+                ToolRegistry + Policy
+                        |
+               Audit / Replay / Budget
+                        |
+              Research Control Plane
+                        |
+       ExperimentFamily / Validation / Registry
+                        |
+                        v
+                    Quant Engine
+                        |
 Data -> Alpha -> Risk -> Portfolio -> RiskGate -> Timed Execution
 ```
 
-The LLM is intentionally outside the numerical trading hot path.
+The LLM remains outside the numerical trading hot path.
 
 ## Quant and research foundations
 
-The frozen numerical path remains:
+The frozen numerical path is:
 
 ```text
 DataAdapter
@@ -65,7 +75,7 @@ DataAdapter
  -> Fill / PortfolioState
 ```
 
-Implemented reference components include PIT-safe data adapters, random-walk/AR/ARMA alpha models, GARCH/EWMA covariance risk models, mean-variance optimization, deterministic risk gates, timed execution and event-driven backtesting.
+Reference implementations include PIT-safe data adapters, random-walk/AR/ARMA alpha models, GARCH/EWMA covariance risk models, mean-variance optimization, deterministic risk gates, timed execution and event-driven backtesting.
 
 Research governance includes purged/embargoed and nested walk-forward validation, `ExperimentFamily` lifecycle control, multiple-testing correction, Deflated Sharpe Ratio, CSCV PBO, a White-style Reality Check and governed model stages:
 
@@ -73,15 +83,17 @@ Research governance includes purged/embargoed and nested walk-forward validation
 CANDIDATE -> VALIDATED -> PAPER -> SHADOW -> LIVE -> RETIRED
 ```
 
-## Phase 3A — governed Agent surface
+Failed trials remain in the research denominator.
 
-Phase 3A established the finite Agent action vocabulary, ToolRegistry, deterministic policy, immutable AgentRunContext and SQLite audit trail. The Agent cannot set portfolio weights, bypass risk, choose fills, delete failed trials, remove frozen family members, directly promote models or execute broker orders.
+## Phase 3A — governed Agent control surface
+
+Phase 3A established typed Agent contracts, a finite ToolRegistry, deterministic policy, immutable registered `AgentRunContext` and SQLite action audit. The Agent cannot set portfolio weights, bypass risk, choose fills, delete failed trials, remove frozen family members, directly promote models or execute broker orders.
 
 ## Phase 3B — deterministic scripted Agent
 
 Phase 3B added `ResearchBudget`, `ResearchPlan`, `ExperimentTemplateRegistry`, `ScriptedResearchAgent`, `AgentRunCoordinator`, `SQLiteAgentPlanStore` and `AgentReplayEngine`.
 
-The scripted workflow is:
+The reference workflow remains deterministic:
 
 ```text
 inspect families
@@ -89,69 +101,102 @@ inspect families
  -> register approved variants
  -> run variants
  -> compare approved metrics
- -> seal deterministic winner
+ -> seal winner
  -> freeze family
- -> validate full family
+ -> validate complete family
  -> optional non-mutating promotion request
 ```
 
-Plans are SHA-256 fingerprinted and poor results cannot silently expand their research budget.
+## Phase 3C — provider-agnostic LLM planning
 
-## Phase 3C — LLM planning boundary
-
-Phase 3C adds provider-neutral LLM contracts:
+Phase 3C added:
 
 ```text
-LLMRequest
-LLMResponse
-LLMUsage
-LLMProvider
+LLMRequest / LLMResponse / LLMUsage / LLMProvider
 SQLiteLLMCallStore
+LLMPlanningPolicy
 LLMResearchPlanner
 LLMResearchAgent
 AgentEvaluationMetrics
 ```
 
-The LLM only proposes an approved-template `ResearchPlan`. FinAgent then revalidates the plan locally and delegates execution to the deterministic Phase 3B runtime.
+The LLM proposes only bounded approved-template plans. Provider structured output is locally revalidated before any research action occurs.
 
-The structured planner cannot supply validation thresholds, multiple-testing settings, research budgets, promotion stages, portfolio weights, risk overrides, fill prices, broker actions or Python code. Selection metrics and experiment templates are allowlisted.
-
-### Provider support
-
-The default install has no provider SDK dependency. Deterministic tests use `StaticLLMProvider`.
-
-An optional OpenAI Responses API adapter is available through:
+An optional OpenAI Responses API adapter is installed with:
 
 ```bash
 python -m pip install -e ".[llm-openai]"
 ```
 
-Example construction:
+The default install and CI do not require a provider SDK or API key.
+
+## Phase 3D — generated feature boundary
+
+Phase 3D allows the LLM to implement one new numeric feature program under a deliberately narrow executable contract:
 
 ```python
-from finagent.agents import LLMPlanningPolicy, LLMResearchPlanner, OpenAIResponsesProvider
-
-provider = OpenAIResponsesProvider()
-planner = LLMResearchPlanner(
-    provider=provider,
-    templates=template_registry,
-    policy=LLMPlanningPolicy(model="YOUR_SUPPORTED_MODEL"),
-)
+def compute_feature(inputs):
+    ...
+    return values
 ```
 
-The provider adapter uses strict JSON-schema structured output and does not expose SDK types outside the adapter.
+Inputs are a policy-approved subset of PIT numeric fields. Output must have the same length and contain only finite numbers or `None`.
 
-## Audit and evaluation
-
-Three durable stores have distinct responsibilities:
+New components:
 
 ```text
-SQLiteResearchRegistry  -> experiments/models/results
-SQLiteAgentAuditStore   -> governed tool actions and decisions
-SQLiteLLMCallStore      -> provider/model/prompt-hash/token/latency telemetry
+FeatureSpec
+FeatureCodePolicy
+FeatureCodeValidator
+FeatureValidationReport
+GeneratedFeatureArtifact
+SQLiteGeneratedFeatureStore
+
+FeatureSandboxLimits
+FeatureSandboxRequest
+FeatureSandboxResult
+LocalFeatureSandbox
+
+LLMFeatureGenerationPolicy
+LLMFeatureGenerator
+generated_feature_template
 ```
 
-Agent quality is evaluated by orchestration correctness, invalid-plan/tool rates, policy denials, completion, reproducibility, token use and latency. PnL remains a quantitative research outcome, not an Agent-quality score.
+### Static code boundary
+
+Generated code is rejected if it contains imports, general attribute access, dunder traversal, dynamic execution, file access, classes, async constructs, global/nonlocal state, context managers, exception machinery or while loops. Calls are restricted to a finite builtin set and selected `math` members. Source size and AST complexity are bounded.
+
+### Restricted execution
+
+Accepted source is smoke-tested in a separate `python -I -S` process with a reduced builtin namespace and strict JSON I/O. POSIX resource limits are applied for CPU time, address space, file size and file descriptors where available.
+
+**This is a restricted subprocess, not a kernel/container sandbox.** Phase 3D does not claim seccomp, namespaces or container isolation. The narrow AST language is part of the security boundary.
+
+### Artifact lineage
+
+An accepted `GeneratedFeatureArtifact` is fingerprinted from:
+
+```text
+FeatureSpec
+source digest
+validator version
+smoke-output digest
+generator identity
+```
+
+It is persisted by `SQLiteGeneratedFeatureStore` and can be converted into the existing `ExperimentTemplate` contract. Generated features therefore still pass through the same ExperimentFamily, nested-validation and multiple-testing controls.
+
+## Persistence and audit
+
+```text
+SQLiteResearchRegistry       -> experiments/models/results
+SQLiteAgentAuditStore        -> governed tool actions and decisions
+SQLiteAgentPlanStore         -> immutable research plans/selections
+SQLiteLLMCallStore           -> provider/model/prompt/token/latency telemetry
+SQLiteGeneratedFeatureStore  -> generated feature source and immutable lineage
+```
+
+No API key or hidden model reasoning is persisted.
 
 ## Repository layout
 
@@ -161,6 +206,8 @@ src/finagent/
 │   ├── audit.py
 │   ├── coordinator.py
 │   ├── domain.py
+│   ├── generated_features.py
+│   ├── llm_feature.py
 │   ├── llm_planner.py
 │   ├── llm_research.py
 │   ├── metrics.py
@@ -168,10 +215,11 @@ src/finagent/
 │   ├── policy.py
 │   ├── providers/
 │   ├── replay.py
-│   ├── runtime.py
 │   ├── scripted.py
 │   ├── templates/
 │   └── tools/
+├── sandbox/
+│   └── feature.py
 ├── analysis/
 ├── backtest/
 ├── data/
@@ -195,22 +243,25 @@ python -m pip install -e ".[dev]"
 pytest -q
 ```
 
-GitHub Actions runs the complete suite on Python 3.11, 3.12 and 3.13. External provider calls are never required by CI.
+GitHub Actions runs the complete suite on Python 3.11, 3.12 and 3.13. External provider calls are not required by CI.
 
-## Next milestone
+## Rebased roadmap
 
-The next milestone is **Phase 3D — sandboxed feature/factor code generation**.
+Development has passed the point where more Agent-framework complexity is the main bottleneck. The remaining roadmap has therefore been adjusted:
 
 ```text
-LLM hypothesis
- -> generated feature artifact
- -> static validation
- -> isolated sandbox
- -> approved ExperimentTemplate/ArtifactRef
- -> existing research governance
+Phase 3.5  Real generated-feature/PIT evaluator integration
+Phase 4    Portfolio research and construction hardening
+Phase 4.5  Low-permission Portfolio Supervisor Agent
+Phase 5    Paper trading / shadow production / reconciliation
+Phase 5.5  Structured research memory and hypothesis evolution
+Phase 6    Optional graph orchestration (LangGraph only if justified)
+Phase 7    Optional advanced ML/RL/text/multi-Agent research
 ```
 
-Phase 3D should not add broker access, direct portfolio-weight authority or risk-gate bypasses.
+The immediate priority is **Phase 3.5**, not LangGraph or multi-Agent debate. A generated feature must next be evaluated against real PIT numerical datasets, nested walk-forward folds, IC/ICIR, turnover and net-return metrics without synthetic fixtures.
+
+See [`docs/ROADMAP_REBASELINE.md`](docs/ROADMAP_REBASELINE.md).
 
 ## Design documents
 
@@ -221,7 +272,7 @@ Phase 3D should not add broker access, direct portfolio-weight authority or risk
 - [`docs/ADR-011_PHASE3A_AGENT_CONTROL_SURFACE.md`](docs/ADR-011_PHASE3A_AGENT_CONTROL_SURFACE.md)
 - [`docs/ADR-012_PHASE3B_SCRIPTED_AGENT.md`](docs/ADR-012_PHASE3B_SCRIPTED_AGENT.md)
 - [`docs/ADR-013_PHASE3C_LLM_PLANNING_BOUNDARY.md`](docs/ADR-013_PHASE3C_LLM_PLANNING_BOUNDARY.md)
-- [`docs/PHASE3A.md`](docs/PHASE3A.md)
-- [`docs/PHASE3B.md`](docs/PHASE3B.md)
-- [`docs/PHASE3C.md`](docs/PHASE3C.md)
+- [`docs/ADR-014_PHASE3D_SANDBOXED_FEATURE_CODE.md`](docs/ADR-014_PHASE3D_SANDBOXED_FEATURE_CODE.md)
+- [`docs/PHASE3D.md`](docs/PHASE3D.md)
+- [`docs/ROADMAP_REBASELINE.md`](docs/ROADMAP_REBASELINE.md)
 - [`docs/DEVLOG.md`](docs/DEVLOG.md)

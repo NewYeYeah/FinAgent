@@ -5,6 +5,15 @@ from .domain import (
     AgentDecisionStatus, AgentRunContext, AgentTask, PolicyDecision,
     PolicyOutcome, ToolCallRequest, ToolCallResult, ToolCallStatus, ToolMode,
 )
+from .generated_features import (
+    FeatureCodePolicy, FeatureCodeValidationError, FeatureCodeValidator,
+    FeatureSpec, FeatureValidationReport, GeneratedFeatureArtifact,
+    SQLiteGeneratedFeatureStore,
+)
+from .llm_feature import (
+    LLMFeatureGenerationError, LLMFeatureGenerationPolicy,
+    LLMFeatureGenerationResult, LLMFeatureGenerator, generated_feature_template,
+)
 from .llm_planner import (
     LLMPlanningPolicy, LLMPlanningResult, LLMPlanValidationError, LLMResearchPlanner,
 )
@@ -37,14 +46,18 @@ __all__ = [
     "AgentTask", "AgentTool", "DefaultResearchAgentPolicy", "ExperimentEvaluatorRegistry",
     "ExperimentTemplate", "ExperimentTemplateRegistry", "ExperimentVariant",
     "FamilyValidationInputProvider", "FamilyValidationInputs", "FamilyValidationPolicy",
-    "FunctionTool", "LLMCallRecord", "LLMCallStore", "LLMPlanValidationError",
-    "LLMPlanningPolicy", "LLMPlanningResult", "LLMProvider", "LLMProviderError",
-    "LLMRequest", "LLMResearchAgent", "LLMResearchOutcome", "LLMResearchPlanner",
-    "LLMResponse", "LLMUsage", "OpenAIResponsesProvider", "PolicyDecision",
-    "PolicyOutcome", "PromotionIntent", "ReplayComparison", "ReplayEntry", "ReplayTrace",
-    "ResearchBudget", "ResearchPlan", "ResearchRunSummary", "ResearchToolDependencies",
-    "SQLiteAgentAuditStore", "SQLiteAgentPlanStore", "SQLiteLLMCallStore",
-    "ScriptedResearchAgent", "StaticLLMProvider", "StoredResearchPlan",
-    "ToolCallRequest", "ToolCallResult", "ToolCallStatus", "ToolMode", "ToolRegistry",
-    "ToolSpec", "WinnerSelection", "build_research_tools", "evaluate_agent_run",
+    "FeatureCodePolicy", "FeatureCodeValidationError", "FeatureCodeValidator", "FeatureSpec",
+    "FeatureValidationReport", "FunctionTool", "GeneratedFeatureArtifact",
+    "LLMCallRecord", "LLMCallStore", "LLMFeatureGenerationError",
+    "LLMFeatureGenerationPolicy", "LLMFeatureGenerationResult", "LLMFeatureGenerator",
+    "LLMPlanValidationError", "LLMPlanningPolicy", "LLMPlanningResult", "LLMProvider",
+    "LLMProviderError", "LLMRequest", "LLMResearchAgent", "LLMResearchOutcome",
+    "LLMResearchPlanner", "LLMResponse", "LLMUsage", "OpenAIResponsesProvider",
+    "PolicyDecision", "PolicyOutcome", "PromotionIntent", "ReplayComparison", "ReplayEntry",
+    "ReplayTrace", "ResearchBudget", "ResearchPlan", "ResearchRunSummary",
+    "ResearchToolDependencies", "SQLiteAgentAuditStore", "SQLiteAgentPlanStore",
+    "SQLiteGeneratedFeatureStore", "SQLiteLLMCallStore", "ScriptedResearchAgent",
+    "StaticLLMProvider", "StoredResearchPlan", "ToolCallRequest", "ToolCallResult",
+    "ToolCallStatus", "ToolMode", "ToolRegistry", "ToolSpec", "WinnerSelection",
+    "build_research_tools", "evaluate_agent_run", "generated_feature_template",
 ]

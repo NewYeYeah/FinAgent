@@ -1,61 +1,83 @@
 # FinAgent Development Log
 
-This file is the canonical chronological development log. Phase-specific implementation details remain in the corresponding ADR and `PHASE*.md` documents.
+This file is the canonical chronological development log. Phase-specific details remain in the corresponding ADR and `PHASE*.md` documents.
 
-## 2026-08-25 — Phase 3C: Provider-Agnostic LLM Research Planning
+## 2026-08-25 — Phase 3D: Restricted Generated Feature Programs
 
 ### Goal
 
-Introduce real language-model planning without relaxing the deterministic Agent, statistical validation, portfolio, hard-risk or execution boundaries.
+Allow the LLM to implement a new numeric feature without relaxing the deterministic research, portfolio, hard-risk or execution boundaries.
 
 ### Delivered
 
 ```text
-LLMRequest / LLMResponse / LLMUsage / LLMProvider
-StaticLLMProvider
-OpenAIResponsesProvider
-SQLiteLLMCallStore
-LLMPlanningPolicy
-LLMResearchPlanner
-LLMResearchAgent
-AgentEvaluationMetrics
+FeatureSpec
+FeatureCodePolicy
+FeatureCodeValidator
+FeatureValidationReport
+GeneratedFeatureArtifact
+SQLiteGeneratedFeatureStore
+FeatureSandboxLimits
+FeatureSandboxRequest
+FeatureSandboxResult
+LocalFeatureSandbox
+LLMFeatureGenerationPolicy
+LLMFeatureGenerationResult
+LLMFeatureGenerator
+generated_feature_template
 ```
 
-The final architecture is intentionally stricter than a free-form tool-calling Agent:
+The executable contract is deliberately narrow:
+
+```python
+def compute_feature(inputs):
+    ...
+```
+
+Static validation rejects imports, dynamic execution, file access, general attribute traversal, dunder access, classes, async constructs, global/nonlocal state, context managers, exception machinery and while loops. Calls are restricted to a finite builtin set and selected `math` members.
+
+Validated source is smoke-tested in a separate `python -I -S` subprocess using a reduced builtin namespace and strict JSON transport. POSIX CPU/address-space/file-size/file-descriptor limits are applied when available. This is explicitly not advertised as kernel/container isolation.
+
+Accepted source becomes an immutable `GeneratedFeatureArtifact`, persisted with its source, spec, validator version, smoke-output digest and generator identity. It can be bridged into the existing `ExperimentTemplate` path and therefore cannot bypass ExperimentFamily/multiple-testing controls.
+
+### Roadmap rebaseline
+
+At this point further Agent-framework complexity is no longer the critical path. The roadmap is rebalanced toward quantitative realism:
 
 ```text
-Natural-language task
- -> LLMResearchPlanner
- -> strict structured ResearchPlan
- -> local deterministic validation
- -> ScriptedResearchAgent
- -> ToolRegistry / PolicyEngine
- -> Research Control Plane
+Phase 3.5  real generated-feature/PIT evaluator integration
+Phase 4    portfolio construction/risk hardening
+Phase 4.5  low-permission Portfolio Supervisor Agent
+Phase 5    paper/shadow trading and reconciliation
+Phase 5.5  structured research memory and lineage
+Phase 6    optional graph orchestration
+Phase 7    optional advanced ML/RL/text/multi-Agent work
 ```
 
-The LLM may choose an approved experiment template, bounded variants and allowlisted selection metrics. It cannot set statistical thresholds, search budgets, promotion stages, portfolio weights, execution parameters, fill prices or Python code.
-
-Provider-level structured output is not trusted by itself. FinAgent revalidates exact fields, template membership, parameter names, metric allowlists, identifier syntax and plan budgets.
-
-`SQLiteLLMCallStore` adds durable prompt-hash, model/provider, token, cache, latency and planning-valid telemetry without storing API keys or hidden reasoning.
-
-The OpenAI adapter is optional and lazy-loaded through `.[llm-openai]`; default CI remains offline and provider-independent.
+LangGraph, multi-Agent debate and direct RL allocation are therefore deferred until concrete requirements justify them.
 
 ### Documentation
 
-- `ADR-013_PHASE3C_LLM_PLANNING_BOUNDARY.md`
-- `PHASE3C.md`
-- README updated for the LLM planning boundary and provider installation.
+- `ADR-014_PHASE3D_SANDBOXED_FEATURE_CODE.md`
+- `PHASE3D.md`
+- `ROADMAP_REBASELINE.md`
+- README updated to Phase 3D / `0.4.0a1`.
 
-### Next
+---
 
-Phase 3D should introduce sandboxed feature/factor code generation while preserving the existing ToolRegistry and research-validation boundary.
+## 2026-08-25 — Phase 3C: Provider-Agnostic LLM Research Planning
+
+Phase 3C introduced provider-neutral LLM contracts, optional OpenAI Responses API integration, strict structured `ResearchPlan` generation, local deterministic validation, `LLMResearchAgent`, durable provider telemetry and Agent-quality metrics.
+
+The LLM can choose approved experiment templates and bounded variants but cannot control validation thresholds, research budgets, portfolio weights, risk overrides, fill prices, broker actions or Python code.
+
+The complete CI suite passed Python 3.11/3.12/3.13 with 95 tests.
 
 ---
 
 ## 2026-08-24 — Phase 3B: Deterministic Scripted Research Agent
 
-Phase 3B implemented `ResearchPlan`, `ResearchBudget`, approved experiment templates, `ScriptedResearchAgent`, `AgentRunCoordinator`, append-only plan storage and dry replay. The first complete CI validation passed Python 3.11/3.12/3.13 with 90 tests.
+Phase 3B implemented `ResearchPlan`, `ResearchBudget`, approved experiment templates, `ScriptedResearchAgent`, `AgentRunCoordinator`, append-only plan storage and dry replay. The complete CI suite passed Python 3.11/3.12/3.13 with 90 tests.
 
 The important invariant is that an autonomous research workflow can complete using only governed tools before any LLM is attached.
 
@@ -77,19 +99,9 @@ Phase 2.5 added nested purged walk-forward validation, `ExperimentFamily` govern
 
 ## 2026-08-24 — Phase 2: Validation, Execution Timing and Model Governance
 
-### Delivered
+Delivered purged walk-forward splitting, explicit execution snapshots, timed simulated execution/backtesting, durable ExperimentRunner lifecycle and model-stage governance.
 
-```text
-PurgedWalkForwardSplitter
-ExecutionQuote / ExecutionSnapshot
-ExecutionDataAdapter
-TimedSimulatedExchange
-TimedEventDrivenBacktestEngine
-ExperimentRunner
-ModelStage / RegisteredModel / ModelStageEvent
-```
-
-The hard execution invariant is `execution_at > information_at`. Model lifecycle is `CANDIDATE -> VALIDATED -> PAPER -> SHADOW -> LIVE -> RETIRED`. Phase 2 also fixed a SQLite `INSERT OR REPLACE` cascade bug that could delete dependent experiment results.
+The hard execution invariant is `execution_at > information_at`. Model lifecycle is `CANDIDATE -> VALIDATED -> PAPER -> SHADOW -> LIVE -> RETIRED`.
 
 Suite total after Phase 2: 55 tests.
 
@@ -118,27 +130,4 @@ Suite total after Phase 1: 45 tests.
 
 Phase 0.5 froze framework-independent contracts for assets/market data, research datasets, alpha/risk forecasts, portfolio targets/states, explicit risk decisions, orders/fills, experiment artifacts and core service protocols.
 
-The initial smoke path was:
-
-```text
-MarketSnapshot
- -> EqualWeightTargetBuilder
- -> PortfolioTarget
- -> StaticRiskGate
- -> OrderPlanner
- -> SimulatedExchange
- -> AccountLedger
- -> PortfolioState
-```
-
-Design rules frozen at this stage remain active:
-
-1. no raw DataFrame as a public cross-module contract;
-2. point-in-time availability is explicit;
-3. target weights and fills are separate;
-4. hard risk decisions are explicit/non-mutating;
-5. code/data/parameters/seed are part of experiment identity;
-6. third-party frameworks connect through adapters;
-7. source migration requires license and behavior audit.
-
-Initial suite: 26 tests.
+The canonical smoke path was validated without pandas, LLMs or external trading frameworks.
