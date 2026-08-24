@@ -148,3 +148,43 @@ def test_tool_budget_denies_calls_after_limit(tmp_path):
     assert second.status is ToolCallStatus.DENIED
     assert "budget" in second.error
     assert audit.tool_call_count(context.run_id) == 2
+
+
+def test_registered_run_context_is_immutable_and_cannot_be_forged(tmp_path):
+    registry, audit, context = _runtime(
+        tmp_path,
+        max_tool_calls=1,
+        allowlist=(AgentAction.INSPECT_DATA_CONTRACT.value,),
+    )
+    registry.register(
+        FunctionTool(
+            ToolSpec(
+                name=AgentAction.INSPECT_DATA_CONTRACT.value,
+                description="read contract",
+                action=AgentAction.INSPECT_DATA_CONTRACT,
+                mode=ToolMode.READ,
+            ),
+            lambda arguments, ctx: {"ok": True},
+        )
+    )
+    assert audit.get_run_context(context.run_id) == context
+
+    forged = AgentRunContext(
+        context.run_id,
+        context.task_id,
+        context.actor,
+        context.started_at,
+        max_tool_calls=999,
+        tool_allowlist=(),
+    )
+    try:
+        registry.invoke(
+            ToolCallRequest("call-forged", AgentAction.INSPECT_DATA_CONTRACT.value, {}, NOW),
+            forged,
+        )
+    except ValueError as exc:
+        assert "immutable registered run context" in str(exc)
+    else:  # pragma: no cover - safety regression guard
+        raise AssertionError("forged AgentRunContext was unexpectedly accepted")
+
+    assert audit.tool_call_count(context.run_id) == 0

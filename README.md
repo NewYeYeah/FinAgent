@@ -1,25 +1,25 @@
 # FinAgent
 
-FinAgent is a typed, auditable quantitative-research and portfolio infrastructure designed so that a future Agent can orchestrate research without entering the numerical trading hot path.
+FinAgent is a typed, auditable quantitative-research and portfolio infrastructure in which an Agent may orchestrate approved research actions without entering the numerical trading hot path.
 
-Current status: **Phase 2.5 — Nested Validation and Anti-Overfitting Controls**.
+Current status: **Phase 3A — Governed Agent Control Surface**.
 
 The architectural rule is:
 
 ```text
-Agent:
-  chooses approved research actions, registered tools and explanations.
+Agent / future LLM:
+  plans research and requests registered tools.
 
 Deterministic code:
-  owns data timing, statistics, forecasts, portfolio weights,
-  risk approval, validation splits, execution and model promotion policy.
+  owns point-in-time data, numerical models, statistical validation,
+  portfolio weights, risk approval, execution semantics and model lifecycle.
 ```
 
-No LLM or Agent framework is required by the core package.
+No LLM or Agent framework is required by the package at Phase 3A.
 
 ## Architecture
 
-Research/numerical path:
+### Quant Engine
 
 ```text
 DataAdapter
@@ -31,24 +31,13 @@ DataAdapter
     -> PortfolioTarget
     -> RiskGate
     -> RiskDecision
-```
-
-Phase 2 timed execution path:
-
-```text
-information_at
-    -> PIT FeatureWindow + MarketSnapshot
-    -> forecasts / target / risk approval
     -> OrderIntent
-    -> execution_at > information_at
-    -> ExecutionSnapshot
     -> TimedExecutionVenue
     -> Fill / ExecutionReport
-    -> AccountLedger
     -> PortfolioState
 ```
 
-Research-governance path:
+### Research Control Plane
 
 ```text
 ExperimentFamily(OPEN)
@@ -63,11 +52,27 @@ ExperimentFamily(OPEN)
     -> candidate -> validated -> paper -> shadow -> live -> retired
 ```
 
-## Frozen Phase 1 numerical interface
+### Phase 3A Agent Control Plane
+
+```text
+AgentTask + AgentRunContext
+        -> ToolCallRequest
+        -> ToolRegistry
+        -> exact ToolSpec / budget / argument schema
+        -> AgentPolicyEngine
+        -> approved deterministic research tool
+        -> Research Control Plane
+        -> ToolCallResult
+        -> SQLiteAgentAuditStore
+```
+
+The Agent does not receive raw portfolio, risk-gate, fill-price, model-stage mutation or broker-order functions.
+
+## Phase 1 numerical contract
 
 See [`docs/ADR-007_PHASE1_NUMERICAL_DATA_CONTRACT.md`](docs/ADR-007_PHASE1_NUMERICAL_DATA_CONTRACT.md).
 
-Canonical numerical layouts are:
+Canonical numerical layouts:
 
 ```text
 ResearchSplit.feature_values.shape = (time, asset, feature)
@@ -75,7 +80,7 @@ ResearchSplit.label_values.shape   = (time, asset, label)
 FeatureWindow.values.shape         = (time, asset, feature)
 ```
 
-The Phase 1 `DataAdapter` remains unchanged:
+The public data path remains:
 
 ```python
 build_dataset(request) -> ResearchDataset
@@ -86,14 +91,14 @@ calendar(start, end, universe) -> tuple[datetime, ...]
 
 Important invariants:
 
-- `TimeRange` is half-open: `[start, end)`;
+- `TimeRange` is half-open `[start, end)`;
 - public numerical arrays are `float64`, defensive-copy and read-only;
-- missing values use `NaN`; infinity is rejected;
+- missing numerical values use `NaN`; infinity is rejected;
 - `available_at` is the research point-in-time clock;
 - forward labels cannot cross split boundaries;
-- pandas/Qlib/vendor schemas stay behind adapters rather than becoming public contracts.
+- pandas/Qlib/vendor schemas remain behind adapters rather than becoming public contracts.
 
-## Phase 1 Quant Kernel
+## Quant Kernel
 
 ### Data
 
@@ -107,7 +112,7 @@ Implemented:
 - PIT-safe feature windows
 - split-isolated forward labels
 
-Built-in features include:
+Built-in research fields include:
 
 ```text
 close
@@ -116,11 +121,6 @@ log_return_N
 simple_return_N
 squared_log_return_N
 log_volume_change_N
-```
-
-Built-in labels:
-
-```text
 forward_log_return_N
 forward_simple_return_N
 ```
@@ -139,7 +139,7 @@ forward_simple_return_N
 - `EWMACovarianceEstimator`
 - PSD-validated `RiskForecast`
 
-The default multivariate risk construction is:
+The multivariate reference risk construction is:
 
 ```text
 GARCH marginal volatility
@@ -149,80 +149,28 @@ EWMA/shrunk correlation
 PSD covariance forecast
 ```
 
-### Portfolio and risk gate
+### Portfolio / hard risk
 
 `MeanVarianceOptimizer` supports risk aversion, cash allocation, long-only/long-short bounds, maximum absolute weight and turnover penalty.
 
-The accounting identity is always:
+The accounting identity remains:
 
 ```text
 sum(asset_weights) + cash_weight = 1
 ```
 
-Gross and net exposure are tracked separately. `StaticRiskGate` is deterministic and non-mutating: it returns `APPROVE`, `REJECT`, or `REQUIRE_RESOLVE` with explicit violations.
+Gross and net exposure are tracked separately. `StaticRiskGate` is deterministic and non-mutating.
 
-### Phase 1 execution benchmark
-
-- `SimulatedExchange`
-- `VolumeAwareSimulatedExchange`
-- `OrderPlanner`
-- `AccountLedger`
-- `EventDrivenBacktestEngine`
-
-The Phase 1 engine remains available as an idealised close-on-close research benchmark.
-
-## Phase 2: purged walk-forward validation
+## Execution timing
 
 See [`docs/ADR-008_PHASE2_VALIDATION_AND_EXECUTION_CLOCK.md`](docs/ADR-008_PHASE2_VALIDATION_AND_EXECUTION_CLOCK.md).
 
-Implemented:
-
-```text
-WalkForwardConfig
-WalkForwardFold
-PurgedWalkForwardSplitter
-minimum_purge_bars
-```
-
-Canonical chronological fold:
-
-```text
-train | purge | embargo | test
-```
-
-For canonical labels such as:
-
-```text
-forward_log_return_5
-```
-
-Phase 2 requires, by default:
-
-```text
-purge_bars >= 5
-```
-
-Both rolling and expanding training windows are supported. Fold datasets are materialized through the normal `DataAdapter -> DatasetRequest -> ResearchDataset` path, so walk-forward validation does not introduce a second numerical data contract.
-
-In the strictly forward-only protocol, `embargo_bars` is an additional pre-test exclusion zone. FinAgent does not train on future observations in these folds.
-
-## Phase 2: separate information and execution clocks
-
-Phase 2 adds an execution-specific boundary instead of changing the frozen research `DataAdapter`:
+Research information and executable prices use separate clocks. The execution boundary exposes only the executable field through:
 
 ```python
 ExecutionDataAdapter.execution_calendar(...)
 ExecutionDataAdapter.execution_snapshot(...)
 ```
-
-New domain objects:
-
-```text
-ExecutionQuote
-ExecutionSnapshot
-```
-
-`ExecutionSnapshot` exposes only the executable field. It does not expose an entire OHLC bar.
 
 For the built-in bar adapter:
 
@@ -231,21 +179,19 @@ open  -> executable at PriceBar.event_time
 close -> executable at PriceBar.available_at
 ```
 
-High/low are intentionally not valid execution fields because the current bar schema has no deterministic timestamp for when those extrema became known.
-
 `TimedEventDrivenBacktestEngine` enforces:
 
 ```text
 execution_at > information_at
 ```
 
-and defaults to one executable-event lag using the next open. `TimedSimulatedExchange` supports commission, adverse slippage, participation clipping and participation-based impact on these field-level quotes.
+and defaults to a later executable event instead of filling a newly generated signal at an already-observed price.
 
-## Phase 2: experiment and model governance
+## Experiment and model governance
 
 See [`docs/ADR-009_PHASE2_MODEL_GOVERNANCE.md`](docs/ADR-009_PHASE2_MODEL_GOVERNANCE.md).
 
-`ExperimentRunner` now owns the durable experiment lifecycle:
+`ExperimentRunner` owns the durable lifecycle:
 
 ```text
 register inputs
@@ -255,16 +201,7 @@ register inputs
  -> SUCCEEDED or FAILED
 ```
 
-Failed runs are persisted before the exception is propagated.
-
-`SQLiteResearchRegistry` now persists:
-
-- artifacts;
-- experiment specs;
-- experiment runs;
-- experiment results;
-- registered models;
-- model-stage audit events.
+`SQLiteResearchRegistry` persists artifacts, experiment specs/runs/results, experiment families, family memberships, registered models and model-stage events.
 
 Model lifecycle:
 
@@ -277,17 +214,13 @@ CANDIDATE
  -> RETIRED
 ```
 
-Stage skipping is rejected. A model stage cannot be changed by overwriting the registration record; transitions must call the governed promotion API.
+Stage skipping is rejected. A model cannot change stage by overwriting its registration record.
 
-Phase 2 also fixes a subtle SQLite lifecycle bug: run-state updates use UPSERT rather than `INSERT OR REPLACE`, because SQLite `REPLACE` can delete the parent run row and cascade-delete its already stored result.
-
-## Phase 2.5: nested validation and research multiplicity
+## Nested validation and anti-overfitting controls
 
 See [`docs/ADR-010_PHASE25_RESEARCH_MULTIPLICITY.md`](docs/ADR-010_PHASE25_RESEARCH_MULTIPLICITY.md) and [`docs/PHASE2_5.md`](docs/PHASE2_5.md).
 
-Phase 2.5 governs the research search process itself. A point-in-time-safe backtest can still be overfit if many valid trials are run and only the winner is reported.
-
-Nested chronological validation is now explicit:
+Nested chronological validation is explicit:
 
 ```text
 outer train
@@ -296,83 +229,161 @@ outer train
 outer purge | outer embargo | outer test
 ```
 
-New walk-forward types:
-
-```text
-NestedWalkForwardConfig
-NestedWalkForwardFold
-NestedWalkForwardDatasets
-NestedPurgedWalkForwardSplitter
-```
-
-Related research trials are pre-registered as an `ExperimentFamily` with lifecycle:
+Related trials are pre-registered as an `ExperimentFamily`:
 
 ```text
 OPEN -> FROZEN -> CLOSED
 ```
 
-Only OPEN families may accept new trials. Family-level inference requires FROZEN status, and `ExperimentFamilyValidator` rejects any return/p-value input that does not contain exactly the registered family denominator.
+Only OPEN families accept new trials. Family-level inference requires FROZEN status and the exact registered family denominator.
 
-Implemented anti-overfitting statistics:
+Implemented statistical controls:
 
 - Bonferroni, Holm and Benjamini-Hochberg p-value correction;
 - Deflated Sharpe Ratio probability;
 - CSCV Probability of Backtest Overfitting;
 - White-style reality check with circular moving-block bootstrap;
-- decomposed `FamilyValidationReport` and deterministic pass/fail gate.
+- deterministic decomposed family-validation gate.
 
-Phase 2.5 also replaces `INSERT OR REPLACE` on experiment/family/model parent records with UPSERT so idempotent registration cannot cascade-delete family membership or model-stage audit history.
+## Phase 3A governed Agent surface
+
+See [`docs/ADR-011_PHASE3A_AGENT_CONTROL_SURFACE.md`](docs/ADR-011_PHASE3A_AGENT_CONTROL_SURFACE.md) and [`docs/PHASE3A.md`](docs/PHASE3A.md).
+
+### Typed Agent contracts
+
+`finagent.agents.domain` defines:
+
+```text
+AgentAction
+AgentTask
+AgentRunContext
+ToolCallRequest
+ToolCallResult
+PolicyDecision
+AgentDecision
+AgentAuditEvent
+```
+
+`AgentRuntime` is only a framework-independent Protocol. There is still no LLM runtime in the package.
+
+### Finite tool surface
+
+Phase 3A registers exactly these research actions:
+
+```text
+inspect_data_contract
+list_experiment_families
+inspect_experiment_family
+list_experiments
+inspect_experiment
+compare_experiment_results
+inspect_model_registry
+inspect_model_history
+create_experiment_family
+register_experiment
+run_experiment
+freeze_experiment_family
+validate_experiment_family
+request_model_promotion
+```
+
+Explicitly unavailable to an Agent include:
+
+```text
+set_portfolio_weights
+bypass_risk_gate
+set_fill_price
+edit_backtest_result
+delete_failed_experiment
+remove_family_member
+promote_model
+execute_broker_order
+```
+
+Unknown or malformed tool calls are denied and audited.
+
+### Deterministic policy-as-code
+
+`DefaultResearchAgentPolicy` applies:
+
+- per-run tool allowlists;
+- tool-call budgets;
+- finite action authorization;
+- model-promotion request policy;
+- mandatory human approval for SHADOW/LIVE promotion requests.
+
+`request_model_promotion` never mutates the model registry. It only materializes a legal request with `mutation_performed=false`.
+
+### Statistical policy cannot be changed by Agent arguments
+
+The Agent-facing `validate_experiment_family` accepts only:
+
+```text
+family_id
+selected_experiment_id
+```
+
+Returns/p-values are supplied through trusted `FamilyValidationInputProvider`; DSR/PBO/bootstrap thresholds come from fixed `FamilyValidationPolicy`. Agent attempts to inject alternative thresholds are rejected by the exact tool schema.
+
+### Approved evaluator registry
+
+`ExperimentEvaluatorRegistry` limits Phase 3A experiment execution to pre-registered deterministic evaluator/templates. Arbitrary generated Python is deferred to Phase 3D.
+
+### Audit
+
+`SQLiteAgentAuditStore` maintains a separate Agent audit namespace:
+
+```text
+agent_runs
+agent_tool_calls
+agent_policy_decisions
+agent_audit_events
+```
+
+Denied actions are recorded as first-class events. Tool request sequences are replayable for Phase 3B deterministic orchestration tests.
 
 ## Repository layout
 
 ```text
 FinAgent/
 ├── src/finagent/
+│   ├── agents/
+│   │   ├── domain.py
+│   │   ├── runtime.py
+│   │   ├── policy.py
+│   │   ├── audit.py
+│   │   └── tools/
+│   │       ├── base.py
+│   │       └── research.py
 │   ├── analysis/
-│   │   └── random_walk.py
 │   ├── backtest/
 │   │   ├── engine.py
 │   │   ├── timed.py
 │   │   └── walk_forward.py
 │   ├── data/
-│   │   ├── adapters.py
-│   │   └── store.py
 │   ├── domain/
-│   │   ├── assets.py
-│   │   ├── execution.py
-│   │   ├── experiment_family.py
-│   │   ├── experiments.py
-│   │   ├── forecasts.py
-│   │   ├── market.py
-│   │   ├── model_registry.py
-│   │   ├── orders.py
-│   │   ├── portfolio.py
-│   │   └── research.py
 │   ├── models/
-│   │   ├── alpha/
-│   │   └── risk/
 │   ├── portfolio/
-│   │   └── mean_variance.py
 │   ├── research/
 │   │   ├── family_validation.py
+│   │   ├── query.py
 │   │   ├── registry.py
 │   │   ├── runner.py
 │   │   └── validation.py
 │   ├── services/
-│   │   ├── execution.py
-│   │   └── portfolio.py
-│   ├── ports.py
-│   └── __init__.py
+│   └── ports.py
 ├── tests/
 ├── docs/
 │   ├── ADR-007_PHASE1_NUMERICAL_DATA_CONTRACT.md
 │   ├── ADR-008_PHASE2_VALIDATION_AND_EXECUTION_CLOCK.md
 │   ├── ADR-009_PHASE2_MODEL_GOVERNANCE.md
 │   ├── ADR-010_PHASE25_RESEARCH_MULTIPLICITY.md
+│   ├── ADR-011_PHASE3A_AGENT_CONTROL_SURFACE.md
 │   ├── PHASE1.md
 │   ├── PHASE2.md
 │   ├── PHASE2_5.md
 │   ├── PHASE3_PLAN.md
+│   ├── PHASE3A.md
 │   └── DEVLOG.md
 ├── pyproject.toml
 └── README.md
@@ -387,60 +398,35 @@ python -m venv .venv
 source .venv/bin/activate
 python -m pip install -U pip
 python -m pip install -e ".[dev]"
-pytest
-```
-
-Source-tree execution is also supported:
-
-```bash
-PYTHONPATH=src pytest -q
+pytest -q
 ```
 
 ## Test status
 
-Phase 0.5 + Phase 1 + Phase 2 + Phase 2.5 currently contain **69 tests**.
+Before the final documentation/refinement commit, the first Phase 3A pull-request tree passed the complete **83-test** suite under Python 3.11, 3.12 and 3.13 in GitHub Actions. The final Phase 3A commit adds one further governance regression test and is revalidated through the same matrix before `main` is advanced.
 
-Coverage includes:
+Coverage now includes the Phase 0.5–2.5 numerical/research controls plus Agent-domain validation, unknown-tool denial, exact argument schemas, run budgets, allowlists, research-tool composition, frozen-family protection, trusted family-validation inputs, non-mutating promotion requests and human-approval routing.
 
-- domain and point-in-time validation;
-- immutable numerical panels;
-- feature/label alignment and split isolation;
-- AR/ARMA/GARCH/covariance models;
-- mean-variance portfolio constraints;
-- risk gating and account accounting;
-- fixed, volume-aware and timed execution;
-- purged/embargoed walk-forward generation;
-- open-vs-close field-level availability;
-- information/execution-time separation;
-- experiment success/failure lifecycle;
-- model promotion policy and audit history;
-- complete Phase 1/2 numerical vertical slices;
-- nested inner/outer isolation and experiment-family denominator locking;
-- multiple-testing, DSR, PBO and White reality-check controls.
+## Next engineering layer
 
-Current local result:
+The next milestone is **Phase 3B — deterministic scripted Agent emulator**.
+
+It will implement a local `ScriptedResearchAgent` using exactly the same `AgentRuntime`, `ToolRegistry`, policy and audit contracts:
 
 ```text
-69 passed
+Research question
+ -> inspect research state
+ -> create/open family
+ -> register approved variants
+ -> run experiments
+ -> compare results
+ -> freeze family
+ -> validate family
+ -> request promotion when policy permits
+ -> finish/audit run
 ```
 
-## Current limitations / next engineering layer
-
-Phase 2.5 completes the deterministic statistical substrate required before introducing an LLM Research Agent. Remaining non-Agent quant-platform work includes point-in-time universe membership/corporate actions, exchange-session calendars, multi-currency/borrow constraints, persistent model binaries and broker adapters.
-
-The immediate next engineering layer is **Phase 3 — Research Agent Control Plane**. The implementation order is intentionally:
-
-```text
-Agent contracts
- -> deterministic research tools
- -> policy-as-code
- -> single Research Agent
- -> structured Agent audit/memory
- -> sandboxed feature code generation
- -> optional LangGraph adapter
-```
-
-The Agent will orchestrate approved experiments and governance requests. It will not calculate weights, bypass the risk gate, select executable prices, reduce a frozen experiment-family denominator or promote a model directly to LIVE. See [`docs/PHASE3_PLAN.md`](docs/PHASE3_PLAN.md).
+Only after this workflow is deterministic and replayable will Phase 3C attach a provider-agnostic LLM runtime. Phase 3D then considers sandboxed feature-code generation; LangGraph remains an optional Phase 3E adapter rather than a domain dependency.
 
 ## Design documentation
 
@@ -448,8 +434,10 @@ The Agent will orchestrate approved experiments and governance requests. It will
 - [`docs/ADR-008_PHASE2_VALIDATION_AND_EXECUTION_CLOCK.md`](docs/ADR-008_PHASE2_VALIDATION_AND_EXECUTION_CLOCK.md)
 - [`docs/ADR-009_PHASE2_MODEL_GOVERNANCE.md`](docs/ADR-009_PHASE2_MODEL_GOVERNANCE.md)
 - [`docs/ADR-010_PHASE25_RESEARCH_MULTIPLICITY.md`](docs/ADR-010_PHASE25_RESEARCH_MULTIPLICITY.md)
+- [`docs/ADR-011_PHASE3A_AGENT_CONTROL_SURFACE.md`](docs/ADR-011_PHASE3A_AGENT_CONTROL_SURFACE.md)
 - [`docs/PHASE1.md`](docs/PHASE1.md)
 - [`docs/PHASE2.md`](docs/PHASE2.md)
 - [`docs/PHASE2_5.md`](docs/PHASE2_5.md)
 - [`docs/PHASE3_PLAN.md`](docs/PHASE3_PLAN.md)
+- [`docs/PHASE3A.md`](docs/PHASE3A.md)
 - [`docs/DEVLOG.md`](docs/DEVLOG.md)

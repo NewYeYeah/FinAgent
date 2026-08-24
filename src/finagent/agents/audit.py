@@ -48,6 +48,8 @@ class AgentAuditStore(Protocol):
 
     def has_run(self, run_id: str) -> bool: ...
 
+    def get_run_context(self, run_id: str) -> AgentRunContext: ...
+
     def record_tool_request(self, run_id: str, request: ToolCallRequest) -> None: ...
 
     def record_policy_decision(self, decision: PolicyDecision) -> None: ...
@@ -161,10 +163,12 @@ class SQLiteAgentAuditStore:
     def finish_run(self, decision: AgentDecision) -> None:
         with self._connect() as con:
             row = con.execute(
-                "SELECT 1 FROM agent_runs WHERE run_id=?", (decision.run_id,)
+                "SELECT decision_json FROM agent_runs WHERE run_id=?", (decision.run_id,)
             ).fetchone()
             if row is None:
                 raise KeyError(decision.run_id)
+            if row[0] is not None:
+                raise ValueError(f"agent run {decision.run_id!r} is already finished")
             con.execute(
                 "UPDATE agent_runs SET decision_json=? WHERE run_id=?",
                 (
@@ -197,6 +201,24 @@ class SQLiteAgentAuditStore:
                 con.execute("SELECT 1 FROM agent_runs WHERE run_id=?", (run_id,)).fetchone()
                 is not None
             )
+
+    def get_run_context(self, run_id: str) -> AgentRunContext:
+        with self._connect() as con:
+            row = con.execute(
+                "SELECT payload_json FROM agent_runs WHERE run_id=?", (run_id,)
+            ).fetchone()
+        if row is None:
+            raise KeyError(run_id)
+        context = json.loads(row[0])["context"]
+        return AgentRunContext(
+            run_id=context["run_id"],
+            task_id=context["task_id"],
+            actor=context["actor"],
+            started_at=datetime.fromisoformat(context["started_at"]),
+            max_tool_calls=int(context["max_tool_calls"]),
+            tool_allowlist=tuple(context["tool_allowlist"]),
+            metadata=context["metadata"],
+        )
 
     def record_tool_request(self, run_id: str, request: ToolCallRequest) -> None:
         if not self.has_run(run_id):

@@ -128,8 +128,9 @@ class ToolRegistry:
     ) -> ToolCallResult:
         if not self.audit_store.has_run(context.run_id):
             raise ValueError("agent run must be registered in the audit store before tool use")
-        if context.task_id.strip() == "":  # defensive; domain already validates this
-            raise ValueError("context.task_id cannot be empty")
+        registered_context = self.audit_store.get_run_context(context.run_id)
+        if registered_context != context:
+            raise ValueError("AgentRunContext does not match the immutable registered run context")
 
         existing_calls = self.audit_store.tool_call_count(context.run_id)
         self.audit_store.record_tool_request(context.run_id, request)
@@ -204,17 +205,43 @@ class ToolRegistry:
                 )
             )
         if decision.outcome is PolicyOutcome.REQUIRE_HUMAN:
-            return self._record_result(
-                ToolCallResult(
+            if tool.spec.mode is not ToolMode.REQUEST:
+                return self._record_result(
+                    ToolCallResult(
+                        call_id=request.call_id,
+                        run_id=context.run_id,
+                        tool_name=request.tool_name,
+                        status=ToolCallStatus.REQUIRES_APPROVAL,
+                        finished_at=self.clock(),
+                        policy_decision_id=decision.decision_id,
+                        error=decision.reason,
+                    )
+                )
+            # REQUEST tools are non-mutating by contract. Execute them only to
+            # validate domain legality and materialize the exact human-review payload.
+            try:
+                output = tool.invoke(request.arguments, context)
+                result = ToolCallResult(
                     call_id=request.call_id,
                     run_id=context.run_id,
                     tool_name=request.tool_name,
                     status=ToolCallStatus.REQUIRES_APPROVAL,
                     finished_at=self.clock(),
                     policy_decision_id=decision.decision_id,
+                    output=output,
                     error=decision.reason,
                 )
-            )
+            except Exception as exc:
+                result = ToolCallResult(
+                    call_id=request.call_id,
+                    run_id=context.run_id,
+                    tool_name=request.tool_name,
+                    status=ToolCallStatus.FAILED,
+                    finished_at=self.clock(),
+                    policy_decision_id=decision.decision_id,
+                    error=f"{type(exc).__name__}: {exc}",
+                )
+            return self._record_result(result)
 
         try:
             output = tool.invoke(request.arguments, context)
