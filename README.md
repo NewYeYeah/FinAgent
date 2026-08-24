@@ -2,21 +2,21 @@
 
 FinAgent is a typed, auditable quantitative-research and portfolio infrastructure in which language models may plan approved research and generate narrowly constrained feature programs without entering the numerical trading hot path.
 
-Current status: **Phase 4 — Alpha Calibration, Risk Hardening and Portfolio Research** (`0.5.0a1`).
+Current status: **Phase 4.5 — Low-Permission Portfolio Supervisor Agent** (`0.5.0b1`).
 
 The governing rule is:
 
 ```text
-LLM:
-  proposes bounded research plans and feature implementations.
+LLM / Agent:
+  proposes bounded research, feature implementations and supervision requests.
 
 Deterministic Agent/runtime code:
-  validates plans/code and executes finite registered tools.
+  validates plans/code, executes finite tools and records audit evidence.
 
-Deterministic quantitative code:
+Deterministic quantitative/operational code:
   owns PIT data, statistical validation, alpha calibration,
-  risk forecasts, constraints, portfolio weights,
-  hard risk approval, execution semantics and model lifecycle.
+  risk forecasts, constraints, portfolio weights, hard risk approval,
+  execution semantics, model lifecycle and any financial-state mutation.
 ```
 
 ## Architecture
@@ -57,13 +57,22 @@ Natural-language research task
                         |
                 RebalancePolicy
                         |
-                        v
                  PortfolioTarget
                         |
+                        v
+             PortfolioHealthMonitor
+                        |
+            PortfolioHealthSnapshot
+                        |
+      Low-Permission Portfolio Supervisor
+                        |
+      inspect / request / human approval
+                        |
+                        v
           RiskGate -> Timed Execution
 ```
 
-The LLM remains outside the numerical trading hot path.
+The Agent remains outside the numerical portfolio and execution hot path.
 
 ## Frozen numerical path
 
@@ -94,7 +103,7 @@ Failed trials remain in the research denominator.
 
 ## Agent and generated-feature layers
 
-**Phase 3A** established typed Agent contracts, finite `ToolRegistry`, deterministic policy and SQLite action audit.
+**Phase 3A** established typed Agent contracts, a finite `ToolRegistry`, deterministic policy and SQLite action audit.
 
 **Phase 3B** added deterministic research plans, budgets, approved templates, scripted execution, plan storage and replay.
 
@@ -104,120 +113,131 @@ Failed trials remain in the research denominator.
 
 **Phase 3.5** connected generated features to real PIT materialization, IC/ICIR, turnover, net-return evidence, immutable research traces and nested walk-forward statistical governance.
 
-## Phase 4A — alpha calibration and ensemble
+## Phase 4 — deterministic portfolio research hardening
 
-New components:
+Phase 4 added:
 
 ```text
-CrossSectionalCalibrationResult
 CrossSectionalLinearAlphaCalibrator
-AlphaEnsembleResult
 AlphaForecastEnsembler
-```
-
-The reference calibrator standardizes feature scores within each training timestamp and fits a pooled ridge-regularized mapping:
-
-```text
-forward return = intercept + slope * standardized feature + residual
-```
-
-It only consumes the explicitly supplied `ResearchSplit`; it does not choose or inspect outer-test data.
-
-`AlphaForecastEnsembler` combines aligned `AlphaForecast` objects using explicit deterministic weights. Quality-score helpers may transform validated research scores into normalized weights, but the LLM never writes portfolio weights.
-
-## Phase 4B — risk and constraint hardening
-
-Risk baselines now include:
-
-```text
-EWMACovarianceEstimator
 OASCovarianceEstimator
-HistoricalRiskForecastBuilder
 PCAFactorRiskEstimator
-PCAFactorRiskForecastBuilder
-```
-
-OAS shrinks noisy sample covariance toward a scaled identity target. PCA factor risk supplies a low-rank statistical factor covariance plus diagonal idiosyncratic risk. Both produce PSD canonical `RiskForecast` objects. PCA is explicitly a research baseline, not a production fundamental factor model.
-
-Portfolio constraints are centralized in:
-
-```text
-PortfolioConstraintSet
-GroupExposureLimit
-LinearExposureLimit
 ConstraintCompiler
-CompiledPortfolioConstraints
-```
-
-Supported controls include:
-
-```text
-cash/invested-weight identity
-long-only or bounded long/short weights
-asset-specific bounds
-gross exposure
-turnover limit
-group/sector-like min-max exposure
-benchmark-relative active-weight bounds
-linear factor/style exposure bounds
-per-asset trade-weight caps as a liquidity/participation proxy
-```
-
-Constraints are deterministic infrastructure and are not mutable LLM outputs.
-
-## Phase 4C — portfolio construction and evaluation
-
-Reference constructors:
-
-```text
 EqualWeightOptimizer
 MinimumVarianceOptimizer
 RiskParityOptimizer
 ConstrainedMeanVarianceOptimizer
-```
-
-The cost-aware mean-variance objective is:
-
-```text
-min_w  -mu'w + 0.5 * lambda * w'Sigma*w + cost(turnover)
-```
-
-subject to compiled constraints.
-
-`PortfolioBenchmarkSuite` runs multiple constructors on the same `AlphaForecast`, `RiskForecast` and marked `PortfolioState`, reporting:
-
-```text
-expected return
-expected net return after turnover cost
-volatility
-turnover
-gross exposure
-net exposure
-```
-
-Markowitz is therefore a candidate rather than an assumed winner; equal weight, minimum variance and risk parity remain explicit baselines.
-
-Additional deterministic portfolio-research components:
-
-```text
-PortfolioScenario
+PortfolioBenchmarkSuite
 PortfolioStressTester
-StressTestReport
 DriftRebalancePolicy
-RebalanceDecision
 ```
 
-Stress tests apply explicit asset-return scenarios to a `PortfolioTarget`. Rebalance policy decides whether a target should be acted on from weight drift/turnover thresholds; it does not rewrite the target.
+Alpha calibration, covariance estimation, exposure constraints and portfolio weights remain deterministic numerical responsibilities. The LLM does not set expected returns, covariance matrices, hard limits or portfolio weights.
+
+## Phase 4.5 — low-permission Portfolio Supervisor
+
+Phase 4.5 introduces an Agent-facing supervision boundary over Phase 4 outputs without introducing an LLM portfolio manager.
+
+New components:
+
+```text
+HealthLevel / HealthCheck
+PortfolioHealthThresholds
+PortfolioHealthSnapshot
+PortfolioHealthMonitor
+SQLitePortfolioSupervisionStore
+
+OperatingMode
+OperatingPolicy
+OperatingPolicyRegistry
+PortfolioSupervisorPolicy
+ScriptedPortfolioSupervisorAgent
+
+PortfolioSupervisorToolDependencies
+build_portfolio_supervisor_tools
+```
+
+### Immutable health evidence
+
+`PortfolioHealthMonitor` converts deterministic Phase 4 outputs into a `PortfolioHealthSnapshot` containing:
+
+```text
+forecast/state clock alignment
+data and forecast freshness checks
+selected portfolio expected net return / volatility / turnover
+all benchmark-constructor summaries
+stress-scenario results
+current-vs-target weight drifts
+deterministic rebalance decision
+```
+
+Thresholds are explicit configuration, not Agent outputs. `SQLitePortfolioSupervisionStore` persists snapshots immutably.
+
+### Finite Supervisor surface
+
+Read-only tools:
+
+```text
+inspect_portfolio_health
+inspect_portfolio_benchmarks
+inspect_stress_report
+inspect_rebalance_decision
+list_operating_policies
+```
+
+Non-mutating request tools:
+
+```text
+request_operating_policy
+request_rebalance
+request_human_review
+```
+
+The Supervisor does **not** have tools to set arbitrary weights, alter hard risk limits, bypass `RiskGate`, choose fill prices or submit broker orders.
+
+`request_operating_policy` and `request_rebalance` require human approval. Their handlers only validate the request and return an auditable payload with:
+
+```text
+mutation_performed = false
+```
+
+The reference operating-policy registry contains pre-registered identities such as `normal`, `cautious`, `defensive` and `paused`. The Agent may request one of these identities but cannot synthesize new constraint numbers.
+
+### Reference Supervisor behavior
+
+`ScriptedPortfolioSupervisorAgent` provides the deterministic Phase 4.5 acceptance path:
+
+```text
+CRITICAL
+ -> request defensive policy
+ -> request human review
+ -> BLOCKED pending approval
+
+WARNING + deterministic rebalance=True
+ -> request rebalance
+ -> BLOCKED pending approval
+
+WARNING
+ -> request human review
+ -> BLOCKED
+
+OK
+ -> no financial-state request
+ -> COMPLETED
+```
+
+This proves supervision, audit and approval boundaries before any future LLM explanation/recommendation adapter is attached.
 
 ## Persistence and audit
 
 ```text
 SQLiteResearchRegistry                -> experiments/models/results
-SQLiteAgentAuditStore                 -> governed tool actions and decisions
+SQLiteAgentAuditStore                 -> governed Agent/Supervisor actions and decisions
 SQLiteAgentPlanStore                  -> immutable research plans/selections
 SQLiteLLMCallStore                    -> provider/model/prompt/token/latency telemetry
 SQLiteGeneratedFeatureStore           -> generated feature source and lineage
-SQLiteGeneratedFeatureResearchStore   -> real return/IC evidence for generated features
+SQLiteGeneratedFeatureResearchStore   -> real return/IC evidence
+SQLitePortfolioSupervisionStore       -> immutable portfolio health snapshots
 ```
 
 No API key or hidden model reasoning is persisted.
@@ -236,17 +256,16 @@ pytest -q
 
 GitHub Actions runs the complete suite on Python 3.11, 3.12 and 3.13. External provider calls are not required by CI.
 
-## Roadmap after Phase 4
+## Roadmap after Phase 4.5
 
 ```text
-Phase 4.5  Low-permission Portfolio Supervisor Agent
 Phase 5    Paper trading / shadow production / reconciliation
 Phase 5.5  Structured research memory and hypothesis evolution
 Phase 6    Optional graph orchestration, only if operationally justified
 Phase 7    Optional advanced ML/RL/text/multi-Agent research
 ```
 
-Phase 4 does not yet claim production-grade fundamental factor risk, nonlinear market impact, corporate-action accounting or broker reconciliation. Those remain operational-phase work.
+The immediate next milestone is Phase 5: attach deterministic operational approval and paper-broker infrastructure to the already separated Supervisor request/application boundary. No live-capital milestone should precede sustained paper/shadow validation.
 
 ## Design documents
 
@@ -257,7 +276,7 @@ Phase 4 does not yet claim production-grade fundamental factor risk, nonlinear m
 - [`docs/ADR-014_PHASE3D_SANDBOXED_FEATURE_CODE.md`](docs/ADR-014_PHASE3D_SANDBOXED_FEATURE_CODE.md)
 - [`docs/ADR-015_PHASE35_REAL_FEATURE_RESEARCH.md`](docs/ADR-015_PHASE35_REAL_FEATURE_RESEARCH.md)
 - [`docs/ADR-016_PHASE4_PORTFOLIO_RESEARCH.md`](docs/ADR-016_PHASE4_PORTFOLIO_RESEARCH.md)
-- [`docs/PHASE3_5.md`](docs/PHASE3_5.md)
-- [`docs/PHASE4.md`](docs/PHASE4.md)
+- [`docs/ADR-017_PHASE45_PORTFOLIO_SUPERVISOR.md`](docs/ADR-017_PHASE45_PORTFOLIO_SUPERVISOR.md)
+- [`docs/PHASE4_5.md`](docs/PHASE4_5.md)
 - [`docs/ROADMAP_REBASELINE.md`](docs/ROADMAP_REBASELINE.md)
 - [`docs/DEVLOG.md`](docs/DEVLOG.md)

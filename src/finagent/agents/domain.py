@@ -23,6 +23,14 @@ class AgentAction(str, Enum):
     FREEZE_EXPERIMENT_FAMILY = "freeze_experiment_family"
     VALIDATE_EXPERIMENT_FAMILY = "validate_experiment_family"
     REQUEST_MODEL_PROMOTION = "request_model_promotion"
+    INSPECT_PORTFOLIO_HEALTH = "inspect_portfolio_health"
+    INSPECT_PORTFOLIO_BENCHMARKS = "inspect_portfolio_benchmarks"
+    INSPECT_STRESS_REPORT = "inspect_stress_report"
+    INSPECT_REBALANCE_DECISION = "inspect_rebalance_decision"
+    LIST_OPERATING_POLICIES = "list_operating_policies"
+    REQUEST_OPERATING_POLICY = "request_operating_policy"
+    REQUEST_REBALANCE = "request_rebalance"
+    REQUEST_HUMAN_REVIEW = "request_human_review"
 
 
 class ToolMode(str, Enum):

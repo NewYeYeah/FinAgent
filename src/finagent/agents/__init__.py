@@ -32,11 +32,19 @@ from .providers import (
 from .replay import AgentReplayEngine, ReplayComparison, ReplayEntry, ReplayTrace
 from .runtime import AgentRuntime
 from .scripted import ScriptedResearchAgent, WinnerSelection
+from .supervisor import (
+    HealthCheck, HealthLevel, OperatingMode, OperatingPolicy, OperatingPolicyRegistry,
+    PortfolioBenchmarkSummary, PortfolioHealthMonitor, PortfolioHealthSnapshot,
+    PortfolioHealthThresholds, PortfolioStressSummary, PortfolioSupervisorPolicy,
+    SQLitePortfolioSupervisionStore, ScriptedPortfolioSupervisorAgent,
+    WeightDriftSummary,
+)
 from .templates import ExperimentTemplate, ExperimentTemplateRegistry
 from .tools import (
     AgentTool, ExperimentEvaluatorRegistry, FamilyValidationInputProvider,
     FamilyValidationInputs, FamilyValidationPolicy, FunctionTool,
-    ResearchToolDependencies, ToolRegistry, ToolSpec, build_research_tools,
+    PortfolioSupervisorToolDependencies, ResearchToolDependencies, ToolRegistry, ToolSpec,
+    build_portfolio_supervisor_tools, build_research_tools,
 )
 
 __all__ = [
@@ -48,16 +56,21 @@ __all__ = [
     "FamilyValidationInputProvider", "FamilyValidationInputs", "FamilyValidationPolicy",
     "FeatureCodePolicy", "FeatureCodeValidationError", "FeatureCodeValidator", "FeatureSpec",
     "FeatureValidationReport", "FunctionTool", "GeneratedFeatureArtifact",
-    "LLMCallRecord", "LLMCallStore", "LLMFeatureGenerationError",
-    "LLMFeatureGenerationPolicy", "LLMFeatureGenerationResult", "LLMFeatureGenerator",
-    "LLMPlanValidationError", "LLMPlanningPolicy", "LLMPlanningResult", "LLMProvider",
-    "LLMProviderError", "LLMRequest", "LLMResearchAgent", "LLMResearchOutcome",
+    "HealthCheck", "HealthLevel", "LLMCallRecord", "LLMCallStore",
+    "LLMFeatureGenerationError", "LLMFeatureGenerationPolicy", "LLMFeatureGenerationResult",
+    "LLMFeatureGenerator", "LLMPlanValidationError", "LLMPlanningPolicy", "LLMPlanningResult",
+    "LLMProvider", "LLMProviderError", "LLMRequest", "LLMResearchAgent", "LLMResearchOutcome",
     "LLMResearchPlanner", "LLMResponse", "LLMUsage", "OpenAIResponsesProvider",
-    "PolicyDecision", "PolicyOutcome", "PromotionIntent", "ReplayComparison", "ReplayEntry",
-    "ReplayTrace", "ResearchBudget", "ResearchPlan", "ResearchRunSummary",
-    "ResearchToolDependencies", "SQLiteAgentAuditStore", "SQLiteAgentPlanStore",
-    "SQLiteGeneratedFeatureStore", "SQLiteLLMCallStore", "ScriptedResearchAgent",
-    "StaticLLMProvider", "StoredResearchPlan", "ToolCallRequest", "ToolCallResult",
-    "ToolCallStatus", "ToolMode", "ToolRegistry", "ToolSpec", "WinnerSelection",
+    "OperatingMode", "OperatingPolicy", "OperatingPolicyRegistry", "PolicyDecision",
+    "PolicyOutcome", "PortfolioBenchmarkSummary", "PortfolioHealthMonitor",
+    "PortfolioHealthSnapshot", "PortfolioHealthThresholds", "PortfolioStressSummary",
+    "PortfolioSupervisorPolicy", "PortfolioSupervisorToolDependencies", "PromotionIntent",
+    "ReplayComparison", "ReplayEntry", "ReplayTrace", "ResearchBudget", "ResearchPlan",
+    "ResearchRunSummary", "ResearchToolDependencies", "SQLiteAgentAuditStore",
+    "SQLiteAgentPlanStore", "SQLiteGeneratedFeatureStore", "SQLiteLLMCallStore",
+    "SQLitePortfolioSupervisionStore", "ScriptedPortfolioSupervisorAgent",
+    "ScriptedResearchAgent", "StaticLLMProvider", "StoredResearchPlan", "ToolCallRequest",
+    "ToolCallResult", "ToolCallStatus", "ToolMode", "ToolRegistry", "ToolSpec",
+    "WeightDriftSummary", "WinnerSelection", "build_portfolio_supervisor_tools",
     "build_research_tools", "evaluate_agent_run", "generated_feature_template",
 ]
