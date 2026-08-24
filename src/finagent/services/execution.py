@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from finagent.domain.execution import ExecutionReport, Fill, OrderRejection
+from finagent.domain.execution import ExecutionReport, ExecutionSnapshot, Fill, OrderRejection
 from finagent.domain.market import MarketSnapshot
 from finagent.domain.orders import OrderIntent, OrderSide, OrderType
 from finagent.domain.portfolio import PortfolioState
@@ -146,6 +146,38 @@ class AccountLedger:
             marks=marks,
         )
 
+    def apply_execution_snapshot(
+        self,
+        state: PortfolioState,
+        report: ExecutionReport,
+        snapshot: ExecutionSnapshot,
+    ) -> PortfolioState:
+        """Apply fills using a field-level Phase 2 execution snapshot for marks."""
+        if report.finished_at > snapshot.asof:
+            raise ValueError("cannot value execution report using an earlier execution snapshot")
+        cash = state.cash
+        positions = dict(state.positions)
+        for fill in report.fills:
+            signed_quantity = fill.quantity if fill.side is OrderSide.BUY else -fill.quantity
+            positions[fill.asset] = positions.get(fill.asset, 0.0) + signed_quantity
+            if abs(positions[fill.asset]) <= self.zero_tolerance:
+                positions.pop(fill.asset, None)
+            if fill.side is OrderSide.BUY:
+                cash -= fill.notional + fill.commission
+            else:
+                cash += fill.notional - fill.commission
+        marks = {}
+        for asset, quantity in positions.items():
+            if abs(quantity) > self.zero_tolerance:
+                marks[asset] = snapshot.price(asset)
+        return PortfolioState(
+            asof=snapshot.asof,
+            base_currency=state.base_currency,
+            cash=cash,
+            positions=positions,
+            marks=marks,
+        )
+
 
 @dataclass(frozen=True, slots=True)
 class VolumeAwareSimulatedExchange:
@@ -231,5 +263,88 @@ class VolumeAwareSimulatedExchange:
                 "venue": "volume_aware_simulated",
                 "max_participation_rate": repr(self.max_participation_rate),
                 "impact_bps": repr(self.impact_bps),
+            },
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class TimedSimulatedExchange:
+    """Execution simulator consuming field-level ``ExecutionSnapshot`` prices."""
+
+    slippage_bps: float = 0.0
+    commission_bps: float = 0.0
+    max_participation_rate: float = 1.0
+    impact_bps: float = 0.0
+
+    def __post_init__(self) -> None:
+        if self.slippage_bps < 0 or self.commission_bps < 0 or self.impact_bps < 0:
+            raise ValueError("cost parameters must be >= 0")
+        if not 0 < self.max_participation_rate <= 1:
+            raise ValueError("max_participation_rate must be in (0, 1]")
+
+    def execute(
+        self,
+        orders: tuple[OrderIntent, ...],
+        snapshot: ExecutionSnapshot,
+    ) -> ExecutionReport:
+        import math
+
+        fills: list[Fill] = []
+        rejections: list[OrderRejection] = []
+        for order in orders:
+            if order.order_type is not OrderType.MARKET:
+                rejections.append(OrderRejection(order.client_order_id, "unsupported order type"))
+                continue
+            try:
+                quote = snapshot.quotes[order.asset]
+            except KeyError:
+                rejections.append(OrderRejection(order.client_order_id, "missing execution quote"))
+                continue
+            if snapshot.asof < order.created_at:
+                rejections.append(OrderRejection(order.client_order_id, "execution precedes order creation"
+                    )
+                )
+                continue
+            fill_quantity = order.quantity
+            if quote.volume > 0:
+                fill_quantity = min(fill_quantity, quote.volume * self.max_participation_rate)
+            if fill_quantity <= 0:
+                rejections.append(OrderRejection(order.client_order_id, "zero executable quantity"))
+                continue
+            participation = fill_quantity / quote.volume if quote.volume > 0 else 0.0
+            adverse_bps = self.slippage_bps + self.impact_bps * math.sqrt(participation)
+            adverse_rate = adverse_bps / 10_000.0
+            sign = 1.0 if order.side is OrderSide.BUY else -1.0
+            execution_price = quote.price * (1.0 + sign * adverse_rate)
+            notional = execution_price * fill_quantity
+            commission = abs(notional) * self.commission_bps / 10_000.0
+            slippage = abs(execution_price - quote.price) * fill_quantity
+            fills.append(
+                Fill(
+                    client_order_id=order.client_order_id,
+                    asset=order.asset,
+                    side=order.side,
+                    quantity=fill_quantity,
+                    price=execution_price,
+                    executed_at=snapshot.asof,
+                    commission=commission,
+                    slippage=slippage,
+                    metadata={
+                        "reference_price": repr(quote.price),
+                        "price_field": quote.price_field,
+                        "participation_rate": repr(participation),
+                    },
+                )
+            )
+        return ExecutionReport(
+            started_at=snapshot.asof,
+            finished_at=snapshot.asof,
+            orders=orders,
+            fills=tuple(fills),
+            rejections=tuple(rejections),
+            metadata={
+                "venue": "timed_simulated",
+                "slippage_bps": repr(self.slippage_bps),
+                "commission_bps": repr(self.commission_bps),
             },
         )

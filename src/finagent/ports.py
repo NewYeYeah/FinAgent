@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Protocol
 
 from .domain.assets import AssetId
-from .domain.execution import ExecutionReport
+from .domain.execution import ExecutionReport, ExecutionSnapshot
 from .domain.experiments import ArtifactRef
 from .domain.forecasts import AlphaForecast, RiskForecast
 from .domain.market import MarketSnapshot
@@ -45,6 +45,34 @@ class DataAdapter(Protocol):
         end: datetime,
         universe: tuple[AssetId, ...],
     ) -> tuple[datetime, ...]: ...
+
+
+class ExecutionDataAdapter(Protocol):
+    """Optional Phase 2 field-level execution data boundary.
+
+    It is deliberately separate from ``DataAdapter`` so the frozen Phase 1 research
+    interface remains source-compatible.
+    """
+
+    @property
+    def data_version(self) -> str: ...
+
+    def execution_calendar(
+        self,
+        start: datetime,
+        end: datetime,
+        universe: tuple[AssetId, ...],
+        *,
+        price_field: str = "open",
+    ) -> tuple[datetime, ...]: ...
+
+    def execution_snapshot(
+        self,
+        asof: datetime,
+        universe: tuple[AssetId, ...],
+        *,
+        price_field: str = "open",
+    ) -> ExecutionSnapshot: ...
 
 
 class AlphaModel(Protocol):
@@ -94,4 +122,12 @@ class ExecutionVenue(Protocol):
         self,
         orders: tuple[OrderIntent, ...],
         snapshot: MarketSnapshot,
+    ) -> ExecutionReport: ...
+
+
+class TimedExecutionVenue(Protocol):
+    def execute(
+        self,
+        orders: tuple[OrderIntent, ...],
+        snapshot: ExecutionSnapshot,
     ) -> ExecutionReport: ...

@@ -13,6 +13,7 @@ from typing import Iterable, Mapping
 import numpy as np
 
 from finagent.domain.assets import AssetId, AssetType
+from finagent.domain.execution import ExecutionQuote, ExecutionSnapshot
 from finagent.domain.experiments import ArtifactRef, ArtifactType
 from finagent.domain.market import MarketSnapshot, PriceBar
 from finagent.domain.research import (
@@ -174,6 +175,74 @@ class InMemoryPriceDataAdapter:
             )
         common = set.intersection(*calendars) if calendars else set()
         return tuple(sorted(common))
+
+    def execution_calendar(
+        self,
+        start: datetime,
+        end: datetime,
+        universe: tuple[AssetId, ...],
+        *,
+        price_field: str = "open",
+    ) -> tuple[datetime, ...]:
+        """Return common executable timestamps for field-level execution prices.
+
+        ``open`` is considered executable at ``PriceBar.event_time`` while ``close``
+        becomes executable only at ``PriceBar.available_at``.  No high/low execution
+        mode is exposed because those fields do not have a deterministic intrabar
+        availability time in the Phase 2 contract.
+        """
+        self._validate_universe(universe)
+        if end <= start:
+            raise ValueError("end must be later than start")
+        if price_field not in {"open", "close"}:
+            raise ValueError("price_field must be 'open' or 'close'")
+        calendars = []
+        for asset in universe:
+            values = set()
+            for bar in self._bars[asset]:
+                ts = bar.event_time if price_field == "open" else bar.available_at
+                if start <= ts < end:
+                    values.add(ts)
+            calendars.append(values)
+        common = set.intersection(*calendars) if calendars else set()
+        return tuple(sorted(common))
+
+    def execution_snapshot(
+        self,
+        asof: datetime,
+        universe: tuple[AssetId, ...],
+        *,
+        price_field: str = "open",
+    ) -> ExecutionSnapshot:
+        self._validate_universe(universe)
+        if price_field not in {"open", "close"}:
+            raise ValueError("price_field must be 'open' or 'close'")
+        quotes: dict[AssetId, ExecutionQuote] = {}
+        for asset in universe:
+            candidates: list[tuple[datetime, PriceBar]] = []
+            for bar in self._bars[asset]:
+                available = bar.event_time if price_field == "open" else bar.available_at
+                if available <= asof:
+                    candidates.append((available, bar))
+            if not candidates:
+                raise KeyError(
+                    f"no executable {price_field} available for {asset.key} at {asof.isoformat()}"
+                )
+            available, bar = max(candidates, key=lambda item: (item[0], item[1].event_time))
+            price = bar.open if price_field == "open" else bar.close
+            quotes[asset] = ExecutionQuote(
+                event_time=bar.event_time,
+                available_at=available,
+                price=price,
+                volume=bar.volume,
+                price_field=price_field,
+            )
+        return ExecutionSnapshot(
+            asof=asof,
+            quotes=quotes,
+            data_version=self.data_version,
+            metadata={"adapter": self.__class__.__name__, "price_field": price_field},
+        )
 
     def market_snapshot(
         self,

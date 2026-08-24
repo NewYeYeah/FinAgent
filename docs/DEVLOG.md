@@ -1,5 +1,93 @@
 # FinAgent Development Log
 
+## 2026-08-24 — Phase 2: Validation, Execution Timing + Model Governance
+
+### Goal
+
+Strengthen the research protocol and lifecycle before introducing any Agent/LLM orchestration. Phase 2 implements the three controls identified after Phase 1: purged/embargoed walk-forward validation, strict information/execution-time separation, and durable experiment/model governance.
+
+### Architecture decisions
+
+Added:
+
+- `ADR-008_PHASE2_VALIDATION_AND_EXECUTION_CLOCK.md`;
+- `ADR-009_PHASE2_MODEL_GOVERNANCE.md`;
+- `PHASE2.md`.
+
+The Phase 1 `DataAdapter` remains frozen. Field-level execution is additive through `ExecutionDataAdapter`.
+
+### Purged walk-forward validation
+
+Implemented `WalkForwardConfig`, `WalkForwardFold` and `PurgedWalkForwardSplitter`. Canonical forward-return labels are parsed for their horizon and, by default, `purge_bars` must be at least that horizon. Rolling and expanding train windows are supported.
+
+The strict chronological layout is:
+
+```text
+train | purge | embargo | test
+```
+
+Because FinAgent Phase 2 never trains on observations after the test block, embargo is represented as an additional pre-test exclusion zone rather than symmetric purged cross-validation.
+
+### Execution clock separation
+
+Added `ExecutionQuote` and `ExecutionSnapshot`. The built-in adapter exposes `open` at `event_time` and `close` at `available_at`; high/low are rejected as executable fields because their intrabar availability is undefined.
+
+Added `TimedEventDrivenBacktestEngine` and `TimedSimulatedExchange`. The hard invariant is:
+
+```text
+execution_at > information_at
+```
+
+The default is one executable-event lag at the next open. Signal generation/risk approval uses the PIT decision snapshot; fills use a later execution snapshot containing only executable prices.
+
+### Experiment lifecycle
+
+Added `ExperimentRunner` and `ExperimentEvaluation`. The runner persists RUNNING before evaluator execution and terminal SUCCEEDED/FAILED status afterwards. Produced artifacts are registered automatically. Failures remain durable and are then re-raised.
+
+### Model governance
+
+Added:
+
+```text
+ModelStage
+RegisteredModel
+ModelStageEvent
+```
+
+with governed transitions:
+
+```text
+candidate -> validated -> paper -> shadow -> live -> retired
+```
+
+Retirement is available from each active stage. Direct stage overwrite is rejected; transitions must use `promote_model`, which records actor/reason/time.
+
+### SQLite lifecycle bug fixed
+
+Phase 2 tests exposed that `INSERT OR REPLACE` on `runs` can delete the existing parent row before inserting its replacement. Because `results.run_id` has `ON DELETE CASCADE`, a terminal run update could silently delete an already registered result.
+
+Run updates now use `INSERT ... ON CONFLICT DO UPDATE`, preserving dependent results.
+
+### Dependencies
+
+No new runtime dependency was added. Phase 2 still uses only NumPy and SciPy in the numerical core. No pandas/Qlib/LangGraph/LLM framework is required.
+
+### Tests
+
+Total suite after Phase 2:
+
+```text
+55 passed
+```
+
+New coverage includes label-horizon purge, rolling/expanding fold construction, fold dataset materialization, field-level open/close availability, same-instant execution prevention, timed end-to-end backtesting, experiment terminal-state persistence, model-stage governance and the SQLite cascade regression.
+
+### Next step
+
+The next engineering layer should address statistical selection risk: nested walk-forward tuning, experiment-family/multiple-hypothesis controls, Deflated Sharpe/PBO and benchmark reality checks. The first Agent tool surface should be introduced only after those deterministic controls exist.
+
+---
+
 ## 2026-08-24 — Phase 1: Numerical Data Contract + Quant Kernel
 
 ### Goal

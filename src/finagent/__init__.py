@@ -1,7 +1,13 @@
 """FinAgent quantitative research and portfolio infrastructure."""
 
 from .domain.assets import AssetId, AssetType
-from .domain.execution import ExecutionReport, Fill, OrderRejection
+from .domain.execution import (
+    ExecutionQuote,
+    ExecutionReport,
+    ExecutionSnapshot,
+    Fill,
+    OrderRejection,
+)
 from .domain.experiments import (
     ArtifactRef,
     ArtifactType,
@@ -12,6 +18,7 @@ from .domain.experiments import (
 )
 from .domain.forecasts import AlphaForecast, ModelRef, RiskForecast
 from .domain.market import MarketSnapshot, PriceBar
+from .domain.model_registry import ModelStage, ModelStageEvent, RegisteredModel
 from .domain.orders import OrderIntent, OrderSide, OrderType
 from .domain.portfolio import (
     PortfolioState,
@@ -35,7 +42,9 @@ __all__ = [
     "AssetId",
     "AssetType",
     "DatasetRequest",
+    "ExecutionQuote",
     "ExecutionReport",
+    "ExecutionSnapshot",
     "ExperimentResult",
     "ExperimentRun",
     "ExperimentRunStatus",
@@ -44,6 +53,8 @@ __all__ = [
     "Fill",
     "MarketSnapshot",
     "ModelRef",
+    "ModelStage",
+    "ModelStageEvent",
     "OrderIntent",
     "OrderRejection",
     "OrderSide",
@@ -51,6 +62,7 @@ __all__ = [
     "PortfolioState",
     "PortfolioTarget",
     "PriceBar",
+    "RegisteredModel",
     "ResearchDataset",
     "ResearchSplit",
     "RiskDecision",

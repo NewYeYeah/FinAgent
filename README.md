@@ -1,56 +1,71 @@
 # FinAgent
 
-FinAgent is a typed, auditable quantitative research and portfolio infrastructure designed to support later Agent-based research and supervision without putting an LLM in the numerical trading hot path.
+FinAgent is a typed, auditable quantitative-research and portfolio infrastructure designed so that a future Agent can orchestrate research without entering the numerical trading hot path.
 
-The repository is currently at **Phase 1: Numerical Quant Kernel**.
+Current status: **Phase 2 — Validation, Execution Timing, and Model Governance**.
 
-The project principle is:
+The architectural rule is:
 
 ```text
-Agent decides what to research / which registered tools to call / how to explain.
-Deterministic code decides numerical values / significance / portfolio weights / risk approval / execution.
+Agent:
+  chooses approved research actions, registered tools and explanations.
+
+Deterministic code:
+  owns data timing, statistics, forecasts, portfolio weights,
+  risk approval, validation splits, execution and model promotion policy.
 ```
+
+No LLM or Agent framework is required by the core package.
 
 ## Architecture
 
-Canonical trading path:
+Research/numerical path:
 
 ```text
 DataAdapter
-    -> FeatureWindow / ResearchDataset
-    -> AlphaModel
-    -> AlphaForecast
-    -> RiskModel
-    -> RiskForecast
+    -> ResearchDataset / ResearchSplit
+    -> FeatureWindow
+    -> AlphaModel / RiskModel
+    -> AlphaForecast / RiskForecast
     -> PortfolioOptimizer
     -> PortfolioTarget
     -> RiskGate
     -> RiskDecision
-    -> OrderPlanner
+```
+
+Phase 2 timed execution path:
+
+```text
+information_at
+    -> PIT FeatureWindow + MarketSnapshot
+    -> forecasts / target / risk approval
     -> OrderIntent
-    -> ExecutionVenue
+    -> execution_at > information_at
+    -> ExecutionSnapshot
+    -> TimedExecutionVenue
     -> Fill / ExecutionReport
     -> AccountLedger
     -> PortfolioState
 ```
 
-Canonical research path:
+Research-governance path:
 
 ```text
-Dataset artifact
-    -> ExperimentSpec
-    -> ExperimentRun
+ArtifactRef + ExperimentSpec
+    -> ExperimentRunner
+    -> RUNNING
+    -> numerical evaluator
     -> ExperimentResult
-    -> ArtifactRef / model lineage
+    -> SUCCEEDED / FAILED
+    -> RegisteredModel
+    -> candidate -> validated -> paper -> shadow -> live -> retired
 ```
-
-Raw pandas DataFrames are **not** public cross-module contracts. NumPy is used for the Phase 1 numerical kernel, while future pandas/Qlib/Parquet integrations must live behind adapters.
 
 ## Frozen Phase 1 numerical interface
 
 See [`docs/ADR-007_PHASE1_NUMERICAL_DATA_CONTRACT.md`](docs/ADR-007_PHASE1_NUMERICAL_DATA_CONTRACT.md).
 
-The fixed numerical panel layout is:
+Canonical numerical layouts are:
 
 ```text
 ResearchSplit.feature_values.shape = (time, asset, feature)
@@ -58,24 +73,7 @@ ResearchSplit.label_values.shape   = (time, asset, label)
 FeatureWindow.values.shape         = (time, asset, feature)
 ```
 
-or:
-
-```text
-T x N x F
-```
-
-Important invariants:
-
-- `TimeRange` is half-open: `[start, end)`;
-- numerical arrays are defensive copies and read-only;
-- missing observations are `NaN`;
-- `+/-inf` is rejected;
-- `available_at` is the point-in-time research clock;
-- forward labels are not allowed to cross split boundaries;
-- `MarketSnapshot` is for valuation/execution;
-- `FeatureWindow` is for model inference.
-
-The canonical `DataAdapter` provides:
+The Phase 1 `DataAdapter` remains unchanged:
 
 ```python
 build_dataset(request) -> ResearchDataset
@@ -84,28 +82,30 @@ market_snapshot(asof, universe) -> MarketSnapshot
 calendar(start, end, universe) -> tuple[datetime, ...]
 ```
 
-`AlphaModel` and `RiskModel` expose:
+Important invariants:
 
-```python
-required_features
-min_lookback
-fit(dataset, split="train") -> ArtifactRef
-predict(window) -> AlphaForecast / RiskForecast
-```
+- `TimeRange` is half-open: `[start, end)`;
+- public numerical arrays are `float64`, defensive-copy and read-only;
+- missing values use `NaN`; infinity is rejected;
+- `available_at` is the research point-in-time clock;
+- forward labels cannot cross split boundaries;
+- pandas/Qlib/vendor schemas stay behind adapters rather than becoming public contracts.
 
-## Phase 1 implemented components
+## Phase 1 Quant Kernel
 
 ### Data
+
+Implemented:
 
 - `InMemoryPriceDataAdapter`
 - `CSVPriceDataAdapter`
 - `SQLitePriceDataAdapter`
 - `SQLitePriceStore`
 - deterministic dataset SHA-256 digests
-- PIT-safe `feature_window`
+- PIT-safe feature windows
 - split-isolated forward labels
 
-Built-in feature names currently include:
+Built-in features include:
 
 ```text
 close
@@ -123,126 +123,161 @@ forward_log_return_N
 forward_simple_return_N
 ```
 
-### Random-walk benchmark and diagnostics
+### Alpha
 
-- `RandomWalkAlphaModel`: zero-drift benchmark
-- `RandomWalkDiagnostics`
-  - return mean/std
-  - ACF
-  - Ljung-Box Q
-  - Ljung-Box p-value
-
-### Alpha models
-
+- `RandomWalkAlphaModel`
+- `RandomWalkDiagnostics` with ACF / Ljung-Box
 - `ARAlphaModel(order=p)`
 - `ARMA11AlphaModel`
 
-AR uses explicit feature/forward-label alignment from the DataAdapter. ARMA(1,1) reconstructs residual state from the supplied feature window instead of depending on hidden mutable online state.
-
-### Risk models
+### Risk
 
 - `GARCH11Estimator`
 - `GARCH11RiskModel`
 - `EWMACovarianceEstimator`
+- PSD-validated `RiskForecast`
 
-The risk pipeline combines:
+The default multivariate risk construction is:
 
 ```text
 GARCH marginal volatility
     +
 EWMA/shrunk correlation
     ->
-PSD covariance RiskForecast
+PSD covariance forecast
 ```
 
-`RiskForecast` validates matrix completeness, symmetry, diagonal/volatility consistency and positive semidefiniteness.
+### Portfolio and risk gate
 
-### Portfolio construction
+`MeanVarianceOptimizer` supports risk aversion, cash allocation, long-only/long-short bounds, maximum absolute weight and turnover penalty.
 
-`MeanVarianceOptimizer` implements constrained Markowitz allocation with configurable:
-
-- risk aversion;
-- cash weight;
-- long-only vs long/short bounds;
-- maximum absolute asset weight;
-- turnover penalty.
-
-The canonical portfolio accounting identity remains:
+The accounting identity is always:
 
 ```text
 sum(asset_weights) + cash_weight = 1
 ```
 
-Gross and net exposure are tracked separately.
+Gross and net exposure are tracked separately. `StaticRiskGate` is deterministic and non-mutating: it returns `APPROVE`, `REJECT`, or `REQUIRE_RESOLVE` with explicit violations.
 
-### Hard risk gate
-
-`StaticRiskGate` remains deterministic and non-mutating.
-
-Risk never silently rewrites a target. It returns:
-
-```text
-APPROVE
-REJECT
-REQUIRE_RESOLVE
-```
-
-with explicit violations.
-
-### Execution and account simulation
+### Phase 1 execution benchmark
 
 - `SimulatedExchange`
-  - fixed commission
-  - fixed adverse slippage
 - `VolumeAwareSimulatedExchange`
-  - maximum participation rate
-  - volume clipping / partial fills
-  - participation-dependent impact
 - `OrderPlanner`
 - `AccountLedger`
+- `EventDrivenBacktestEngine`
 
-### Backtest
+The Phase 1 engine remains available as an idealised close-on-close research benchmark.
 
-`EventDrivenBacktestEngine` executes the complete Phase 1 out-of-sample numerical path:
+## Phase 2: purged walk-forward validation
+
+See [`docs/ADR-008_PHASE2_VALIDATION_AND_EXECUTION_CLOCK.md`](docs/ADR-008_PHASE2_VALIDATION_AND_EXECUTION_CLOCK.md).
+
+Implemented:
 
 ```text
-train-only fit
-    ->
-sequential PIT test windows
-    ->
-alpha/risk forecasts
-    ->
-optimizer
-    ->
-risk gate
-    ->
-orders/fills
-    ->
-marked account
+WalkForwardConfig
+WalkForwardFold
+PurgedWalkForwardSplitter
+minimum_purge_bars
 ```
 
-Reported metrics include:
+Canonical chronological fold:
 
-- total return;
-- annualized return;
-- annualized volatility;
-- Sharpe;
-- max drawdown;
-- turnover;
-- transaction cost.
+```text
+train | purge | embargo | test
+```
 
-The current Phase 1 simulator uses an idealised close-on-close research convention. The newly established position affects returns only after the decision timestamp. Finer open/quote availability and next-bar execution semantics are deferred to Phase 2.
+For canonical labels such as:
 
-### Research registry
+```text
+forward_log_return_5
+```
 
-`SQLiteResearchRegistry` persists:
+Phase 2 requires, by default:
 
-- `ArtifactRef`
-- `ExperimentSpec`
-- `ExperimentRun`
-- `ExperimentResult`
+```text
+purge_bars >= 5
+```
 
-This provides the first durable substrate for a later Research Agent.
+Both rolling and expanding training windows are supported. Fold datasets are materialized through the normal `DataAdapter -> DatasetRequest -> ResearchDataset` path, so walk-forward validation does not introduce a second numerical data contract.
+
+In the strictly forward-only protocol, `embargo_bars` is an additional pre-test exclusion zone. FinAgent does not train on future observations in these folds.
+
+## Phase 2: separate information and execution clocks
+
+Phase 2 adds an execution-specific boundary instead of changing the frozen research `DataAdapter`:
+
+```python
+ExecutionDataAdapter.execution_calendar(...)
+ExecutionDataAdapter.execution_snapshot(...)
+```
+
+New domain objects:
+
+```text
+ExecutionQuote
+ExecutionSnapshot
+```
+
+`ExecutionSnapshot` exposes only the executable field. It does not expose an entire OHLC bar.
+
+For the built-in bar adapter:
+
+```text
+open  -> executable at PriceBar.event_time
+close -> executable at PriceBar.available_at
+```
+
+High/low are intentionally not valid execution fields because the current bar schema has no deterministic timestamp for when those extrema became known.
+
+`TimedEventDrivenBacktestEngine` enforces:
+
+```text
+execution_at > information_at
+```
+
+and defaults to one executable-event lag using the next open. `TimedSimulatedExchange` supports commission, adverse slippage, participation clipping and participation-based impact on these field-level quotes.
+
+## Phase 2: experiment and model governance
+
+See [`docs/ADR-009_PHASE2_MODEL_GOVERNANCE.md`](docs/ADR-009_PHASE2_MODEL_GOVERNANCE.md).
+
+`ExperimentRunner` now owns the durable experiment lifecycle:
+
+```text
+register inputs
+ -> RUNNING
+ -> evaluator
+ -> result/artifacts
+ -> SUCCEEDED or FAILED
+```
+
+Failed runs are persisted before the exception is propagated.
+
+`SQLiteResearchRegistry` now persists:
+
+- artifacts;
+- experiment specs;
+- experiment runs;
+- experiment results;
+- registered models;
+- model-stage audit events.
+
+Model lifecycle:
+
+```text
+CANDIDATE
+ -> VALIDATED
+ -> PAPER
+ -> SHADOW
+ -> LIVE
+ -> RETIRED
+```
+
+Stage skipping is rejected. A model stage cannot be changed by overwriting the registration record; transitions must call the governed promotion API.
+
+Phase 2 also fixes a subtle SQLite lifecycle bug: run-state updates use UPSERT rather than `INSERT OR REPLACE`, because SQLite `REPLACE` can delete the parent run row and cascade-delete its already stored result.
 
 ## Repository layout
 
@@ -252,7 +287,9 @@ FinAgent/
 │   ├── analysis/
 │   │   └── random_walk.py
 │   ├── backtest/
-│   │   └── engine.py
+│   │   ├── engine.py
+│   │   ├── timed.py
+│   │   └── walk_forward.py
 │   ├── data/
 │   │   ├── adapters.py
 │   │   └── store.py
@@ -262,21 +299,18 @@ FinAgent/
 │   │   ├── experiments.py
 │   │   ├── forecasts.py
 │   │   ├── market.py
+│   │   ├── model_registry.py
 │   │   ├── orders.py
 │   │   ├── portfolio.py
 │   │   └── research.py
 │   ├── models/
 │   │   ├── alpha/
-│   │   │   ├── ar.py
-│   │   │   ├── arma.py
-│   │   │   └── random_walk.py
 │   │   └── risk/
-│   │       ├── covariance.py
-│   │       └── garch.py
 │   ├── portfolio/
 │   │   └── mean_variance.py
 │   ├── research/
-│   │   └── registry.py
+│   │   ├── registry.py
+│   │   └── runner.py
 │   ├── services/
 │   │   ├── execution.py
 │   │   └── portfolio.py
@@ -285,7 +319,10 @@ FinAgent/
 ├── tests/
 ├── docs/
 │   ├── ADR-007_PHASE1_NUMERICAL_DATA_CONTRACT.md
+│   ├── ADR-008_PHASE2_VALIDATION_AND_EXECUTION_CLOCK.md
+│   ├── ADR-009_PHASE2_MODEL_GOVERNANCE.md
 │   ├── PHASE1.md
+│   ├── PHASE2.md
 │   └── DEVLOG.md
 ├── pyproject.toml
 └── README.md
@@ -303,64 +340,59 @@ python -m pip install -e ".[dev]"
 pytest
 ```
 
-A source-tree-only run is also supported:
+Source-tree execution is also supported:
 
 ```bash
 PYTHONPATH=src pytest -q
 ```
 
-## Current test status
+## Test status
 
-Phase 0.5 + Phase 1 currently contain **45 tests**.
+Phase 0.5 + Phase 1 + Phase 2 currently contain **55 tests**.
 
-They cover:
+Coverage includes:
 
-- asset/time/PIT validation;
-- immutable numerical panel contracts;
-- data adapter feature/label alignment;
-- split-boundary leakage prevention;
-- SQLite market-data persistence;
-- random-walk diagnostics;
-- AR fitting/prediction;
-- ARMA fitting/prediction;
-- GARCH parameter constraints and variance forecasts;
-- EWMA covariance and PSD projection;
-- PSD `RiskForecast` validation;
-- mean-variance optimization;
-- explicit risk gating;
-- fixed and volume-aware execution costs;
-- fill/account accounting;
-- experiment/registry persistence;
-- complete Phase 1 numerical end-to-end backtest.
+- domain and point-in-time validation;
+- immutable numerical panels;
+- feature/label alignment and split isolation;
+- AR/ARMA/GARCH/covariance models;
+- mean-variance portfolio constraints;
+- risk gating and account accounting;
+- fixed, volume-aware and timed execution;
+- purged/embargoed walk-forward generation;
+- open-vs-close field-level availability;
+- information/execution-time separation;
+- experiment success/failure lifecycle;
+- model promotion policy and audit history;
+- complete Phase 1 and Phase 2 numerical vertical slices.
 
 Current local result:
 
 ```text
-45 passed
+55 passed
 ```
 
-## Current limitations
+## Current limitations / next engineering layer
 
-Phase 1 is a research kernel, not a production trading system. Not yet implemented:
+Phase 2 is still research infrastructure, not a live trading platform. The next priority is statistical model-selection control rather than adding more predictors:
 
-- rolling/expanding model refit;
-- purged/embargoed walk-forward validation;
-- multiple-testing control / Deflated Sharpe / SPA;
-- survivorship-safe historical universe membership;
-- corporate actions;
-- multi-currency FX accounting;
-- short borrow/locate constraints;
-- order-book/queue simulation;
-- separate open/close/quote availability events;
-- persistent binary model serialization;
-- live broker adapters;
-- Qlib/bt integration adapters;
-- LLM Research Agent / Portfolio Supervisor Agent.
+- nested walk-forward hyperparameter selection;
+- multiple-hypothesis correction and experiment-family tracking;
+- Deflated Sharpe Ratio / Probability of Backtest Overfitting;
+- White Reality Check / SPA-style benchmark comparison;
+- point-in-time universe membership and corporate actions;
+- exchange calendars and session-aware clocks;
+- multi-currency and borrow/locate constraints;
+- persistent model binary serialization;
+- live broker adapters.
 
-These are subsequent phases. Agent code should not be introduced until the quantitative validation and experiment lifecycle are stronger.
+The first Research Agent should be added only after those controls provide a deterministic tool surface. The Agent should orchestrate approved experiments and model-governance calls; it should not calculate weights, bypass the risk gate, select executable prices, or mutate model stages directly.
 
 ## Design documentation
 
-- [`docs/ADR-007_PHASE1_NUMERICAL_DATA_CONTRACT.md`](docs/ADR-007_PHASE1_NUMERICAL_DATA_CONTRACT.md): frozen numerical interface.
-- [`docs/PHASE1.md`](docs/PHASE1.md): numerical implementation and known limitations.
-- [`docs/DEVLOG.md`](docs/DEVLOG.md): chronological development log.
+- [`docs/ADR-007_PHASE1_NUMERICAL_DATA_CONTRACT.md`](docs/ADR-007_PHASE1_NUMERICAL_DATA_CONTRACT.md)
+- [`docs/ADR-008_PHASE2_VALIDATION_AND_EXECUTION_CLOCK.md`](docs/ADR-008_PHASE2_VALIDATION_AND_EXECUTION_CLOCK.md)
+- [`docs/ADR-009_PHASE2_MODEL_GOVERNANCE.md`](docs/ADR-009_PHASE2_MODEL_GOVERNANCE.md)
+- [`docs/PHASE1.md`](docs/PHASE1.md)
+- [`docs/PHASE2.md`](docs/PHASE2.md)
+- [`docs/DEVLOG.md`](docs/DEVLOG.md)
