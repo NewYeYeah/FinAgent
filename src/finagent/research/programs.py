@@ -7,10 +7,21 @@ from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
-from typing import Mapping
+from typing import TYPE_CHECKING, Mapping, Protocol
 
-from finagent.agents.planning import ResearchPlan
 from finagent.domain._validation import require_non_empty
+
+if TYPE_CHECKING:
+    from finagent.agents.planning import ResearchPlan
+
+
+class PlanLike(Protocol):
+    program_id: str
+    family_id: str
+    alpha: float
+    variants: tuple[object, ...]
+
+    def fingerprint(self, task_id: str) -> str: ...
 
 
 class ResearchProgramStatus(str, Enum):
@@ -141,7 +152,7 @@ class SQLiteResearchProgramStore:
 
     def reserve_plan(
         self,
-        plan: ResearchPlan,
+        plan: PlanLike,
         *,
         task_id: str,
         reserved_at: datetime | None = None,
@@ -175,11 +186,14 @@ class SQLiteResearchProgramStore:
                 )
 
             aggregate = con.execute(
-                "SELECT COUNT(*), COALESCE(SUM(experiment_count),0), COALESCE(SUM(alpha_spent),0.0) "
-                "FROM research_program_reservations WHERE program_id=?",
+                "SELECT COUNT(*), COALESCE(SUM(experiment_count),0), "
+                "COALESCE(SUM(alpha_spent),0.0) FROM research_program_reservations "
+                "WHERE program_id=?",
                 (program.program_id,),
             ).fetchone()
-            family_count, used_experiments, used_alpha = int(aggregate[0]), int(aggregate[1]), float(aggregate[2])
+            family_count = int(aggregate[0])
+            used_experiments = int(aggregate[1])
+            used_alpha = float(aggregate[2])
             if family_count + 1 > program.max_families:
                 raise PermissionError("research program family budget exhausted")
             if used_experiments + experiment_count > program.max_experiments:
@@ -210,11 +224,14 @@ class SQLiteResearchProgramStore:
         program = self.get(program_id)
         with self._connect() as con:
             aggregate = con.execute(
-                "SELECT COUNT(*), COALESCE(SUM(experiment_count),0), COALESCE(SUM(alpha_spent),0.0) "
-                "FROM research_program_reservations WHERE program_id=?",
+                "SELECT COUNT(*), COALESCE(SUM(experiment_count),0), "
+                "COALESCE(SUM(alpha_spent),0.0) FROM research_program_reservations "
+                "WHERE program_id=?",
                 (program_id,),
             ).fetchone()
-        families, experiments, alpha_spent = int(aggregate[0]), int(aggregate[1]), float(aggregate[2])
+        families = int(aggregate[0])
+        experiments = int(aggregate[1])
+        alpha_spent = float(aggregate[2])
         return ProgramBudgetSnapshot(
             program_id=program_id,
             family_count=families,
@@ -264,5 +281,5 @@ class ResearchProgramGuard:
     def __init__(self, store: SQLiteResearchProgramStore) -> None:
         self.store = store
 
-    def authorize_plan(self, plan: ResearchPlan, *, task_id: str) -> ProgramReservation:
+    def authorize_plan(self, plan: PlanLike, *, task_id: str) -> ProgramReservation:
         return self.store.reserve_plan(plan, task_id=task_id)
