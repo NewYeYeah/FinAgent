@@ -41,7 +41,7 @@ def _day_from_ms(value: object) -> date:
 
 def _default_transport(url: str, headers: Mapping[str, str]) -> Mapping[str, object]:
     request = Request(url, headers=dict(headers), method="GET")
-    with urlopen(request, timeout=30) as response:  # noqa: S310 - fixed HTTPS base URL
+    with urlopen(request, timeout=30) as response:
         payload = json.loads(response.read().decode("utf-8"))
     if not isinstance(payload, Mapping):
         raise TypeError("HiThink response must be a JSON object")
