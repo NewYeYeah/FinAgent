@@ -94,12 +94,12 @@ class NestedGeneratedFeatureStudyResult:
 class GeneratedFeatureMaterializer:
     """Materialize generated code against PIT adapter windows and PIT eligibility.
 
-    Feature windows are built at each row ``asof``.  An optional ``UniverseProvider``
-    independently supplies formation eligibility at the same ``asof``.  Forward-label
+    Feature windows are built at each row ``asof``. An optional ``UniverseProvider``
+    independently supplies formation eligibility at the same ``asof``. Forward-label
     availability is never consulted when deciding which assets receive a feature or
     can later receive a portfolio weight.
 
-    The local sandbox supports independent PIT-window batches.  Batching only reduces
+    The local sandbox supports independent PIT-window batches. Batching only reduces
     process-launch overhead; each generated function invocation receives one historical
     window and cannot inspect another asset/time window.
     """
@@ -319,6 +319,7 @@ def evaluate_generated_feature_dataset(
     ics: list[float] = []
     valid_feature_cells = 0
     eligible_cells = 0
+    unrealized_boundary_periods = 0
 
     for row, timestamp in enumerate(split.timestamps):
         f = feature[row]
@@ -330,9 +331,19 @@ def evaluate_generated_feature_dataset(
         if int(formation.sum()) < config.min_cross_section:
             continue
 
+        realized_formation = formation & np.isfinite(y)
+        if not np.any(realized_formation):
+            # A completely unrealized formation cross-section is a horizon boundary:
+            # the return target has not matured yet. It is omitted from realized
+            # performance without changing the PIT formation universe or charging a
+            # fictitious close/reopen turnover. Partial missingness is handled below
+            # and still fails closed by default.
+            unrealized_boundary_periods += 1
+            continue
+
         # IC is an ex-post statistic, so missing realised labels may be excluded from
-        # the *IC calculation* only.  They may never alter the already-formed weights.
-        ic_mask = formation & np.isfinite(y)
+        # the *IC calculation* only. They may never alter the already-formed weights.
+        ic_mask = realized_formation
         if int(ic_mask.sum()) >= config.min_cross_section:
             fv = f[ic_mask]
             yv = y[ic_mask]
@@ -397,11 +408,10 @@ def evaluate_generated_feature_dataset(
         "mean_one_way_turnover": float(np.mean(turnover_array)),
         "mean_gross_traded_weight": float(np.mean(gross_trade_array)),
         "transaction_cost_bps": float(config.transaction_cost_bps),
-        "coverage": (
-            float(valid_feature_cells / eligible_cells) if eligible_cells else 0.0
-        ),
+        "coverage": float(valid_feature_cells / eligible_cells) if eligible_cells else 0.0,
         "evaluated_periods": float(len(net_returns)),
         "ic_periods": float(len(ics)),
+        "unrealized_boundary_periods": float(unrealized_boundary_periods),
     }
     return GeneratedFeatureResearchTrace(
         feature_digest=feature_digest,
