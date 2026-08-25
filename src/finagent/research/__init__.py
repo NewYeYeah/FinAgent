@@ -11,6 +11,14 @@ from .generated_feature_eval import (
     SQLiteGeneratedFeatureResearchStore,
     evaluate_generated_feature_dataset,
 )
+from .programs import (
+    ProgramBudgetSnapshot,
+    ProgramReservation,
+    ResearchProgram,
+    ResearchProgramGuard,
+    ResearchProgramStatus,
+    SQLiteResearchProgramStore,
+)
 from .query import ExperimentQuerySnapshot, SQLiteResearchQueryService
 from .registry import SQLiteResearchRegistry
 from .runner import ExperimentEvaluation, ExperimentRunner
@@ -46,9 +54,15 @@ __all__ = [
     "NestedGeneratedFeatureFoldResult",
     "NestedGeneratedFeatureStudyResult",
     "PBOResult",
+    "ProgramBudgetSnapshot",
+    "ProgramReservation",
     "RealityCheckResult",
     "RegisteredFamilyValidation",
+    "ResearchProgram",
+    "ResearchProgramGuard",
+    "ResearchProgramStatus",
     "SQLiteGeneratedFeatureResearchStore",
+    "SQLiteResearchProgramStore",
     "SQLiteResearchQueryService",
     "SQLiteResearchRegistry",
     "adjust_pvalues",
