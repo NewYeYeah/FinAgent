@@ -19,6 +19,23 @@ from .domain import (
     SafetyDecision,
     ShadowComparison,
 )
+from .evidence import (
+    AcceptanceCheck,
+    ApprovalControl,
+    ApprovalRevocation,
+    OperationalDrillResult,
+    OperationalDrillType,
+    OperationalIncident,
+    OperationalIncidentCategory,
+    OperationalIncidentSeverity,
+    OperationalJournal,
+    OperationalMetricSnapshot,
+    OperationalSession,
+    PaperAcceptanceEvaluator,
+    PaperAcceptancePolicy,
+    PaperAcceptanceReport,
+    SQLiteOperationalEvidenceStore,
+)
 from .paper import PaperBroker, PaperBrokerConfig
 from .reconciliation import PortfolioReconciler
 from .safety import TradingSafetyController, TradingSafetyLimits
@@ -26,6 +43,9 @@ from .shadow import ExecutionCostCalibrator, ShadowPortfolioMonitor
 from .store import SQLitePaperBrokerStore
 
 __all__ = [
+    "AcceptanceCheck",
+    "ApprovalControl",
+    "ApprovalRevocation",
     "ApprovedPaperTradingController",
     "BrokerOrderStatus",
     "CorporateAction",
@@ -38,6 +58,17 @@ __all__ = [
     "KillSwitchStatus",
     "OperationalApplication",
     "OperationalApprovalService",
+    "OperationalDrillResult",
+    "OperationalDrillType",
+    "OperationalIncident",
+    "OperationalIncidentCategory",
+    "OperationalIncidentSeverity",
+    "OperationalJournal",
+    "OperationalMetricSnapshot",
+    "OperationalSession",
+    "PaperAcceptanceEvaluator",
+    "PaperAcceptancePolicy",
+    "PaperAcceptanceReport",
     "PaperBroker",
     "PaperBrokerConfig",
     "PaperBrokerCycle",
@@ -50,6 +81,7 @@ __all__ = [
     "SafetyDecision",
     "ShadowComparison",
     "ShadowPortfolioMonitor",
+    "SQLiteOperationalEvidenceStore",
     "SQLitePaperBrokerStore",
     "TradingSafetyController",
     "TradingSafetyLimits",

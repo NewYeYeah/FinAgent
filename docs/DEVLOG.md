@@ -1,6 +1,48 @@
 # FinAgent Development Log
 
-This is the canonical chronological development log. Phase-specific design decisions are recorded in ADR and `PHASE*.md` files.
+This is the canonical chronological development log. Phase-specific design decisions are recorded in ADR, phase and release documents.
+
+## 2026-08-25 — Version 1.0.0: Stable Paper/Shadow Release
+
+### Goal
+
+Close the architecture-building cycle and define a stable research + portfolio + supervised paper/shadow scope before moving to sustained operational testing.
+
+### Necessity review
+
+The remaining roadmap was split into release-blocking and post-1.0 work. The release-blocking gaps were operational evidence and bounded approval lifetime, not additional Agent frameworks or advanced alpha models.
+
+### Delivered
+
+```text
+SQLiteOperationalEvidenceStore
+ApprovalControl / ApprovalRevocation
+OperationalSession
+OperationalDrillResult
+OperationalIncident
+OperationalJournal / OperationalMetricSnapshot
+PaperAcceptancePolicy / PaperAcceptanceEvaluator / PaperAcceptanceReport
+controlled approval expiry/revocation enforcement
+formal 1.0 README and release-scope document
+```
+
+Key invariants:
+
+- operational acceptance is based on durable sessions, reconciliations, drills and incidents rather than PnL alone;
+- default acceptance policy allows zero idempotency failures and zero critical operational incidents;
+- restart-recovery and kill-switch drills are explicit evidence;
+- when controlled approvals are enabled, every approval needs a durable validity envelope and expired/revoked approvals are rejected;
+- approval revocation prevents later application but does not pretend to undo an already-applied financial mutation;
+- operational evidence complements, but does not replace, paper-broker financial state;
+- 1.0 remains paper/shadow only and is not a live-capital certification.
+
+Documentation:
+
+- `RELEASE_1_0.md`
+- rewritten top-level `README.md`
+- post-1.0 roadmap.
+
+---
 
 ## 2026-08-25 — Phase 5.5: Structured Evidence and Research Memory
 

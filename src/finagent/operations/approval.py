@@ -4,13 +4,22 @@ from datetime import datetime
 from typing import Mapping
 
 from finagent.agents.supervisor import OperatingPolicyRegistry, SQLitePortfolioSupervisionStore
+from finagent.domain._validation import require_aware_datetime
 
 from .domain import HumanApproval, OperationalApplication
+from .evidence import SQLiteOperationalEvidenceStore
 from .store import SQLitePaperBrokerStore
 
 
 class OperationalApprovalService:
-    """Apply human-approved Supervisor requests outside the Agent runtime."""
+    """Apply human-approved Supervisor requests outside the Agent runtime.
+
+    Phase 1.0 optionally binds approvals to a durable validity envelope.  When an
+    ``approval_evidence_store`` is supplied, every approval must have a registered
+    ``ApprovalControl`` and must not be expired or revoked at application time.
+    Existing Phase-5 call sites that omit the evidence store keep their original
+    behavior for backward compatibility.
+    """
 
     def __init__(
         self,
@@ -18,10 +27,34 @@ class OperationalApprovalService:
         broker_store: SQLitePaperBrokerStore,
         supervision_store: SQLitePortfolioSupervisionStore,
         operating_policies: OperatingPolicyRegistry,
+        approval_evidence_store: SQLiteOperationalEvidenceStore | None = None,
     ) -> None:
         self.broker_store = broker_store
         self.supervision_store = supervision_store
         self.operating_policies = operating_policies
+        self.approval_evidence_store = approval_evidence_store
+
+    def _validate_approval_lifecycle(
+        self,
+        *,
+        approval: HumanApproval,
+        applied_at: datetime,
+    ) -> None:
+        applied = require_aware_datetime(applied_at, "applied_at")
+        if applied < approval.approved_at:
+            raise ValueError("applied_at cannot precede approved_at")
+        if self.approval_evidence_store is None:
+            return
+        control = self.approval_evidence_store.get_approval_control(approval.approval_id)
+        if control is None:
+            raise PermissionError("durable approval validity control is required")
+        if control.created_at > approval.approved_at:
+            raise ValueError("approval control cannot be created after the approval it governs")
+        if applied > control.expires_at:
+            raise PermissionError("human approval has expired")
+        revocation = self.approval_evidence_store.get_approval_revocation(approval.approval_id)
+        if revocation is not None and revocation.revoked_at <= applied:
+            raise PermissionError("human approval has been revoked")
 
     def apply(
         self,
@@ -31,6 +64,7 @@ class OperationalApprovalService:
         applied_at: datetime,
         applied_by: str,
     ) -> OperationalApplication:
+        self._validate_approval_lifecycle(approval=approval, applied_at=applied_at)
         request_type = str(request_payload.get("request_type", ""))
         snapshot_id = str(request_payload.get("snapshot_id", ""))
         if request_type != approval.request_type:
