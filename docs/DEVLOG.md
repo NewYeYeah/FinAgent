@@ -1,118 +1,112 @@
 # FinAgent Development Log
 
-This file is the canonical chronological development log. Phase-specific details remain in the corresponding ADR and `PHASE*.md` documents.
+This is the canonical chronological development log. Phase-specific design decisions are recorded in ADR and `PHASE*.md` files.
 
-## 2026-08-25 — Phase 4.5: Low-Permission Portfolio Supervisor Agent
+## 2026-08-25 — Phase 5: Paper/Shadow Operations and Reconciliation
 
 ### Goal
 
-Add Agent supervision over the deterministic Phase 4 portfolio engine without granting an Agent direct portfolio-weight, hard-risk, fill or broker-state authority.
+Move from a deterministic research/portfolio stack to a durable paper operational loop without widening Agent financial authority.
 
 ### Delivered
 
 ```text
-HealthLevel / HealthCheck
-PortfolioBenchmarkSummary
-PortfolioStressSummary
-WeightDriftSummary
-PortfolioHealthThresholds
-PortfolioHealthSnapshot
-PortfolioHealthMonitor
-SQLitePortfolioSupervisionStore
-OperatingMode / OperatingPolicy
-OperatingPolicyRegistry
-PortfolioSupervisorPolicy
-ScriptedPortfolioSupervisorAgent
-PortfolioSupervisorToolDependencies
-build_portfolio_supervisor_tools
+TradingSessionCalendar
+PaperOrder / BrokerOrderStatus
+PaperBroker / PaperBrokerConfig
+SQLitePaperBrokerStore
+HumanApproval / OperationalApprovalService
+TradingSafetyController / durable kill switch
+PortfolioReconciler
+ApprovedPaperTradingController
+CorporateActionProcessor
+ShadowPortfolioMonitor
+ExecutionCostCalibrator
 ```
 
-`PortfolioHealthMonitor` now converts Phase 4 alpha/risk/benchmark/stress/rebalance outputs into immutable supervision evidence. The monitor supports explicit deterministic freshness, expected-net-return, volatility, turnover and stress-loss thresholds. Threshold values are infrastructure configuration and are not Agent-generated.
+Key invariants:
 
-The finite Supervisor tool surface is intentionally narrower than the research Agent surface. It supports read-only inspection plus non-mutating requests for a pre-registered operating policy, a deterministic rebalance, or human review. `REQUEST_OPERATING_POLICY` and `REQUEST_REBALANCE` require human approval and produce payloads with `mutation_performed=false`.
+- `client_order_id` is an idempotency key;
+- duplicate IDs with different immutable order content are rejected;
+- partial fills survive across snapshots;
+- fill/order/account state is committed durably;
+- restart does not reset account or kill-switch state;
+- Phase 4.5 Supervisor requests remain non-mutating until explicit human approval;
+- paper rebalances require the exact registered approval for the health snapshot;
+- reconciliation-critical state trips the kill switch;
+- implicit multi-currency conversion is still forbidden.
 
-`ScriptedPortfolioSupervisorAgent` provides the acceptance workflow: CRITICAL health requests the pre-registered defensive policy plus human review; WARNING health can request a rebalance only when the deterministic rebalance policy has already triggered; OK health creates no financial-state request.
+Phase 5 remains paper/shadow only.
 
-A separate `SQLitePortfolioSupervisionStore` persists snapshot evidence immutably while the existing `SQLiteAgentAuditStore` records every Supervisor action and policy result.
+Documentation:
 
-### Design conclusion
-
-Phase 4.5 confirms that Agent supervision and financial-state ownership should remain separate. The next operational boundary is Phase 5, where approved requests can be applied by deterministic paper-trading controllers and reconciled against observed broker state.
-
-### Documentation
-
-- `ADR-017_PHASE45_PORTFOLIO_SUPERVISOR.md`
-- `PHASE4_5.md`
-- README updated to Phase 4.5 / `0.5.0b1`.
-
----
-
-## 2026-08-25 — Phase 4: Alpha Calibration, Risk Hardening and Portfolio Research
-
-Phase 4 added cross-sectional expected-return calibration, deterministic alpha ensembles, OAS covariance shrinkage, PCA statistical factor risk, centralized portfolio constraints, equal-weight/minimum-variance/risk-parity/cost-aware mean-variance constructors, common benchmark metrics, deterministic scenario stress testing and explicit drift/turnover rebalance policy.
-
-The core architectural decision is that the LLM remains outside alpha calibration, covariance estimation, constraints and portfolio weights.
-
-The complete CI suite passed Python 3.11/3.12/3.13 with 127 tests.
+- `ADR-018_PHASE5_PAPER_SHADOW_OPERATIONS.md`
+- `PHASE5.md`
+- `RUNBOOK_PAPER_TRADING.md`
+- README/roadmap updated to `0.6.0a1`.
 
 ---
 
-## 2026-08-25 — Phase 3.5: Real Generated-Feature Research Integration
+## 2026-08-25 — Phase 4.5: Low-Permission Portfolio Supervisor
 
-Phase 3.5 connected generated feature artifacts to real point-in-time numerical data. Each feature value is evaluated only from a `FeatureWindow(asof=t)`, preventing a syntactically safe generated program from seeing future rows of a complete panel.
+Added immutable `PortfolioHealthSnapshot`, deterministic health thresholds, pre-registered operating policies, finite Supervisor inspection/request tools and a deterministic Supervisor acceptance runtime. Portfolio-policy and rebalance requests require human approval and return `mutation_performed=false`.
 
-The reference evaluator produces rank IC/ICIR, turnover, gross/net return, cost-adjusted Sharpe, coverage and one-sided net-return p-values. Period-level evidence is persisted immutably and can feed the existing Holm/DSR/PBO/Reality-Check family validator.
+---
+
+## 2026-08-25 — Phase 4: Alpha, Risk and Portfolio Research Hardening
+
+Added cross-sectional alpha calibration and explicit ensembles; OAS and PCA statistical risk models; centralized asset/group/benchmark/factor/turnover constraints; equal-weight, minimum-variance, risk-parity and constrained mean-variance portfolio constructors; stress testing and explicit rebalance policy.
+
+---
+
+## 2026-08-25 — Phase 3.5: Real Generated-Feature Research
+
+Connected generated feature artifacts to PIT `ResearchDataset` materialization, IC/ICIR, turnover, net-return evidence, immutable traces and the existing family-level statistical governance.
 
 ---
 
 ## 2026-08-25 — Phase 3D: Restricted Generated Feature Programs
 
-Phase 3D added bounded feature code generation, AST validation, restricted subprocess smoke execution, immutable generated-feature lineage and bridging into `ExperimentTemplate`. It explicitly does not claim container-grade isolation.
-
-The project roadmap was rebalanced away from premature LangGraph/multi-Agent complexity toward real feature evaluation, portfolio hardening and paper trading.
+Added bounded feature code generation, AST restrictions, isolated subprocess smoke execution and immutable generated-feature lineage.
 
 ---
 
-## 2026-08-25 — Phase 3C: Provider-Agnostic LLM Research Planning
+## 2026-08-25 — Phase 3C: Provider-Agnostic LLM Planning
 
-Phase 3C introduced provider-neutral LLM contracts, optional OpenAI Responses API integration, strict structured `ResearchPlan` generation, local deterministic validation, `LLMResearchAgent`, durable provider telemetry and Agent-quality metrics.
-
-The LLM can choose approved experiment templates and bounded variants but cannot control validation thresholds, research budgets, portfolio weights, risk overrides, fill prices, broker actions or Python code.
-
-The complete CI suite passed Python 3.11/3.12/3.13 with 95 tests.
+Added provider-neutral LLM contracts, structured research planning, optional OpenAI Responses adapter and durable provider telemetry while keeping execution deterministic.
 
 ---
 
 ## 2026-08-24 — Phase 3B: Deterministic Scripted Research Agent
 
-Phase 3B implemented `ResearchPlan`, `ResearchBudget`, approved experiment templates, `ScriptedResearchAgent`, `AgentRunCoordinator`, append-only plan storage and dry replay. The complete CI suite passed Python 3.11/3.12/3.13 with 90 tests.
+Added `ResearchPlan`, budgets, approved experiment templates, deterministic Agent execution, plan storage and replay.
 
 ---
 
 ## 2026-08-24 — Phase 3A: Governed Agent Control Surface
 
-Phase 3A froze typed Agent contracts, finite `AgentAction`, `ToolRegistry`, policy-as-code, immutable registered `AgentRunContext` and `SQLiteAgentAuditStore`.
+Froze typed Agent contracts, finite `ToolRegistry`, policy-as-code, immutable run context and SQLite Agent audit.
 
 ---
 
-## 2026-08-24 — Phase 2.5: Research Multiplicity and Anti-Overfitting
+## 2026-08-24 — Phase 2.5: Research Multiplicity Controls
 
-Phase 2.5 added nested purged walk-forward validation, `ExperimentFamily` governance, Bonferroni/Holm/BH correction, Deflated Sharpe Ratio, CSCV PBO and a White-style reality check.
-
----
-
-## 2026-08-24 — Phase 2: Validation, Execution Timing and Model Governance
-
-Delivered purged walk-forward splitting, explicit execution snapshots, timed simulated execution/backtesting, durable ExperimentRunner lifecycle and model-stage governance. The hard execution invariant is `execution_at > information_at`.
+Added nested purged walk-forward validation, experiment-family governance, Bonferroni/Holm/BH correction, Deflated Sharpe, CSCV PBO and White-style Reality Check.
 
 ---
 
-## 2026-08-24 — Phase 1: Numerical Data Contract and Quant Kernel
+## 2026-08-24 — Phase 2: Timing and Model Governance
 
-The frozen numerical contract is `DataAdapter -> ResearchDataset / ResearchSplit -> FeatureWindow -> AlphaModel / RiskModel`, with `(time, asset, feature)` numerical layout and `available_at` as the PIT clock.
+Added purged walk-forward splitting, explicit information/execution clocks, timed execution and backtesting, experiment lifecycle and model-stage governance.
 
 ---
 
-## 2026-08-24 — Phase 0.5: Domain Kernel and Test Harness
+## 2026-08-24 — Phase 1: Numerical Quant Kernel
 
-Phase 0.5 froze framework-independent contracts for market data, research datasets, forecasts, portfolio targets/states, risk decisions, orders/fills and experiment artifacts.
+Froze the PIT numerical contract and implemented data adapters, alpha/risk baselines, optimizer, backtest, execution simulation and research persistence.
+
+---
+
+## 2026-08-24 — Phase 0.5: Domain Kernel
+
+Established framework-independent contracts for assets, market data, research, forecasts, portfolios, risk decisions, orders/fills and experiment artifacts.

@@ -1,184 +1,111 @@
-# FinAgent Roadmap Rebaseline — After Phase 4.5
+# FinAgent Roadmap Rebaseline — After Phase 5
 
 Date: 2026-08-25
 
-## Current architectural position
-
-The project has now crossed the boundary from research automation into supervised portfolio operations. Phase 4 made portfolio construction deterministic; Phase 4.5 placed a low-permission Agent on top of that deterministic engine without transferring financial-state ownership to the Agent.
-
-Completed foundation:
+## Completed foundation
 
 ```text
 Phase 0.5  Domain contracts
-Phase 1    Numerical/PIT Quant Kernel
-Phase 2    Walk-forward, execution clocks, model governance
+Phase 1    PIT numerical Quant Kernel
+Phase 2    Validation/execution clocks/model governance
 Phase 2.5  Nested validation and multiple-testing controls
 Phase 3A   Governed Agent tool boundary
-Phase 3B   Deterministic ScriptedResearchAgent
-Phase 3C   Provider-agnostic LLM planning
+Phase 3B   Deterministic research Agent
+Phase 3C   Provider-neutral LLM planning
 Phase 3D   Restricted generated feature code
-Phase 3.5  Real generated-feature PIT research integration
-Phase 4    Alpha calibration, risk hardening and portfolio benchmarks
-Phase 4.5  Low-permission Portfolio Supervisor Agent
+Phase 3.5  Real generated-feature PIT research
+Phase 4    Alpha/risk/portfolio hardening
+Phase 4.5  Low-permission Portfolio Supervisor
+Phase 5    Durable paper/shadow operations and reconciliation
 ```
 
-The critical invariant is now:
-
-```text
-Agent may inspect, explain and request.
-Deterministic infrastructure owns limits, weights, approvals and financial state.
-```
-
-## Phase 5 — Paper Trading / Shadow Production
-
-Priority: highest.
-
-Goal: prove research/backtest/operational semantic consistency without live capital.
-
-Recommended sub-phases:
-
-### Phase 5A — Operational state and paper broker
-
-Deliver:
-
-```text
-BrokerOrderId / client idempotency key
-PaperBrokerAdapter
-OrderState lifecycle
-submitted / accepted / partially-filled / filled / cancelled / rejected
-PaperAccountSnapshot
-position/cash ledger
-exchange-session guard
-```
-
-The existing `TimedExecutionVenue` remains the research execution abstraction; Phase 5A adds an operational broker abstraction rather than overloading the backtest venue.
-
-### Phase 5B — Approval controller and Supervisor request application
-
-Deliver:
-
-```text
-PortfolioOperationRequest
-HumanApprovalRecord
-OperationalPolicyController
-approved rebalance application
-approved operating-policy application
-kill-switch state
-circuit-breaker rules
-```
-
-The Phase 4.5 `request_operating_policy` and `request_rebalance` payloads become inputs to this controller. The Agent still cannot approve its own requests.
-
-### Phase 5C — Reconciliation and recovery
-
-Deliver:
-
-```text
-expected-vs-observed order reconciliation
-expected-vs-observed position reconciliation
-idempotent retry
-partial-fill reconciliation
-restart/recovery checkpoint
-cash and realized/unrealized PnL reconciliation
-recovery runbook
-```
-
-A paper system is not credible until restart/retry behavior is explicitly tested.
-
-### Phase 5D — Market semantics and cost calibration
-
-Deliver:
-
-```text
-exchange calendars and sessions
-corporate-action adjustments
-spread model
-ADV / participation estimates
-nonlinear market-impact research
-paper fill calibration against observed quotes where available
-```
-
-Phase 4 trade-weight caps remain a research liquidity proxy until this layer exists.
-
-### Phase 5E — Shadow model lifecycle and observability
-
-Deliver:
-
-```text
-shadow target vs paper target comparison
-model/data freshness metrics
-order/fill/reconciliation metrics
-structured alerts
-operational incident records
-paper-trading reports
-minimum sustained shadow-validation criteria
-```
-
-No live-capital milestone should precede sustained paper/shadow operation.
+The project now spans research, deterministic portfolio construction and a non-live operational loop. Additional Agent-framework complexity is still not the critical path.
 
 ## Phase 5.5 — Structured Research Memory and Hypothesis Evolution
 
-Use existing registries as structured Agent memory rather than adding a generic vector database to core state.
+Goal: convert accumulated registries into usable structured research memory without allowing historical winners to silently expand current research budgets.
 
-Deliver:
+Priority work:
 
 ```text
 feature/model lineage queries
 hypothesis -> artifact -> experiment -> result graph
 failure taxonomy
-experiment similarity / duplicate detection
-bounded reflection summaries
-research-budget suggestions from historical evidence
+experiment/factor similarity
+duplicate-hypothesis detection
+bounded research summaries
+evidence-aware experiment-budget recommendations
+paper/shadow outcome linkage back to research artifacts
 ```
 
-Vector retrieval remains optional for unstructured papers, filings and notes.
+Vector retrieval should remain optional for unstructured papers/reports; structured experiment state should stay relational and auditable.
 
-## Phase 6 — Optional Workflow Orchestration Hardening
+## Phase 6 — Operational Hardening, then Optional Graph Orchestration
 
-LangGraph or another graph runtime remains optional. Add it only if measured requirements justify:
+The next major engineering question is not automatically “adopt LangGraph”. First measure Phase 5 operational gaps.
+
+Potential deterministic operational hardening:
 
 ```text
-long-running resumable workflows
-human checkpoints across hours/days
-parallel research branches
-provider retries with persisted state
-complex recovery semantics
+richer exchange/security master
+multi-currency cash and FX accounting
+broker-neutral order state machine refinements
+persistent approval expiry/revocation
+session-level PnL and exposure journals
+paper incident metrics / SLOs
+more complete corporate actions
+spread/impact calibration
+shadow acceptance criteria
 ```
 
-It must remain an adapter rather than a domain dependency.
+Graph orchestration becomes justified only if real workflows require:
 
-## Phase 7 — Optional Advanced Learning
+```text
+long-running resumable branches
+parallel research tasks
+multi-hour human checkpoints
+complex provider retry/recovery
+```
 
-Potential later research:
+If adopted, it remains an adapter around frozen domain/control-plane contracts.
+
+## Phase 7 — Optional Advanced Research
+
+Possible later work:
 
 ```text
 regime/change-point models
 ML alpha models
-Bayesian optimization inside frozen ExperimentFamily budgets
-RL/MPC portfolio research
+Bayesian optimization inside fixed experiment families
 text/news/filing features
+RL/MPC portfolio research
 multi-Agent review
-fundamental/style factor-risk model
 ```
 
-Direct LLM or RL control of live portfolio weights is not a default objective.
+Direct LLM or RL control of live portfolio weights remains outside the default objective.
 
-## What remains deliberately deferred
+## Live-capital gate
 
-Phase 4.5 supervision is not an operational trading system. The following remain unresolved until Phase 5:
+Phase 5 does not imply live readiness.
+
+Before any live broker milestone, require at minimum:
 
 ```text
-broker-specific order semantics
-actual approval application
-corporate actions
-FX/cash accounting across currencies
-position reconciliation
-kill-switch implementation
-restart recovery
-production alert transport
-operational security/credential handling
+sustained paper/shadow runtime
+documented reconciliation error rate
+documented order-idempotency behavior
+kill-switch drills
+restart-recovery drills
+corporate-action test coverage
+cost-model calibration evidence
+operational alerting/runbooks
+explicit human sign-off
 ```
 
-## Revised success criterion
+A future live adapter should implement the same broker-neutral operational contracts rather than bypassing them.
 
-FinAgent should be judged by whether a novel research hypothesis can be translated into reproducible PIT code and statistically governed evidence, transformed by deterministic alpha/risk/portfolio controls into an auditable target, supervised through immutable health evidence, and then verified through sustained paper/shadow operation before any live-capital path exists.
+## Project success criterion
+
+A novel hypothesis should be translated into reproducible PIT evidence, pass statistical governance, produce deterministic alpha/risk/portfolio targets, survive supervised paper execution and reconciliation, and remain auditable end-to-end.
+
+The Agent is a research and supervision multiplier. Financial state remains owned by deterministic infrastructure.
