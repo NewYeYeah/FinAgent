@@ -5,8 +5,9 @@ from datetime import UTC, date, datetime
 import pytest
 
 from finagent.data import (
-    AKShareMarketDataIngestor,
     ALPACA_CAPABILITIES,
+    TUSHARE_15K_CAPABILITIES,
+    AKShareMarketDataIngestor,
     AlpacaMarketDataIngestor,
     DataCapability,
     HiThinkMarketDataIngestor,
@@ -14,7 +15,6 @@ from finagent.data import (
     MarketRegion,
     ProviderSymbolMap,
     ResearchDataRequirement,
-    TUSHARE_15K_CAPABILITIES,
     compare_provider_records,
     default_provider_registry,
 )
