@@ -9,6 +9,7 @@ from finagent.domain.execution import ExecutionReport
 from finagent.domain.forecasts import AlphaForecast, RiskForecast
 from finagent.domain.portfolio import PortfolioState, PortfolioTarget, RiskDecision, RiskStatus
 from finagent.domain.research import ResearchDataset
+from finagent.domain.trading import TradeActivity
 from finagent.ports import AlphaModel, DataAdapter, PortfolioOptimizer, RiskGate, RiskModel
 from finagent.services.execution import AccountLedger, SimulatedExchange
 from finagent.services.portfolio import OrderPlanner
@@ -44,6 +45,12 @@ class BacktestPoint:
     target: PortfolioTarget | None = None
     risk_decision: RiskDecision | None = None
     execution: ExecutionReport | None = None
+    one_way_turnover: float = 0.0
+
+    @property
+    def gross_traded_weight(self) -> float:
+        """Legacy ``turnover`` field is gross traded weight in the event engine."""
+        return self.turnover
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,23 +63,24 @@ class BacktestResult:
     max_drawdown: float
     total_turnover: float
     total_transaction_cost: float
+    total_one_way_turnover: float = 0.0
 
     @property
     def nav(self) -> np.ndarray:
         return np.asarray([point.nav for point in self.points], dtype=float)
 
+    @property
+    def total_gross_traded_weight(self) -> float:
+        """Explicit alias for the legacy ``total_turnover`` field."""
+        return self.total_turnover
+
 
 class EventDrivenBacktestEngine:
-    """Phase 1 sequential out-of-sample backtest.
+    """Sequential out-of-sample research backtest.
 
-    Models are fitted only on ``train_split``. At each test timestamp the adapter
-    materializes a PIT-safe feature window, forecasts are generated, the optimizer
-    emits a target, a hard risk gate approves/rejects it, and orders are executed.
-
-    Execution uses the already-observed snapshot close. This is an intentionally
-    idealised close-on-close research convention: the new position only affects P&L
-    after that timestamp. A next-bar/open execution model belongs in Phase 2 because
-    OHLC fields require finer availability semantics than one bar-level timestamp.
+    ``BacktestPoint.turnover`` is retained for compatibility and explicitly means
+    gross traded weight.  ``one_way_turnover`` is reported separately so research,
+    optimizer and execution cost conventions cannot be silently mixed.
     """
 
     def __init__(
@@ -146,7 +154,8 @@ class EventDrivenBacktestEngine:
             target = None
             decision = None
             execution = None
-            turnover = 0.0
+            gross_traded_weight = 0.0
+            one_way_turnover = 0.0
             transaction_cost = 0.0
 
             if step % self.config.rebalance_every == 0:
@@ -166,7 +175,10 @@ class EventDrivenBacktestEngine:
                     execution = self.exchange.execute(orders, snapshot)
                     state = self.ledger.apply_execution(state, execution, snapshot)
                     gross_notional = sum(fill.notional for fill in execution.fills)
-                    turnover = gross_notional / pre_trade_nav if pre_trade_nav > 0 else 0.0
+                    if gross_notional > 0 and pre_trade_nav > 0:
+                        activity = TradeActivity.from_traded_notional(gross_notional, pre_trade_nav)
+                        gross_traded_weight = activity.gross_traded_weight
+                        one_way_turnover = activity.one_way_turnover
                     transaction_cost = sum(
                         fill.commission + fill.slippage for fill in execution.fills
                     )
@@ -176,11 +188,12 @@ class EventDrivenBacktestEngine:
                     asof=asof,
                     nav=state.nav,
                     cash=state.cash,
-                    turnover=turnover,
+                    turnover=gross_traded_weight,
                     transaction_cost=transaction_cost,
                     target=target,
                     risk_decision=decision,
                     execution=execution,
+                    one_way_turnover=one_way_turnover,
                 )
             )
 
@@ -196,18 +209,16 @@ class EventDrivenBacktestEngine:
         total_return = float(nav[-1] / nav[0] - 1.0) if len(nav) > 1 else 0.0
         if len(returns) > 0:
             periods = len(returns)
-            annualized_return = float((nav[-1] / nav[0]) ** (self.config.annualization_factor / periods) - 1.0)
+            annualized_return = float(
+                (nav[-1] / nav[0]) ** (self.config.annualization_factor / periods) - 1.0
+            )
         else:
             annualized_return = 0.0
         if len(returns) > 1:
             mean = float(np.mean(returns))
             std = float(np.std(returns, ddof=1))
             annualized_volatility = std * np.sqrt(self.config.annualization_factor)
-            sharpe = (
-                mean / std * np.sqrt(self.config.annualization_factor)
-                if std > 0
-                else 0.0
-            )
+            sharpe = mean / std * np.sqrt(self.config.annualization_factor) if std > 0 else 0.0
         else:
             annualized_volatility = 0.0
             sharpe = 0.0
@@ -223,4 +234,5 @@ class EventDrivenBacktestEngine:
             max_drawdown=max_drawdown,
             total_turnover=float(sum(point.turnover for point in points)),
             total_transaction_cost=float(sum(point.transaction_cost for point in points)),
+            total_one_way_turnover=float(sum(point.one_way_turnover for point in points)),
         )
