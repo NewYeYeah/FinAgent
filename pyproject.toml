@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "finagent"
-version = "1.1.0"
+version = "1.1.1"
 description = "Auditable agentic quantitative research, deterministic portfolio construction and supervised paper/shadow operations."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -27,7 +27,13 @@ dev = [
 llm-openai = [
   "openai>=3.2,<4",
 ]
+cn-free = [
+  "akshare>=1.18,<2",
+]
 a-share = [
+  "akshare>=1.18,<2",
+]
+tushare-reference = [
   "tushare>=1.4.29,<2",
 ]
 us-market = [
