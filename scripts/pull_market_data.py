@@ -48,6 +48,16 @@ def main() -> int:
     provider = str(values.get("provider", "")).strip().lower()
     asset_type = AssetType(str(values.get("asset_type", "etf")).lower())
     region = MarketRegion(str(values["region"]))
+    provider_symbols = {
+        str(key).upper(): str(value)
+        for key, value in dict(values.get("provider_symbols", {})).items()
+    }
+    metadata = {
+        str(key): str(value) for key, value in dict(values.get("metadata", {})).items()
+    }
+    metadata.update(
+        {f"provider_symbol.{key}": value for key, value in sorted(provider_symbols.items())}
+    )
     request = MarketDataPullRequest(
         market=region,
         symbols=tuple(str(item) for item in values["symbols"]),
@@ -60,15 +70,10 @@ def main() -> int:
             str(key): str(value)
             for key, value in dict(values.get("venue_overrides", {})).items()
         },
-        metadata={
-            str(key): str(value) for key, value in dict(values.get("metadata", {})).items()
-        },
+        metadata=metadata,
     )
     output_dir = args.output_dir or Path(str(values["output_dir"]))
-    symbol_map = ProviderSymbolMap(
-        provider,
-        {str(key): str(value) for key, value in dict(values.get("provider_symbols", {})).items()},
-    )
+    symbol_map = ProviderSymbolMap(provider, provider_symbols)
 
     registry = default_provider_registry()
     descriptor = registry.get(provider)
