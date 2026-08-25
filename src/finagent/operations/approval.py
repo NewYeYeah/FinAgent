@@ -48,8 +48,8 @@ class OperationalApprovalService:
         control = self.approval_evidence_store.get_approval_control(approval.approval_id)
         if control is None:
             raise PermissionError("durable approval validity control is required")
-        if control.created_at > approval.approved_at:
-            raise ValueError("approval control cannot be created after the approval it governs")
+        if control.expires_at <= approval.approved_at:
+            raise ValueError("approval validity must extend beyond approved_at")
         if applied > control.expires_at:
             raise PermissionError("human approval has expired")
         revocation = self.approval_evidence_store.get_approval_revocation(approval.approval_id)

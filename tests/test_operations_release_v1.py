@@ -259,7 +259,13 @@ def test_valid_controlled_approval_can_be_applied(tmp_path):
         "operator",
         NOW + timedelta(minutes=1),
     )
-    evidence.register_approval_control(ApprovalControl("approval-valid", NOW, NOW + timedelta(hours=1)))
+    evidence.register_approval_control(
+        ApprovalControl(
+            "approval-valid",
+            NOW + timedelta(minutes=1, seconds=15),
+            NOW + timedelta(hours=1),
+        )
+    )
     application = service.apply(
         request_payload={
             "request_type": "human_review",
