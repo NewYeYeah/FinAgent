@@ -1,0 +1,37 @@
+[market]
+provider = "akshare"
+region = "us_equity"
+asset_type = "etf"
+symbols = ["SPY", "QQQ", "IWM", "DIA"]
+start = 2018-01-01
+end = 2026-08-24
+adjustment = "raw"
+output_dir = "data/market/us_etf_akshare_smoke"
+strict_provider_symbols = true
+
+[market.provider_symbols]
+SPY = "105.SPY"
+QQQ = "105.QQQ"
+IWM = "105.IWM"
+DIA = "105.DIA"
+
+[market.venue_overrides]
+SPY = "XNYS"
+QQQ = "XNAS"
+IWM = "ARCX"
+DIA = "ARCX"
+
+[market.metadata]
+purpose = "free US-market development and provider-cross-check smoke study"
+provider_role = "development"
+
+[study]
+lookback = 60
+rebalance_every = 5
+cash_weight = 0.10
+max_weight = 0.35
+commission_bps = 3.0
+slippage_bps = 5.0
+impact_bps = 5.0
+risk_aversion = 30.0
+turnover_penalty = 0.0005
