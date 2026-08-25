@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from finagent.domain.assets import AssetType
-
-from .akshare import AKShareMarketDataIngestor
-from .alpaca import AlpacaMarketDataIngestor
-from .base import MarketRegion
-from .hithink import HiThinkMarketDataIngestor
-from .providers import (
+from finagent.data.ingestion.akshare import AKShareMarketDataIngestor
+from finagent.data.ingestion.alpaca import AlpacaMarketDataIngestor
+from finagent.data.ingestion.base import MarketRegion
+from finagent.data.ingestion.hithink import HiThinkMarketDataIngestor
+from finagent.data.ingestion.providers import (
     DataCapability,
     ProviderCapabilities,
     ProviderDescriptor,
@@ -14,7 +12,8 @@ from .providers import (
     ProviderSymbolMap,
     ProviderTier,
 )
-from .tushare import TushareMarketDataIngestor
+from finagent.data.ingestion.tushare import TushareMarketDataIngestor
+from finagent.domain.assets import AssetType
 
 
 ALPACA_CAPABILITIES = ProviderCapabilities(
@@ -31,7 +30,10 @@ ALPACA_CAPABILITIES = ProviderCapabilities(
     ),
     implemented=frozenset({DataCapability.HISTORICAL_DAILY}),
     tier=ProviderTier.RESEARCH,
-    notes=("primary US-market provider", "realtime/minute vendor capability is not yet exposed by this adapter"),
+    notes=(
+        "primary US-market provider",
+        "realtime/minute vendor capability is not yet exposed by this adapter",
+    ),
 )
 
 TUSHARE_15K_CAPABILITIES = ProviderCapabilities(
