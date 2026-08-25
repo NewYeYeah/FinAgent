@@ -8,6 +8,7 @@ from scipy.optimize import minimize
 from finagent.domain.assets import AssetId
 from finagent.domain.forecasts import AlphaForecast, ModelRef, RiskForecast
 from finagent.domain.portfolio import PortfolioState, PortfolioTarget
+from finagent.domain.trading import TradeActivity
 
 from .constraints import ConstraintCompiler, PortfolioConstraintSet
 
@@ -40,10 +41,7 @@ def _feasible_start(compiled, preferred: np.ndarray) -> np.ndarray:
     if preferred.shape != (len(compiled.assets),):
         raise ValueError("preferred start shape mismatch")
     clipped = np.asarray(
-        [
-            min(max(preferred[idx], lower), upper)
-            for idx, (lower, upper) in enumerate(compiled.bounds)
-        ],
+        [min(max(preferred[idx], lower), upper) for idx, (lower, upper) in enumerate(compiled.bounds)],
         dtype=float,
     )
     result = minimize(
@@ -59,15 +57,7 @@ def _feasible_start(compiled, preferred: np.ndarray) -> np.ndarray:
     return np.asarray(result.x, dtype=float)
 
 
-def _target(
-    *,
-    asof,
-    assets: tuple[AssetId, ...],
-    weights: np.ndarray,
-    cash_weight: float,
-    source_name: str,
-    metadata: dict[str, str],
-) -> PortfolioTarget:
+def _target(*, asof, assets, weights, cash_weight, source_name, metadata) -> PortfolioTarget:
     values = np.asarray(weights, dtype=float).copy()
     values[np.abs(values) < 1e-12] = 0.0
     residual = (1.0 - cash_weight) - float(values.sum())
@@ -99,31 +89,20 @@ class ConstrainedMeanVarianceConfig:
 
 
 class ConstrainedMeanVarianceOptimizer:
-    """Cost-aware Markowitz optimizer over a compiled deterministic constraint set."""
+    """Cost-aware Markowitz optimizer over deterministic constraints.
 
-    def __init__(
-        self,
-        constraints: PortfolioConstraintSet | None = None,
-        config: ConstrainedMeanVarianceConfig | None = None,
-        *,
-        compiler: ConstraintCompiler | None = None,
-    ) -> None:
+    ``turnover_cost_bps`` is applied to gross traded weight, not one-way turnover.
+    Reporting metadata exposes both quantities explicitly.
+    """
+
+    def __init__(self, constraints=None, config=None, *, compiler=None) -> None:
         self.constraints = constraints or PortfolioConstraintSet()
         self.config = config or ConstrainedMeanVarianceConfig()
         self.compiler = compiler or ConstraintCompiler()
 
-    def optimize(
-        self,
-        alpha: AlphaForecast,
-        risk: RiskForecast,
-        state: PortfolioState,
-    ) -> PortfolioTarget:
+    def optimize(self, alpha, risk, state) -> PortfolioTarget:
         assets, mu, sigma, current = _aligned_inputs(alpha, risk, state)
-        compiled = self.compiler.compile(
-            assets,
-            current_weights=current,
-            policy=self.constraints,
-        )
+        compiled = self.compiler.compile(assets, current_weights=current, policy=self.constraints)
         preferred = current.copy()
         if not np.all(np.isfinite(preferred)) or abs(float(preferred.sum()) - self.constraints.invested_weight) > 0.25:
             preferred = np.full(len(assets), self.constraints.invested_weight / len(assets))
@@ -135,8 +114,8 @@ class ConstrainedMeanVarianceOptimizer:
             expected = -float(mu @ weights)
             risk_term = 0.5 * self.config.risk_aversion * float(weights @ sigma @ weights)
             delta = weights - current
-            smooth_turnover = 0.5 * float(np.sum(np.sqrt(delta * delta + eps * eps) - eps))
-            return expected + risk_term + cost_rate * smooth_turnover
+            smooth_gross_traded_weight = float(np.sum(np.sqrt(delta * delta + eps * eps) - eps))
+            return expected + risk_term + cost_rate * smooth_gross_traded_weight
 
         result = minimize(
             objective,
@@ -151,7 +130,7 @@ class ConstrainedMeanVarianceOptimizer:
             raise RuntimeError(
                 f"constrained mean-variance optimization failed: {result.message}; failures={failures}"
             )
-        actual_turnover = 0.5 * float(np.abs(np.asarray(result.x) - current).sum())
+        activity = TradeActivity.from_weights(current, np.asarray(result.x, dtype=float))
         return _target(
             asof=alpha.asof,
             assets=assets,
@@ -161,25 +140,20 @@ class ConstrainedMeanVarianceOptimizer:
             metadata={
                 "risk_aversion": repr(self.config.risk_aversion),
                 "turnover_cost_bps": repr(self.config.turnover_cost_bps),
-                "turnover": repr(actual_turnover),
+                "turnover": repr(activity.one_way_turnover),
+                "one_way_turnover": repr(activity.one_way_turnover),
+                "gross_traded_weight": repr(activity.gross_traded_weight),
                 "objective": repr(float(result.fun)),
             },
         )
 
 
 class MinimumVarianceOptimizer:
-    """Minimum-variance benchmark under the same compiled constraints."""
-
-    def __init__(
-        self,
-        constraints: PortfolioConstraintSet | None = None,
-        *,
-        compiler: ConstraintCompiler | None = None,
-    ) -> None:
+    def __init__(self, constraints=None, *, compiler=None) -> None:
         self.constraints = constraints or PortfolioConstraintSet()
         self.compiler = compiler or ConstraintCompiler()
 
-    def optimize(self, alpha: AlphaForecast, risk: RiskForecast, state: PortfolioState) -> PortfolioTarget:
+    def optimize(self, alpha, risk, state) -> PortfolioTarget:
         assets, _, sigma, current = _aligned_inputs(alpha, risk, state)
         compiled = self.compiler.compile(assets, current_weights=current, policy=self.constraints)
         preferred = np.full(len(assets), self.constraints.invested_weight / len(assets))
@@ -206,20 +180,13 @@ class MinimumVarianceOptimizer:
 
 
 class RiskParityOptimizer:
-    """Equal-risk-contribution benchmark for long-only portfolios."""
-
-    def __init__(
-        self,
-        constraints: PortfolioConstraintSet | None = None,
-        *,
-        compiler: ConstraintCompiler | None = None,
-    ) -> None:
+    def __init__(self, constraints=None, *, compiler=None) -> None:
         self.constraints = constraints or PortfolioConstraintSet()
         if not self.constraints.long_only:
             raise ValueError("reference risk-parity implementation requires long_only=True")
         self.compiler = compiler or ConstraintCompiler()
 
-    def optimize(self, alpha: AlphaForecast, risk: RiskForecast, state: PortfolioState) -> PortfolioTarget:
+    def optimize(self, alpha, risk, state) -> PortfolioTarget:
         assets, _, sigma, current = _aligned_inputs(alpha, risk, state)
         compiled = self.compiler.compile(assets, current_weights=current, policy=self.constraints)
         preferred = np.full(len(assets), self.constraints.invested_weight / len(assets))
@@ -254,18 +221,11 @@ class RiskParityOptimizer:
 
 
 class EqualWeightOptimizer:
-    """Constrained equal-weight benchmark using the same feasibility contract."""
-
-    def __init__(
-        self,
-        constraints: PortfolioConstraintSet | None = None,
-        *,
-        compiler: ConstraintCompiler | None = None,
-    ) -> None:
+    def __init__(self, constraints=None, *, compiler=None) -> None:
         self.constraints = constraints or PortfolioConstraintSet()
         self.compiler = compiler or ConstraintCompiler()
 
-    def optimize(self, alpha: AlphaForecast, risk: RiskForecast, state: PortfolioState) -> PortfolioTarget:
+    def optimize(self, alpha, risk, state) -> PortfolioTarget:
         assets, _, _, current = _aligned_inputs(alpha, risk, state)
         compiled = self.compiler.compile(assets, current_weights=current, policy=self.constraints)
         equal = np.full(len(assets), self.constraints.invested_weight / len(assets))
