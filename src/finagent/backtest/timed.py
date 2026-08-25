@@ -157,9 +157,10 @@ class TimedEventDrivenBacktestEngine:
             marks={},
         )
         points: list[TimedBacktestPoint] = []
-        # The adapter calendar is half-open; add a small tail to allow the final test
-        # signal to find a next event when source data contains one.
-        hard_end = max(test_panel.timestamps) + timedelta(days=3660)
+        # Execution may use a later bar inside the declared test range, but the final
+        # information point cannot open a position whose holding return is outside
+        # the evaluation panel.
+        hard_end = dataset.splits[self.config.test_split].end
 
         for step, information_at in enumerate(test_panel.timestamps):
             decision_snapshot = self.adapter.market_snapshot(information_at, dataset.universe)
@@ -171,7 +172,7 @@ class TimedEventDrivenBacktestEngine:
             turnover = 0.0
             transaction_cost = 0.0
 
-            if step % self.config.rebalance_every == 0:
+            if step % self.config.rebalance_every == 0 and step < len(test_panel.timestamps) - 1:
                 window = self.adapter.feature_window(
                     asof=information_at,
                     universe=dataset.universe,
@@ -223,17 +224,18 @@ class TimedEventDrivenBacktestEngine:
     def _summarize(self, points: tuple[TimedBacktestPoint, ...]) -> TimedBacktestResult:
         if not points:
             raise ValueError("backtest produced no points")
-        nav = np.asarray([point.nav for point in points], dtype=float)
-        if np.any(nav <= 0):
+        observed_nav = np.asarray([point.nav for point in points], dtype=float)
+        if np.any(observed_nav <= 0):
             raise ValueError("backtest NAV must remain positive")
+        # Include the transition from initial cash to the first evaluation point.
+        # Otherwise the first execution cost and first marked holding return vanish
+        # from every walk-forward fold.
+        nav = np.concatenate(([self.config.initial_cash], observed_nav))
         returns = nav[1:] / nav[:-1] - 1.0
-        total_return = float(nav[-1] / nav[0] - 1.0) if len(nav) > 1 else 0.0
-        if len(returns):
-            annualized_return = float(
-                (nav[-1] / nav[0]) ** (self.config.annualization_factor / len(returns)) - 1.0
-            )
-        else:
-            annualized_return = 0.0
+        total_return = float(nav[-1] / nav[0] - 1.0)
+        annualized_return = float(
+            (nav[-1] / nav[0]) ** (self.config.annualization_factor / len(returns)) - 1.0
+        )
         if len(returns) > 1:
             std = float(np.std(returns, ddof=1))
             mean = float(np.mean(returns))

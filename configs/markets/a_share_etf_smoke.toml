@@ -1,0 +1,38 @@
+[market]
+provider = "tushare"
+region = "a_share"
+symbols = ["510300.SH", "510500.SH", "159915.SZ", "159919.SZ"]
+asset_type = "etf"
+start = 2016-01-01
+end = 2026-08-24
+adjustment = "raw"
+output_dir = "data/market/a_share_etf_smoke"
+
+[study]
+bars_path = "data/market/a_share_etf_smoke/bars.csv"
+manifest_path = "data/market/a_share_etf_smoke/manifest.json"
+report_path = "reports/a_share_etf_smoke.json"
+outer_train_size = 756
+outer_test_size = 126
+outer_step_size = 126
+inner_train_size = 504
+inner_test_size = 63
+inner_step_size = 63
+purge_bars = 1
+embargo_bars = 5
+lookback = 60
+rebalance_every = 5
+execution_lag_events = 1
+cash_weight = 0.10
+max_weight = 0.35
+commission_bps = 3.0
+slippage_bps = 5.0
+impact_bps = 5.0
+max_participation_rate = 0.02
+garch_min_observations = 30
+correlation_lookback = 60
+ar_min_observations = 50
+risk_aversion = 30.0
+turnover_penalty = 0.0005
+candidate_names = ["equal_weight", "minimum_variance", "ar1_mean_variance"]
+cost_multipliers = [0.5, 1.0, 2.0]

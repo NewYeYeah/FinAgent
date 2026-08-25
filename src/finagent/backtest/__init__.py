@@ -1,4 +1,10 @@
 from .engine import BacktestConfig, BacktestPoint, BacktestResult, EventDrivenBacktestEngine
+from .market_study import (
+    MarketStudyConfig,
+    MarketStudyFoldResult,
+    MarketStudyResult,
+    run_nested_market_study,
+)
 from .timed import (
     TimedBacktestConfig,
     TimedBacktestPoint,
@@ -21,6 +27,9 @@ __all__ = [
     "BacktestPoint",
     "BacktestResult",
     "EventDrivenBacktestEngine",
+    "MarketStudyConfig",
+    "MarketStudyFoldResult",
+    "MarketStudyResult",
     "NestedPurgedWalkForwardSplitter",
     "NestedWalkForwardConfig",
     "NestedWalkForwardDatasets",
@@ -33,4 +42,5 @@ __all__ = [
     "WalkForwardConfig",
     "WalkForwardFold",
     "minimum_purge_bars",
+    "run_nested_market_study",
 ]

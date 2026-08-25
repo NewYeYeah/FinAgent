@@ -1,5 +1,7 @@
 import math
 
+import pytest
+
 from finagent.backtest import TimedBacktestConfig, TimedEventDrivenBacktestEngine
 from finagent.models.alpha import ARAlphaModel
 from finagent.models.risk import GARCH11RiskModel
@@ -45,3 +47,6 @@ def test_phase2_timed_backtest_never_executes_at_signal_instant():
     )
     assert all(math.isfinite(point.nav) and point.nav > 0 for point in result.points)
     assert result.total_transaction_cost > 0
+    assert result.total_return == pytest.approx(result.points[-1].nav / 100_000.0 - 1.0)
+    assert result.points[-1].target is None
+    assert result.points[-1].execution is None

@@ -2,6 +2,14 @@
 
 This is the canonical chronological development log. Phase-specific design decisions are recorded in ADR, phase and release documents.
 
+## 2026-08-25 — Version 1.1.0: Real-market ETF backtest M1
+
+Added provider-neutral market-data requests, deterministic normalized OHLCV, raw-response evidence, SHA-256 manifests and fail-closed fixed-universe quality gates. Added optional Tushare A-share ETF and Alpaca US ETF ingestors, nested purged walk-forward candidate selection, next-open timed execution, cost-sensitivity reporting, example configurations and a complete operating runbook.
+
+This milestone deliberately remains fixed-universe ETF research. A-share T+1/lots/price limits/asymmetric fees, PIT individual-equity universes, delisting returns and full corporate-action semantics remain Level 2 work.
+
+The isolated test launcher now explicitly loads the trusted `pytest-cov` plugin only when coverage arguments are present, preserving ROS 2 plugin isolation while supporting coverage commands.
+
 ## 2026-08-25 — Reusable Environment Isolation Entrypoint
 
 ### Goal
