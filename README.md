@@ -1,8 +1,10 @@
 # FinAgent
 
-**FinAgent 1.0** is a typed, auditable framework for agent-assisted quantitative research, deterministic portfolio construction, supervised paper/shadow trading, and end-to-end evidence lineage.
+**FinAgent 1.0.1** is the final hardening release of the 1.0 line: a typed, auditable framework for agent-assisted quantitative research, deterministic portfolio construction, supervised paper/shadow trading, and end-to-end evidence lineage.
 
-> **Release scope:** FinAgent 1.0 is a stable **research + portfolio + paper/shadow** release. It does not include live broker credentials and does not claim live-capital readiness.
+> **Release scope:** FinAgent 1.0.1 is a stable **research + portfolio + paper/shadow** release. It does not include live broker credentials and does not claim live-capital readiness.
+
+The 1.0.1 patch incorporates the expert-review hardening documented in [`docs/QUANT_CORE_HARDENING_1_0_1.md`](docs/QUANT_CORE_HARDENING_1_0_1.md). It tightens quantitative correctness and release governance without expanding Agent financial authority.
 
 ## Why FinAgent exists
 
@@ -17,8 +19,8 @@ LLM / Agent
                 |
                 v
 Deterministic control plane
-  PIT validation, experiment governance, policy checks,
-  memory/lineage, health monitoring, human approval
+  PIT validation, experiment/program governance,
+  policy checks, memory/lineage, human approval
                 |
                 v
 Deterministic financial-state layer
@@ -41,18 +43,35 @@ Financial state is never owned by the LLM runtime.
 
 ---
 
-## 1.0 feature map
+## What changed in 1.0.1
 
-### Quantitative research and statistical governance
+The final 1.0 hardening pass addresses the main quantitative-core findings from expert review:
+
+- **PIT formation is independent of future-label realization.** Generated-feature portfolios are formed from point-in-time eligibility and feature availability, never from whether a future return later happens to be finite.
+- **Horizon boundary and data corruption are separated.** A fully unrealized formation cross-section is skipped as an unevaluable label-horizon boundary; partial missing realized returns for already-formed positions still fail closed by default.
+- **Point-in-time universe membership is explicit.** `ResearchSplit.eligibility_mask`, `UniverseProvider` and `ScheduledUniverseProvider` support `(time, asset)` eligibility.
+- **Research search is governable across families.** `ResearchProgram` adds durable family-count, experiment-count and alpha-spending budgets plus one-time sealed-holdout access.
+- **Metric direction is explicit.** `MetricObjective.MAXIMIZE` / `MINIMIZE` is part of deterministic winner selection.
+- **Turnover semantics are canonical.** `TradeActivity` distinguishes gross traded weight from one-way turnover; linear bps costs are charged on gross traded weight.
+- **Generated-feature execution is cheaper without weakening PIT isolation.** Independent historical windows may be batched inside the restricted subprocess.
+- **The generic execution boundary is explicit.** The 1.0 `OrderPlanner` supports only equity/ETF spot-like quantity semantics and fails closed for futures, FX, crypto, cash instruments and `OTHER` assets.
+- **Research primitives are less skeletal.** Deterministic momentum, reversal, volatility, winsorization, z-score, neutralization and volatility-scaling primitives are included.
+- **Release engineering has real gates.** CI combines a Python 3.11/3.12/3.13 test matrix with critical Ruff checks, hardened-surface lint, targeted mypy, coverage, package build and dependency consistency.
+
+---
+
+## Quantitative research and statistical governance
 
 FinAgent includes:
 
 - point-in-time `ResearchDataset` / `ResearchSplit` contracts;
 - explicit information and execution clocks;
+- `(time, asset)` eligibility masks and PIT universe providers;
 - purged/embargoed walk-forward validation;
 - nested purged walk-forward validation;
 - immutable experiment specifications and fingerprints;
 - `ExperimentFamily` lifecycle and fixed family denominator;
+- `ResearchProgram` cross-family search and alpha-spending budget;
 - Bonferroni, Holm and Benjamini-Hochberg multiple-testing correction;
 - Deflated Sharpe Ratio;
 - CSCV Probability of Backtest Overfitting;
@@ -61,7 +80,25 @@ FinAgent includes:
 
 Failed trials remain part of the research record; they are not silently removed because their results were inconvenient.
 
-### Governed Agent research
+### PIT formation contract
+
+For generated-feature research, the formation set at time `t` is:
+
+```text
+formation_t = PIT_eligible_t AND finite(feature_t)
+```
+
+It is not allowed to depend on the future label:
+
+```text
+NOT: PIT_eligible_t AND finite(feature_t) AND finite(forward_return_t)
+```
+
+If **all** formed assets at a period have an unrealized forward label, the period is treated as a horizon boundary and omitted from realized-performance evidence. If only part of an already-formed portfolio is missing realized return, evaluation fails by default and requires explicit delisting/corporate-action semantics or PIT ineligibility known before formation.
+
+---
+
+## Governed Agent research
 
 The Agent layer provides:
 
@@ -79,11 +116,13 @@ The Agent layer provides:
 
 An Agent cannot directly set portfolio weights, change validation thresholds, bypass `RiskGate`, select broker fills, erase failed experiments, or rewrite historical evidence.
 
-### Generated-feature research
+`ResearchProgram` adds a higher-level ledger for repeated autonomous search across multiple `ExperimentFamily` objects. Reservations are durable; a failed reserved attempt still consumes search/alpha budget because it was part of the effective hypothesis search.
+
+---
+
+## Generated-feature research
 
 FinAgent can ask an LLM to propose bounded feature code, but generated code is not executed as arbitrary application code.
-
-The generated feature path includes:
 
 ```text
 LLMFeatureGenerator
@@ -91,17 +130,23 @@ LLMFeatureGenerator
  -> AST validation
  -> restricted subprocess execution
  -> immutable GeneratedFeatureArtifact
- -> PIT materialization
+ -> PIT materialization + eligibility
  -> IC / ICIR / turnover / net-return evidence
  -> ExperimentFamily validation
 ```
 
-Each feature value is materialized using an `asof` window, so syntactically safe Python is not mistaken for protection against look-ahead bias.
+Each feature value is materialized using an `asof` historical window. `run_batch()` may process multiple independent PIT windows in one restricted subprocess to reduce startup overhead, but generated code does not receive a complete future panel.
 
-### Alpha, risk and portfolio construction
+---
+
+## Alpha, risk and portfolio construction
 
 The deterministic portfolio layer includes:
 
+- canonical momentum and short-term reversal primitives;
+- rolling volatility and volatility scaling;
+- winsorization and cross-sectional z-score;
+- deterministic linear neutralization;
 - cross-sectional alpha calibration;
 - deterministic alpha ensembles;
 - OAS covariance estimation;
@@ -117,7 +162,36 @@ The deterministic portfolio layer includes:
 
 The LLM does not calculate or directly write target weights.
 
-### Low-permission portfolio supervision
+### Turnover convention
+
+For target-weight change `Δw`:
+
+```text
+gross_traded_weight = sum_i |Δw_i|
+one_way_turnover    = 0.5 * gross_traded_weight
+```
+
+Linear cost at `c` basis points is:
+
+```text
+cost_fraction = gross_traded_weight * c / 10_000
+```
+
+The backward-compatible `mean_turnover` metric is explicitly one-way turnover; generated-feature evidence also reports `mean_gross_traded_weight`.
+
+---
+
+## Execution capability boundary
+
+The domain model can represent `EQUITY`, `ETF`, `FUTURE`, `FX`, `CRYPTO`, `CASH` and `OTHER` assets. Representation is not execution support.
+
+The generic 1.0 `OrderPlanner` intentionally supports only `EQUITY` and `ETF` spot-like quantity semantics. It fails closed for other asset types because correct execution may require contract multipliers, margin, settlement, quote/base-currency conversion, funding, lot rules and venue-specific behavior.
+
+Dedicated instrument-aware planners are required before those asset classes can enter the execution path.
+
+---
+
+## Low-permission portfolio supervision
 
 `PortfolioHealthMonitor` converts deterministic portfolio evidence into an immutable health snapshot. The Supervisor can inspect health, benchmark comparisons, stress results and rebalance decisions, then create bounded requests such as:
 
@@ -129,7 +203,9 @@ request_human_review
 
 These requests return `mutation_performed=false`. Critical changes require human approval outside the Agent runtime.
 
-### Durable paper/shadow operations
+---
+
+## Durable paper/shadow operations
 
 The paper operational layer includes:
 
@@ -157,9 +233,11 @@ reconciliation failure -> safety state
 restart does not clear a halted kill switch
 ```
 
-### Structured evidence memory
+---
 
-FinAgent 1.0 stores structured research memory rather than using free-form chat history as the source of truth.
+## Structured evidence memory
+
+FinAgent stores structured research memory rather than using free-form chat history as the source of truth.
 
 The memory graph can connect:
 
@@ -176,9 +254,11 @@ hypothesis
 
 It also records normalized research/operational failures and provides deterministic duplicate/similarity checks. Historical evidence may preserve or reduce a new research budget; it cannot automatically expand that budget.
 
-### Operational journal and release acceptance
+---
 
-1.0 adds a dedicated operational evidence layer:
+## Operational journal and paper acceptance
+
+The operational evidence layer includes:
 
 ```text
 SQLiteOperationalEvidenceStore
@@ -193,7 +273,7 @@ PaperAcceptanceEvaluator
 PaperAcceptanceReport
 ```
 
-The reference acceptance policy checks sustained paper/shadow reliability rather than using PnL alone. It can require minimum sessions/reconciliations, zero idempotency failures, bounded order rejection, zero critical reconciliation rate, and successful restart/kill-switch drills.
+The reference acceptance policy checks sustained paper/shadow reliability rather than PnL alone. It can require minimum sessions/reconciliations, zero idempotency failures, bounded order rejection, zero critical reconciliation rate, and successful restart/kill-switch drills.
 
 A passing acceptance report means the selected paper/shadow observation period passed the configured deterministic policy. It is **not** a live-capital certification.
 
@@ -207,8 +287,6 @@ A passing acceptance report means the selected paper/shadow observation period p
 - NumPy
 - SciPy
 
-Clone the repository and create an isolated environment:
-
 ```bash
 git clone https://github.com/NewYeYeah/FinAgent.git
 cd FinAgent
@@ -218,7 +296,7 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
-Windows PowerShell activation:
+Windows PowerShell:
 
 ```powershell
 .venv\Scripts\Activate.ps1
@@ -230,55 +308,64 @@ python -m pip install -e ".[dev]"
 
 The core package and test suite do not require an LLM SDK or API key.
 
-To install the optional OpenAI adapter:
-
 ```bash
 python -m pip install -e ".[llm-openai]"
 ```
 
-Keep API credentials outside the repository. The LLM provider proposes structured research outputs; it does not receive direct financial-state mutation authority.
+Keep credentials outside the repository. The LLM provider proposes structured research outputs; it does not receive direct financial-state mutation authority.
 
 ---
 
-## Run the test suite
+## Tests and release-quality gates
 
-Run all tests:
+Run the full regression suite:
 
 ```bash
 pytest -q
 ```
 
-Run one subsystem:
+Useful focused suites:
 
 ```bash
+pytest -q tests/test_quant_core_hardening_v101.py
+pytest -q tests/test_generated_feature_research_phase35.py
 pytest -q tests/test_operations_phase5.py
-pytest -q tests/test_research_memory_phase55.py
 pytest -q tests/test_operations_release_v1.py
 ```
 
-Run a named regression test:
+GitHub Actions runs tests on:
 
-```bash
-pytest -q tests/test_operations_release_v1.py -k acceptance
+```text
+Python 3.11
+Python 3.12
+Python 3.13
 ```
 
-GitHub Actions runs the complete suite on Python 3.11, 3.12 and 3.13 without external LLM calls.
+The quality job also runs:
 
-For a release candidate, do not consider a green unit suite sufficient by itself. Also perform the paper/shadow operational drills described under **1.0 operational validation** below.
+```text
+project-wide critical Ruff checks: E9/F63/F7/F82
+hardened 1.0 release-surface E/F lint
+targeted mypy baseline
+pytest coverage floor
+python -m build
+python -m pip check
+```
+
+The project-wide Ruff gate is intentionally a critical-error baseline rather than a false claim that every historical style warning is already cleaned. The hardened 1.0 quantitative surface receives the stricter ratcheting gate. Legacy style debt can be reduced incrementally without weakening correctness checks.
+
+A green CI suite controls software regressions; it does not replace sustained operational evidence.
 
 ---
 
 ## Quick start: persistent paper account
 
-The following example creates a durable paper account. Re-opening the same SQLite file restores financial state rather than reinitializing it.
-
 ```python
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from finagent.domain.portfolio import PortfolioState
 from finagent.operations import PaperBroker, SQLitePaperBrokerStore
 
-UTC = timezone.utc
 store = SQLitePaperBrokerStore("runtime/paper.db")
 broker = PaperBroker(store=store)
 
@@ -299,201 +386,21 @@ print(account.cash, account.nav)
 
 ---
 
-## Quick start: order submission and paper fills
-
-Orders use stable `client_order_id` values. Reusing the same ID with different immutable order content is rejected.
-
-```python
-from datetime import datetime, timezone
-
-from finagent.domain.assets import AssetId
-from finagent.domain.orders import OrderIntent, OrderSide
-
-UTC = timezone.utc
-asset = AssetId("AAA")
-
-intent = OrderIntent(
-    asset=asset,
-    side=OrderSide.BUY,
-    quantity=10.0,
-    created_at=datetime.now(UTC),
-    client_order_id="rebalance-20260825-AAA-buy-001",
-)
-
-registered = broker.submit((intent,))
-print(registered[0].status)
-```
-
-A later `ExecutionSnapshot` is passed to `broker.process(...)`. Participation limits may create partial fills; subsequent cycles continue from the persisted remaining quantity.
-
----
-
-## Human approval with expiry and revocation
-
-Phase 5 already required the exact approval ID for a portfolio-health snapshot. FinAgent 1.0 optionally adds a durable approval-validity envelope.
-
-```python
-from datetime import datetime, timedelta, timezone
-
-from finagent.operations import (
-    ApprovalControl,
-    SQLiteOperationalEvidenceStore,
-)
-
-UTC = timezone.utc
-now = datetime.now(UTC)
-evidence = SQLiteOperationalEvidenceStore("runtime/operational_evidence.db")
-
-evidence.register_approval_control(
-    ApprovalControl(
-        approval_id="approval-001",
-        created_at=now,
-        expires_at=now + timedelta(minutes=30),
-    )
-)
-```
-
-Configure `OperationalApprovalService` with this evidence store. When the evidence store is enabled, application requires a registered control and rejects expired or revoked approvals.
-
-To revoke an unused approval:
-
-```python
-from finagent.operations import ApprovalRevocation
-
-evidence.revoke_approval(
-    ApprovalRevocation(
-        approval_id="approval-001",
-        revoked_at=datetime.now(UTC),
-        revoked_by="operator",
-        reason="portfolio snapshot superseded",
-    )
-)
-```
-
-Revocation does not undo an already-applied financial mutation. It prevents later application/reuse of the revoked approval.
-
----
-
 ## 1.0 operational validation
 
-The stable 1.0 workflow is not “run one profitable backtest and deploy”. Build durable evidence across a paper/shadow observation window.
+The stable workflow is not “run one profitable backtest and deploy”. Build durable evidence across a paper/shadow observation window:
 
-### Record completed sessions
-
-```python
-from datetime import datetime, timezone
-
-from finagent.operations import OperationalSession
-
-UTC = timezone.utc
-
-evidence.register_session(
-    OperationalSession(
-        session_id="paper-2026-08-25",
-        started_at=datetime(2026, 8, 25, 9, 30, tzinfo=UTC),
-        ended_at=datetime(2026, 8, 25, 16, 0, tzinfo=UTC),
-        start_nav=100_000.0,
-        end_nav=100_320.0,
-        metadata={"environment": "paper"},
-    )
-)
+```text
+1. complete repeated paper/shadow sessions
+2. reconcile broker/account state
+3. record restart-recovery drills
+4. record kill-switch drills
+5. retain operational incidents
+6. aggregate an OperationalMetricSnapshot
+7. evaluate a pre-declared PaperAcceptancePolicy
 ```
 
-### Record restart and kill-switch drills
-
-```python
-from finagent.operations import OperationalDrillResult, OperationalDrillType
-
-evidence.register_drill(
-    OperationalDrillResult(
-        drill_id="restart-drill-001",
-        drill_type=OperationalDrillType.RESTART_RECOVERY,
-        occurred_at=datetime.now(UTC),
-        passed=True,
-        actor="operator",
-        notes="paper account/order/kill-switch state restored after process restart",
-    )
-)
-
-evidence.register_drill(
-    OperationalDrillResult(
-        drill_id="kill-switch-drill-001",
-        drill_type=OperationalDrillType.KILL_SWITCH,
-        occurred_at=datetime.now(UTC),
-        passed=True,
-        actor="operator",
-        notes="halt persisted through restart and required explicit reset",
-    )
-)
-```
-
-### Record incidents instead of hiding them
-
-```python
-from finagent.operations import (
-    OperationalIncident,
-    OperationalIncidentCategory,
-    OperationalIncidentSeverity,
-)
-
-evidence.register_incident(
-    OperationalIncident(
-        incident_id="incident-001",
-        category=OperationalIncidentCategory.EXECUTION,
-        severity=OperationalIncidentSeverity.WARNING,
-        occurred_at=datetime.now(UTC),
-        summary="paper fill latency exceeded local target",
-    )
-)
-```
-
-If a duplicate-order/idempotency defect changes financial state, classify it as an idempotency incident. The default acceptance policy allows zero such failures.
-
-### Build the operational snapshot
-
-```python
-from finagent.operations import OperationalJournal
-
-journal = OperationalJournal(
-    broker_store=store,
-    evidence_store=evidence,
-)
-
-metrics = journal.snapshot(
-    period_start=period_start,
-    period_end=period_end,
-)
-
-print(metrics.session_count)
-print(metrics.reconciliation_count)
-print(metrics.critical_reconciliation_rate)
-print(metrics.idempotency_failure_count)
-```
-
-### Evaluate the paper acceptance gate
-
-```python
-from finagent.operations import PaperAcceptanceEvaluator
-
-evaluator = PaperAcceptanceEvaluator(
-    journal=journal,
-    evidence_store=evidence,
-)
-
-report = evaluator.evaluate(
-    period_start=period_start,
-    period_end=period_end,
-    evaluated_at=datetime.now(UTC),
-)
-
-print("accepted:", report.accepted)
-for check in report.checks:
-    print(check.name, check.passed, check.actual, check.requirement)
-```
-
-The reference policy defaults are intentionally conservative and require sustained evidence, including multiple sessions/reconciliations and successful restart/kill-switch drills. For tests or a different deployment profile, create an explicit `PaperAcceptancePolicy` before the observation period and pass it to `PaperAcceptanceEvaluator`.
-
-Do not tune the acceptance thresholds after looking at the target period simply to obtain a passing report.
+Do not tune acceptance thresholds after looking at the target period simply to obtain a passing report.
 
 ---
 
@@ -504,22 +411,23 @@ A typical governed research cycle is:
 ```text
 1. create/revise hypothesis
 2. query structured memory for duplicates/failures
-3. create bounded ResearchPlan
-4. optionally use an LLM to propose a feature
-5. validate generated feature source
-6. materialize feature point-in-time
-7. register experiments in one ExperimentFamily
-8. run nested validation
-9. freeze family
-10. run family-level multiplicity/overfitting controls
-11. register/promote model through governed stages
-12. calibrate alpha and risk
-13. benchmark portfolio constructors
-14. create PortfolioHealthSnapshot
-15. Supervisor creates non-mutating request
-16. human approval applies operational authorization
-17. paper/shadow execution and reconciliation
-18. write outcomes/failures back to structured evidence memory
+3. reserve ResearchProgram budget when operating a multi-family program
+4. create bounded ResearchPlan
+5. optionally use an LLM to propose a feature
+6. validate generated feature source
+7. materialize feature point-in-time with PIT eligibility
+8. register experiments in one ExperimentFamily
+9. run nested validation
+10. freeze family
+11. run family-level multiplicity/overfitting controls
+12. register/promote model through governed stages
+13. calibrate alpha and risk
+14. benchmark portfolio constructors
+15. create PortfolioHealthSnapshot
+16. Supervisor creates non-mutating request
+17. human approval applies operational authorization
+18. paper/shadow execution and reconciliation
+19. write outcomes/failures back to structured evidence memory
 ```
 
 The memory layer helps avoid repeating old work, but memory does not grant additional experiment budget because previous results looked good.
@@ -533,6 +441,9 @@ FinAgent intentionally keeps different state classes separate:
 ```text
 SQLiteResearchRegistry
   experiments, runs, results, models
+
+SQLiteResearchProgramStore
+  cross-family research budgets and sealed holdout access
 
 SQLiteAgentAuditStore
   Agent/Supervisor calls and policy decisions
@@ -568,74 +479,23 @@ This separation is deliberate. A memory table is not allowed to become the broke
 
 ## Safety and governance invariants
 
-FinAgent 1.0 is designed around the following invariants:
-
 1. **Point-in-time research:** generated and hand-written features must not receive future observations.
-2. **Fixed research denominator:** failed/poor trials remain in experiment-family evidence.
-3. **Finite Agent authority:** tools and policy determine capability; prompts are not authorization boundaries.
-4. **Immutable run context:** an existing Agent run ID cannot be reused with a forged larger budget/allowlist.
-5. **Deterministic financial calculations:** alpha/risk/constraints/weights remain outside the LLM.
-6. **Request/apply separation:** Supervisor requests do not mutate financial state.
-7. **Human approval binding:** operational application is tied to an immutable health snapshot and approval identity.
-8. **Bounded approval lifetime:** the 1.0 controlled-approval path supports expiry and revocation.
-9. **Idempotent paper orders:** duplicate retries do not create a second trade.
-10. **Durable safety state:** process restart does not clear the paper account or halted kill switch.
-11. **Reconciliation before trust:** critical account mismatch becomes safety evidence and trips the kill switch.
-12. **Evidence instead of selective memory:** failures, drills and incidents are retained and queryable.
-
----
-
-## Testing strategy
-
-### Unit/regression tests
-
-The repository test suite checks numerical contracts, research governance, Agent policy, generated-code safety, portfolio optimization, supervision, paper operations, structured memory and 1.0 operational evidence.
-
-```bash
-pytest -q
-```
-
-### Compatibility matrix
-
-CI runs on:
-
-```text
-Python 3.11
-Python 3.12
-Python 3.13
-```
-
-### Tests that should remain mandatory before a release
-
-```text
-PIT/look-ahead regression tests
-experiment-family denominator tests
-multiple-testing/DSR/PBO tests
-Agent permission and context-forgery tests
-generated-feature AST/sandbox tests
-portfolio constraint tests
-paper order idempotency tests
-partial-fill/restart tests
-reconciliation -> kill-switch tests
-approval identity/expiry/revocation tests
-operational-journal aggregation tests
-paper-acceptance-policy tests
-```
-
-### Deployment drills
-
-For any sustained paper/shadow deployment, periodically perform and record:
-
-```text
-process restart recovery
-kill-switch halt/restart/reset
-reconciliation mismatch injection
-order retry/idempotency exercise
-corporate-action exercise for supported action types
-approval expiration/revocation exercise
-```
-
-A green CI suite proves code regressions are controlled; it does not replace sustained operational evidence.
+2. **PIT universe membership:** future-return realization cannot define formation eligibility.
+3. **Fixed research denominator:** failed/poor trials remain in experiment-family evidence.
+4. **Cross-family search budget:** repeated research families can be charged to a durable `ResearchProgram` ledger.
+5. **Finite Agent authority:** tools and policy determine capability; prompts are not authorization boundaries.
+6. **Immutable run context:** an existing Agent run ID cannot be reused with a forged larger budget/allowlist.
+7. **Deterministic financial calculations:** alpha/risk/constraints/weights remain outside the LLM.
+8. **Explicit metric direction:** selection semantics do not depend on metric-name guessing.
+9. **Canonical turnover:** gross trading and one-way turnover are distinct quantities.
+10. **Request/apply separation:** Supervisor requests do not mutate financial state.
+11. **Human approval binding:** operational application is tied to an immutable health snapshot and approval identity.
+12. **Bounded approval lifetime:** the controlled-approval path supports expiry and revocation.
+13. **Idempotent paper orders:** duplicate retries do not create a second trade.
+14. **Durable safety state:** process restart does not clear the paper account or halted kill switch.
+15. **Reconciliation before trust:** critical account mismatch becomes safety evidence and trips the kill switch.
+16. **Execution capability is explicit:** the generic planner does not pretend derivatives/FX/crypto use equity order semantics.
+17. **Evidence instead of selective memory:** failures, drills and incidents are retained and queryable.
 
 ---
 
@@ -645,16 +505,17 @@ A green CI suite proves code regressions are controlled; it does not replace sus
 src/finagent/
   domain/        typed financial/research contracts
   data/          PIT data adapters and dataset construction
-  alpha/         alpha models/calibration/ensemble
-  risk/          covariance and risk models
+  models/alpha/  alpha models and deterministic research primitives
+  models/risk/   covariance and risk models
   portfolio/     constraints, constructors, stress/rebalance
-  research/      registries, validation and generated-feature evidence
+  research/      registries, validation, programs and feature evidence
   agents/        Agent contracts, planning, tools, LLM adapters, supervision
   sandbox/       restricted generated-feature execution
   operations/    paper broker, approvals, reconciliation, safety, evidence
   memory/        structured hypothesis/evidence lineage
+  services/      deterministic portfolio/order services
 
-tests/           full regression suite
+tests/           regression suite
 docs/            ADRs, phase notes, runbooks, roadmap and release notes
 ```
 
@@ -662,10 +523,9 @@ docs/            ADRs, phase notes, runbooks, roadmap and release notes
 
 ## What 1.0 deliberately does not include
 
-FinAgent 1.0 should not be interpreted as a production brokerage stack. The following remain outside the stable scope:
-
 ```text
 live broker adapters and credentials
+futures/FX/crypto execution planners
 multi-currency cash/FX accounting
 full exchange/security-master feeds
 full corporate-action accounting
@@ -674,28 +534,29 @@ production monitoring/alert delivery infrastructure
 LangGraph as a required runtime
 multi-Agent trading authority
 vector database as structured evidence source of truth
+unrestricted autonomous code generation
 ```
 
 These are post-1.0 additions only when an actual deployment requirement justifies them.
 
 ---
 
-## Recommended post-1.0 development direction
+## Recommended post-1.0 direction
 
-The default development mode after 1.0 should be **test, operate, measure, fix**, not continuous feature expansion.
-
-Priority order:
+The default development mode after 1.0.1 should be **test, operate, measure, fix**, not continuous feature expansion:
 
 ```text
 1. sustained paper/shadow observation
 2. collect operational metrics and acceptance reports
 3. fix observed reliability defects
-4. improve market/security-master or accounting only when required
-5. add broker adapters only after a separate live-readiness gate
-6. add orchestration/advanced Agent features only when measured workflow pain justifies them
+4. reduce legacy static-analysis/style debt incrementally
+5. improve security-master/accounting only when required
+6. add instrument-specific execution only with dedicated semantics and tests
+7. add live broker adapters only after a separate live-readiness gate
+8. add advanced Agent orchestration only when measured workflow pain justifies it
 ```
 
-Advanced alpha research (ML, regime models, text features, Bayesian optimization, RL/MPC) can be added later, but should continue to pass through the existing experiment-family and statistical-governance contracts.
+Advanced alpha research can be added later, but it should continue to pass through the existing PIT, experiment-family and research-program governance contracts.
 
 ---
 
@@ -703,13 +564,14 @@ Advanced alpha research (ML, regime models, text features, Bayesian optimization
 
 Key documents:
 
+- `docs/QUANT_CORE_HARDENING_1_0_1.md` — expert-review findings, fixes and remaining boundaries;
+- `docs/RELEASE_1_0.md` — final 1.0/1.0.1 scope and release criteria;
 - `docs/DEVLOG.md` — chronological development history;
 - `docs/ROADMAP_REBASELINE.md` — post-1.0 roadmap;
-- `docs/RELEASE_1_0.md` — 1.0 scope and necessity decisions;
 - `docs/RUNBOOK_PAPER_TRADING.md` — paper operational runbook;
 - `docs/PHASE5_5.md` — structured evidence memory;
 - ADR files under `docs/` — architectural decisions and invariants.
 
 ## License / disclaimer
 
-FinAgent is quantitative research and software infrastructure. It is not investment advice, does not guarantee profitability, and the 1.0 paper/shadow acceptance report is not a certification that a strategy or system is safe for live capital.
+FinAgent is quantitative research and software infrastructure. It is not investment advice, does not guarantee profitability, and a passing paper/shadow acceptance report is not a certification that a strategy or system is safe for live capital.
