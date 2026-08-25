@@ -77,7 +77,7 @@ class HiThinkMarketDataIngestor:
     def _request(self, path: str, params: Mapping[str, object]) -> Mapping[str, object]:
         url = f"{self.BASE_URL}{path}?{urlencode(params)}"
         payload = self.transport(url, {"X-api-key": self.api_key})
-        code = int(payload.get("code", 0))
+        code = int(numeric(payload.get("code", 0), "code"))
         if code != 0:
             raise RuntimeError(
                 f"HiThink request failed code={code}: {payload.get('message', 'unknown error')}"
