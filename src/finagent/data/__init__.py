@@ -1,7 +1,8 @@
 from .adapters import CSVPriceDataAdapter, InMemoryPriceDataAdapter, SQLitePriceDataAdapter
 from .ingestion import (
-    AKShareMarketDataIngestor,
     ALPACA_CAPABILITIES,
+    TUSHARE_15K_CAPABILITIES,
+    AKShareMarketDataIngestor,
     AlpacaMarketDataIngestor,
     DataCapability,
     HiThinkMarketDataIngestor,
@@ -20,7 +21,6 @@ from .ingestion import (
     ProviderTier,
     QualityIssue,
     ResearchDataRequirement,
-    TUSHARE_15K_CAPABILITIES,
     TushareMarketDataIngestor,
     compare_provider_records,
     create_provider,
@@ -31,8 +31,9 @@ from .ingestion import (
 from .store import SQLitePriceStore
 
 __all__ = [
-    "AKShareMarketDataIngestor",
     "ALPACA_CAPABILITIES",
+    "TUSHARE_15K_CAPABILITIES",
+    "AKShareMarketDataIngestor",
     "AlpacaMarketDataIngestor",
     "CSVPriceDataAdapter",
     "DataCapability",
@@ -55,7 +56,6 @@ __all__ = [
     "ResearchDataRequirement",
     "SQLitePriceDataAdapter",
     "SQLitePriceStore",
-    "TUSHARE_15K_CAPABILITIES",
     "TushareMarketDataIngestor",
     "compare_provider_records",
     "create_provider",
