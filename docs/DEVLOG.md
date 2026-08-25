@@ -2,6 +2,50 @@
 
 This is the canonical chronological development log. Phase-specific design decisions are recorded in ADR, phase and release documents.
 
+## 2026-08-25 — Version 1.0.1: Expert-Review Quant-Core Hardening
+
+### Goal
+
+Close the final known correctness, governance and release-engineering gaps identified by expert review without widening the 1.0 paper/shadow scope.
+
+### Delivered
+
+```text
+PIT eligibility separated from future-label realization
+explicit fully-unrealized horizon-boundary handling
+ResearchSplit eligibility_mask / PIT UniverseProvider contracts
+cross-family ResearchProgram alpha/search budgets
+one-time sealed holdout access
+MetricObjective MAXIMIZE / MINIMIZE semantics
+TradeActivity gross-traded-weight / one-way-turnover convention
+batched restricted generated-feature PIT windows
+canonical deterministic alpha primitives
+generic OrderPlanner equity/ETF-only execution boundary
+expanded CI quality/build gates
+expert-review hardening release documentation
+```
+
+Key invariants:
+
+- future-label availability never determines which assets enter the formation universe;
+- a fully unrealized formation cross-section is an unevaluable horizon boundary, while partial missing realized returns for formed positions fail closed by default;
+- PIT eligibility is a first-class `(time, asset)` contract rather than an inference from realized returns;
+- research attempts across multiple `ExperimentFamily` objects can be charged to a durable `ResearchProgram` budget;
+- failed/reserved attempts remain part of the effective search process and still consume research budget;
+- winner selection follows explicit metric direction rather than assuming every primary metric is maximized;
+- linear bps cost is applied to gross traded weight, with one-way turnover reported separately;
+- sandbox batching does not expose a complete future panel to generated code;
+- domain support for an `AssetType` does not imply generic execution support;
+- the generic 1.0 `OrderPlanner` fails closed outside equity/ETF spot-like quantity semantics;
+- CI now distinguishes a repository-wide critical static baseline from stricter hardened-surface checks, avoiding a false claim that all historical style debt has already been removed.
+
+Documentation:
+
+- `QUANT_CORE_HARDENING_1_0_1.md`
+- `RELEASE_1_0.md` updated for final 1.0.1 delivery.
+
+---
+
 ## 2026-08-25 — Version 1.0.0: Stable Paper/Shadow Release
 
 ### Goal
