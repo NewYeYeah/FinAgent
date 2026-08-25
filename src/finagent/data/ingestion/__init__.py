@@ -31,8 +31,9 @@ from .registry import (
 from .tushare import TushareMarketDataIngestor
 
 __all__ = [
-    "AKShareMarketDataIngestor",
     "ALPACA_CAPABILITIES",
+    "TUSHARE_15K_CAPABILITIES",
+    "AKShareMarketDataIngestor",
     "AlpacaMarketDataIngestor",
     "DataCapability",
     "HiThinkMarketDataIngestor",
@@ -51,7 +52,6 @@ __all__ = [
     "ProviderTier",
     "QualityIssue",
     "ResearchDataRequirement",
-    "TUSHARE_15K_CAPABILITIES",
     "TushareMarketDataIngestor",
     "compare_provider_records",
     "create_provider",
