@@ -1,15 +1,18 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import numpy as np
 import pytest
 
 from finagent.agents import ExperimentVariant, ResearchBudget, ResearchPlan, ScriptedResearchAgent
 from finagent.agents.generated_features import FeatureSpec
-from finagent.domain.assets import AssetId
+from finagent.domain.assets import AssetId, AssetType
 from finagent.domain.experiments import ArtifactRef, ArtifactType
+from finagent.domain.forecasts import ModelRef
+from finagent.domain.market import MarketSnapshot, PriceBar
 from finagent.domain.metrics import MetricObjective
+from finagent.domain.portfolio import PortfolioState, PortfolioTarget, RiskDecision, RiskStatus
 from finagent.domain.research import ResearchDataset, ResearchSplit, TimeRange
 from finagent.domain.trading import TradeActivity
 from finagent.domain.universe import ScheduledUniverseProvider
@@ -25,15 +28,19 @@ from finagent.research.generated_feature_eval import (
     evaluate_generated_feature_dataset,
 )
 from finagent.sandbox import FeatureSandboxRequest, LocalFeatureSandbox
-
-UTC = timezone.utc
+from finagent.services.portfolio import OrderPlanner
 
 
 def _assets() -> tuple[AssetId, ...]:
     return tuple(AssetId(symbol) for symbol in ("AAA", "BBB", "CCC"))
 
 
-def _dataset(*, eligibility=None, missing_first_label=False) -> ResearchDataset:
+def _dataset(
+    *,
+    eligibility=None,
+    missing_first_label: bool = False,
+    unrealized_last_period: bool = False,
+) -> ResearchDataset:
     assets = _assets()
     start = datetime(2026, 1, 1, tzinfo=UTC)
     timestamps = tuple(start + timedelta(days=i) for i in range(3))
@@ -55,6 +62,8 @@ def _dataset(*, eligibility=None, missing_first_label=False) -> ResearchDataset:
     )
     if missing_first_label:
         labels[0, 2, 0] = np.nan
+    if unrealized_last_period:
+        labels[-1, :, 0] = np.nan
     if eligibility is None:
         eligibility = np.ones((3, 3), dtype=bool)
     split = ResearchSplit(
@@ -86,6 +95,18 @@ def test_forward_label_missingness_cannot_silently_change_formation_universe():
         )
 
 
+def test_fully_unrealized_cross_section_is_skipped_as_horizon_boundary():
+    dataset = _dataset(unrealized_last_period=True)
+    trace = evaluate_generated_feature_dataset(
+        dataset,
+        feature_digest="feature",
+        config=GeneratedFeatureEvaluationConfig(min_periods=2),
+    )
+    assert len(trace.net_returns) == 2
+    assert trace.metrics["evaluated_periods"] == pytest.approx(2.0)
+    assert trace.metrics["unrealized_boundary_periods"] == pytest.approx(1.0)
+
+
 def test_pit_eligibility_not_future_label_controls_formation():
     eligibility = np.ones((3, 3), dtype=bool)
     eligibility[0, 2] = False
@@ -104,6 +125,31 @@ def test_trade_activity_distinguishes_gross_and_one_way_turnover():
     assert activity.gross_traded_weight == pytest.approx(0.2)
     assert activity.one_way_turnover == pytest.approx(0.1)
     assert activity.linear_cost_fraction(10.0) == pytest.approx(0.0002)
+
+
+def test_generic_order_planner_fails_closed_for_derivative_semantics():
+    now = datetime(2026, 1, 1, 12, 0, tzinfo=UTC)
+    future = AssetId("ES", asset_type=AssetType.FUTURE, venue="CME", currency="USD")
+    bar = PriceBar(
+        event_time=now,
+        available_at=now,
+        open=100.0,
+        high=100.0,
+        low=100.0,
+        close=100.0,
+    )
+    snapshot = MarketSnapshot(now, {future: bar}, "test-v1")
+    state = PortfolioState(now, "USD", 10_000.0)
+    target = PortfolioTarget(
+        now,
+        {future: 1.0},
+        0.0,
+        ModelRef("test", "1"),
+    )
+    approved = RiskDecision(RiskStatus.APPROVE, checked_at=now)
+
+    with pytest.raises(NotImplementedError, match="supports only EQUITY/ETF"):
+        OrderPlanner().plan(target, state, snapshot, approved)
 
 
 def test_metric_direction_supports_minimize_primary_and_maximize_tie():
