@@ -10,18 +10,14 @@ from finagent.domain.market import PriceBar
 
 from .base import (
     MarketDataPullRequest,
+    MarketRegion,
     MaterializedMarketData,
     NormalizedBarRecord,
     finalize_materialization,
     frame_records,
     numeric,
 )
-from .providers import (
-    DataCapability,
-    ProviderCapabilities,
-    ProviderSymbolMap,
-    ProviderTier,
-)
+from .providers import DataCapability, ProviderCapabilities, ProviderSymbolMap, ProviderTier
 
 SHANGHAI = ZoneInfo("Asia/Shanghai")
 NEW_YORK = ZoneInfo("America/New_York")
@@ -63,17 +59,12 @@ def _internal_symbol(symbol: str) -> str:
 
 
 class AKShareMarketDataIngestor:
-    """Best-effort free daily-bar ingestor for development and cross-provider QA.
-
-    AKShare aggregates public upstream sources. FinAgent therefore classifies this
-    adapter as a DEVELOPMENT provider and persists the raw response before research.
-    Provider-specific US symbols can be supplied through ``ProviderSymbolMap``.
-    """
+    """Best-effort free daily-bar ingestor for development and cross-provider QA."""
 
     PROVIDER = "akshare"
     CAPABILITIES = ProviderCapabilities(
         provider=PROVIDER,
-        markets=frozenset({}),  # replaced after MarketRegion import below
+        markets=frozenset({MarketRegion.A_SHARE, MarketRegion.US_EQUITY}),
         asset_types=frozenset({AssetType.EQUITY, AssetType.ETF}),
         available=frozenset({DataCapability.HISTORICAL_DAILY}),
         implemented=frozenset({DataCapability.HISTORICAL_DAILY}),
@@ -86,7 +77,9 @@ class AKShareMarketDataIngestor:
         self.symbol_map = symbol_map or ProviderSymbolMap(self.PROVIDER)
 
     @classmethod
-    def from_environment(cls, *, symbol_map: ProviderSymbolMap | None = None) -> AKShareMarketDataIngestor:
+    def from_environment(
+        cls, *, symbol_map: ProviderSymbolMap | None = None
+    ) -> AKShareMarketDataIngestor:
         try:
             import akshare as ak
         except ImportError as exc:
@@ -95,13 +88,11 @@ class AKShareMarketDataIngestor:
 
     def _provider_symbol(self, canonical: str) -> str:
         mapped = self.symbol_map.resolve(canonical)
-        if "." in mapped and mapped.upper().endswith((".SH", ".SZ", ".BJ")):
+        if mapped.upper().endswith((".SH", ".SZ", ".BJ")):
             return mapped.split(".", 1)[0]
         return mapped
 
     def fetch(self, request: MarketDataPullRequest) -> list[dict[str, object]]:
-        from .base import MarketRegion
-
         if request.market not in {MarketRegion.A_SHARE, MarketRegion.US_EQUITY}:
             raise ValueError("AKShare adapter supports A-share and US equity daily research")
         if request.asset_type not in {AssetType.EQUITY, AssetType.ETF}:
@@ -110,10 +101,9 @@ class AKShareMarketDataIngestor:
         for canonical in request.symbols:
             source = self._provider_symbol(canonical)
             if request.market is MarketRegion.A_SHARE:
-                if request.asset_type is AssetType.ETF:
-                    endpoint_name = "fund_etf_hist_em"
-                else:
-                    endpoint_name = "stock_zh_a_hist"
+                endpoint_name = (
+                    "fund_etf_hist_em" if request.asset_type is AssetType.ETF else "stock_zh_a_hist"
+                )
             else:
                 endpoint_name = "stock_us_hist"
             endpoint = getattr(self.client, endpoint_name, None)
@@ -139,8 +129,6 @@ class AKShareMarketDataIngestor:
         request: MarketDataPullRequest,
         rows: Sequence[Mapping[str, object]],
     ) -> tuple[NormalizedBarRecord, ...]:
-        from .base import MarketRegion
-
         requested = set(request.symbols)
         output: list[NormalizedBarRecord] = []
         for row in rows:
@@ -185,8 +173,6 @@ class AKShareMarketDataIngestor:
         *,
         pulled_at: datetime | None = None,
     ) -> MaterializedMarketData:
-        from .base import MarketRegion
-
         pulled_at = pulled_at or datetime.now(UTC)
         rows = self.fetch(request)
         normalized = self.normalize(request, rows)
@@ -201,17 +187,3 @@ class AKShareMarketDataIngestor:
             pulled_at=pulled_at,
             require_common_calendar=True,
         )
-
-
-# Avoid an import cycle at module definition time while keeping the public constant typed.
-from .base import MarketRegion as _MarketRegion
-
-AKShareMarketDataIngestor.CAPABILITIES = ProviderCapabilities(
-    provider=AKShareMarketDataIngestor.PROVIDER,
-    markets=frozenset({_MarketRegion.A_SHARE, _MarketRegion.US_EQUITY}),
-    asset_types=frozenset({AssetType.EQUITY, AssetType.ETF}),
-    available=frozenset({DataCapability.HISTORICAL_DAILY}),
-    implemented=frozenset({DataCapability.HISTORICAL_DAILY}),
-    tier=ProviderTier.DEVELOPMENT,
-    notes=("public-upstream aggregation; no SLA", "use as development/cross-check data"),
-)
