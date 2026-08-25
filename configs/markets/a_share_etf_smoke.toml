@@ -1,5 +1,5 @@
 [market]
-provider = "tushare"
+provider = "akshare"
 region = "a_share"
 symbols = ["510300.SH", "510500.SH", "159915.SZ", "159919.SZ"]
 asset_type = "etf"
