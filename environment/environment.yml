@@ -1,0 +1,22 @@
+name: finagent
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.11
+  - numpy>=1.26
+  - scipy>=1.11
+  - pandas>=2.1
+  - pyyaml>=6.0
+  - pytest>=8
+  - pytest-cov
+  - pytest-xdist
+  - ruff
+  - mypy
+  - build
+  - twine
+  - pip
+  - pip:
+      - -e ..

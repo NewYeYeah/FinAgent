@@ -1,0 +1,11 @@
+-r requirements.txt
+
+pytest>=8
+pytest-cov
+pytest-xdist
+
+ruff
+mypy
+
+build
+twine
