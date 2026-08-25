@@ -3,10 +3,12 @@ from __future__ import annotations
 import json
 import re
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from types import MappingProxyType
 from typing import Callable, Mapping
 
 from finagent.domain._validation import require_non_empty
+from finagent.domain.metrics import MetricObjective
 
 from .domain import AgentTask
 from .planning import ExperimentVariant, ResearchBudget, ResearchPlan
@@ -28,10 +30,16 @@ class LLMPlanningPolicy:
     correction_method: str = "holm"
     max_output_tokens: int = 2500
     temperature: float | None = None
+    research_program_id: str = ""
+    metric_objectives: Mapping[str, MetricObjective | str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "model", require_non_empty(self.model, "model"))
-        object.__setattr__(self, "planner_version", require_non_empty(self.planner_version, "planner_version"))
+        object.__setattr__(
+            self,
+            "planner_version",
+            require_non_empty(self.planner_version, "planner_version"),
+        )
         for name in ("max_variants", "max_tool_calls", "max_output_tokens"):
             value = getattr(self, name)
             if isinstance(value, bool) or not isinstance(value, int) or value < 1:
@@ -44,10 +52,23 @@ class LLMPlanningPolicy:
             raise ValueError("allowed metric lists cannot be empty")
         object.__setattr__(self, "allowed_primary_metrics", primary)
         object.__setattr__(self, "allowed_tie_break_metrics", tie)
+        object.__setattr__(self, "research_program_id", self.research_program_id.strip())
+        normalized_objectives: dict[str, MetricObjective] = {}
+        for name, objective in self.metric_objectives.items():
+            normalized_objectives[require_non_empty(str(name), "metric name")] = MetricObjective(
+                objective
+            )
+        object.__setattr__(self, "metric_objectives", MappingProxyType(normalized_objectives))
         if not 0.0 < self.alpha < 1.0:
             raise ValueError("alpha must be in (0, 1)")
         if self.temperature is not None and not 0.0 <= float(self.temperature) <= 2.0:
             raise ValueError("temperature must be in [0, 2]")
+
+    def objective_for(self, metric: str, *, tie_break: bool) -> MetricObjective:
+        if metric in self.metric_objectives:
+            return self.metric_objectives[metric]
+        # Backward-compatible defaults are explicit by role, not inferred from name.
+        return MetricObjective.MINIMIZE if tie_break else MetricObjective.MAXIMIZE
 
 
 @dataclass(frozen=True, slots=True)
@@ -85,31 +106,50 @@ class LLMResearchPlanner:
             response = self.provider.complete(request)
         except Exception as exc:
             if self.call_store is not None:
-                self.call_store.record_failure(task.task_id, request, self.provider.provider_name, exc)
+                self.call_store.record_failure(
+                    task.task_id,
+                    request,
+                    self.provider.provider_name,
+                    exc,
+                )
             raise
         try:
             plan = self.parse_plan(task, response.output_text)
         except Exception as exc:
             if self.call_store is not None:
-                self.call_store.record_response(task.task_id, request, response, planning_valid=False, validation_error=str(exc))
+                self.call_store.record_response(
+                    task.task_id,
+                    request,
+                    response,
+                    planning_valid=False,
+                    validation_error=str(exc),
+                )
             raise
         if self.call_store is not None:
-            self.call_store.record_response(task.task_id, request, response, planning_valid=True)
+            self.call_store.record_response(
+                task.task_id,
+                request,
+                response,
+                planning_valid=True,
+            )
         return LLMPlanningResult(plan, response, request.prompt_hash)
 
     def _request(self, task: AgentTask) -> LLMRequest:
         catalog = []
         for template_id in self.templates.names():
             template = self.templates.get(template_id)
-            catalog.append({
-                "template_id": template.template_id,
-                "parameter_names": sorted(template.parameter_names),
-            })
+            catalog.append(
+                {
+                    "template_id": template.template_id,
+                    "parameter_names": sorted(template.parameter_names),
+                }
+            )
         instructions = (
             "You are the FinAgent research planner. Propose a finite experiment family only from "
-            "the supplied approved template catalog. Do not choose statistical thresholds, portfolio "
-            "weights, execution settings, broker actions, code, model lifecycle stages, or research "
-            "budgets. Keep variants meaningfully distinct and within the declared maximum."
+            "the supplied approved template catalog. Do not choose statistical thresholds, metric "
+            "directions, portfolio weights, execution settings, broker actions, code, model lifecycle "
+            "stages, or research budgets. Keep variants meaningfully distinct and within the declared "
+            "maximum."
         )
         input_payload = {
             "research_task": task.objective,
@@ -128,7 +168,11 @@ class LLMResearchPlanner:
             response_schema=self._schema(),
             max_output_tokens=self.policy.max_output_tokens,
             temperature=self.policy.temperature,
-            metadata={"task_id": task.task_id, "planner_version": self.policy.planner_version},
+            metadata={
+                "task_id": task.task_id,
+                "planner_version": self.policy.planner_version,
+                "research_program_id": self.policy.research_program_id,
+            },
         )
 
     def _schema(self) -> Mapping[str, object]:
@@ -137,9 +181,15 @@ class LLMResearchPlanner:
             "properties": {
                 "family_id": {"type": "string"},
                 "research_question": {"type": "string"},
-                "primary_metric": {"type": "string", "enum": list(self.policy.allowed_primary_metrics)},
+                "primary_metric": {
+                    "type": "string",
+                    "enum": list(self.policy.allowed_primary_metrics),
+                },
                 "template_id": {"type": "string", "enum": list(self.templates.names())},
-                "tie_break_metric": {"type": "string", "enum": list(self.policy.allowed_tie_break_metrics)},
+                "tie_break_metric": {
+                    "type": "string",
+                    "enum": list(self.policy.allowed_tie_break_metrics),
+                },
                 "variants": {
                     "type": "array",
                     "minItems": 1,
@@ -156,11 +206,13 @@ class LLMResearchPlanner:
                                     "type": "object",
                                     "properties": {
                                         "name": {"type": "string"},
-                                        "value": {"anyOf": [
-                                            {"type": "string"},
-                                            {"type": "number"},
-                                            {"type": "boolean"},
-                                        ]},
+                                        "value": {
+                                            "anyOf": [
+                                                {"type": "string"},
+                                                {"type": "number"},
+                                                {"type": "boolean"},
+                                            ]
+                                        },
                                     },
                                     "required": ["name", "value"],
                                     "additionalProperties": False,
@@ -173,8 +225,12 @@ class LLMResearchPlanner:
                 },
             },
             "required": [
-                "family_id", "research_question", "primary_metric", "template_id",
-                "tie_break_metric", "variants",
+                "family_id",
+                "research_question",
+                "primary_metric",
+                "template_id",
+                "tie_break_metric",
+                "variants",
             ],
             "additionalProperties": False,
         }
@@ -186,17 +242,30 @@ class LLMResearchPlanner:
             raise LLMPlanValidationError(f"planner output is not valid JSON: {exc}") from exc
         if not isinstance(payload, dict):
             raise LLMPlanValidationError("planner output must be a JSON object")
-        allowed = {"family_id", "research_question", "primary_metric", "template_id", "tie_break_metric", "variants"}
+        allowed = {
+            "family_id",
+            "research_question",
+            "primary_metric",
+            "template_id",
+            "tie_break_metric",
+            "variants",
+        }
         extra = set(payload) - allowed
         if extra:
             raise LLMPlanValidationError(f"unexpected planner fields: {sorted(extra)}")
 
         template_id = require_non_empty(str(payload.get("template_id", "")), "template_id")
         template = self.templates.get(template_id)
-        primary_metric = require_non_empty(str(payload.get("primary_metric", "")), "primary_metric")
+        primary_metric = require_non_empty(
+            str(payload.get("primary_metric", "")),
+            "primary_metric",
+        )
         if primary_metric not in self.policy.allowed_primary_metrics:
             raise LLMPlanValidationError("primary_metric is not policy-approved")
-        tie_break_metric = require_non_empty(str(payload.get("tie_break_metric", "")), "tie_break_metric")
+        tie_break_metric = require_non_empty(
+            str(payload.get("tie_break_metric", "")),
+            "tie_break_metric",
+        )
         if tie_break_metric not in self.policy.allowed_tie_break_metrics:
             raise LLMPlanValidationError("tie_break_metric is not policy-approved")
 
@@ -226,14 +295,17 @@ class LLMResearchPlanner:
                 params[name] = value
             if set(params) != set(template.parameter_names):
                 raise LLMPlanValidationError(
-                    f"variant parameters must exactly match template parameters {sorted(template.parameter_names)}"
+                    "variant parameters must exactly match template parameters "
+                    f"{sorted(template.parameter_names)}"
                 )
-            variants.append(ExperimentVariant(
-                variant_id=self._safe_id(str(item["variant_id"]), "variant_id"),
-                experiment_id=self._safe_id(str(item["experiment_id"]), "experiment_id"),
-                parameters=params,
-                hypothesis=str(item["hypothesis"]),
-            ))
+            variants.append(
+                ExperimentVariant(
+                    variant_id=self._safe_id(str(item["variant_id"]), "variant_id"),
+                    experiment_id=self._safe_id(str(item["experiment_id"]), "experiment_id"),
+                    parameters=params,
+                    hypothesis=str(item["hypothesis"]),
+                )
+            )
 
         budget = ResearchBudget(
             max_tool_calls=self.policy.max_tool_calls,
@@ -247,7 +319,10 @@ class LLMResearchPlanner:
             plan_id=f"{self.policy.planner_version}:{task.task_id}",
             planner_version=self.policy.planner_version,
             family_id=self._safe_id(str(payload.get("family_id", "")), "family_id"),
-            research_question=require_non_empty(str(payload.get("research_question", "")), "research_question"),
+            research_question=require_non_empty(
+                str(payload.get("research_question", "")),
+                "research_question",
+            ),
             primary_metric=primary_metric,
             template_id=template_id,
             variants=tuple(variants),
@@ -255,7 +330,20 @@ class LLMResearchPlanner:
             tie_break_metric=tie_break_metric,
             alpha=self.policy.alpha,
             correction_method=self.policy.correction_method,
-            metadata={"source": "llm", "provider": self.provider.provider_name, "model": self.policy.model},
+            metadata={
+                "source": "llm",
+                "provider": self.provider.provider_name,
+                "model": self.policy.model,
+            },
+            program_id=self.policy.research_program_id,
+            primary_metric_objective=self.policy.objective_for(
+                primary_metric,
+                tie_break=False,
+            ),
+            tie_break_metric_objective=self.policy.objective_for(
+                tie_break_metric,
+                tie_break=True,
+            ),
         )
 
     @staticmethod
