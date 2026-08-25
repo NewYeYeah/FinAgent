@@ -9,6 +9,7 @@ from types import MappingProxyType
 from typing import Mapping
 
 from finagent.domain._validation import require_non_empty
+from finagent.domain.metrics import MetricObjective
 
 Scalar = str | int | float | bool
 
@@ -79,14 +80,26 @@ class ResearchPlan:
     correction_method: str = "holm"
     promotion_intent: PromotionIntent | None = None
     metadata: Mapping[str, str] = field(default_factory=dict)
+    program_id: str = ""
+    primary_metric_objective: MetricObjective = MetricObjective.MAXIMIZE
+    tie_break_metric_objective: MetricObjective = MetricObjective.MINIMIZE
 
     def __post_init__(self) -> None:
-        for name in ("plan_id", "planner_version", "family_id", "research_question", "primary_metric", "template_id"):
+        for name in (
+            "plan_id",
+            "planner_version",
+            "family_id",
+            "research_question",
+            "primary_metric",
+            "template_id",
+        ):
             object.__setattr__(self, name, require_non_empty(getattr(self, name), name))
         variants = tuple(self.variants)
         if not variants:
             raise ValueError("ResearchPlan requires at least one variant")
-        if len({v.variant_id for v in variants}) != len(variants) or len({v.experiment_id for v in variants}) != len(variants):
+        if len({v.variant_id for v in variants}) != len(variants) or len(
+            {v.experiment_id for v in variants}
+        ) != len(variants):
             raise ValueError("variant_id and experiment_id values must be unique")
         if len(variants) > self.budget.max_experiments or len(variants) > self.budget.max_family_size:
             raise ValueError("plan variants exceed research budget")
@@ -95,7 +108,12 @@ class ResearchPlan:
         if not 0.0 < float(self.alpha) < 1.0:
             raise ValueError("alpha must be in (0, 1)")
         object.__setattr__(self, "tie_break_metric", self.tie_break_metric.strip())
-        object.__setattr__(self, "metadata", MappingProxyType({str(k): str(v) for k, v in self.metadata.items()}))
+        object.__setattr__(self, "program_id", self.program_id.strip())
+        object.__setattr__(
+            self,
+            "metadata",
+            MappingProxyType({str(k): str(v) for k, v in self.metadata.items()}),
+        )
         if self.maximum_tool_calls > self.budget.max_tool_calls:
             raise ValueError("plan maximum tool calls exceed ResearchBudget.max_tool_calls")
 
@@ -114,21 +132,52 @@ class ResearchPlan:
             "task_id": require_non_empty(task_id, "task_id"),
             "plan_id": self.plan_id,
             "planner_version": self.planner_version,
+            "program_id": self.program_id,
             "family_id": self.family_id,
             "research_question": self.research_question,
             "primary_metric": self.primary_metric,
+            "primary_metric_objective": self.primary_metric_objective.value,
             "template_id": self.template_id,
-            "variants": [{"variant_id": v.variant_id, "experiment_id": v.experiment_id, "parameters": dict(v.parameters), "hypothesis": v.hypothesis} for v in self.variants],
-            "budget": {"max_tool_calls": self.budget.max_tool_calls, "max_experiments": self.budget.max_experiments, "max_family_size": self.budget.max_family_size, "max_failed_experiments": self.budget.max_failed_experiments, "allow_new_family": self.budget.allow_new_family, "allow_promotion_request": self.budget.allow_promotion_request},
+            "variants": [
+                {
+                    "variant_id": v.variant_id,
+                    "experiment_id": v.experiment_id,
+                    "parameters": dict(v.parameters),
+                    "hypothesis": v.hypothesis,
+                }
+                for v in self.variants
+            ],
+            "budget": {
+                "max_tool_calls": self.budget.max_tool_calls,
+                "max_experiments": self.budget.max_experiments,
+                "max_family_size": self.budget.max_family_size,
+                "max_failed_experiments": self.budget.max_failed_experiments,
+                "allow_new_family": self.budget.allow_new_family,
+                "allow_promotion_request": self.budget.allow_promotion_request,
+            },
             "tie_break_metric": self.tie_break_metric,
+            "tie_break_metric_objective": self.tie_break_metric_objective.value,
             "alpha": float(self.alpha),
             "correction_method": self.correction_method,
-            "promotion_intent": None if self.promotion_intent is None else {"model_id": self.promotion_intent.model_id, "to_stage": self.promotion_intent.to_stage, "reason": self.promotion_intent.reason},
+            "promotion_intent": (
+                None
+                if self.promotion_intent is None
+                else {
+                    "model_id": self.promotion_intent.model_id,
+                    "to_stage": self.promotion_intent.to_stage,
+                    "reason": self.promotion_intent.reason,
+                }
+            ),
             "metadata": dict(self.metadata),
         }
 
     def fingerprint(self, task_id: str) -> str:
-        encoded = json.dumps(self.to_payload(task_id), sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+        encoded = json.dumps(
+            self.to_payload(task_id),
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        ).encode()
         return hashlib.sha256(encoded).hexdigest()
 
 
@@ -158,14 +207,22 @@ class SQLiteAgentPlanStore:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self._connect() as con:
-            con.executescript("""
+            con.executescript(
+                """
                 CREATE TABLE IF NOT EXISTS agent_plans (
-                    run_id TEXT PRIMARY KEY, task_id TEXT NOT NULL, fingerprint TEXT NOT NULL, payload_json TEXT NOT NULL
+                    run_id TEXT PRIMARY KEY,
+                    task_id TEXT NOT NULL,
+                    fingerprint TEXT NOT NULL,
+                    payload_json TEXT NOT NULL
                 );
                 CREATE TABLE IF NOT EXISTS agent_plan_events (
-                    sequence INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL, event_type TEXT NOT NULL, payload_json TEXT NOT NULL
+                    sequence INTEGER PRIMARY KEY AUTOINCREMENT,
+                    run_id TEXT NOT NULL,
+                    event_type TEXT NOT NULL,
+                    payload_json TEXT NOT NULL
                 );
-            """)
+                """
+            )
 
     def _connect(self) -> sqlite3.Connection:
         return sqlite3.connect(self.path)
@@ -176,14 +233,20 @@ class SQLiteAgentPlanStore:
         encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
         with self._connect() as con:
             try:
-                con.execute("INSERT INTO agent_plans VALUES (?, ?, ?, ?)", (run_id, task_id, fingerprint, encoded))
+                con.execute(
+                    "INSERT INTO agent_plans VALUES (?, ?, ?, ?)",
+                    (run_id, task_id, fingerprint, encoded),
+                )
             except sqlite3.IntegrityError as exc:
                 raise ValueError(f"agent plan for run {run_id!r} is already registered") from exc
         return StoredResearchPlan(run_id, task_id, fingerprint, MappingProxyType(payload))
 
     def get_plan(self, run_id: str) -> StoredResearchPlan:
         with self._connect() as con:
-            row = con.execute("SELECT task_id, fingerprint, payload_json FROM agent_plans WHERE run_id=?", (run_id,)).fetchone()
+            row = con.execute(
+                "SELECT task_id, fingerprint, payload_json FROM agent_plans WHERE run_id=?",
+                (run_id,),
+            ).fetchone()
         if row is None:
             raise KeyError(run_id)
         return StoredResearchPlan(run_id, row[0], row[1], MappingProxyType(json.loads(row[2])))
@@ -192,9 +255,20 @@ class SQLiteAgentPlanStore:
         with self._connect() as con:
             if con.execute("SELECT 1 FROM agent_plans WHERE run_id=?", (run_id,)).fetchone() is None:
                 raise KeyError(run_id)
-            con.execute("INSERT INTO agent_plan_events (run_id, event_type, payload_json) VALUES (?, ?, ?)", (run_id, require_non_empty(event_type, "event_type"), json.dumps(payload, sort_keys=True, separators=(",", ":"))))
+            con.execute(
+                "INSERT INTO agent_plan_events (run_id, event_type, payload_json) VALUES (?, ?, ?)",
+                (
+                    run_id,
+                    require_non_empty(event_type, "event_type"),
+                    json.dumps(payload, sort_keys=True, separators=(",", ":")),
+                ),
+            )
 
     def events(self, run_id: str) -> tuple[tuple[str, Mapping[str, object]], ...]:
         with self._connect() as con:
-            rows = con.execute("SELECT event_type, payload_json FROM agent_plan_events WHERE run_id=? ORDER BY sequence", (run_id,)).fetchall()
+            rows = con.execute(
+                "SELECT event_type, payload_json FROM agent_plan_events "
+                "WHERE run_id=? ORDER BY sequence",
+                (run_id,),
+            ).fetchall()
         return tuple((row[0], MappingProxyType(json.loads(row[1]))) for row in rows)
