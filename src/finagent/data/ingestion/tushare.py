@@ -43,17 +43,15 @@ def _session_times(trade_date: str) -> tuple[datetime, datetime]:
         f"{str(trade_date)[:4]}-{str(trade_date)[4:6]}-{str(trade_date)[6:8]}"
     )
     event_time = datetime.combine(day, time(9, 30), tzinfo=SHANGHAI).astimezone(UTC)
-    # Tushare documents daily/fund_daily as post-close data. 16:00 local is a
-    # conservative M1 availability convention and is recorded in the manifest.
     available_at = datetime.combine(day, time(16, 0), tzinfo=SHANGHAI).astimezone(UTC)
     return event_time, available_at
 
 
 class TushareMarketDataIngestor:
-    """Tushare daily ETF/equity ingestor with deterministic normalized output.
+    """Optional Tushare low-frequency reference ingestor.
 
-    Provider imports and credentials remain optional. Tests can inject a client with
-    ``daily`` and/or ``fund_daily`` methods returning DataFrame-like values.
+    FinAgent's provider registry models the user's 15k-points/no-extra-paid-services
+    boundary. Minute, realtime and US-market entitlements are therefore not assumed.
     """
 
     PROVIDER = "tushare"
@@ -70,7 +68,7 @@ class TushareMarketDataIngestor:
             import tushare as ts
         except ImportError as exc:
             raise RuntimeError(
-                "Tushare support is optional; install the a-share extra"
+                "Tushare support is optional; install the tushare-reference extra"
             ) from exc
         return cls(ts.pro_api(token))
 
@@ -80,7 +78,7 @@ class TushareMarketDataIngestor:
             return "fund_daily"
         if asset_type is AssetType.EQUITY:
             return "daily"
-        raise ValueError("Tushare M1 supports only A-share equity/ETF daily bars")
+        raise ValueError("Tushare reference adapter supports only A-share equity/ETF daily bars")
 
     def fetch(self, request: MarketDataPullRequest) -> list[dict[str, object]]:
         if request.market.value != "a_share":
@@ -111,7 +109,9 @@ class TushareMarketDataIngestor:
         output: list[NormalizedBarRecord] = []
         requested = set(request.symbols)
         for row in rows:
-            source_symbol = str(row.get("ts_code") or row.get("_requested_symbol") or "").upper()
+            source_symbol = str(
+                row.get("ts_code") or row.get("_requested_symbol") or ""
+            ).upper()
             if source_symbol not in requested:
                 raise ValueError(f"Tushare returned unexpected symbol {source_symbol!r}")
             venue = _venue_for_symbol(
@@ -135,7 +135,6 @@ class TushareMarketDataIngestor:
                         high=numeric(row["high"], "high"),
                         low=numeric(row["low"], "low"),
                         close=numeric(row["close"], "close"),
-                        # Tushare daily/fund_daily reports volume in lots (手).
                         volume=numeric(row.get("vol") or 0.0, "vol") * 100.0,
                     ),
                     source_symbol=source_symbol,
