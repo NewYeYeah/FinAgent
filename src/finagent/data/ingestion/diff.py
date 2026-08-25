@@ -20,7 +20,12 @@ class ProviderDiffReport:
 
     @property
     def passed(self) -> bool:
-        return not self.missing_left and not self.missing_right and self.close_mismatches == 0
+        return (
+            not self.missing_left
+            and not self.missing_right
+            and self.close_mismatches == 0
+            and self.volume_mismatches == 0
+        )
 
     def to_dict(self) -> dict[str, object]:
         return {
