@@ -78,7 +78,7 @@ class HiThinkRESTClient:
             f"{self.base_url}{path}?{query}",
             headers={"X-api-key": self.api_key, "Accept": "application/json"},
         )
-        with urlopen(request, timeout=30) as response:  # noqa: S310 - fixed HTTPS provider URL
+        with urlopen(request, timeout=30) as response:
             payload = json.loads(response.read().decode("utf-8"))
         if not isinstance(payload, Mapping):
             raise TypeError("HiThink response must be a JSON object")
@@ -103,7 +103,6 @@ class HiThinkMarketDataIngestor:
                 DataCapability.REALTIME_SNAPSHOT,
                 DataCapability.FUNDAMENTALS,
                 DataCapability.CORPORATE_ACTIONS,
-                DataCapability.PIT_UNIVERSE,
                 DataCapability.ALTERNATIVE_DATA,
             }
         ),
@@ -115,7 +114,7 @@ class HiThinkMarketDataIngestor:
         ),
     )
 
-    def __init__(self, client: HiThinkRESTClient | object) -> None:
+    def __init__(self, client: object) -> None:
         self.client = client
 
     @classmethod
