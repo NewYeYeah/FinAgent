@@ -75,6 +75,7 @@ class AKShareMarketDataIngestor:
     def __init__(self, client, *, symbol_map: ProviderSymbolMap | None = None) -> None:
         self.client = client
         self.symbol_map = symbol_map or ProviderSymbolMap(self.PROVIDER)
+        self._us_symbol_cache: dict[str, str] | None = None
 
     @classmethod
     def from_environment(
@@ -86,11 +87,40 @@ class AKShareMarketDataIngestor:
             raise RuntimeError("AKShare support is optional; install the cn-free extra") from exc
         return cls(ak, symbol_map=symbol_map)
 
-    def _provider_symbol(self, canonical: str) -> str:
+    def _load_us_symbol_cache(self) -> dict[str, str]:
+        if self._us_symbol_cache is not None:
+            return self._us_symbol_cache
+        endpoint = getattr(self.client, "stock_us_spot_em", None)
+        if not callable(endpoint):
+            raise TypeError(
+                "AKShare US canonical-symbol resolution requires stock_us_spot_em(); "
+                "otherwise provide [market.provider_symbols] explicitly"
+            )
+        mappings: dict[str, str] = {}
+        for row in frame_records(endpoint()):
+            code = str(row.get("代码") or row.get("code") or "").strip().upper()
+            if not code:
+                continue
+            ticker = code.rsplit(".", 1)[-1]
+            if ticker:
+                mappings.setdefault(ticker, code)
+        self._us_symbol_cache = mappings
+        return mappings
+
+    def _provider_symbol(self, canonical: str, market: MarketRegion) -> str:
         mapped = self.symbol_map.resolve(canonical)
-        if mapped.upper().endswith((".SH", ".SZ", ".BJ")):
-            return mapped.split(".", 1)[0]
-        return mapped
+        if market is MarketRegion.A_SHARE:
+            if mapped.upper().endswith((".SH", ".SZ", ".BJ")):
+                return mapped.split(".", 1)[0]
+            return mapped
+        if mapped.upper() != canonical.upper():
+            return mapped
+        try:
+            return self._load_us_symbol_cache()[canonical.upper()]
+        except KeyError as exc:
+            raise ValueError(
+                f"AKShare could not resolve US symbol {canonical!r}; provide market.provider_symbols"
+            ) from exc
 
     def fetch(self, request: MarketDataPullRequest) -> list[dict[str, object]]:
         if request.market not in {MarketRegion.A_SHARE, MarketRegion.US_EQUITY}:
@@ -99,7 +129,7 @@ class AKShareMarketDataIngestor:
             raise ValueError("AKShare adapter supports only equity/ETF daily bars")
         output: list[dict[str, object]] = []
         for canonical in request.symbols:
-            source = self._provider_symbol(canonical)
+            source = self._provider_symbol(canonical, request.market)
             if request.market is MarketRegion.A_SHARE:
                 endpoint_name = (
                     "fund_etf_hist_em" if request.asset_type is AssetType.ETF else "stock_zh_a_hist"
@@ -136,18 +166,23 @@ class AKShareMarketDataIngestor:
             if canonical not in requested:
                 raise ValueError(f"AKShare returned unexpected canonical symbol {canonical!r}")
             session = _day(_pick(row, "日期", "date", "trade_date", "Date"))
+            raw_volume = numeric(_pick(row, "成交量", "volume", "Volume"), "volume")
             if request.market is MarketRegion.A_SHARE:
                 event_time = datetime.combine(session, time(9, 30), tzinfo=SHANGHAI).astimezone(UTC)
                 available_at = datetime.combine(session, time(15, 15), tzinfo=SHANGHAI).astimezone(UTC)
                 venue = _cn_venue(canonical, request.venue_overrides.get(canonical, ""))
                 symbol = _internal_symbol(canonical)
                 currency = "CNY"
+                # AKShare documents A-share stock volume in lots. ETF volume unit is
+                # provider-specific, so only equity is converted here.
+                volume = raw_volume * 100.0 if request.asset_type is AssetType.EQUITY else raw_volume
             else:
                 event_time = datetime.combine(session, time(9, 30), tzinfo=NEW_YORK).astimezone(UTC)
                 available_at = datetime.combine(session, time(16, 15), tzinfo=NEW_YORK).astimezone(UTC)
                 venue = request.venue_overrides.get(canonical, "US")
                 symbol = canonical
                 currency = "USD"
+                volume = raw_volume
             asset = AssetId(symbol, request.asset_type, venue=venue, currency=currency)
             output.append(
                 NormalizedBarRecord(
@@ -159,7 +194,7 @@ class AKShareMarketDataIngestor:
                         high=numeric(_pick(row, "最高", "high", "High"), "high"),
                         low=numeric(_pick(row, "最低", "low", "Low"), "low"),
                         close=numeric(_pick(row, "收盘", "close", "Close"), "close"),
-                        volume=numeric(_pick(row, "成交量", "volume", "Volume"), "volume"),
+                        volume=volume,
                     ),
                     source_symbol=canonical,
                 )
