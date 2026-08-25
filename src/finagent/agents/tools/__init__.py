@@ -1,4 +1,5 @@
 from .base import AgentTool, FunctionTool, ToolRegistry, ToolSpec
+from .memory import ResearchMemoryToolDependencies, build_research_memory_tools
 from .portfolio import PortfolioSupervisorToolDependencies, build_portfolio_supervisor_tools
 from .research import (
     ExperimentEvaluatorRegistry,
@@ -17,9 +18,11 @@ __all__ = [
     "FamilyValidationPolicy",
     "FunctionTool",
     "PortfolioSupervisorToolDependencies",
+    "ResearchMemoryToolDependencies",
     "ResearchToolDependencies",
     "ToolRegistry",
     "ToolSpec",
     "build_portfolio_supervisor_tools",
+    "build_research_memory_tools",
     "build_research_tools",
 ]

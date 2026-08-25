@@ -1,20 +1,20 @@
 # FinAgent
 
-FinAgent is a typed, auditable quantitative-research, portfolio and paper-operation infrastructure. Language models may propose bounded research and supervision requests, but deterministic code owns numerical finance, risk, approvals and financial-state mutation.
+FinAgent is a typed, auditable quantitative-research, portfolio and paper-operation infrastructure. Language models may propose bounded research and supervision requests, but deterministic code owns numerical finance, validation, approvals and financial-state mutation.
 
-Current status: **Phase 5 — Paper/Shadow Operations and Reconciliation** (`0.6.0a1`).
+Current status: **Phase 5.5 — Structured Evidence and Research Memory** (`0.6.0b1`).
 
 ## Governing rule
 
 ```text
 LLM / Agent
   hypothesis, bounded feature code, research plans,
-  explanations and non-mutating supervision requests
+  explanations, memory queries and non-mutating supervision requests
                 |
                 v
 Deterministic control plane
-  PIT validation, research governance, policy checks,
-  human-approval application, health monitoring
+  PIT validation, research governance, memory/lineage,
+  policy checks, human approval, health monitoring
                 |
                 v
 Deterministic financial-state layer
@@ -22,7 +22,7 @@ Deterministic financial-state layer
   RiskGate, paper execution, reconciliation, kill switch
 ```
 
-The Agent never owns portfolio weights, fills, broker/account state or hard risk limits.
+The Agent never owns portfolio weights, fills, broker/account state, hard risk limits, historical memory mutation, or validation thresholds.
 
 ## Architecture
 
@@ -49,26 +49,26 @@ PortfolioHealthSnapshot
         |
 Low-Permission Portfolio Supervisor
         |
-non-mutating request
-        |
-HumanApproval
-        |
-OperationalApprovalService
+non-mutating request -> HumanApproval
         |
 TradingSafetyController
         |
-PaperBroker
+PaperBroker -> reconciliation / shadow evidence
         |
-partial fills + durable account
-        |
-PortfolioReconciler
-        |
-kill switch / shadow evidence
+        +-----------------------------------+
+                                            |
+                                  Structured Evidence Memory
+                                            |
+                       hypothesis -> feature -> experiment -> result
+                                            |
+                         model -> portfolio -> paper/shadow outcome
+                                            |
+                              bounded read-only Agent queries
 ```
 
 ## Quant and research foundation
 
-The numerical research contract remains:
+The canonical numerical path remains:
 
 ```text
 DataAdapter
@@ -82,146 +82,137 @@ DataAdapter
  -> RiskGate
 ```
 
-Research governance includes purged/embargoed and nested walk-forward validation, experiment-family lifecycle control, multiple-testing correction, Deflated Sharpe Ratio, CSCV PBO and a White-style Reality Check.
+Research governance includes purged/embargoed and nested walk-forward validation, experiment-family lifecycle control, multiple-testing correction, Deflated Sharpe Ratio, CSCV PBO and a White-style Reality Check. Failed trials remain part of the research denominator.
 
 Generated features are materialized point-in-time; safe Python syntax alone is not treated as proof against look-ahead.
 
-## Portfolio layer
+## Agent research layer
 
-Phase 4 added deterministic:
+Phase 3A established typed Agent contracts, finite tools, policy-as-code and durable audit. Phase 3B added deterministic research plans, budgets, approved templates and replay. Phase 3C added provider-neutral LLM planning. Phase 3D added restricted feature-program generation. Phase 3.5 connected generated features to real PIT IC/ICIR, turnover and net-return evidence.
 
-```text
-CrossSectionalLinearAlphaCalibrator
-AlphaForecastEnsembler
-OASCovarianceEstimator
-PCAFactorRiskEstimator
-ConstraintCompiler
+The LLM remains outside the numerical portfolio/execution hot path.
 
-EqualWeightOptimizer
-MinimumVarianceOptimizer
-RiskParityOptimizer
-ConstrainedMeanVarianceOptimizer
+## Portfolio and supervision layer
 
-PortfolioBenchmarkSuite
-PortfolioStressTester
-DriftRebalancePolicy
-```
+Phase 4 added deterministic alpha calibration/ensemble, OAS/PCA risk, centralized constraints, equal-weight/minimum-variance/risk-parity/constrained mean-variance constructors, stress testing and rebalance policy.
 
-`PortfolioTarget` remains canonical.
-
-## Portfolio Supervisor
-
-Phase 4.5 added immutable portfolio-health evidence and a separate low-permission Supervisor policy.
-
-Allowed Supervisor actions include inspection and requests for pre-registered operating policies, rebalances and human review.
-
-The following capabilities are absent:
-
-```text
-set arbitrary weights
-change hard risk limits
-bypass RiskGate
-choose fills
-submit broker orders
-mutate account state
-```
-
-Supervisor policy/rebalance request handlers return:
+Phase 4.5 added immutable portfolio-health evidence and a separate low-permission Supervisor. Supervisor policy/rebalance handlers create auditable requests with:
 
 ```text
 mutation_performed = false
 ```
 
-## Phase 5 — paper/shadow operations
+They do not set weights, bypass `RiskGate`, choose fills or submit broker orders.
 
-### Durable paper broker
+## Paper/shadow operations
 
-New operational components:
+Phase 5 added:
 
 ```text
 TradingSessionCalendar
-
 PaperOrder / BrokerOrderStatus
-PaperBrokerConfig
-PaperBroker
-SQLitePaperBrokerStore
-
-HumanApproval
-OperationalApprovalService
-
-TradingSafetyController
+PaperBroker / SQLitePaperBrokerStore
+HumanApproval / OperationalApprovalService
+TradingSafetyController / durable kill switch
 PortfolioReconciler
 ApprovedPaperTradingController
-
 CorporateActionProcessor
 ShadowPortfolioMonitor
 ExecutionCostCalibrator
 ```
 
-`client_order_id` is the paper-broker idempotency key. Reusing it for a different order is rejected.
+`client_order_id` is the paper-broker idempotency key. Partial fills persist across snapshots and process restarts. Critical reconciliation mismatches trip a durable kill switch that is not reset by restart.
 
-Participation caps create explicit partial-fill lifecycle:
+Phase 5 remains paper/shadow only; no live broker credentials are included.
 
-```text
-NEW -> PARTIALLY_FILLED -> FILLED
-```
+## Phase 5.5 — structured evidence memory
 
-Fill, order and account transitions are persisted. Reprocessing the same execution timestamp does not duplicate a fill, and a restarted process recovers account/open-order state from SQLite.
+Phase 5.5 adds a relational memory layer over stable identities rather than a free-form chat-history buffer.
 
-### Request versus application
-
-The operational path is deliberately split:
+Core components:
 
 ```text
-Supervisor request
-    mutation_performed=false
-        |
-        v
-HumanApproval
-        |
-        v
-OperationalApprovalService
-        |
-        v
-registered policy/rebalance authorization
+ResearchHypothesisRevision / HypothesisDisposition
+MemoryNode / LineageEdge
+FailureRecord / FailureCategory / FailureStage
+SQLiteResearchMemoryStore
+ResearchMemoryService
+EvidenceAwareBudgetPolicy
 ```
 
-A paper rebalance requires the exact stored human approval associated with the immutable health snapshot.
+### Hypothesis evolution
 
-### Safety and reconciliation
-
-Pre-trade checks include:
+A hypothesis has one stable ID and append-only contiguous revisions. Old claims are never overwritten when rationale, tags or disposition evolve.
 
 ```text
-durable kill switch
-per-order notional
-batch notional
-session loss fraction
-critical reconciliation count
+OPEN -> later revision may be SUPPORTED / REJECTED / INCONCLUSIVE / RETIRED
 ```
 
-Reconciliation compares cash, positions, marks and NAV. Critical cash/position mismatches halt paper operation.
+Disposition is evidence metadata; it does not bypass statistical validation or model-stage governance.
 
-The kill switch is durable and is not automatically reset after restart.
+### End-to-end lineage
 
-### Sessions and corporate actions
-
-`TradingSessionCalendar` supports timezone-aware session hours, weekdays and configured holidays.
-
-Phase 5 corporate-action support is deliberately narrow:
+The memory graph can link:
 
 ```text
-stock split
-cash dividend
+hypothesis
+ -> generated feature
+ -> experiment
+ -> result
+ -> model
+ -> portfolio-health snapshot
+ -> paper order/fill
+ -> reconciliation / shadow outcome
 ```
 
-Actions are idempotent by stable action ID.
+The memory store does **not** replace the research registry, supervision store or paper broker store. Those remain authoritative for native state. Memory records immutable cross-registry identities and evidence relationships.
 
-### Shadow and cost evidence
+### Failure taxonomy
 
-`ShadowPortfolioMonitor` compares shadow and reference targets without applying the shadow target.
+Normalized failure categories include:
 
-`ExecutionCostCalibrator` reports realized notional-weighted paper slippage, commission and participation observations. These are diagnostics; the Agent does not directly rewrite execution parameters.
+```text
+data / leakage / statistical / model_fit / numerical
+cost / turnover / liquidity / risk
+execution / reconciliation / operational / policy / duplicate / unknown
+```
+
+Failures are first-class evidence rather than discarded trials.
+
+### Similarity and duplicate detection
+
+The first implementation is deterministic and dependency-light:
+
+```text
+hypothesis similarity  text/tag Jaccard with CJK bigram support
+experiment similarity  hypothesis + universe + params + dataset + code
+feature similarity     hypothesis + input fields + lookback
+```
+
+This is a duplicate-search aid, not proof of economic equivalence. Vector/embedding retrieval may later complement unstructured papers or reports, but relational evidence remains the source of truth.
+
+### Evidence-aware budgets
+
+`EvidenceAwareBudgetPolicy` can only preserve or reduce the caller's requested experiment budget.
+
+Near duplicates may receive zero new trials until existing evidence is reused. Similar hypotheses and repeated failures may reduce the budget. Historical winners never automatically expand it.
+
+This prevents research memory from becoming a new route for adaptive multiple testing.
+
+### Bounded Agent memory tools
+
+Read-only tools:
+
+```text
+list_research_hypotheses
+inspect_research_hypothesis
+find_similar_hypotheses
+inspect_research_lineage
+inspect_research_failures
+recommend_research_budget
+```
+
+There is no Agent tool to delete evidence, rewrite an old hypothesis revision, erase failed experiments, expand budgets, change validation thresholds or mutate financial state.
 
 ## Persistence
 
@@ -233,7 +224,8 @@ SQLiteLLMCallStore                    provider/token/latency telemetry
 SQLiteGeneratedFeatureStore           generated code lineage
 SQLiteGeneratedFeatureResearchStore   feature return/IC evidence
 SQLitePortfolioSupervisionStore       portfolio-health evidence
-SQLitePaperBrokerStore                orders/fills/account/approvals/kill switch/events
+SQLitePaperBrokerStore                paper orders/fills/account/safety state
+SQLiteResearchMemoryStore             hypothesis revisions/cross-registry lineage/failures
 ```
 
 ## Development
@@ -252,29 +244,30 @@ GitHub Actions runs the full suite on Python 3.11, 3.12 and 3.13 without externa
 
 ## Current limitations
 
-Phase 5 is **paper/shadow only**. It does not claim live-capital readiness.
-
-Still deferred:
+FinAgent is still **paper/shadow only**. Deferred operational work includes:
 
 ```text
 live broker adapters and credentials
 multi-currency cash/FX ledger
-exchange-master calendar feeds
-full security master/corporate actions
+exchange/security master feeds
+full corporate-action accounting
+approval expiry/revocation
+session PnL/exposure journals
 production nonlinear market impact
-full broker reconciliation semantics
-live incident response/SLO stack
+operational SLO/alert stack
+sustained paper/shadow acceptance statistics
 ```
+
+Memory similarity is lexical/signature based. It is deliberately not presented as semantic or causal equivalence.
 
 ## Roadmap
 
 ```text
-Phase 5.5  Structured research memory and hypothesis evolution
-Phase 6    Operational hardening / optional graph orchestration when justified
+Phase 6    Operational hardening; graph orchestration only if measured workflows justify it
 Phase 7    Optional advanced ML, regime, text, RL and multi-Agent research
 ```
 
-Before any live-capital milestone, the project should accumulate sustained paper/shadow evidence and explicit operational acceptance criteria.
+Before any live-capital milestone, require sustained paper/shadow runtime, reconciliation statistics, kill-switch/restart drills, cost calibration, operational alerts/runbooks and explicit human sign-off.
 
 ## Design documents
 
@@ -287,7 +280,8 @@ Before any live-capital milestone, the project should accumulate sustained paper
 - `docs/ADR-016_PHASE4_PORTFOLIO_RESEARCH.md`
 - `docs/ADR-017_PHASE45_PORTFOLIO_SUPERVISOR.md`
 - `docs/ADR-018_PHASE5_PAPER_SHADOW_OPERATIONS.md`
-- `docs/PHASE5.md`
+- `docs/ADR-019_PHASE55_EVIDENCE_MEMORY.md`
+- `docs/PHASE5_5.md`
 - `docs/RUNBOOK_PAPER_TRADING.md`
 - `docs/ROADMAP_REBASELINE.md`
 - `docs/DEVLOG.md`

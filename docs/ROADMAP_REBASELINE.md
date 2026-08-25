@@ -1,4 +1,4 @@
-# FinAgent Roadmap Rebaseline — After Phase 5
+# FinAgent Roadmap Rebaseline — After Phase 5.5
 
 Date: 2026-08-25
 
@@ -17,48 +17,51 @@ Phase 3.5  Real generated-feature PIT research
 Phase 4    Alpha/risk/portfolio hardening
 Phase 4.5  Low-permission Portfolio Supervisor
 Phase 5    Durable paper/shadow operations and reconciliation
+Phase 5.5  Structured evidence memory and hypothesis evolution
 ```
 
-The project now spans research, deterministic portfolio construction and a non-live operational loop. Additional Agent-framework complexity is still not the critical path.
+The project now spans governed research, deterministic portfolio construction, paper/shadow operation and end-to-end structured lineage. Additional Agent-framework complexity is still not the critical path.
 
-## Phase 5.5 — Structured Research Memory and Hypothesis Evolution
+## Phase 6 — Operational Hardening Before Orchestration
 
-Goal: convert accumulated registries into usable structured research memory without allowing historical winners to silently expand current research budgets.
+Phase 5 and Phase 5.5 make the next priority clearer: harden the operational substrate and define measurable paper/shadow acceptance criteria before adding live brokers or more autonomous Agents.
 
-Priority work:
-
-```text
-feature/model lineage queries
-hypothesis -> artifact -> experiment -> result graph
-failure taxonomy
-experiment/factor similarity
-duplicate-hypothesis detection
-bounded research summaries
-evidence-aware experiment-budget recommendations
-paper/shadow outcome linkage back to research artifacts
-```
-
-Vector retrieval should remain optional for unstructured papers/reports; structured experiment state should stay relational and auditable.
-
-## Phase 6 — Operational Hardening, then Optional Graph Orchestration
-
-The next major engineering question is not automatically “adopt LangGraph”. First measure Phase 5 operational gaps.
-
-Potential deterministic operational hardening:
+Priority deterministic work:
 
 ```text
-richer exchange/security master
+exchange/security master and richer session calendars
 multi-currency cash and FX accounting
-broker-neutral order state machine refinements
+broker-neutral order state refinements
 persistent approval expiry/revocation
-session-level PnL and exposure journals
-paper incident metrics / SLOs
+session-level PnL/exposure journals
+paper incident metrics, SLOs and alerts
 more complete corporate actions
-spread/impact calibration
-shadow acceptance criteria
+spread/nonlinear impact calibration
+shadow acceptance statistics and promotion gates
+memory linkage to operational incidents and acceptance evidence
 ```
 
-Graph orchestration becomes justified only if real workflows require:
+### Phase 6A — operational journals and acceptance metrics
+
+Recommended first slice:
+
+```text
+SessionJournal
+ExposureJournal
+OperationalMetricSnapshot
+PaperAcceptancePolicy
+PaperAcceptanceReport
+```
+
+The acceptance policy should consume durable evidence such as order-idempotency errors, reconciliation incidents, restart recovery, kill-switch drills, fill/cost stability and shadow divergence. It should not use a single PnL threshold as a live-readiness proxy.
+
+### Phase 6B — accounting and market-master hardening
+
+Add multi-currency ledger semantics, FX translation, security-master identities, corporate-action coverage and exchange-specific sessions before any live adapter.
+
+### Phase 6C — orchestration only if measured pain justifies it
+
+Graph orchestration is optional. It becomes justified only if actual workflows require:
 
 ```text
 long-running resumable branches
@@ -67,7 +70,7 @@ multi-hour human checkpoints
 complex provider retry/recovery
 ```
 
-If adopted, it remains an adapter around frozen domain/control-plane contracts.
+If adopted, LangGraph or another workflow engine remains an adapter around existing domain/control-plane contracts. It must not become the owner of portfolio or broker state.
 
 ## Phase 7 — Optional Advanced Research
 
@@ -80,13 +83,14 @@ Bayesian optimization inside fixed experiment families
 text/news/filing features
 RL/MPC portfolio research
 multi-Agent review
+optional embedding retrieval for unstructured literature
 ```
 
-Direct LLM or RL control of live portfolio weights remains outside the default objective.
+Structured experiment state and evidence lineage remain relational even if vector retrieval is introduced for documents.
 
 ## Live-capital gate
 
-Phase 5 does not imply live readiness.
+Phase 5.5 does not imply live readiness.
 
 Before any live broker milestone, require at minimum:
 
@@ -99,6 +103,7 @@ restart-recovery drills
 corporate-action test coverage
 cost-model calibration evidence
 operational alerting/runbooks
+paper acceptance report under pre-registered policy
 explicit human sign-off
 ```
 
@@ -106,6 +111,6 @@ A future live adapter should implement the same broker-neutral operational contr
 
 ## Project success criterion
 
-A novel hypothesis should be translated into reproducible PIT evidence, pass statistical governance, produce deterministic alpha/risk/portfolio targets, survive supervised paper execution and reconciliation, and remain auditable end-to-end.
+A novel hypothesis should be translated into reproducible PIT evidence, pass statistical governance, produce deterministic alpha/risk/portfolio targets, survive supervised paper execution and reconciliation, and remain auditable end-to-end through structured memory.
 
-The Agent is a research and supervision multiplier. Financial state remains owned by deterministic infrastructure.
+The Agent is a research and supervision multiplier. Financial state and evidence validity remain owned by deterministic infrastructure.

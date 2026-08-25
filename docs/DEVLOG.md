@@ -2,6 +2,46 @@
 
 This is the canonical chronological development log. Phase-specific design decisions are recorded in ADR and `PHASE*.md` files.
 
+## 2026-08-25 — Phase 5.5: Structured Evidence and Research Memory
+
+### Goal
+
+Turn the separate research, portfolio-supervision and paper-operation registries into bounded, auditable memory without creating a free-form Agent memory channel or allowing historical winners to expand current research budgets.
+
+### Delivered
+
+```text
+ResearchHypothesisRevision / append-only hypothesis evolution
+MemoryNode / LineageEdge cross-registry graph
+FailureRecord normalized failure taxonomy
+SQLiteResearchMemoryStore
+ResearchMemoryService
+EvidenceAwareBudgetPolicy
+deterministic hypothesis/experiment/feature similarity
+bounded ResearchMemorySummary
+six read-only Agent memory tools
+```
+
+Key invariants:
+
+- hypothesis revisions are contiguous and immutable;
+- memory nodes/edges are idempotent when identical and reject conflicting rewrites;
+- source registries remain authoritative for experiments, models, portfolio health and paper financial state;
+- failed research/operational outcomes remain queryable evidence;
+- graph traversal and Agent summaries are explicitly bounded;
+- duplicate detection is deterministic lexical/signature similarity, not claimed semantic equivalence;
+- memory may reduce or preserve a caller-supplied experiment budget but can never expand it;
+- historical successful results do not automatically grant more trials;
+- Agent memory tools are read-only and cannot erase failures or mutate financial state.
+
+Documentation:
+
+- `ADR-019_PHASE55_EVIDENCE_MEMORY.md`
+- `PHASE5_5.md`
+- README/roadmap updated to `0.6.0b1`.
+
+---
+
 ## 2026-08-25 — Phase 5: Paper/Shadow Operations and Reconciliation
 
 ### Goal
