@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from math import isfinite
-from collections.abc import Sequence
 
 from .base import NormalizedBarRecord
 
