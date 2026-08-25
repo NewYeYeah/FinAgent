@@ -19,4 +19,4 @@ dependencies:
   - twine
   - pip
   - pip:
-      - -e ..
+      - -e .

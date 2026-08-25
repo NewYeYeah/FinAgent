@@ -316,21 +316,44 @@ Keep credentials outside the repository. The LLM provider proposes structured re
 
 ---
 
+## Environment-isolated command entrypoint
+
+On Ubuntu systems that also use ROS 2, run FinAgent through the single environment wrapper:
+
+```bash
+./scripts/finagent.sh --check
+./scripts/finagent.sh
+```
+
+The first command validates the interpreter and confirms that ROS paths are absent. The second opens a child shell in the `finagent` Conda environment. From that shell, ordinary commands can be used without a dedicated launcher for each one.
+
+The same wrapper can execute any single command:
+
+```bash
+./scripts/finagent.sh python -m pytest -q
+./scripts/finagent.sh ruff check src tests --select E9,F63,F7,F82
+./scripts/finagent.sh python -m build
+```
+
+`./scripts/run_tests.sh` remains as a compatibility shortcut and delegates to this wrapper. See [the environment isolation guide](docs/ENVIRONMENT_ISOLATION.md) for the exact variables removed and reusable-script pattern.
+
+---
+
 ## Tests and release-quality gates
 
 Run the full regression suite:
 
 ```bash
-pytest -q
+./scripts/run_tests.sh -q
 ```
 
 Useful focused suites:
 
 ```bash
-pytest -q tests/test_quant_core_hardening_v101.py
-pytest -q tests/test_generated_feature_research_phase35.py
-pytest -q tests/test_operations_phase5.py
-pytest -q tests/test_operations_release_v1.py
+./scripts/run_tests.sh -q tests/test_quant_core_hardening_v101.py
+./scripts/run_tests.sh -q tests/test_generated_feature_research_phase35.py
+./scripts/run_tests.sh -q tests/test_operations_phase5.py
+./scripts/run_tests.sh -q tests/test_operations_release_v1.py
 ```
 
 GitHub Actions runs tests on:
