@@ -191,9 +191,10 @@ class SimilarityMatch:
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "entity_id", require_non_empty(self.entity_id, "entity_id"))
-        if not 0.0 <= float(self.score) <= 1.0:
+        score = float(self.score)
+        if not -1e-12 <= score <= 1.0 + 1e-12:
             raise ValueError("similarity score must be in [0, 1]")
-        object.__setattr__(self, "score", float(self.score))
+        object.__setattr__(self, "score", min(max(score, 0.0), 1.0))
         object.__setattr__(self, "reason", require_non_empty(self.reason, "reason"))
 
 
