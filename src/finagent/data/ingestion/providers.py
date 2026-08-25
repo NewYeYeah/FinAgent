@@ -30,6 +30,20 @@ class ProviderTier(str, Enum):
 
 
 @dataclass(frozen=True, slots=True)
+class ResearchDataRequirement:
+    market: MarketRegion
+    asset_types: frozenset[AssetType]
+    capabilities: frozenset[DataCapability] = frozenset({DataCapability.HISTORICAL_DAILY})
+    description: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.asset_types:
+            raise ValueError("asset_types cannot be empty")
+        if not self.capabilities:
+            raise ValueError("capabilities cannot be empty")
+
+
+@dataclass(frozen=True, slots=True)
 class ProviderCapabilities:
     provider: str
     markets: frozenset[MarketRegion]
@@ -86,20 +100,6 @@ class ProviderCapabilities:
 
 
 @dataclass(frozen=True, slots=True)
-class ResearchDataRequirement:
-    market: MarketRegion
-    asset_types: frozenset[AssetType]
-    capabilities: frozenset[DataCapability] = frozenset({DataCapability.HISTORICAL_DAILY})
-    description: str = ""
-
-    def __post_init__(self) -> None:
-        if not self.asset_types:
-            raise ValueError("asset_types cannot be empty")
-        if not self.capabilities:
-            raise ValueError("capabilities cannot be empty")
-
-
-@dataclass(frozen=True, slots=True)
 class ProviderSymbolMap:
     provider: str
     symbols: Mapping[str, str] = field(default_factory=dict)
@@ -127,7 +127,7 @@ class ProviderSymbolMap:
 @dataclass(frozen=True, slots=True)
 class ProviderDescriptor:
     capabilities: ProviderCapabilities
-    factory: Callable[[], object]
+    factory: Callable[[ProviderSymbolMap | None], object]
 
 
 class ProviderRegistry:
@@ -149,8 +149,8 @@ class ProviderRegistry:
         except KeyError as exc:
             raise KeyError(f"unknown market-data provider {provider!r}") from exc
 
-    def create(self, provider: str) -> object:
-        return self.get(provider).factory()
+    def create(self, provider: str, *, symbol_map: ProviderSymbolMap | None = None) -> object:
+        return self.get(provider).factory(symbol_map)
 
     def list_capabilities(self) -> tuple[ProviderCapabilities, ...]:
         return tuple(self._providers[key].capabilities for key in sorted(self._providers))
