@@ -2,6 +2,37 @@
 
 This is the canonical chronological development log. Phase-specific design decisions are recorded in ADR, phase and release documents.
 
+## 2026-08-25 — Reusable Environment Isolation Entrypoint
+
+### Goal
+
+Replace command-specific ROS 2 workarounds with one reusable FinAgent command
+boundary for interactive development, tests and quality tools.
+
+### Delivered
+
+```text
+scripts/finagent.sh interactive/command wrapper
+scripts/lib/finagent_env.sh reusable initialization library
+ROS/colcon/Python/shared-library environment cleanup
+Conda interpreter and Python version verification
+run_tests.sh delegation to the common wrapper
+environment-script regression tests
+executable-bit correction for shell launchers
+environment.yml editable-install path correction
+```
+
+Key invariants:
+
+- executing the launcher creates a child environment and never claims to mutate
+  the caller's parent shell;
+- all commands, not only pytest, run with ROS paths removed;
+- `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1` remains defense in depth;
+- project scripts reuse the common initializer rather than copying cleanup logic;
+- a missing or incorrect Conda environment fails with an actionable message.
+
+---
+
 ## 2026-08-25 — Version 1.0.1: Expert-Review Quant-Core Hardening
 
 ### Goal

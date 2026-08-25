@@ -36,7 +36,7 @@ Create environment:
 
 ```bash
 conda env create -f environment/environment.yml
-conda activate finagent
+./scripts/finagent.sh --check
 ```
 
 Verify:
@@ -73,32 +73,26 @@ No broken requirements found
 
 ## 3. ROS2 Isolation
 
-FinAgent is not a ROS2 package.
+FinAgent is not a ROS2 package. ROS 2 setup files may inject Python modules,
+pytest plugins and shared-library paths into a shell.
 
-Do not run:
-
-```bash
-source /opt/ros/jazzy/setup.bash
-```
-
-before testing.
-
-ROS2 Python packages can inject pytest plugins and incompatible Python dependencies.
-
-Recommended:
-
-Terminal 1:
-
-```
-ROS2 workspace
-```
-
-Terminal 2:
+Use the single wrapper even if the current terminal was previously contaminated:
 
 ```bash
-conda activate finagent
-python -m pytest
+./scripts/finagent.sh --check
+./scripts/finagent.sh
 ```
+
+The interactive command opens a child shell. It cannot and does not rewrite the
+parent terminal. For one-off work, pass any command directly:
+
+```bash
+./scripts/finagent.sh python -m pytest -q
+./scripts/finagent.sh ruff check src tests --select E9,F63,F7,F82
+```
+
+All project test launchers should delegate to `scripts/finagent.sh` or source
+`scripts/lib/finagent_env.sh`; they should not duplicate environment cleanup.
 
 ---
 
@@ -107,13 +101,13 @@ python -m pytest
 Run:
 
 ```bash
-python -m pytest -v
+./scripts/run_tests.sh -v
 ```
 
 Coverage target:
 
 ```bash
-python -m pytest --cov=finagent --cov-report=term
+./scripts/run_tests.sh --cov=finagent --cov-report=term
 ```
 
 Validated components:
@@ -170,9 +164,9 @@ Transaction cost must use gross traded weight.
 Run:
 
 ```bash
-ruff check .
-mypy src
-python -m build
+./scripts/finagent.sh ruff check .
+./scripts/finagent.sh mypy src
+./scripts/finagent.sh python -m build
 ```
 
 ---
@@ -251,10 +245,10 @@ Test:
 Before release:
 
 ```bash
-python -m pytest
-ruff check .
-mypy src
-python -m build
+./scripts/run_tests.sh
+./scripts/finagent.sh ruff check .
+./scripts/finagent.sh mypy src
+./scripts/finagent.sh python -m build
 ```
 
 All checks must pass.
