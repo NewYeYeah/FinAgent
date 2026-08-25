@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "finagent"
-version = "1.0.0"
+version = "1.0.1"
 description = "Auditable agentic quantitative research, deterministic portfolio construction and supervised paper/shadow operations."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -19,6 +19,10 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest>=8.3,<10",
+  "pytest-cov>=6,<8",
+  "ruff>=0.12,<1",
+  "mypy>=1.15,<2",
+  "build>=1.2,<2",
 ]
 llm-openai = [
   "openai>=3.2,<4",
@@ -37,3 +41,10 @@ addopts = "-q"
 [tool.ruff]
 target-version = "py311"
 line-length = 100
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_unused_ignores = true
+no_implicit_optional = true

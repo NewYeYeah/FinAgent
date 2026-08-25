@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from finagent.domain.assets import AssetId
+from finagent.domain.assets import AssetId, AssetType
 from finagent.domain.forecasts import ModelRef
 from finagent.domain.market import MarketSnapshot
 from finagent.domain.orders import OrderIntent, OrderSide
@@ -14,12 +14,14 @@ from finagent.domain.portfolio import (
     RiskViolation,
 )
 
+_SUPPORTED_ORDER_ASSET_TYPES = frozenset({AssetType.EQUITY, AssetType.ETF})
+
 
 @dataclass(frozen=True, slots=True)
 class EqualWeightTargetBuilder:
     """Deterministic smoke-test portfolio constructor.
 
-    This is not intended to be the production optimizer.  It exists so the domain
+    This is not intended to be the production optimizer. It exists so the domain
     kernel can be exercised without AR/GARCH/optimizer dependencies in Phase 0.5.
     """
 
@@ -119,7 +121,15 @@ class StaticRiskGate:
 
 @dataclass(frozen=True, slots=True)
 class OrderPlanner:
-    """Translate an approved target into broker-agnostic market order intents."""
+    """Translate an approved target into broker-agnostic equity/ETF market order intents.
+
+    The 1.0 generic execution contract deliberately implements only spot-like quantity
+    semantics for equities and ETFs. Futures, FX, crypto, cash instruments and generic
+    ``OTHER`` assets remain valid research identities, but execution for them requires a
+    dedicated instrument-aware planner with contract multipliers, settlement, margin,
+    currency and/or venue semantics. The generic planner fails closed instead of
+    pretending those semantics are equivalent to cash equities.
+    """
 
     min_notional: float = 0.0
     quantity_precision: int = 8
@@ -150,9 +160,15 @@ class OrderPlanner:
             asset for asset, quantity in state.positions.items() if abs(quantity) > 1e-15
         }
         for asset in relevant_assets:
+            if asset.asset_type not in _SUPPORTED_ORDER_ASSET_TYPES:
+                raise NotImplementedError(
+                    "OrderPlanner 1.0 supports only EQUITY/ETF spot-like execution semantics; "
+                    f"unsupported asset type {asset.asset_type.value!r} for {asset.key}"
+                )
             if asset.currency != state.base_currency:
                 raise ValueError(
-                    f"Phase 0.5 planner requires base-currency marks; {asset.key} is not {state.base_currency}"
+                    "OrderPlanner 1.0 requires base-currency marks; "
+                    f"{asset.key} is not {state.base_currency}"
                 )
             snapshot.price(asset)
 

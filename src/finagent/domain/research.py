@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from types import MappingProxyType
-from typing import Mapping, Sequence
+from typing import Mapping
 
 import numpy as np
 from numpy.typing import NDArray
@@ -13,6 +13,7 @@ from .assets import AssetId
 from .experiments import ArtifactRef, ArtifactType
 
 FloatArray = NDArray[np.float64]
+BoolArray = NDArray[np.bool_]
 
 
 def _readonly_float_array(value: object, *, ndim: int, name: str) -> FloatArray:
@@ -22,6 +23,15 @@ def _readonly_float_array(value: object, *, ndim: int, name: str) -> FloatArray:
     if np.isinf(array).any():
         raise ValueError(f"{name} cannot contain +/-inf")
     array = np.array(array, dtype=np.float64, copy=True, order="C")
+    array.setflags(write=False)
+    return array
+
+
+def _readonly_bool_array(value: object, *, shape: tuple[int, ...], name: str) -> BoolArray:
+    array = np.asarray(value, dtype=np.bool_)
+    if array.shape != shape:
+        raise ValueError(f"{name} must have shape {shape}, got {array.shape}")
+    array = np.array(array, dtype=np.bool_, copy=True, order="C")
     array.setflags(write=False)
     return array
 
@@ -48,16 +58,16 @@ class TimeRange:
 
 @dataclass(frozen=True, slots=True)
 class ResearchSplit:
-    """Canonical in-memory numerical panel for one research split.
+    """Canonical immutable numerical panel for one research split.
 
     Arrays use a stable panel layout:
 
     ``features.shape == (time, asset, feature)``
     ``labels.shape   == (time, asset, label)``
 
-    Missing observations are represented by ``NaN``. Infinite values are rejected.
-    Arrays are defensively copied and made read-only so a fitted model cannot mutate
-    the dataset in place.
+    ``eligibility_mask.shape == (time, asset)`` is the point-in-time *formation*
+    contract. It records which assets were investable using information available at
+    each timestamp and must never be inferred from forward-label availability.
     """
 
     timestamps: tuple[datetime, ...]
@@ -67,6 +77,7 @@ class ResearchSplit:
     feature_values: FloatArray
     label_values: FloatArray
     metadata: Mapping[str, str] = field(default_factory=dict)
+    eligibility_mask: BoolArray | None = None
 
     def __post_init__(self) -> None:
         if not self.timestamps:
@@ -102,12 +113,22 @@ class ResearchSplit:
                 f"label_values shape must be {expected_label_shape}, got {labels.shape}"
             )
 
+        eligibility = self.eligibility_mask
+        if eligibility is None:
+            eligibility = np.ones((len(timestamps), len(self.assets)), dtype=np.bool_)
+        eligibility = _readonly_bool_array(
+            eligibility,
+            shape=(len(timestamps), len(self.assets)),
+            name="eligibility_mask",
+        )
+
         object.__setattr__(self, "timestamps", timestamps)
         object.__setattr__(self, "feature_names", feature_names)
         object.__setattr__(self, "label_names", label_names)
         object.__setattr__(self, "feature_values", features)
         object.__setattr__(self, "label_values", labels)
         object.__setattr__(self, "metadata", freeze_mapping(self.metadata))
+        object.__setattr__(self, "eligibility_mask", eligibility)
 
     @property
     def n_times(self) -> int:
@@ -145,6 +166,11 @@ class ResearchSplit:
         panel.setflags(write=False)
         return panel
 
+    def eligibility_at(self, row: int) -> BoolArray:
+        mask = self.eligibility_mask[row]
+        mask.setflags(write=False)
+        return mask
+
     def asset_feature(self, asset: AssetId, name: str) -> FloatArray:
         series = self.feature_values[:, self.asset_index(asset), self.feature_index(name)]
         series.setflags(write=False)
@@ -160,10 +186,8 @@ class ResearchSplit:
 class FeatureWindow:
     """Numerical inference input emitted by a DataAdapter.
 
-    This is deliberately separate from ``MarketSnapshot``: time-series models need
-    historical numerical context, not only the latest OHLCV bar. The stable layout is
-    ``values[time, asset, feature]`` and contains only observations available at or
-    before ``asof``.
+    The stable layout is ``values[time, asset, feature]`` and contains only
+    observations available at or before ``asof``.
     """
 
     asof: datetime
@@ -272,13 +296,7 @@ class DatasetRequest:
 
 @dataclass(frozen=True, slots=True)
 class ResearchDataset:
-    """Reproducible PIT dataset manifest plus optional immutable numerical panels.
-
-    Phase 0.5 exposed only the schema-level manifest. Phase 1 keeps that contract
-    backward-compatible and freezes the numerical extension through ``panels``.
-    Models consume the dataset through ``get_split`` rather than receiving a raw
-    pandas DataFrame.
-    """
+    """Reproducible PIT dataset manifest plus optional immutable numerical panels."""
 
     artifact: ArtifactRef
     universe: tuple[AssetId, ...]
