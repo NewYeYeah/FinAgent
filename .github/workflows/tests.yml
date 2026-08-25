@@ -37,7 +37,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev]"
       - name: Project-wide critical static checks
-        run: ruff check src tests --select E9,F63,F7,F82
+        run: ruff check src tests scripts --select E9,F63,F7,F82
       - name: Hardened 1.0 release-surface lint
         run: |
           ruff check \
@@ -49,6 +49,18 @@ jobs:
             src/finagent/services/portfolio.py \
             tests/test_quant_core_hardening_v101.py \
             --select E4,E7,E9,F
+      - name: Real-market M1 surface lint
+        run: |
+          ruff check \
+            src/finagent/data/ingestion \
+            src/finagent/backtest/market_study.py \
+            src/finagent/backtest/timed.py \
+            tests/test_market_data_ingestion_m1.py \
+            tests/test_market_study_m1.py \
+            tests/test_timed_backtest_phase2.py \
+            scripts/pull_market_data.py \
+            scripts/validate_market_data.py \
+            scripts/run_market_backtest.py
       - name: Targeted static typing baseline
         run: |
           mypy \
@@ -57,7 +69,9 @@ jobs:
             src/finagent/domain/universe.py \
             src/finagent/research/programs.py \
             src/finagent/models/alpha/primitives.py \
-            src/finagent/services/portfolio.py
+            src/finagent/services/portfolio.py \
+            src/finagent/data/ingestion \
+            src/finagent/backtest/market_study.py
       - name: Coverage floor
         run: pytest --cov=finagent --cov-report=term --cov-fail-under=50
       - name: Package build and dependency consistency

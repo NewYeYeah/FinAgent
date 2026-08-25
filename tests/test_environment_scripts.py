@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 import subprocess
 import sys
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -12,6 +11,9 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_launchers_are_executable() -> None:
     assert os.access(ROOT / "scripts" / "finagent.sh", os.X_OK)
     assert os.access(ROOT / "scripts" / "run_tests.sh", os.X_OK)
+    assert os.access(ROOT / "scripts" / "pull_market_data.py", os.X_OK)
+    assert os.access(ROOT / "scripts" / "validate_market_data.py", os.X_OK)
+    assert os.access(ROOT / "scripts" / "run_market_backtest.py", os.X_OK)
 
 
 def _contaminated_environment() -> dict[str, str]:
@@ -66,3 +68,25 @@ def test_finagent_check_reports_active_interpreter() -> None:
     assert "conda env:  finagent" in result.stdout
     assert f"python:     {sys.executable}" in result.stdout
     assert "ROS paths:  none" in result.stdout
+
+
+def test_test_wrapper_explicitly_loads_coverage_plugin() -> None:
+    result = subprocess.run(
+        [
+            "bash",
+            str(ROOT / "scripts" / "run_tests.sh"),
+            "-q",
+            "tests/test_quant_core_hardening_v101.py",
+            "-k",
+            "trade_activity_distinguishes",
+            "--cov=finagent",
+            "--cov-report=term",
+        ],
+        cwd=ROOT,
+        env=_contaminated_environment(),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "TOTAL" in result.stdout

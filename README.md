@@ -1,10 +1,28 @@
 # FinAgent
 
-**FinAgent 1.0.1** is the final hardening release of the 1.0 line: a typed, auditable framework for agent-assisted quantitative research, deterministic portfolio construction, supervised paper/shadow trading, and end-to-end evidence lineage.
+**FinAgent 1.1.0** adds the first auditable real-market ETF study path to the final hardened 1.0 line: a typed framework for agent-assisted quantitative research, deterministic portfolio construction, supervised paper/shadow trading, and end-to-end evidence lineage.
 
-> **Release scope:** FinAgent 1.0.1 is a stable **research + portfolio + paper/shadow** release. It does not include live broker credentials and does not claim live-capital readiness.
+> **Release scope:** FinAgent 1.1.0 is a stable **research + portfolio + historical-market study + paper/shadow** release. It does not include live broker credentials and does not claim live-capital readiness.
 
-The 1.0.1 patch incorporates the expert-review hardening documented in [`docs/QUANT_CORE_HARDENING_1_0_1.md`](docs/QUANT_CORE_HARDENING_1_0_1.md). It tightens quantitative correctness and release governance without expanding Agent financial authority.
+Version 1.1.0 builds on the 1.0.1 expert-review hardening documented in [`docs/QUANT_CORE_HARDENING_1_0_1.md`](docs/QUANT_CORE_HARDENING_1_0_1.md). It adds real historical data and evaluation plumbing without expanding Agent financial authority or live execution scope.
+
+## Real-market ETF study (M1)
+
+The post-1.0 M1 path adds auditable fixed-universe ETF studies using Tushare for A-share data and Alpaca for US data. It records raw provider responses, normalized PIT bars, quality evidence, content hashes and a stable data version before running nested purged walk-forward evaluation with next-open execution and cost sensitivity.
+
+```bash
+# A-share dependency and study
+./scripts/finagent.sh python -m pip install -e '.[dev,a-share]'
+./scripts/finagent.sh python scripts/pull_market_data.py configs/markets/a_share_etf_smoke.toml
+./scripts/finagent.sh python scripts/run_market_backtest.py configs/markets/a_share_etf_smoke.toml
+
+# US dependency and study
+./scripts/finagent.sh python -m pip install -e '.[dev,us-market]'
+./scripts/finagent.sh python scripts/pull_market_data.py configs/markets/us_etf_smoke.toml
+./scripts/finagent.sh python scripts/run_market_backtest.py configs/markets/us_etf_smoke.toml
+```
+
+Credentials are read from `TUSHARE_TOKEN` or `ALPACA_API_KEY` / `ALPACA_SECRET_KEY`. This is an engineering/research smoke test, not individual-equity Level 2 certification and not live trading. See [`docs/REAL_MARKET_BACKTEST_M1.md`](docs/REAL_MARKET_BACKTEST_M1.md) for the complete Chinese runbook, quality gates, interpretation and deferred market semantics.
 
 ## Why FinAgent exists
 
@@ -588,6 +606,7 @@ Advanced alpha research can be added later, but it should continue to pass throu
 Key documents:
 
 - `docs/QUANT_CORE_HARDENING_1_0_1.md` — expert-review findings, fixes and remaining boundaries;
+- `docs/REAL_MARKET_BACKTEST_M1.md` — A-share/US fixed-universe ETF data and backtest runbook;
 - `docs/RELEASE_1_0.md` — final 1.0/1.0.1 scope and release criteria;
 - `docs/DEVLOG.md` — chronological development history;
 - `docs/ROADMAP_REBASELINE.md` — post-1.0 roadmap;
