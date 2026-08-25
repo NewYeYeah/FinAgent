@@ -1,0 +1,25 @@
+[market]
+provider = "hithink"
+region = "a_share"
+asset_type = "etf"
+symbols = ["510300.SH", "510500.SH", "159915.SZ", "159919.SZ"]
+start = 2018-01-01
+end = 2026-08-24
+adjustment = "raw"
+output_dir = "data/market/a_share_hithink_smoke"
+
+[market.metadata]
+purpose = "official A-share daily-data smoke study"
+provider_role = "primary-daily"
+known_limit = "not survivorship-bias-free for broad historical individual-equity studies"
+
+[study]
+lookback = 60
+rebalance_every = 5
+cash_weight = 0.10
+max_weight = 0.35
+commission_bps = 3.0
+slippage_bps = 5.0
+impact_bps = 5.0
+risk_aversion = 30.0
+turnover_penalty = 0.0005

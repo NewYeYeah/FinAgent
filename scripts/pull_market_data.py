@@ -8,10 +8,14 @@ from datetime import date
 from pathlib import Path
 
 from finagent.data import (
+    AKShareMarketDataIngestor,
     AlpacaMarketDataIngestor,
+    HiThinkMarketDataIngestor,
     MarketDataPullRequest,
     MarketRegion,
+    ProviderSymbolMap,
     TushareMarketDataIngestor,
+    provider_capabilities,
 )
 from finagent.domain.assets import AssetType
 
@@ -34,16 +38,31 @@ def _load(path: Path) -> dict[str, object]:
     return market
 
 
+def _symbol_map(provider: str, values: dict[str, object]) -> ProviderSymbolMap:
+    mappings = {
+        str(key): str(value)
+        for key, value in dict(values.get("provider_symbols", {})).items()
+    }
+    strict = bool(values.get("strict_provider_symbols", False))
+    return ProviderSymbolMap(provider, mappings, strict=strict)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Pull and normalize fixed-universe ETF bars for FinAgent M1 studies."
+        description="Pull and normalize provider-neutral daily market bars for FinAgent studies."
     )
     parser.add_argument("config", type=Path, help="TOML market-study configuration")
     parser.add_argument("--output-dir", type=Path, help="override market.output_dir")
+    parser.add_argument(
+        "--show-capabilities",
+        action="store_true",
+        help="print the selected provider's declared capabilities before pulling",
+    )
     args = parser.parse_args()
 
     values = _load(args.config)
     provider = str(values.get("provider", "")).strip().lower()
+    capabilities = provider_capabilities(provider)
     request = MarketDataPullRequest(
         market=MarketRegion(str(values["region"])),
         symbols=tuple(str(item) for item in values["symbols"]),
@@ -60,13 +79,47 @@ def main() -> int:
             str(key): str(value) for key, value in dict(values.get("metadata", {})).items()
         },
     )
+    if request.market not in capabilities.markets or not capabilities.historical_daily:
+        raise ValueError(
+            f"provider {provider!r} does not declare daily-history support for "
+            f"{request.market.value!r}"
+        )
+    if args.show_capabilities:
+        print(
+            json.dumps(
+                {
+                    "provider": capabilities.provider,
+                    "markets": sorted(item.value for item in capabilities.markets),
+                    "historical_daily": capabilities.historical_daily,
+                    "historical_minute": capabilities.historical_minute,
+                    "realtime_snapshot": capabilities.realtime_snapshot,
+                    "realtime_stream": capabilities.realtime_stream,
+                    "fundamentals": capabilities.fundamentals,
+                    "macro": capabilities.macro,
+                    "corporate_actions": capabilities.corporate_actions,
+                    "pit_universe": capabilities.pit_universe,
+                    "delisted_history": capabilities.delisted_history,
+                    "alternative_data": capabilities.alternative_data,
+                    "notes": list(capabilities.notes),
+                },
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+
     output_dir = args.output_dir or Path(str(values["output_dir"]))
-    if provider == "tushare":
+    if provider == "hithink":
+        ingestor = HiThinkMarketDataIngestor.from_environment()
+    elif provider == "akshare":
+        ingestor = AKShareMarketDataIngestor.from_environment(
+            symbol_map=_symbol_map(provider, values)
+        )
+    elif provider == "tushare":
         ingestor = TushareMarketDataIngestor.from_environment()
     elif provider == "alpaca":
         ingestor = AlpacaMarketDataIngestor.from_environment()
-    else:
-        raise ValueError("market.provider must be 'tushare' or 'alpaca'")
+    else:  # provider_capabilities() should already have rejected this branch.
+        raise ValueError(f"unsupported market.provider {provider!r}")
 
     result = ingestor.materialize(request, output_dir)
     print(json.dumps(result.manifest.to_dict(), indent=2, ensure_ascii=False))
