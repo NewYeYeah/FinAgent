@@ -6,12 +6,12 @@ import math
 import os
 import subprocess
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Mapping, Sequence
 
+from finagent.agents.generated_features import FeatureCodeValidator, FeatureSpec
 from finagent.domain._validation import require_non_empty
-from finagent.agents.generated_features import FeatureSpec, FeatureCodeValidator
 
 Number = int | float
 
@@ -24,7 +24,12 @@ class FeatureSandboxLimits:
     max_output_bytes: int = 1_000_000
 
     def __post_init__(self) -> None:
-        if self.wall_time_seconds <= 0 or self.cpu_time_seconds < 1 or self.memory_mb < 64 or self.max_output_bytes < 1024:
+        if (
+            self.wall_time_seconds <= 0
+            or self.cpu_time_seconds < 1
+            or self.memory_mb < 64
+            or self.max_output_bytes < 1024
+        ):
             raise ValueError("invalid sandbox resource limits")
 
 
@@ -83,7 +88,7 @@ _WRAPPER = r'''
 import json, math, sys
 payload = json.loads(sys.stdin.read())
 source = payload["source"]
-inputs = payload["inputs"]
+batch_inputs = payload["batch_inputs"]
 safe_builtins = {
     "abs": abs, "all": all, "any": any, "enumerate": enumerate,
     "float": float, "int": int, "len": len, "max": max, "min": min,
@@ -95,21 +100,24 @@ exec(compile(source, "<generated-feature>", "exec"), globals_dict, locals_dict)
 fn = locals_dict.get("compute_feature")
 if fn is None:
     raise RuntimeError("compute_feature not found")
-values = fn(inputs)
-if not isinstance(values, (list, tuple)):
-    raise TypeError("feature output must be list or tuple")
-normalized = []
-for value in values:
-    if value is None:
-        normalized.append(None)
-    else:
-        if isinstance(value, bool) or not isinstance(value, (int, float)):
-            raise TypeError("feature outputs must be numeric or None")
-        number = float(value)
-        if not math.isfinite(number):
-            raise ValueError("feature outputs must be finite or None")
-        normalized.append(number)
-print(json.dumps({"values": normalized}, separators=(",", ":"), allow_nan=False))
+outputs = []
+for inputs in batch_inputs:
+    values = fn(inputs)
+    if not isinstance(values, (list, tuple)):
+        raise TypeError("feature output must be list or tuple")
+    normalized = []
+    for value in values:
+        if value is None:
+            normalized.append(None)
+        else:
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise TypeError("feature outputs must be numeric or None")
+            number = float(value)
+            if not math.isfinite(number):
+                raise ValueError("feature outputs must be finite or None")
+            normalized.append(number)
+    outputs.append(normalized)
+print(json.dumps({"batch_values": outputs}, separators=(",", ":"), allow_nan=False))
 '''
 
 
@@ -131,24 +139,55 @@ def _resource_limiter(limits: FeatureSandboxLimits):
             resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
         except (ValueError, OSError):
             pass
+
     return apply
 
 
 class LocalFeatureSandbox:
-    """Restricted subprocess for generated feature smoke tests.
+    """Restricted subprocess for generated feature smoke tests and PIT batches.
 
-    Security is defense-in-depth: static AST validation removes imports, dynamic calls and
-    arbitrary attribute access; the subprocess receives a reduced builtin set and POSIX
-    resource limits. This is not a kernel/container sandbox and must not be described as one.
+    Static validation remains the first boundary. ``run_batch`` compiles the already
+    validated feature source once per subprocess and evaluates independent PIT input
+    windows without exposing one window to another.  Batching improves scale without
+    weakening the causal data boundary.
+
+    This is not a kernel/container sandbox and must not be described as one.
     """
 
-    def __init__(self, *, validator: FeatureCodeValidator | None = None, limits: FeatureSandboxLimits = FeatureSandboxLimits()) -> None:
+    def __init__(
+        self,
+        *,
+        validator: FeatureCodeValidator | None = None,
+        limits: FeatureSandboxLimits = FeatureSandboxLimits(),
+    ) -> None:
         self.validator = validator or FeatureCodeValidator()
         self.limits = limits
 
     def run(self, request: FeatureSandboxRequest) -> FeatureSandboxResult:
-        self.validator.validate(request.source)
-        payload = json.dumps({"source": request.source, "inputs": {k: list(v) for k, v in request.inputs.items()}}, allow_nan=False)
+        return self.run_batch((request,))[0]
+
+    def run_batch(
+        self,
+        requests: Sequence[FeatureSandboxRequest],
+    ) -> tuple[FeatureSandboxResult, ...]:
+        requests = tuple(requests)
+        if not requests:
+            return ()
+        first = requests[0]
+        for request in requests:
+            if request.source != first.source or request.spec != first.spec:
+                raise ValueError("batched sandbox requests must share FeatureSpec and source")
+        self.validator.validate(first.source)
+        payload = json.dumps(
+            {
+                "source": first.source,
+                "batch_inputs": [
+                    {key: list(values) for key, values in request.inputs.items()}
+                    for request in requests
+                ],
+            },
+            allow_nan=False,
+        )
         env = {"PYTHONIOENCODING": "utf-8", "PYTHONHASHSEED": "0"}
         try:
             completed = subprocess.run(
@@ -165,28 +204,36 @@ class LocalFeatureSandbox:
             raise FeatureSandboxError("generated feature exceeded sandbox wall-time limit") from exc
         if completed.returncode != 0:
             error = completed.stderr.strip()[-4000:]
-            raise FeatureSandboxError(f"generated feature failed in sandbox: {error or 'unknown error'}")
+            raise FeatureSandboxError(
+                f"generated feature failed in sandbox: {error or 'unknown error'}"
+            )
         if len(completed.stdout.encode("utf-8")) > self.limits.max_output_bytes:
             raise FeatureSandboxError("generated feature output exceeded max_output_bytes")
         try:
             decoded = json.loads(completed.stdout)
         except json.JSONDecodeError as exc:
             raise FeatureSandboxError("sandbox returned invalid JSON") from exc
-        values = decoded.get("values") if isinstance(decoded, dict) else None
-        if not isinstance(values, list):
-            raise FeatureSandboxError("sandbox output does not contain a values list")
-        expected_length = len(next(iter(request.inputs.values())))
-        if len(values) != expected_length:
-            raise FeatureSandboxError("feature output length must equal input length")
-        normalized: list[float | None] = []
-        for value in values:
-            if value is None:
-                normalized.append(None)
-            elif isinstance(value, bool) or not isinstance(value, (int, float)):
-                raise FeatureSandboxError("sandbox output contains a non-numeric value")
-            else:
-                number = float(value)
-                if not math.isfinite(number):
-                    raise FeatureSandboxError("sandbox output contains a non-finite value")
-                normalized.append(number)
-        return FeatureSandboxResult(tuple(normalized), completed.stdout, completed.stderr)
+        batch_values = decoded.get("batch_values") if isinstance(decoded, dict) else None
+        if not isinstance(batch_values, list) or len(batch_values) != len(requests):
+            raise FeatureSandboxError("sandbox output does not contain the expected batch_values")
+
+        results: list[FeatureSandboxResult] = []
+        for request, values in zip(requests, batch_values):
+            if not isinstance(values, list):
+                raise FeatureSandboxError("sandbox batch item is not a values list")
+            expected_length = len(next(iter(request.inputs.values())))
+            if len(values) != expected_length:
+                raise FeatureSandboxError("feature output length must equal input length")
+            normalized: list[float | None] = []
+            for value in values:
+                if value is None:
+                    normalized.append(None)
+                elif isinstance(value, bool) or not isinstance(value, (int, float)):
+                    raise FeatureSandboxError("sandbox output contains a non-numeric value")
+                else:
+                    number = float(value)
+                    if not math.isfinite(number):
+                        raise FeatureSandboxError("sandbox output contains a non-finite value")
+                    normalized.append(number)
+            results.append(FeatureSandboxResult(tuple(normalized)))
+        return tuple(results)
