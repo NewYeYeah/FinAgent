@@ -16,6 +16,8 @@ governed quantitative research
 
 Version 1.0 does **not** claim live-broker or live-capital readiness.
 
+The final 1.0 maintenance delivery is package version **1.0.1**. Version 1.0.1 incorporates the post-release expert-review hardening documented in `QUANT_CORE_HARDENING_1_0_1.md`; it does not widen the stable paper/shadow scope.
+
 ## Function-necessity decision
 
 Before freezing 1.0, the remaining roadmap items were re-evaluated according to one question: does the missing function prevent the current paper/shadow system from being operated, tested, audited and judged against a pre-registered reliability policy?
@@ -27,7 +29,30 @@ Before freezing 1.0, the remaining roadmap items were re-evaluated according to 
 3. **Restart and kill-switch drill evidence** — required. Phase 5 implemented the mechanisms; 1.0 records drill outcomes and includes them in the acceptance policy.
 4. **Incident/SLO evidence** — required. Idempotency failures and other critical incidents must be durable evidence, not comments in a runbook.
 5. **Approval expiry and revocation** — required. Phase 5 bound human approval to an immutable snapshot, but a long-lived approval also needs a bounded lifetime and an explicit revocation path.
-6. **Formal 1.0 documentation and test instructions** — required. The README now describes the architecture, supported workflows, installation, testing, safety invariants and operational acceptance procedure.
+6. **Formal 1.0 documentation and test instructions** — required. The README describes the architecture, supported workflows, installation, testing, safety invariants and operational acceptance procedure.
+
+## 1.0.1 expert-review hardening
+
+The 1.0 release line was subjected to an additional quantitative-core review before final delivery. The resulting 1.0.1 maintenance pass addresses correctness and governance rather than adding Agent autonomy.
+
+The release-blocking corrections are:
+
+```text
+PIT formation eligibility independent of future-label availability
+fully unrealized label-horizon boundary distinct from partial missing returns
+point-in-time universe eligibility contract
+cross-family ResearchProgram search/alpha budget
+explicit metric maximize/minimize direction
+canonical gross-traded-weight / one-way-turnover convention
+batched generated-feature PIT windows without future-panel exposure
+equity/ETF-only generic OrderPlanner execution boundary
+canonical deterministic alpha research primitives
+expanded CI: critical Ruff + hardened-surface lint + targeted mypy + coverage + build
+```
+
+A completely unrealized forward-return cross-section is omitted as an unevaluable horizon boundary. Partial missing realized returns for positions that were actually formed still fail closed by default; missing future labels are never allowed to retroactively redefine the formation universe.
+
+`AssetType` representation is also separated from execution capability. Futures, FX, crypto and other instrument types may exist in research/domain contracts, but the generic 1.0 `OrderPlanner` rejects them until instrument-specific execution semantics exist.
 
 ## Explicitly deferred from 1.0
 
@@ -39,6 +64,7 @@ multi-currency cash and FX ledger
 full exchange/security-master feeds
 full corporate-action accounting
 broker-specific production order semantics
+futures/FX/crypto execution planners
 nonlinear institutional market-impact model
 LangGraph or other graph orchestration
 multi-Agent debate/review
@@ -108,29 +134,47 @@ A passing report means the configured paper/shadow deployment passed that policy
 The stable conceptual contracts are:
 
 ```text
-PIT ResearchDataset / ExperimentFamily governance
+PIT ResearchDataset / ResearchSplit eligibility
+ExperimentFamily governance
+cross-family ResearchProgram budget ledger
 finite Agent tool/policy boundary
 generated-feature safety and PIT materialization
 deterministic alpha/risk/portfolio ownership
+explicit metric direction and turnover convention
 non-mutating Supervisor request semantics
 human approval before operational mutation
 paper-order idempotency and durable financial state
 reconciliation and durable kill switch
 structured evidence memory
 operational journal and acceptance report
+equity/ETF-only generic order-planning semantics
 ```
 
 Future releases may add adapters and research models around these contracts. They should not move financial-state ownership into an LLM or Agent runtime.
 
 ## Release verification
 
-Before the 1.0 branch is promoted to `main`:
+Before the 1.0.1 hardening branch is promoted to `main`, GitHub Actions must pass all configured gates:
+
+```text
+pytest: Python 3.11
+pytest: Python 3.12
+pytest: Python 3.13
+project-wide critical Ruff checks
+hardened 1.0 release-surface lint
+targeted mypy baseline
+coverage floor
+package build
+pip dependency consistency
+```
+
+Local verification begins with:
 
 ```bash
 python -m pip install -e ".[dev]"
 pytest -q
 ```
 
-The GitHub Actions matrix must pass on Python 3.11, 3.12 and 3.13.
-
 After release, meaningful deployment testing should also include repeated restart recovery, kill-switch drills, reconciliation exercises and a sustained paper/shadow observation window followed by `PaperAcceptanceEvaluator`.
+
+A green 1.0.1 CI result means the tested software and quantitative contracts are release-consistent. It is not a profitability claim or a live-capital certification.
