@@ -1,0 +1,20 @@
+[market_data]
+# Public routing configuration only. Never place credentials in this file.
+default_profile = "alpaca_primary"
+secrets_file = "~/.config/finagent/secrets.toml"
+enforce_private_secret_file = true
+
+[market_data.profiles.alpaca_primary]
+provider = "alpaca"
+secret_id = "alpaca"
+
+[market_data.profiles.akshare_free]
+provider = "akshare"
+
+[market_data.profiles.tushare_optional]
+provider = "tushare"
+secret_id = "tushare"
+
+[market_data.profiles.hithink_official]
+provider = "hithink"
+secret_id = "hithink"
