@@ -49,7 +49,11 @@ from finagent.research.holdout_evaluation import (
     SQLiteHoldoutEvaluationStore,
     SealedHoldoutEvaluator,
 )
-from finagent.research.programs import ResearchProgram, SQLiteResearchProgramStore
+from finagent.research.programs import (
+    ResearchProgram,
+    ResearchProgramStatus,
+    SQLiteResearchProgramStore,
+)
 from finagent.research.registry import SQLiteResearchRegistry
 from finagent.sandbox import FeatureSandboxRequest, LocalFeatureSandbox
 
