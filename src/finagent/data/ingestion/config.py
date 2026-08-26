@@ -190,6 +190,7 @@ def load_configured_market_data(
         enforce_private_permissions=enforce_permissions,
     )
 
+    ingestor: object
     if profile.provider == "alpaca":
         api_key = _required_secret(credentials, "api_key", profile.secret_id)
         secret_key = _required_secret(credentials, "secret_key", profile.secret_id)
