@@ -11,6 +11,12 @@ from .base import (
     read_normalized_csv,
     validate_records,
 )
+from .config import (
+    ConfiguredMarketData,
+    MarketDataProfile,
+    load_configured_market_data,
+    load_market_data_profile,
+)
 from .diff import ProviderDiffReport, compare_provider_records
 from .hithink import HiThinkMarketDataIngestor
 from .provider import (
@@ -33,9 +39,11 @@ __all__ = [
     "TUSHARE_15000_CAPABILITIES",
     "AKShareMarketDataIngestor",
     "AlpacaMarketDataIngestor",
+    "ConfiguredMarketData",
     "DataFrequency",
     "HiThinkMarketDataIngestor",
     "MarketDataManifest",
+    "MarketDataProfile",
     "MarketDataPullRequest",
     "MarketDataQualityReport",
     "MarketRegion",
@@ -48,6 +56,8 @@ __all__ = [
     "ResearchDataRequirement",
     "TushareMarketDataIngestor",
     "compare_provider_records",
+    "load_configured_market_data",
+    "load_market_data_profile",
     "provider_capabilities",
     "read_normalized_csv",
     "validate_records",
