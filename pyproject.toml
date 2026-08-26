@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "finagent"
-version = "1.2.0"
+version = "1.2.1"
 description = "Auditable agentic quantitative research, deterministic portfolio construction and supervised paper/shadow operations."
 readme = "README.md"
 requires-python = ">=3.11"

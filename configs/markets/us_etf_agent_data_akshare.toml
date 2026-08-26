@@ -1,0 +1,26 @@
+[market]
+provider = "akshare"
+region = "us_equity"
+asset_type = "etf"
+symbols = ["SPY", "QQQ", "IWM", "DIA"]
+start = 2018-01-01
+end = 2026-08-24
+adjustment = "raw"
+output_dir = "data/market/us_etf_akshare"
+strict_provider_symbols = true
+
+[market.provider_symbols]
+SPY = "105.SPY"
+QQQ = "105.QQQ"
+IWM = "105.IWM"
+DIA = "105.DIA"
+
+[market.venue_overrides]
+SPY = "ARCX"
+QQQ = "XNAS"
+IWM = "ARCX"
+DIA = "ARCX"
+
+[market.metadata]
+purpose = "secondary free US ETF dataset for frozen-family cross-provider validation"
+provider_role = "validation"
