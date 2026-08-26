@@ -24,6 +24,17 @@ from .agent_market import (
     holm_adjusted_pvalues,
     one_sided_mean_pvalue,
 )
+from .factor_discovery import (
+    AgentFactorDiscoveryConfig,
+    AgentFactorDiscoveryLoop,
+    AgentFactorDiscoveryResult,
+    AgentFactorDiscoveryRound,
+    FactorAgentFeedback,
+    FactorCandidateDiagnostics,
+    FactorDevelopmentAnalyzer,
+    FactorFamilyDiagnostics,
+    FeedbackAwareMarketFeatureCandidateGenerator,
+)
 from .family_validation import ExperimentFamilyValidator, RegisteredFamilyValidation
 from .final_strategy import (
     FINAL_STRATEGY_SELECTION_RULE,
@@ -110,6 +121,10 @@ from .validation import (
 
 __all__ = [
     "AgentCandidateStatisticalValidation",
+    "AgentFactorDiscoveryConfig",
+    "AgentFactorDiscoveryLoop",
+    "AgentFactorDiscoveryResult",
+    "AgentFactorDiscoveryRound",
     "AgentFamilyDevelopmentEvidence",
     "AgentFamilyDevelopmentEvidenceBuilder",
     "AgentFamilyStatisticalReport",
@@ -131,7 +146,12 @@ __all__ = [
     "ExperimentQuerySnapshot",
     "ExperimentRunner",
     "FINAL_STRATEGY_SELECTION_RULE",
+    "FactorAgentFeedback",
+    "FactorCandidateDiagnostics",
+    "FactorDevelopmentAnalyzer",
+    "FactorFamilyDiagnostics",
     "FamilyValidationReport",
+    "FeedbackAwareMarketFeatureCandidateGenerator",
     "FinalStrategyFreezeResult",
     "FinalStrategyFreezer",
     "FinalStrategySelector",
