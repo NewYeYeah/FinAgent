@@ -35,6 +35,7 @@ from .factor_discovery import (
     FactorFamilyDiagnostics,
     FeedbackAwareMarketFeatureCandidateGenerator,
 )
+from .factor_workflow import AgentFactorResearchWorkflow, AgentFactorResearchWorkflowResult
 from .family_validation import ExperimentFamilyValidator, RegisteredFamilyValidation
 from .final_strategy import (
     FINAL_STRATEGY_SELECTION_RULE,
@@ -125,6 +126,8 @@ __all__ = [
     "AgentFactorDiscoveryLoop",
     "AgentFactorDiscoveryResult",
     "AgentFactorDiscoveryRound",
+    "AgentFactorResearchWorkflow",
+    "AgentFactorResearchWorkflowResult",
     "AgentFamilyDevelopmentEvidence",
     "AgentFamilyDevelopmentEvidenceBuilder",
     "AgentFamilyStatisticalReport",
