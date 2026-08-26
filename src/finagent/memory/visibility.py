@@ -54,10 +54,10 @@ class EvidenceScope:
 class SQLiteMemoryVisibilityStore:
     """Immutable evidence-scope registry colocated with structured memory.
 
-    The table is intentionally orthogonal to ``memory_nodes``. Existing Phase 5.5
-    memory remains backward compatible: an unbound legacy node is treated as shared
-    for Agent reads. Newly sensitive evidence can be classified without rewriting the
-    immutable memory-node payload.
+    Existing Phase 5.5 memory remains backward compatible: an unbound legacy node is
+    treated as shared for Agent reads. Newly sensitive evidence can be classified
+    without rewriting the immutable memory-node payload. Bindings themselves are
+    immutable so result-dependent code cannot relabel holdout evidence as shared.
     """
 
     def __init__(self, path: str | Path) -> None:
@@ -102,6 +102,11 @@ class SQLiteMemoryVisibilityStore:
             recorded_at=recorded_at or datetime.now(timezone.utc),
         )
         with self._connect() as con:
+            if con.execute(
+                "SELECT 1 FROM memory_nodes WHERE node_key=?",
+                (scope.evidence_key,),
+            ).fetchone() is None:
+                raise KeyError(f"memory node {scope.evidence_key!r} is not registered")
             existing = con.execute(
                 "SELECT evidence_key, visibility, program_id, recorded_at "
                 "FROM memory_evidence_visibility WHERE evidence_key=?",
@@ -199,8 +204,6 @@ class AgentResearchMemoryView:
         exclude_hypothesis_id: str = "",
         limit: int = 5,
     ):
-        # Ask for a bounded superset before filtering so one hidden match does not
-        # suppress visible alternatives. Phase 5.5 itself caps this query at 50.
         matches = self.memory.find_similar_hypotheses(
             statement,
             tags=tags,
