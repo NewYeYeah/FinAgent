@@ -38,6 +38,14 @@ from .evidence import (
 )
 from .paper import PaperBroker, PaperBrokerConfig
 from .reconciliation import PortfolioReconciler
+from .research_handoff import (
+    RESEARCH_MODEL_PAPER_REQUEST,
+    ResearchPaperHandoffApplication,
+    ResearchPaperHandoffRequest,
+    ResearchPaperHandoffResult,
+    ResearchPaperHandoffService,
+    SQLiteResearchPaperHandoffStore,
+)
 from .safety import TradingSafetyController, TradingSafetyLimits
 from .shadow import ExecutionCostCalibrator, ShadowPortfolioMonitor
 from .store import SQLitePaperBrokerStore
@@ -75,14 +83,20 @@ __all__ = [
     "PaperOrder",
     "PaperTradingValidation",
     "PortfolioReconciler",
+    "RESEARCH_MODEL_PAPER_REQUEST",
     "ReconciliationIssue",
     "ReconciliationReport",
     "ReconciliationSeverity",
+    "ResearchPaperHandoffApplication",
+    "ResearchPaperHandoffRequest",
+    "ResearchPaperHandoffResult",
+    "ResearchPaperHandoffService",
     "SafetyDecision",
     "ShadowComparison",
     "ShadowPortfolioMonitor",
     "SQLiteOperationalEvidenceStore",
     "SQLitePaperBrokerStore",
+    "SQLiteResearchPaperHandoffStore",
     "TradingSafetyController",
     "TradingSafetyLimits",
     "TradingSessionCalendar",
