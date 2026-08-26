@@ -8,9 +8,28 @@ from pathlib import Path
 from finagent.data import read_normalized_csv, validate_records
 
 
+def _resolve_bars_path(path: Path) -> Path:
+    if path.is_dir():
+        bars = path / "bars.csv"
+        if not bars.is_file():
+            raise FileNotFoundError(
+                f"market-data directory does not contain bars.csv: {path}; "
+                "run pull_market_data.py successfully before validation"
+            )
+        return bars
+    if path.is_file():
+        return path
+    raise FileNotFoundError(
+        f"market-data path does not exist: {path}; "
+        "run pull_market_data.py successfully before validation"
+    )
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Validate a FinAgent normalized OHLCV CSV.")
-    parser.add_argument("bars", type=Path)
+    parser = argparse.ArgumentParser(
+        description="Validate a FinAgent normalized OHLCV CSV or materialized market-data directory."
+    )
+    parser.add_argument("bars", type=Path, help="bars.csv or directory containing bars.csv")
     parser.add_argument("--expected-symbol", action="append", default=[])
     parser.add_argument(
         "--allow-calendar-gaps",
@@ -20,7 +39,8 @@ def main() -> int:
     parser.add_argument("--report", type=Path)
     args = parser.parse_args()
 
-    records = read_normalized_csv(args.bars)
+    bars_path = _resolve_bars_path(args.bars)
+    records = read_normalized_csv(bars_path)
     report = validate_records(
         records,
         expected_symbols=tuple(args.expected_symbol),
