@@ -1,6 +1,6 @@
 # FinAgent Roadmap — Post 1.0
 
-Date: 2026-08-25
+Date: 2026-08-26
 
 ## 1.0 completed scope
 
@@ -22,6 +22,50 @@ Phase 5.5  Structured evidence memory and hypothesis evolution
 ```
 
 FinAgent 1.0 is a stable research + deterministic portfolio + supervised paper/shadow system. The default development strategy after 1.0 is **operate, measure and fix**, not automatic feature expansion.
+
+## Active 1.2.2 research-governance hardening
+
+The Agent-market path exposed several governance gaps that only became visible through code-level review. They are being closed before any sealed-holdout or promotion automation is added.
+
+Current sequence:
+
+```text
+ResearchProgram lifecycle                         DONE / main
+        ↓
+Agent-facing memory / OOS visibility              DONE / main
+        ↓
+immutable ResearchRegistry identities             PR #22
+        ↓
+formal Agent ExperimentFamily denominator         PR #22
+        ↓
+governed Agent-market entrypoint                  PR #22
+        ↓
+formal-family DSR/PBO/Reality Check binding       NEXT
+        ↓
+FinalStrategySpec                                 NEXT
+        ↓
+atomic SEALED_HOLDOUT evidence writer             NEXT
+        ↓
+one-time sealed holdout evaluator                 NEXT
+        ↓
+deterministic ResearchPromotionGate               NEXT
+```
+
+Acceptance is code-path based. The 1.2.2 work is not complete until an end-to-end governed test proves:
+
+```text
+candidate generation
+→ formal family freeze
+→ development-only research
+→ family statistical validation
+→ final strategy freeze
+→ ResearchProgram freeze
+→ one-time sealed holdout
+→ sealed evidence remains invisible to adaptive Agent reads
+→ deterministic final promotion decision
+```
+
+Detailed current status is tracked in `DEVELOPMENT_PROGRESS_2026-08-26_1_2_2.md` and `RESEARCH_GOVERNANCE_1_2_2.md`.
 
 ## Immediate post-1.0 priority: sustained paper/shadow validation
 
