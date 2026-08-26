@@ -35,6 +35,7 @@ from .factor_discovery import (
     FactorFamilyDiagnostics,
     FeedbackAwareMarketFeatureCandidateGenerator,
 )
+from .factor_ensemble import FactorEnsembleModelBuilder
 from .factor_quant import (
     FactorEnsembleComponentSelection,
     FactorEnsembleSelection,
@@ -165,6 +166,7 @@ __all__ = [
     "FactorCandidateDiagnostics",
     "FactorDevelopmentAnalyzer",
     "FactorEnsembleComponentSelection",
+    "FactorEnsembleModelBuilder",
     "FactorEnsembleSelection",
     "FactorEnsembleSelectionConfig",
     "FactorEnsembleSelector",
