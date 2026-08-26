@@ -46,6 +46,14 @@ from .generated_feature_eval import (
     evaluate_generated_feature_dataset,
 )
 from .governed_agent_market import GovernedAgentMarketResearchRunner
+from .holdout import (
+    HoldoutEligibilitySeal,
+    HoldoutEligibilitySealer,
+    SQLiteHoldoutEligibilityStore,
+    SQLiteSealedHoldoutStore,
+    SealedHoldoutSpec,
+    development_evidence_digest,
+)
 from .market_validation import (
     AgentMarketValidationMode,
     AgentMarketValidationPolicy,
@@ -120,6 +128,8 @@ __all__ = [
     "GeneratedFeatureNestedWalkForwardStudy",
     "GeneratedFeatureResearchTrace",
     "GovernedAgentMarketResearchRunner",
+    "HoldoutEligibilitySeal",
+    "HoldoutEligibilitySealer",
     "LLMMarketFeatureCandidateGenerator",
     "MarketFeatureCandidateGenerator",
     "MultipleTestingResult",
@@ -140,12 +150,16 @@ __all__ = [
     "SQLiteAgentMarketValidationStore",
     "SQLiteFinalStrategyStore",
     "SQLiteGeneratedFeatureResearchStore",
+    "SQLiteHoldoutEligibilityStore",
     "SQLiteResearchProgramStore",
     "SQLiteResearchQueryService",
     "SQLiteResearchRegistry",
+    "SQLiteSealedHoldoutStore",
+    "SealedHoldoutSpec",
     "adjust_pvalues",
     "agent_market_result_from_dict",
     "deflated_sharpe_ratio",
+    "development_evidence_digest",
     "evaluate_generated_feature_dataset",
     "expected_maximum_sharpe",
     "frozen_feature_family",
