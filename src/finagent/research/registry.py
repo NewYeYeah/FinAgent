@@ -67,7 +67,14 @@ def _asset_from_dict(payload: dict) -> AssetId:
 
 
 class SQLiteResearchRegistry:
-    """Durable experiment, artifact and model-governance registry."""
+    """Durable experiment, artifact and model-governance registry.
+
+    Pre-registered research identity is immutable. Artifact, experiment and result
+    registration is idempotent only when the full stored identity/payload is identical;
+    callers must create a new ID for a changed dataset, code, hypothesis or result.
+    ExperimentRun remains stateful because a run legitimately transitions through its
+    execution lifecycle.
+    """
 
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
@@ -132,9 +139,21 @@ class SQLiteResearchRegistry:
             )
 
     def register_artifact(self, artifact: ArtifactRef) -> None:
+        candidate = (artifact.artifact_type.value, artifact.uri)
         with self._connect() as con:
+            existing = con.execute(
+                """SELECT artifact_type, uri FROM artifacts
+                   WHERE artifact_id=? AND version=? AND digest=?""",
+                (artifact.artifact_id, artifact.version, artifact.digest),
+            ).fetchone()
+            if existing is not None:
+                if tuple(existing) != candidate:
+                    raise ValueError(
+                        "artifact identity already exists with different type/uri metadata"
+                    )
+                return
             con.execute(
-                """INSERT OR REPLACE INTO artifacts
+                """INSERT INTO artifacts
                    (artifact_id, version, artifact_type, digest, uri)
                    VALUES (?, ?, ?, ?, ?)""",
                 (
@@ -175,14 +194,28 @@ class SQLiteResearchRegistry:
             "parent_artifacts": [_artifact_dict(ref) for ref in spec.parent_artifacts],
             "metadata": dict(spec.metadata),
         }
+        encoded = json.dumps(payload, sort_keys=True)
         with self._connect() as con:
-            con.execute(
-                """INSERT INTO experiments (experiment_id, fingerprint, payload_json) VALUES (?, ?, ?)
-                   ON CONFLICT(experiment_id) DO UPDATE SET
-                       fingerprint=excluded.fingerprint,
-                       payload_json=excluded.payload_json""",
-                (spec.experiment_id, spec.fingerprint, json.dumps(payload, sort_keys=True)),
-            )
+            existing = con.execute(
+                "SELECT fingerprint, payload_json FROM experiments WHERE experiment_id=?",
+                (spec.experiment_id,),
+            ).fetchone()
+            candidate = (spec.fingerprint, encoded)
+            if existing is not None:
+                if tuple(existing) != candidate:
+                    raise ValueError(
+                        f"experiment {spec.experiment_id!r} is immutable; create a new experiment_id"
+                    )
+                return
+            try:
+                con.execute(
+                    "INSERT INTO experiments (experiment_id, fingerprint, payload_json) VALUES (?, ?, ?)",
+                    (spec.experiment_id, spec.fingerprint, encoded),
+                )
+            except sqlite3.IntegrityError as exc:
+                raise ValueError(
+                    "experiment fingerprint is already registered under a different experiment_id"
+                ) from exc
 
     def get_experiment(self, experiment_id: str) -> ExperimentSpec:
         with self._connect() as con:
@@ -216,6 +249,12 @@ class SQLiteResearchRegistry:
             "stdout_digest": run.stdout_digest,
         }
         with self._connect() as con:
+            existing = con.execute(
+                "SELECT spec_fingerprint FROM runs WHERE run_id=?",
+                (run.run_id,),
+            ).fetchone()
+            if existing is not None and existing[0] != run.spec_fingerprint:
+                raise ValueError("run_id cannot be rebound to a different ExperimentSpec fingerprint")
             con.execute(
                 """INSERT INTO runs (run_id, spec_fingerprint, payload_json) VALUES (?, ?, ?)
                    ON CONFLICT(run_id) DO UPDATE SET
@@ -254,12 +293,23 @@ class SQLiteResearchRegistry:
             "produced_artifacts": [_artifact_dict(ref) for ref in result.produced_artifacts],
             "notes": result.notes,
         }
+        encoded = json.dumps(payload, sort_keys=True)
         with self._connect() as con:
             if con.execute("SELECT 1 FROM runs WHERE run_id=?", (result.run_id,)).fetchone() is None:
                 raise KeyError(f"run {result.run_id!r} must be registered before its result")
+            existing = con.execute(
+                "SELECT payload_json FROM results WHERE run_id=?",
+                (result.run_id,),
+            ).fetchone()
+            if existing is not None:
+                if existing[0] != encoded:
+                    raise ValueError(
+                        f"experiment result {result.run_id!r} is immutable once registered"
+                    )
+                return
             con.execute(
-                "INSERT OR REPLACE INTO results (run_id, payload_json) VALUES (?, ?)",
-                (result.run_id, json.dumps(payload, sort_keys=True)),
+                "INSERT INTO results (run_id, payload_json) VALUES (?, ?)",
+                (result.run_id, encoded),
             )
 
     def get_result(self, run_id: str) -> ExperimentResult:
@@ -484,9 +534,18 @@ class SQLiteResearchRegistry:
             "role": membership.role,
         }
         with self._connect() as con:
+            existing = con.execute(
+                "SELECT payload_json FROM family_memberships WHERE family_id=? AND experiment_id=?",
+                (family_id, experiment_id),
+            ).fetchone()
+            encoded = json.dumps(payload, sort_keys=True)
+            if existing is not None:
+                if existing[0] != encoded:
+                    raise ValueError("family membership is immutable once registered")
+                return membership
             con.execute(
                 "INSERT INTO family_memberships (family_id, experiment_id, payload_json) VALUES (?, ?, ?)",
-                (family_id, experiment_id, json.dumps(payload, sort_keys=True)),
+                (family_id, experiment_id, encoded),
             )
         return membership
 
