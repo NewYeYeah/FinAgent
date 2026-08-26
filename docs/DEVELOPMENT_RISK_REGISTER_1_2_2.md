@@ -52,6 +52,12 @@ Current P1 items:
    - Current scope is application-code governance.
    - Desired hardening may include separate credentials/stores/processes for sealed datasets if a deployment requires stronger organizational isolation.
 
+5. Research-to-paper handoff spans the research registry and paper operational store.
+   - Normal path records immutable handoff identity, exact human approval, model-stage transition and operational application.
+   - A process crash between writes can leave a partially applied cross-store transition even though each individual store remains durable.
+   - Desired hardening: explicit reconciliation/recovery routine or a consolidated transaction boundary if operational use demonstrates the need.
+   - Promote to P0 if partial handoff states are observed in routine operation or can authorize orders without a verifiable approval chain.
+
 ### P2 — defer unless deployment evidence makes it necessary
 
 P2 covers theoretical, low-probability or infrastructure-level concerns whose mitigation would materially slow feature development without improving current research correctness.
