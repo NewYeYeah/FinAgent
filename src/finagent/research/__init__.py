@@ -29,6 +29,7 @@ from .generated_feature_eval import (
     SQLiteGeneratedFeatureResearchStore,
     evaluate_generated_feature_dataset,
 )
+from .governed_agent_market import GovernedAgentMarketResearchRunner
 from .market_validation import (
     AgentMarketValidationMode,
     AgentMarketValidationPolicy,
@@ -92,6 +93,7 @@ __all__ = [
     "GeneratedFeatureMaterializer",
     "GeneratedFeatureNestedWalkForwardStudy",
     "GeneratedFeatureResearchTrace",
+    "GovernedAgentMarketResearchRunner",
     "LLMMarketFeatureCandidateGenerator",
     "MarketFeatureCandidateGenerator",
     "MultipleTestingResult",
