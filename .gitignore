@@ -15,3 +15,4 @@ build/
 /.finagent/
 /configs/*secrets*.toml
 !/configs/llm-secrets.example.toml
+!/configs/secrets.example.toml
