@@ -35,6 +35,18 @@ from .factor_discovery import (
     FactorFamilyDiagnostics,
     FeedbackAwareMarketFeatureCandidateGenerator,
 )
+from .factor_quant import (
+    FactorEnsembleComponentSelection,
+    FactorEnsembleSelection,
+    FactorEnsembleSelectionConfig,
+    FactorEnsembleSelector,
+    FactorHorizonDiagnostics,
+    FactorQuantAnalyzer,
+    FactorQuantCandidateReport,
+    FactorQuantConfig,
+    FactorQuantFamilyReport,
+    QuantilePortfolioDiagnostics,
+)
 from .factor_workflow import AgentFactorResearchWorkflow, AgentFactorResearchWorkflowResult
 from .family_validation import ExperimentFamilyValidator, RegisteredFamilyValidation
 from .final_strategy import (
@@ -152,7 +164,16 @@ __all__ = [
     "FactorAgentFeedback",
     "FactorCandidateDiagnostics",
     "FactorDevelopmentAnalyzer",
+    "FactorEnsembleComponentSelection",
+    "FactorEnsembleSelection",
+    "FactorEnsembleSelectionConfig",
+    "FactorEnsembleSelector",
     "FactorFamilyDiagnostics",
+    "FactorHorizonDiagnostics",
+    "FactorQuantAnalyzer",
+    "FactorQuantCandidateReport",
+    "FactorQuantConfig",
+    "FactorQuantFamilyReport",
     "FamilyValidationReport",
     "FeedbackAwareMarketFeatureCandidateGenerator",
     "FinalStrategyFreezeResult",
@@ -182,6 +203,7 @@ __all__ = [
     "ProgramLifecycleEvent",
     "ProgramLifecycleSnapshot",
     "ProgramReservation",
+    "QuantilePortfolioDiagnostics",
     "RealityCheckResult",
     "RegisteredFamilyValidation",
     "ResearchProgram",
