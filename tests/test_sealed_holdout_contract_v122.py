@@ -58,7 +58,7 @@ def _program_store(tmp_path) -> SQLiteResearchProgramStore:
     store.register(
         ResearchProgram(
             program_id="program-001",
-            alpha_budget=0.05,
+            alpha_budget=0.25,
             max_families=2,
             max_experiments=6,
             sealed_holdout_id="holdout-001",
