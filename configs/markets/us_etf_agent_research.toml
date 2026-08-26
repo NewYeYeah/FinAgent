@@ -1,0 +1,68 @@
+[agent_market_research]
+# Use an already materialized/validated provider dataset.  Alpaca is the default
+# US primary; an AKShare-normalized dataset can be substituted by changing provider.
+bars_path = "data/market/us_etf_alpaca/bars.csv"
+manifest_path = "data/market/us_etf_alpaca/manifest.json"
+report_path = "reports/us_etf_agent_market_research.json"
+provider = "alpaca"
+market = "us_equity"
+
+# LLM model IDs are provider/account specific.  Replace this value with a model
+# available to your OpenAI API account before running the script.
+llm_model = "REPLACE_WITH_AVAILABLE_MODEL_ID"
+research_question = "Discover interpretable short-horizon cross-sectional signals among SPY, QQQ, IWM and DIA using only PIT-safe price/volume information."
+task_id = "us-etf-agent-research-v1"
+program_id = "us-etf-agent-program-v1"
+family_id = "us-etf-agent-family-v1"
+
+candidate_count = 4
+max_candidates = 8
+program_alpha_budget = 0.05
+program_max_families = 4
+program_max_experiments = 16
+family_alpha = 0.05
+selection_metric = "net_sharpe"
+label_name = "forward_simple_return_1"
+require_statistical_acceptance = false
+
+approved_input_fields = [
+  "simple_return_1",
+  "simple_return_5",
+  "simple_return_20",
+  "squared_log_return_1",
+  "log_volume_change_1",
+]
+smoke_lookback = 64
+max_feature_lookback = 60
+max_output_tokens = 3500
+feature_transaction_cost_bps = 5.0
+min_cross_section = 2
+min_periods = 5
+state_dir = ".finagent/agent-market-us"
+
+# Nested walk-forward / deterministic portfolio settings.  These mirror the
+# existing MarketStudyConfig contract so fixed-model and agent-generated studies
+# use the same chronology, risk and execution assumptions.
+outer_train_size = 756
+outer_test_size = 126
+outer_step_size = 126
+inner_train_size = 504
+inner_test_size = 63
+inner_step_size = 63
+purge_bars = 1
+embargo_bars = 5
+initial_cash = 1000000.0
+lookback = 60
+rebalance_every = 5
+execution_lag_events = 1
+cash_weight = 0.10
+max_weight = 0.60
+commission_bps = 1.0
+slippage_bps = 2.0
+impact_bps = 5.0
+max_participation_rate = 0.05
+garch_min_observations = 30
+correlation_lookback = 60
+ar_min_observations = 50
+risk_aversion = 30.0
+turnover_penalty = 0.0005
