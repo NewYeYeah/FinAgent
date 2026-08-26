@@ -1,3 +1,9 @@
+from .agent_family import (
+    AgentMarketExperimentFamilyBridge,
+    AgentMarketFamilyPreparation,
+    AgentMarketFamilyRegistration,
+    AgentMarketProgramPlan,
+)
 from .agent_market import (
     AgentMarketCandidate,
     AgentMarketFoldResult,
@@ -63,7 +69,11 @@ from .validation import (
 
 __all__ = [
     "AgentMarketCandidate",
+    "AgentMarketExperimentFamilyBridge",
+    "AgentMarketFamilyPreparation",
+    "AgentMarketFamilyRegistration",
     "AgentMarketFoldResult",
+    "AgentMarketProgramPlan",
     "AgentMarketResearchConfig",
     "AgentMarketResearchResult",
     "AgentMarketResearchRunner",
