@@ -1,3 +1,9 @@
+from .agent_family import (
+    AgentMarketExperimentFamilyBridge,
+    AgentMarketFamilyPreparation,
+    AgentMarketFamilyRegistration,
+    AgentMarketProgramPlan,
+)
 from .agent_market import (
     AgentMarketCandidate,
     AgentMarketFoldResult,
@@ -23,6 +29,7 @@ from .generated_feature_eval import (
     SQLiteGeneratedFeatureResearchStore,
     evaluate_generated_feature_dataset,
 )
+from .governed_agent_market import GovernedAgentMarketResearchRunner
 from .market_validation import (
     AgentMarketValidationMode,
     AgentMarketValidationPolicy,
@@ -63,7 +70,11 @@ from .validation import (
 
 __all__ = [
     "AgentMarketCandidate",
+    "AgentMarketExperimentFamilyBridge",
+    "AgentMarketFamilyPreparation",
+    "AgentMarketFamilyRegistration",
     "AgentMarketFoldResult",
+    "AgentMarketProgramPlan",
     "AgentMarketResearchConfig",
     "AgentMarketResearchResult",
     "AgentMarketResearchRunner",
@@ -82,6 +93,7 @@ __all__ = [
     "GeneratedFeatureMaterializer",
     "GeneratedFeatureNestedWalkForwardStudy",
     "GeneratedFeatureResearchTrace",
+    "GovernedAgentMarketResearchRunner",
     "LLMMarketFeatureCandidateGenerator",
     "MarketFeatureCandidateGenerator",
     "MultipleTestingResult",
