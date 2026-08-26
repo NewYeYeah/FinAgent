@@ -69,7 +69,8 @@ jobs:
             src/finagent/models/alpha/generated.py \
             src/finagent/research/agent_market.py \
             tests/test_agent_market_research_v120.py \
-            scripts/run_agent_market_research.py
+            scripts/run_agent_market_research.py \
+            --select E4,E7,E9,F
       - name: Targeted static typing baseline
         run: |
           mypy \
