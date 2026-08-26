@@ -4,11 +4,12 @@ import hashlib
 import json
 import math
 import sqlite3
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from types import MappingProxyType
-from typing import Mapping, Protocol, Sequence
+from typing import Protocol
 
 import numpy as np
 from scipy.stats import t as student_t
@@ -218,7 +219,11 @@ class LLMMarketFeatureCandidateGenerator:
                     "Prefer an economically interpretable hypothesis and do not imitate prior candidates."
                 ),
                 created_at=task.created_at,
-                metadata={**dict(task.metadata), "candidate_index": str(index + 1), "candidate_count": str(count)},
+                metadata={
+                    **dict(task.metadata),
+                    "candidate_index": str(index + 1),
+                    "candidate_count": str(count),
+                },
             )
             artifact = self.generator.generate(
                 task=child,
@@ -233,16 +238,21 @@ class LLMMarketFeatureCandidateGenerator:
         return tuple(artifacts)
 
 
-@dataclass(frozen=True, slots=True)
 class _ProgramPlanAdapter:
-    program_id: str
-    family_id: str
-    alpha: float
-    candidate_digests: tuple[str, ...]
+    """Minimal mutable PlanLike surface for the existing program-budget ledger."""
 
-    @property
-    def variants(self) -> tuple[str, ...]:
-        return self.candidate_digests
+    def __init__(
+        self,
+        *,
+        program_id: str,
+        family_id: str,
+        alpha: float,
+        variants: tuple[object, ...],
+    ) -> None:
+        self.program_id = program_id
+        self.family_id = family_id
+        self.alpha = alpha
+        self.variants = variants
 
     def fingerprint(self, task_id: str) -> str:
         payload = {
@@ -250,7 +260,7 @@ class _ProgramPlanAdapter:
             "program_id": self.program_id,
             "family_id": self.family_id,
             "alpha": self.alpha,
-            "candidate_digests": list(self.candidate_digests),
+            "candidate_digests": [str(value) for value in self.variants],
         }
         encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
         return hashlib.sha256(encoded).hexdigest()
@@ -276,7 +286,10 @@ def holm_adjusted_pvalues(pvalues: Mapping[str, float]) -> Mapping[str, float]:
     for value in pvalues.values():
         if not 0.0 <= float(value) <= 1.0:
             raise ValueError("pvalues must be in [0, 1]")
-    ordered = sorted(((key, float(value)) for key, value in pvalues.items()), key=lambda item: (item[1], item[0]))
+    ordered = sorted(
+        ((key, float(value)) for key, value in pvalues.items()),
+        key=lambda item: (item[1], item[0]),
+    )
     total = len(ordered)
     running = 0.0
     adjusted: dict[str, float] = {}
@@ -311,7 +324,9 @@ def _period_returns(result, initial_cash: float) -> list[float]:
     return [float(value) for value in nav[1:] / nav[:-1] - 1.0]
 
 
-def _aggregate_portfolio(returns: Sequence[float], turnover: float, cost: float) -> dict[str, float]:
+def _aggregate_portfolio(
+    returns: Sequence[float], turnover: float, cost: float
+) -> dict[str, float]:
     values = np.asarray(returns, dtype=float)
     if values.size == 0:
         raise ValueError("agent market study produced no out-of-sample portfolio returns")
@@ -339,8 +354,8 @@ class AgentMarketResearchRunner:
     """Connect generated hypotheses to real-market, nested, deterministic portfolios.
 
     Candidate selection is fold-local: only inner-validation evidence may choose the
-    candidate whose outer fold is reported and traded.  Outer results of non-selected
-    candidates are never exposed by ``AgentMarketResearchResult``.  Holm correction is
+    candidate whose outer fold is reported and traded. Outer results of non-selected
+    candidates are never exposed by ``AgentMarketResearchResult``. Holm correction is
     applied across the frozen candidate family within every outer fold.
     """
 
@@ -391,7 +406,7 @@ class AgentMarketResearchRunner:
             program_id=program_id,
             family_id=family_id,
             alpha=self.config.family_alpha,
-            candidate_digests=tuple(artifact.digest for artifact in candidates),
+            variants=tuple(artifact.digest for artifact in candidates),
         )
         self.program_store.reserve_plan(plan, task_id=task.task_id)
 
@@ -421,7 +436,9 @@ class AgentMarketResearchRunner:
         nested_folds = splitter.split(calendar, labels=(self.config.label_name,))
         if not nested_folds:
             raise ValueError("agent market research produced no nested folds")
-        if any(len(studies[artifact.digest].folds) != len(nested_folds) for artifact in candidates):
+        if any(
+            len(studies[artifact.digest].folds) != len(nested_folds) for artifact in candidates
+        ):
             raise RuntimeError("candidate studies disagree on nested fold count")
 
         fold_results: list[AgentMarketFoldResult] = []
@@ -465,7 +482,9 @@ class AgentMarketResearchRunner:
 
             outer = nested_fold.outer_fold
             risk_features = ("log_return_1", "squared_log_return_1")
-            required_features = tuple(dict.fromkeys((*selected.spec.input_fields, *risk_features)))
+            required_features = tuple(
+                dict.fromkeys((*selected.spec.input_fields, *risk_features))
+            )
             dataset = self.adapter.build_dataset(
                 DatasetRequest(
                     universe=universe,
@@ -576,7 +595,9 @@ class AgentMarketResearchRunner:
             provider=self.capabilities.provider,
             data_version=self.adapter.data_version,
             universe=tuple(asset.key for asset in universe),
-            candidates=tuple(AgentMarketCandidate.from_artifact(artifact) for artifact in candidates),
+            candidates=tuple(
+                AgentMarketCandidate.from_artifact(artifact) for artifact in candidates
+            ),
             folds=tuple(fold_results),
             aggregate_portfolio_metrics=_aggregate_portfolio(
                 portfolio_returns,
