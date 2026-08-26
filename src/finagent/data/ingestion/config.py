@@ -3,9 +3,9 @@ from __future__ import annotations
 import os
 import stat
 import tomllib
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Mapping
 
 from .akshare import AKShareMarketDataIngestor
 from .alpaca import AlpacaMarketDataIngestor
