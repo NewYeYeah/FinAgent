@@ -13,6 +13,7 @@ from .domain import (
     ResearchMemorySummary,
     SimilarityMatch,
 )
+from .scoped import ScopedEvidenceWrite, SQLiteScopedEvidenceWriter
 from .service import EvidenceAwareBudgetPolicy, ResearchMemoryService
 from .store import SQLiteResearchMemoryStore
 from .visibility import (
@@ -42,5 +43,7 @@ __all__ = [
     "ResearchMemorySummary",
     "SQLiteMemoryVisibilityStore",
     "SQLiteResearchMemoryStore",
+    "SQLiteScopedEvidenceWriter",
+    "ScopedEvidenceWrite",
     "SimilarityMatch",
 ]
