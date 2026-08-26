@@ -1,0 +1,24 @@
+[llm]
+# Public routing configuration only. Never place API keys in this file.
+default_profile = "deepseek_official_v4_pro"
+secrets_file = "~/.config/finagent/secrets.toml"
+enforce_private_secret_file = true
+
+[llm.profiles.deepseek_official_v4_pro]
+provider = "deepseek"
+base_url = "https://api.deepseek.com"
+model = "deepseek-v4-pro"
+secret_id = "deepseek_official"
+thinking = true
+reasoning_effort = "high"
+
+[llm.profiles.siliconflow_deepseek_v4_pro]
+provider = "siliconflow"
+base_url = "https://api.siliconflow.cn/v1"
+model = "deepseek-ai/DeepSeek-V4-Pro"
+secret_id = "siliconflow"
+
+[llm.profiles.openai]
+provider = "openai"
+model = "REPLACE_WITH_OPENAI_MODEL_ID"
+secret_id = "openai"
