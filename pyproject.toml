@@ -24,6 +24,11 @@ dev = [
   "mypy>=1.15,<2",
   "build>=1.2,<2",
 ]
+llm = [
+  "openai>=3.2,<4",
+]
+# Backward-compatible alias. The OpenAI SDK is also used as the transport for
+# DeepSeek and SiliconFlow OpenAI-compatible endpoints.
 llm-openai = [
   "openai>=3.2,<4",
 ]
