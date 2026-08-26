@@ -3,7 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Mapping
 
-from finagent.memory import FailureCategory, ResearchMemoryService
+from finagent.memory import (
+    AgentResearchMemoryView,
+    FailureCategory,
+    ResearchMemoryService,
+    SQLiteMemoryVisibilityStore,
+)
 
 from ..domain import AgentAction, AgentRunContext, ToolMode
 from .base import FunctionTool, ToolSpec
@@ -12,6 +17,23 @@ from .base import FunctionTool, ToolSpec
 @dataclass(frozen=True, slots=True)
 class ResearchMemoryToolDependencies:
     memory: ResearchMemoryService
+    visibility: SQLiteMemoryVisibilityStore | None = None
+
+    def __post_init__(self) -> None:
+        if self.visibility is None:
+            object.__setattr__(
+                self,
+                "visibility",
+                SQLiteMemoryVisibilityStore(self.memory.store.path),
+            )
+
+    def view(self, context: AgentRunContext) -> AgentResearchMemoryView:
+        assert self.visibility is not None
+        return AgentResearchMemoryView(
+            self.memory,
+            self.visibility,
+            program_id=str(context.metadata.get("program_id", "")),
+        )
 
 
 def _int_arg(arguments: Mapping[str, object], name: str, default: int, *, low: int, high: int) -> int:
@@ -66,7 +88,7 @@ def _failure_payload(item) -> dict[str, object]:
 def build_research_memory_tools(deps: ResearchMemoryToolDependencies):
     def list_hypotheses(arguments: Mapping[str, object], context: AgentRunContext):
         limit = _int_arg(arguments, "limit", 20, low=1, high=100)
-        items = deps.memory.list_hypotheses(limit=limit)
+        items = deps.view(context).list_hypotheses(limit=limit)
         return {
             "hypotheses": [
                 {
@@ -85,7 +107,7 @@ def build_research_memory_tools(deps: ResearchMemoryToolDependencies):
         hypothesis_id = _str_arg(arguments, "hypothesis_id")
         max_nodes = _int_arg(arguments, "max_nodes", 40, low=1, high=100)
         max_failures = _int_arg(arguments, "max_failures", 20, low=0, high=100)
-        summary = deps.memory.summary(
+        summary = deps.view(context).summary(
             hypothesis_id,
             max_nodes=max_nodes,
             max_failures=max_failures,
@@ -111,7 +133,7 @@ def build_research_memory_tools(deps: ResearchMemoryToolDependencies):
         statement = _str_arg(arguments, "statement")
         limit = _int_arg(arguments, "limit", 5, low=1, high=20)
         exclude = _str_arg(arguments, "exclude_hypothesis_id", required=False)
-        matches = deps.memory.find_similar_hypotheses(
+        matches = deps.view(context).find_similar_hypotheses(
             statement,
             tags=_tags(arguments),
             exclude_hypothesis_id=exclude,
@@ -128,7 +150,7 @@ def build_research_memory_tools(deps: ResearchMemoryToolDependencies):
         node_key = _str_arg(arguments, "node_key")
         max_depth = _int_arg(arguments, "max_depth", 6, low=0, high=12)
         max_nodes = _int_arg(arguments, "max_nodes", 50, low=1, high=100)
-        graph = deps.memory.store.traverse(
+        graph = deps.view(context).traverse(
             node_key,
             max_depth=max_depth,
             max_nodes=max_nodes,
@@ -155,7 +177,7 @@ def build_research_memory_tools(deps: ResearchMemoryToolDependencies):
         raw_category = _str_arg(arguments, "category", required=False)
         category = FailureCategory(raw_category) if raw_category else None
         limit = _int_arg(arguments, "limit", 20, low=1, high=100)
-        items = deps.memory.store.failures(
+        items = deps.view(context).failures(
             hypothesis_id=hypothesis_id or None,
             experiment_id=experiment_id or None,
             category=category,
@@ -163,7 +185,7 @@ def build_research_memory_tools(deps: ResearchMemoryToolDependencies):
         return {"failures": [_failure_payload(item) for item in items]}
 
     def recommend_budget(arguments: Mapping[str, object], context: AgentRunContext):
-        recommendation = deps.memory.recommend_budget(
+        recommendation = deps.view(context).recommend_budget(
             statement=_str_arg(arguments, "statement"),
             requested_max_experiments=_int_arg(
                 arguments, "requested_max_experiments", 1, low=1, high=100

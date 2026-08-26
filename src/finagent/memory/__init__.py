@@ -15,10 +15,19 @@ from .domain import (
 )
 from .service import EvidenceAwareBudgetPolicy, ResearchMemoryService
 from .store import SQLiteResearchMemoryStore
+from .visibility import (
+    AgentResearchMemoryView,
+    EvidenceScope,
+    EvidenceVisibility,
+    SQLiteMemoryVisibilityStore,
+)
 
 __all__ = [
+    "AgentResearchMemoryView",
     "BudgetRecommendation",
     "EvidenceAwareBudgetPolicy",
+    "EvidenceScope",
+    "EvidenceVisibility",
     "FailureCategory",
     "FailureRecord",
     "FailureStage",
@@ -31,6 +40,7 @@ __all__ = [
     "ResearchHypothesisRevision",
     "ResearchMemoryService",
     "ResearchMemorySummary",
+    "SQLiteMemoryVisibilityStore",
     "SQLiteResearchMemoryStore",
     "SimilarityMatch",
 ]
