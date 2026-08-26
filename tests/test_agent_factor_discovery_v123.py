@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 
 import numpy as np
 
@@ -200,8 +199,21 @@ def test_agent_feedback_contains_development_factor_metrics_only() -> None:
     assert "internal_debug_metric" not in exposed
     assert exposed["mean_ic"] == 0.04
     assert exposed["net_sharpe"] == 1.1
-    assert "outer" not in encoded
-    assert "holdout" in encoded  # only the explicit statement that holdout evidence is absent
+    assert set(payload) == {
+        "schema_version",
+        "analysis_id",
+        "round_index",
+        "development_data_id",
+        "selection_metric",
+        "best_feature_digest",
+        "candidates",
+        "net_return_correlations",
+        "scope",
+    }
+    assert "outer_metrics" not in payload
+    assert "holdout_metrics" not in payload
+    assert "paper_metrics" not in payload
+    assert "holdout" in encoded  # explicit declaration that holdout evidence is absent
     assert "paper evidence" in encoded
     assert "gross_returns" not in encoded
     assert "net_returns" not in encoded
@@ -318,7 +330,7 @@ def test_discovery_loop_feeds_quant_feedback_into_next_agent_round() -> None:
     assert result.development_data_id == "factor-dev-loop"
     assert "DEVELOPMENT-ONLY QUANTITATIVE FACTOR FEEDBACK" not in scripted.tasks[0].objective
     assert "DEVELOPMENT-ONLY QUANTITATIVE FACTOR FEEDBACK" in scripted.tasks[1].objective
-    assert result.rounds[0].feedback.feedback_id in scripted.tasks[1].metadata["factor_feedback_id"]
+    assert scripted.tasks[1].metadata["factor_feedback_id"] == result.rounds[0].feedback.feedback_id
     assert "net_sharpe" in scripted.tasks[1].objective
     assert "mean_ic" in scripted.tasks[1].objective
     assert result.final_feedback.round_index == 2
