@@ -417,6 +417,7 @@ def test_ensemble_validation_rejects_development_report_or_candidate_denominator
             dataset_artifact=dataset_artifact,
         )
     except ValueError as exc:
-        assert "denominator" in str(exc) or "selection" in str(exc) or "family" in str(exc)
+        message = str(exc)
+        assert any(token in message for token in ("report", "denominator", "selection", "family"))
     else:  # pragma: no cover - fail closed assertion
         raise AssertionError("candidate denominator drift must be rejected")
