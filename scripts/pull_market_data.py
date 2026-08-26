@@ -8,13 +8,10 @@ from datetime import date
 from pathlib import Path
 
 from finagent.data import (
-    AKShareMarketDataIngestor,
-    AlpacaMarketDataIngestor,
-    HiThinkMarketDataIngestor,
     MarketDataPullRequest,
     MarketRegion,
     ProviderSymbolMap,
-    TushareMarketDataIngestor,
+    load_configured_market_data,
     provider_capabilities,
 )
 from finagent.domain.assets import AssetType
@@ -53,6 +50,20 @@ def main() -> int:
     )
     parser.add_argument("config", type=Path, help="TOML market-study configuration")
     parser.add_argument("--output-dir", type=Path, help="override market.output_dir")
+    parser.add_argument(
+        "--market-data-config",
+        type=Path,
+        help="override market.market_data_config_path",
+    )
+    parser.add_argument(
+        "--market-data-profile",
+        help="override market.market_data_profile",
+    )
+    parser.add_argument(
+        "--secrets-file",
+        type=Path,
+        help="override the host-side FinAgent secret store for this process",
+    )
     parser.add_argument(
         "--show-capabilities",
         action="store_true",
@@ -107,21 +118,26 @@ def main() -> int:
             )
         )
 
-    output_dir = args.output_dir or Path(str(values["output_dir"]))
-    if provider == "hithink":
-        ingestor = HiThinkMarketDataIngestor.from_environment()
-    elif provider == "akshare":
-        ingestor = AKShareMarketDataIngestor.from_environment(
-            symbol_map=_symbol_map(provider, values)
+    config_path = args.market_data_config or Path(
+        str(values.get("market_data_config_path", "configs/market_data.toml"))
+    )
+    profile_name = str(
+        args.market_data_profile or values.get("market_data_profile", "")
+    ).strip() or None
+    configured = load_configured_market_data(
+        config_path,
+        profile_name=profile_name,
+        secrets_path=args.secrets_file,
+        symbol_map=_symbol_map(provider, values) if provider == "akshare" else None,
+    )
+    if configured.profile.provider != provider:
+        raise ValueError(
+            f"market.provider {provider!r} does not match market-data profile provider "
+            f"{configured.profile.provider!r}"
         )
-    elif provider == "tushare":
-        ingestor = TushareMarketDataIngestor.from_environment()
-    elif provider == "alpaca":
-        ingestor = AlpacaMarketDataIngestor.from_environment()
-    else:  # provider_capabilities() should already have rejected this branch.
-        raise ValueError(f"unsupported market.provider {provider!r}")
 
-    result = ingestor.materialize(request, output_dir)
+    output_dir = args.output_dir or Path(str(values["output_dir"]))
+    result = configured.ingestor.materialize(request, output_dir)
     print(json.dumps(result.manifest.to_dict(), indent=2, ensure_ascii=False))
     return 0
 
