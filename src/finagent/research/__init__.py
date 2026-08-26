@@ -4,6 +4,14 @@ from .agent_family import (
     AgentMarketFamilyRegistration,
     AgentMarketProgramPlan,
 )
+from .agent_family_validation import (
+    AgentCandidateStatisticalValidation,
+    AgentFamilyDevelopmentEvidence,
+    AgentFamilyDevelopmentEvidenceBuilder,
+    AgentFamilyStatisticalReport,
+    FormalAgentExperimentFamilyValidator,
+    SQLiteAgentFamilyValidationStore,
+)
 from .agent_market import (
     AgentMarketCandidate,
     AgentMarketFoldResult,
@@ -69,6 +77,10 @@ from .validation import (
 )
 
 __all__ = [
+    "AgentCandidateStatisticalValidation",
+    "AgentFamilyDevelopmentEvidence",
+    "AgentFamilyDevelopmentEvidenceBuilder",
+    "AgentFamilyStatisticalReport",
     "AgentMarketCandidate",
     "AgentMarketExperimentFamilyBridge",
     "AgentMarketFamilyPreparation",
@@ -87,6 +99,7 @@ __all__ = [
     "ExperimentQuerySnapshot",
     "ExperimentRunner",
     "FamilyValidationReport",
+    "FormalAgentExperimentFamilyValidator",
     "GeneratedFeatureEvaluationConfig",
     "GeneratedFeatureEvaluator",
     "GeneratedFeatureFamilyValidationInputProvider",
@@ -109,6 +122,7 @@ __all__ = [
     "ResearchProgram",
     "ResearchProgramGuard",
     "ResearchProgramStatus",
+    "SQLiteAgentFamilyValidationStore",
     "SQLiteAgentMarketResearchStore",
     "SQLiteAgentMarketValidationStore",
     "SQLiteGeneratedFeatureResearchStore",
