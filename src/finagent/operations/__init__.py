@@ -37,6 +37,11 @@ from .evidence import (
     SQLiteOperationalEvidenceStore,
 )
 from .paper import PaperBroker, PaperBrokerConfig
+from .paper_strategy import (
+    PaperStrategyPlan,
+    PaperStrategyRuntime,
+    PaperStrategyRuntimeConfig,
+)
 from .reconciliation import PortfolioReconciler
 from .research_handoff import (
     RESEARCH_MODEL_PAPER_REQUEST,
@@ -81,6 +86,9 @@ __all__ = [
     "PaperBrokerConfig",
     "PaperBrokerCycle",
     "PaperOrder",
+    "PaperStrategyPlan",
+    "PaperStrategyRuntime",
+    "PaperStrategyRuntimeConfig",
     "PaperTradingValidation",
     "PortfolioReconciler",
     "RESEARCH_MODEL_PAPER_REQUEST",
