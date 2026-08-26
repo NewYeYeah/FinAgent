@@ -10,9 +10,18 @@ class OpenAIResponsesProvider:
 
     The OpenAI SDK is imported lazily, so the core package and CI do not require
     provider dependencies. A compatible client can be injected for tests.
+
+    Credentials may be injected by the host-side FinAgent configuration loader. They
+    are passed directly to the SDK client and are never copied into LLMRequest or logs.
     """
 
-    def __init__(self, *, client=None) -> None:
+    def __init__(
+        self,
+        *,
+        api_key: str | None = None,
+        base_url: str | None = None,
+        client=None,
+    ) -> None:
         if client is None:
             try:
                 from openai import OpenAI
@@ -20,7 +29,12 @@ class OpenAIResponsesProvider:
                 raise ImportError(
                     "OpenAIResponsesProvider requires the optional 'llm-openai' extra"
                 ) from exc
-            client = OpenAI()
+            client_kwargs: dict[str, str] = {}
+            if api_key is not None:
+                client_kwargs["api_key"] = api_key
+            if base_url is not None:
+                client_kwargs["base_url"] = base_url
+            client = OpenAI(**client_kwargs)
         self.client = client
 
     @property
@@ -51,7 +65,11 @@ class OpenAIResponsesProvider:
         try:
             response = self.client.responses.create(**kwargs)
         except Exception as exc:
-            raise LLMProviderError(f"OpenAI Responses request failed: {type(exc).__name__}: {exc}") from exc
+            # Keep request/provider diagnostics outside durable output. In particular,
+            # do not serialize the SDK exception text because it can contain HTTP context.
+            raise LLMProviderError(
+                f"OpenAI Responses request failed: {type(exc).__name__}"
+            ) from exc
         latency_ms = (perf_counter() - started) * 1000.0
 
         output_text = str(getattr(response, "output_text", "") or "").strip()
