@@ -115,10 +115,10 @@ class AtomicScopedEvidenceWriter:
             (edge.edge_id, edge.source_key, edge.target_key, edge.relation.value, encoded),
         )
 
-    def register_result(
+    def register_result_from_source(
         self,
         *,
-        experiment_id: str,
+        source_key: str,
         result: ExperimentResult,
         created_at: datetime,
         visibility: EvidenceVisibility,
@@ -143,25 +143,39 @@ class AtomicScopedEvidenceWriter:
             created_at,
             metadata,
         )
-        edge = LineageEdge(
-            f"experiment:{experiment_id}",
-            node.key,
-            LineageRelation.PRODUCED,
-            created_at,
-        )
+        edge = LineageEdge(source_key, node.key, LineageRelation.PRODUCED, created_at)
         scope = EvidenceScope(node.key, visibility, program_id, created_at)
 
         with self.memory_store._connect() as con:
             con.execute("BEGIN IMMEDIATE")
             if con.execute(
                 "SELECT 1 FROM memory_nodes WHERE node_key=?",
-                (edge.source_key,),
+                (source_key,),
             ).fetchone() is None:
-                raise KeyError(f"experiment memory node {edge.source_key!r} is not registered")
+                raise KeyError(f"source memory node {source_key!r} is not registered")
             node_preexisted = self._check_or_insert_node(con, node)
             self._check_or_insert_scope(con, scope, node_preexisted=node_preexisted)
             self._check_or_insert_edge(con, edge)
         return ScopedEvidenceWrite(node=node, scope=scope)
+
+    def register_result(
+        self,
+        *,
+        experiment_id: str,
+        result: ExperimentResult,
+        created_at: datetime,
+        visibility: EvidenceVisibility,
+        program_id: str,
+        extra_metadata: Mapping[str, str] | None = None,
+    ) -> ScopedEvidenceWrite:
+        return self.register_result_from_source(
+            source_key=f"experiment:{experiment_id}",
+            result=result,
+            created_at=created_at,
+            visibility=visibility,
+            program_id=program_id,
+            extra_metadata=extra_metadata,
+        )
 
     def register_failure(
         self,
