@@ -1,11 +1,10 @@
-#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
 import json
 import tomllib
 from dataclasses import fields
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import numpy as np
@@ -142,11 +141,12 @@ def main() -> int:
     task = AgentTask(
         task_id=task_id,
         objective=research_question,
-        created_at=calendar[-1],
+        created_at=datetime.now(UTC),
         metadata={
             "market": market.value,
             "provider": provider_name,
             "data_version": data_version,
+            "data_end": calendar[-1].isoformat(),
             "universe": ",".join(asset.key for asset in universe),
         },
     )
