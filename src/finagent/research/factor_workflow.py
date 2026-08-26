@@ -14,7 +14,12 @@ from finagent.domain.research import DatasetRequest
 
 from .agent_market import AgentMarketResearchResult
 from .factor_discovery import AgentFactorDiscoveryLoop, AgentFactorDiscoveryResult
+from .factor_quant_discovery import AgentFactorQuantDiscoveryLoop, AgentFactorQuantDiscoveryResult
 from .governed_agent_market import GovernedAgentMarketResearchRunner
+
+
+DiscoveryLoop = AgentFactorDiscoveryLoop | AgentFactorQuantDiscoveryLoop
+DiscoveryResult = AgentFactorDiscoveryResult | AgentFactorQuantDiscoveryResult
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,7 +33,7 @@ class AgentFactorResearchWorkflowResult:
     development_end: datetime
     validation_start: datetime
     validation_end: datetime
-    discovery: AgentFactorDiscoveryResult
+    discovery: DiscoveryResult
     validation: AgentMarketResearchResult
 
     def __post_init__(self) -> None:
@@ -98,27 +103,36 @@ class AgentFactorResearchWorkflowResult:
 
 
 class AgentFactorResearchWorkflow:
-    """Join Agent factor discovery with the existing formal market-research pipeline.
+    """Join adaptive factor discovery with the existing formal market-research pipeline.
 
-    Discovery may adapt to deterministic diagnostics only inside the explicitly declared
-    development split. Every candidate produced by every discovery round is then passed
-    to one formal ``ExperimentFamily`` and evaluated by ``GovernedAgentMarketResearchRunner``
-    on a non-overlapping validation window. No discovery candidate is silently discarded
-    before the formal multiplicity denominator is frozen.
+    Both the legacy FactorDevelopmentAnalyzer loop and the Factor Quant v2 cumulative
+    discovery loop are accepted. Adaptive feedback remains restricted to the explicitly
+    declared development split. Every generated candidate is passed into one formal
+    ``ExperimentFamily`` on the non-overlapping validation window.
     """
 
-    VERSION = "agent-factor-workflow-v1"
+    VERSION = "agent-factor-workflow-v1.1"
 
     def __init__(
         self,
         *,
-        discovery_loop: AgentFactorDiscoveryLoop,
+        discovery_loop: DiscoveryLoop,
         validation_runner: GovernedAgentMarketResearchRunner,
         development_split: str = "development",
     ) -> None:
         self.discovery_loop = discovery_loop
         self.validation_runner = validation_runner
         self.development_split = require_non_empty(development_split, "development_split")
+
+    @staticmethod
+    def _analyzer_label(analyzer) -> str:
+        config = analyzer.config
+        value = getattr(config, "label_name", None)
+        if value is None:
+            value = getattr(config, "primary_label", None)
+        if value is None:
+            raise TypeError("factor discovery analyzer exposes no label contract")
+        return require_non_empty(str(value), "analyzer_label")
 
     def _preflight(
         self,
@@ -135,9 +149,7 @@ class AgentFactorResearchWorkflow:
         if validation_end <= validation_start:
             raise ValueError("validation_end must be later than validation_start")
         if self.development_split not in development_request.splits:
-            raise KeyError(
-                f"development request has no split {self.development_split!r}"
-            )
+            raise KeyError(f"development request has no split {self.development_split!r}")
         if tuple(development_request.universe) != tuple(validation_universe):
             raise ValueError("development and formal validation universes must match")
         if not validation_universe or len(set(validation_universe)) != len(validation_universe):
@@ -161,11 +173,11 @@ class AgentFactorResearchWorkflow:
                 "development DatasetRequest must use the same forward label as formal validation"
             )
         analyzer = self.discovery_loop.analyzer
-        analyzer_label = analyzer.config.label_name
+        analyzer_label = self._analyzer_label(analyzer)
         if analyzer_label != validation_label:
             raise ValueError("factor discovery and formal validation label contracts differ")
         if analyzer.config.split_name != self.development_split:
-            raise ValueError("FactorDevelopmentAnalyzer split does not match workflow development_split")
+            raise ValueError("factor discovery analyzer split does not match workflow development_split")
 
         discovery_version = analyzer.adapter.data_version
         validation_version = self.validation_runner.adapter.data_version
