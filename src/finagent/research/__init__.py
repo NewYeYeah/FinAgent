@@ -1,3 +1,15 @@
+from .agent_market import (
+    AgentMarketCandidate,
+    AgentMarketFoldResult,
+    AgentMarketResearchConfig,
+    AgentMarketResearchResult,
+    AgentMarketResearchRunner,
+    LLMMarketFeatureCandidateGenerator,
+    MarketFeatureCandidateGenerator,
+    SQLiteAgentMarketResearchStore,
+    holm_adjusted_pvalues,
+    one_sided_mean_pvalue,
+)
 from .family_validation import ExperimentFamilyValidator, RegisteredFamilyValidation
 from .generated_feature_eval import (
     GeneratedFeatureEvaluationConfig,
@@ -38,6 +50,11 @@ from .validation import (
 )
 
 __all__ = [
+    "AgentMarketCandidate",
+    "AgentMarketFoldResult",
+    "AgentMarketResearchConfig",
+    "AgentMarketResearchResult",
+    "AgentMarketResearchRunner",
     "DeflatedSharpeResult",
     "ExperimentEvaluation",
     "ExperimentFamilyValidator",
@@ -50,6 +67,8 @@ __all__ = [
     "GeneratedFeatureMaterializer",
     "GeneratedFeatureNestedWalkForwardStudy",
     "GeneratedFeatureResearchTrace",
+    "LLMMarketFeatureCandidateGenerator",
+    "MarketFeatureCandidateGenerator",
     "MultipleTestingResult",
     "NestedGeneratedFeatureFoldResult",
     "NestedGeneratedFeatureStudyResult",
@@ -61,6 +80,7 @@ __all__ = [
     "ResearchProgram",
     "ResearchProgramGuard",
     "ResearchProgramStatus",
+    "SQLiteAgentMarketResearchStore",
     "SQLiteGeneratedFeatureResearchStore",
     "SQLiteResearchProgramStore",
     "SQLiteResearchQueryService",
@@ -69,6 +89,8 @@ __all__ = [
     "deflated_sharpe_ratio",
     "evaluate_generated_feature_dataset",
     "expected_maximum_sharpe",
+    "holm_adjusted_pvalues",
+    "one_sided_mean_pvalue",
     "probability_of_backtest_overfitting",
     "sharpe_ratio",
     "validate_experiment_family",
