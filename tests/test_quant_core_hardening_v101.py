@@ -225,6 +225,7 @@ def test_research_program_controls_cross_family_alpha_spending(tmp_path):
 def test_sealed_holdout_can_be_consumed_only_once(tmp_path):
     store = SQLiteResearchProgramStore(tmp_path / "program.db")
     store.register(ResearchProgram("p", sealed_holdout_id="holdout"))
+    store.freeze_program("p", actor="researcher")
     first = store.consume_sealed_holdout("p", actor="reviewer")
     assert first["holdout_id"] == "holdout"
     with pytest.raises(PermissionError, match="already been consumed"):

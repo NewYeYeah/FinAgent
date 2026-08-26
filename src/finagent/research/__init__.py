@@ -35,6 +35,8 @@ from .market_validation import (
 )
 from .programs import (
     ProgramBudgetSnapshot,
+    ProgramLifecycleEvent,
+    ProgramLifecycleSnapshot,
     ProgramReservation,
     ResearchProgram,
     ResearchProgramGuard,
@@ -87,6 +89,8 @@ __all__ = [
     "NestedGeneratedFeatureStudyResult",
     "PBOResult",
     "ProgramBudgetSnapshot",
+    "ProgramLifecycleEvent",
+    "ProgramLifecycleSnapshot",
     "ProgramReservation",
     "RealityCheckResult",
     "RegisteredFamilyValidation",
