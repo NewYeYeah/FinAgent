@@ -155,7 +155,7 @@ def _formal_research(tmp_path, program_store):
     program_store.freeze_program(
         "program-001",
         actor="test-suite",
-        changed_at=NOW + timedelta(minutes=2),
+        occurred_at=NOW + timedelta(minutes=2),
         reason="final strategy frozen",
     )
     return registry, evidence, report, strategy
