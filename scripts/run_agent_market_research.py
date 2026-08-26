@@ -13,7 +13,7 @@ import numpy as np
 from finagent.agents import AgentTask
 from finagent.agents.generated_features import SQLiteGeneratedFeatureStore
 from finagent.agents.llm_feature import LLMFeatureGenerationPolicy, LLMFeatureGenerator
-from finagent.agents.providers.openai import OpenAIResponsesProvider
+from finagent.agents.providers import load_configured_llm
 from finagent.backtest import MarketStudyConfig
 from finagent.data import CSVPriceDataAdapter, read_normalized_csv
 from finagent.data.ingestion.base import MarketRegion, sha256_file
@@ -151,7 +151,11 @@ def main() -> int:
     parser.add_argument("--bars", type=Path)
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--report", type=Path)
-    parser.add_argument("--provider", help="explicit provider override; must match manifest")
+    parser.add_argument("--provider", help="explicit data-provider override; must match manifest")
+    parser.add_argument(
+        "--llm-profile",
+        help="explicit LLM profile override from llm_config_path; does not contain credentials",
+    )
     parser.add_argument(
         "--frozen-family-report",
         type=Path,
@@ -280,11 +284,21 @@ def main() -> int:
             approved_fields=approved_fields,
             smoke_lookback=smoke_lookback,
         )
-        model = str(values.get("llm_model", "")).strip()
-        if not model or model == "REPLACE_WITH_AVAILABLE_MODEL_ID":
-            raise ValueError("llm_model must name a model available to the OpenAI API account")
+
+        llm_config_path = Path(str(values.get("llm_config_path", "configs/llm.toml")))
+        configured_profile = str(args.llm_profile or values.get("llm_profile", "")).strip()
+        configured_llm = load_configured_llm(
+            llm_config_path,
+            profile_name=configured_profile or None,
+        )
+        model_override = str(values.get("llm_model", "")).strip()
+        model = model_override or configured_llm.model
+        if not model or model.startswith("REPLACE_WITH_"):
+            raise ValueError(
+                f"LLM model is not configured for profile {configured_llm.profile.name!r}"
+            )
         feature_generator = LLMFeatureGenerator(
-            provider=OpenAIResponsesProvider(),
+            provider=configured_llm.provider,
             policy=LLMFeatureGenerationPolicy(
                 model=model,
                 max_lookback=int(values.get("max_feature_lookback", 60)),
