@@ -2,18 +2,18 @@
 
 Date: 2026-08-26
 
-This report tracks post-1.2.1 research-governance work against executable code invariants rather than README/roadmap statements alone.
+This report tracks post-1.2.1 research-governance work against executable code invariants rather than README/roadmap statements alone. A workstream is marked complete only after its production/governed path, regression tests and CI agree with the documented contract.
 
 ## Status summary
 
 | Workstream | Code status | Verification status | Merge status |
 | --- | --- | --- | --- |
-| ResearchProgram lifecycle | implemented | CI passed | merged to `main` via PR #20 |
-| Agent-facing memory / OOS visibility | implemented | CI passed | merged to `main` via PR #21 |
-| immutable ResearchRegistry identities | implemented on branch | PR #22 CI running | pending |
-| formal Agent ExperimentFamily denominator | implemented on branch | PR #22 CI running | pending |
-| governed Agent-market research entrypoint | implemented on branch | PR #22 CI running | pending |
-| promotion-grade DSR/PBO/Reality Check binding | not yet connected to Agent-market final promotion | pending | pending |
+| ResearchProgram lifecycle | implemented | CI passed | `main`, PR #20 |
+| Agent-facing memory / OOS visibility | implemented | CI passed | `main`, PR #21 |
+| immutable ResearchRegistry identities | implemented | CI passed | `main`, PR #22 |
+| formal Agent ExperimentFamily denominator | implemented | CI passed | `main`, PR #22 |
+| governed Agent-market CLI/entrypoint | implemented | CI passed | `main`, PR #22 |
+| formal-family DSR/PBO/Reality Check binding | implemented on branch | PR #23 CI | pending |
 | FinalStrategySpec | not implemented | pending | pending |
 | atomic scoped evidence writer | not implemented | pending | pending |
 | one-time sealed holdout evaluator | not implemented | pending | pending |
@@ -21,7 +21,7 @@ This report tracks post-1.2.1 research-governance work against executable code i
 
 ## 1. Delivered to `main`
 
-### 1. ResearchProgram lifecycle
+### 1.1 ResearchProgram lifecycle — PR #20
 
 Executable state machine:
 
@@ -33,20 +33,16 @@ FROZEN
 CLOSED
 ```
 
-Code invariants:
+Enforced invariants:
 
-- new research reservations require `OPEN`;
+- new family reservations require `OPEN`;
 - exact previously reserved plans remain replayable after freeze;
 - changed/new families are rejected after freeze;
 - sealed holdout access requires `FROZEN`;
-- sealed holdout consumption remains one-time;
-- configured holdout must be consumed before close.
+- sealed holdout consumption is one-time;
+- a configured holdout must be consumed before close.
 
-This closes the earlier gap where `ResearchProgramStatus` existed in the domain contract but the persistent store could not execute the intended lifecycle.
-
-### 2. Research memory visibility
-
-Agent-facing memory now uses a program-scoped read facade instead of direct raw-store traversal.
+### 1.2 Agent-facing evidence visibility — PR #21
 
 Evidence classes:
 
@@ -58,49 +54,20 @@ SEALED_HOLDOUT
 OPERATIONAL
 ```
 
-Code invariants:
+Enforced invariants:
 
-- raw memory remains complete for audit/replay;
+- raw memory remains complete for deterministic audit/replay;
 - `SEALED_HOLDOUT` and `OPERATIONAL` evidence are never adaptive Agent inputs;
 - development/validation evidence is restricted to its owning ResearchProgram;
-- hidden results/failures cannot affect Agent budget recommendations;
+- hidden results/failures do not influence Agent lineage/failure/budget reads;
 - visibility classification is immutable;
-- legacy unbound memory remains backward compatible.
+- legacy unbound memory remains readable for backward compatibility.
 
-## 2. PR #22 — current implementation
+### 1.3 Immutable registry + formal Agent family — PR #22
 
-### Code-level defects found during review
+Code review found that the pre-1.2.2 registry contradicted its domain semantics: `ExperimentSpec` was documented as immutable, but `register_experiment()` could overwrite an existing ID; `register_result()` could replace an existing result. The Agent-market candidate tuple also consumed a ResearchProgram budget without becoming a formal `ExperimentFamily`.
 
-The following issues were discovered by reading the concrete registry and Agent-market implementations rather than comparing documentation only.
-
-#### Experiment identity could be rewritten
-
-`ExperimentSpec` is defined as an immutable experiment definition, but the prior `SQLiteResearchRegistry.register_experiment()` used an upsert that could replace the fingerprint and payload under the same `experiment_id`.
-
-That allowed a nominally pre-registered experiment to change dataset, code, universe or parameters after registration.
-
-#### Result identity could be rewritten
-
-The prior `register_result()` used replace semantics. A run result could therefore be overwritten after initial registration.
-
-#### Agent candidate family was not a formal ExperimentFamily
-
-The 1.2.1 Agent-market runner reserved ResearchProgram budget through a plan adapter, but the generated candidate tuple was not registered into `SQLiteResearchRegistry` as:
-
-```text
-ExperimentFamily
-    ├─ ExperimentSpec candidate 1
-    ├─ ExperimentSpec candidate 2
-    └─ ...
-```
-
-Therefore the existing Phase 2.5 family-level validator could not prove that its DSR/PBO/Reality Check denominator was the same denominator used by Agent-market search.
-
-## 3. PR #22 implementation
-
-### Immutable registry identities
-
-The registry now enforces:
+PR #22 changed the executable behavior to:
 
 ```text
 same ExperimentSpec -> idempotent
@@ -110,11 +77,7 @@ same ExperimentResult -> idempotent
 same run_id + changed result -> reject
 ```
 
-Artifact registration is also idempotent for the exact registered identity and rejects conflicting type/URI metadata.
-
-### Formal Agent ExperimentFamily bridge
-
-`AgentMarketExperimentFamilyBridge` now performs the pre-evaluation sequence:
+Agent candidate governance now follows:
 
 ```text
 GeneratedFeatureArtifact × N
@@ -128,206 +91,246 @@ ExperimentSpec × N
 FamilyMembership × N
         ↓
 ExperimentFamily FROZEN
+        ↓
+numerical evaluation
 ```
 
-Each generated feature is bound to:
+Each formal candidate binds the generated-feature/code digest, primary dataset artifact, universe, candidate parameters, task ID, ResearchProgram ID and ExperimentFamily ID.
 
-- immutable generated-feature digest;
-- immutable code artifact digest;
-- primary dataset artifact;
-- universe;
-- task ID;
-- ResearchProgram ID;
-- ExperimentFamily ID.
+`GovernedAgentMarketResearchRunner` makes this ordering explicit. The existing deterministic `AgentMarketResearchRunner` remains a low-level numerical engine, while `scripts/run_agent_market_research.py` now uses the governed runner by default.
 
-A frozen family cannot be expanded or silently replaced by another candidate set.
-
-### Cross-provider validation semantics
-
-Provider validation does not rewrite the primary experiment dataset.
-
-Example:
+The CLI also binds the normalized market-data manifest hash as the formal dataset digest:
 
 ```text
-Primary research: Alpaca dataset
+manifest.normalized_sha256
         ↓
-formal ExperimentSpec.dataset = Alpaca artifact
+ArtifactRef(DATASET)
         ↓
-secondary AKShare validation
-        ↓
-verify existing frozen family only
-        ↓
-ExperimentSpec.dataset remains Alpaca artifact
+ExperimentSpec.dataset
 ```
 
-External-provider evidence is therefore validation evidence, not a mutation of the original research identity.
+Cross-provider validation verifies the existing frozen family and does not rewrite the primary ExperimentSpec dataset.
 
-### Governed Agent-market entrypoint
+## 2. PR #23 — formal-family promotion statistics
 
-A new `GovernedAgentMarketResearchRunner` composes the existing deterministic numerical runner.
+### 2.1 Why another adapter is required
 
-Required ordering:
-
-```text
-preflight
-  ↓
-ResearchProgram reservation
-  ↓
-formal ExperimentFamily registration
-  ↓
-ExperimentFamily FROZEN
-  ↓
-AgentMarketResearchRunner numerical evaluation
-```
-
-The wrapper checks after evaluation that program ID, family ID and candidate digest set have not drifted from the frozen registration.
-
-The existing low-level `AgentMarketResearchRunner` remains the deterministic numerical engine; promotion-oriented workflows should use the governed wrapper.
-
-## 4. Regression targets in PR #22
-
-Tests currently cover:
+The existing Phase 2.5 statistical functions already implement:
 
 ```text
-ExperimentSpec rewrite rejection
-ExperimentResult rewrite rejection
-run_id rebinding rejection
-exact registration idempotency
-ResearchProgram budget reservation
-formal family freeze
-candidate membership denominator
-frozen-family expansion rejection
-cross-provider dataset identity preservation
-replay requires existing formal family
-candidate identity mismatch rejection
-governed runner freezes family before numerical engine
-invalid preflight does not consume program budget
-```
-
-CI remains the acceptance gate before merge.
-
-## 5. Remaining 1.2.2 development sequence
-
-The next work is intentionally ordered so sealed holdout cannot become a hidden tuning channel.
-
-### Step A — bind promotion-grade statistics to formal Agent family
-
-Connect the frozen Agent ExperimentFamily to the existing Phase 2.5 statistical controls:
-
-```text
-Holm / declared multiplicity correction
+declared multiple-testing correction
 Deflated Sharpe Ratio
 CSCV Probability of Backtest Overfitting
 White-style Reality Check
 ```
 
-The denominator must come from formal family membership, not from a caller-provided arbitrary matrix.
+The remaining gap is not the mathematics. It is the input identity and information boundary.
+
+The 1.2.1 Agent-market result intentionally exposes only the selected candidate's outer-fold evidence. That is correct for adaptive Agent feedback, but family-level anti-overfitting statistics need the development outer-return series of every pre-registered candidate.
+
+PR #23 therefore creates a separate deterministic validation path instead of widening Agent-visible output.
+
+### 2.2 `AgentFamilyDevelopmentEvidence`
+
+This contract stores aligned development-only evidence for exactly one formal ExperimentFamily:
+
+```text
+family_id
+formal experiment_order
+common timestamps
+trial_returns[experiment_id]
+pvalues[experiment_id]
+primary dataset digest
+```
+
+It rejects:
+
+- missing or additional family members;
+- non-finite/misaligned return series;
+- duplicate timestamps;
+- invalid p-values.
+
+Duplicate timestamps are treated as a hard error rather than silently de-duplicated. This prevents overlapping outer folds from double-counting the same OOS time point in DSR/PBO inputs.
+
+### 2.3 `AgentFamilyDevelopmentEvidenceBuilder`
+
+The builder performs deterministic re-evaluation of every frozen formal member using the same nested splitter and generated-feature evaluator as Agent-market research.
+
+Before evaluation it verifies:
+
+```text
+ExperimentFamily == FROZEN
+candidate digests == formal member digests
+code digest == formal ExperimentSpec.code
+primary dataset == formal ExperimentSpec.dataset
+universe == formal ExperimentSpec.universe
+```
+
+For each candidate it concatenates outer-test net returns, requires identical timestamp sequences across the entire family, and derives a one-sided mean-return p-value.
+
+The resulting non-selected outer evidence is validation evidence only. It is not added to the adaptive Agent result or memory view.
+
+### 2.4 `FormalAgentExperimentFamilyValidator`
+
+The validator takes the formal family membership as the only admissible denominator.
+
+Common family calculations:
+
+```text
+multiple-testing correction across all formal members
+PBO on full (time × strategy) matrix
+White Reality Check on full family matrix
+```
+
+Per-member calculation:
+
+```text
+DSR(candidate_i, n_trials = formal family size)
+```
+
+Candidate eligibility requires:
+
+```text
+adjusted p-value passes
+AND DSR probability >= predeclared threshold
+AND family PBO <= threshold
+AND family Reality Check p-value <= family alpha
+```
+
+The report deliberately has **no `selected_experiment_id`**. At this stage the system is allowed to state which candidates are statistically eligible, but not to choose the final sealed-holdout strategy.
+
+### 2.5 Durable statistical report
+
+`SQLiteAgentFamilyValidationStore` stores the deterministic report append-only using a hash-derived report identity. Exact re-registration is idempotent; changed content produces a different identity rather than overwriting prior evidence.
+
+### 2.6 PR #23 regression targets
+
+```text
+formal family must be FROZEN
+validation denominator must match formal membership/order
+DSR n_trials == formal family size
+PBO/Reality Check use full formal matrix
+overlapping outer timestamps rejected
+strong candidate can be eligible under explicit test thresholds
+weak/non-significant candidate remains in denominator but is not eligible
+report contains no final selected_experiment_id
+validation report persistence is append-only/idempotent
+```
+
+CI remains the acceptance gate before merge.
+
+## 3. Development sequence after PR #23
 
 ### Step B — FinalStrategySpec
 
-Agent-market currently selects a feature independently inside each outer fold. That does not define one unique final strategy for a sealed holdout.
+Agent-market currently may select a different feature in each outer fold. Sealed holdout evaluation requires one immutable strategy selected **before** holdout access.
 
-Before holdout access, introduce an immutable final strategy contract derived only from development/validation evidence.
-
-The final contract must freeze at least:
+The next contract must freeze at minimum:
 
 ```text
-selected feature/model identity
+selected formal experiment/feature identity
+family statistical report identity
 training/calibration protocol
-portfolio/risk configuration
+risk model configuration
+portfolio construction configuration
 cost model
 universe contract
-provider/data identity
-execution clock
+primary provider/data identity
+execution clock/lag
+selection rule/version
 ```
+
+The selector must consume development/validation evidence only. No sealed-holdout metric may participate in selection.
 
 ### Step C — atomic scoped evidence writer
 
-Memory visibility currently treats legacy/unbound records as shared for compatibility. Therefore sensitive evidence cannot be written through `register_result()` first and classified afterward.
+Legacy/unbound memory is readable for compatibility. Therefore sensitive holdout evidence cannot safely be written by calling raw `register_result()` and binding its `SEALED_HOLDOUT` scope in a second transaction.
 
-The holdout writer must commit:
+Required transaction:
 
 ```text
-RESULT/FAILURE evidence
-+
+RESULT / FAILURE node + lineage
+AND
 SEALED_HOLDOUT visibility scope
 ```
 
-atomically in one SQLite transaction.
+must commit atomically or not at all.
 
 ### Step D — one-time sealed holdout evaluator
 
 Required preconditions:
 
 ```text
-ResearchProgram == FROZEN
 formal ExperimentFamily == FROZEN/CLOSED
 FinalStrategySpec exists and is immutable
-pre-holdout promotion gate passed
+pre-holdout statistical gate passed
+ResearchProgram == FROZEN
 sealed holdout has not been consumed
 ```
 
-Only then may the evaluator consume the holdout exactly once.
+Only then may the holdout be consumed exactly once.
 
 ### Step E — deterministic ResearchPromotionGate
 
-The final decision must be deterministic policy code, not an LLM judgment.
-
-Expected inputs include:
+Final promotion remains deterministic policy code, not an LLM decision. Expected inputs:
 
 ```text
-formal family validation report
-final strategy identity
+formal family statistical report
+FinalStrategySpec
 sealed holdout report
 cost/turnover/risk checks
 provider validation evidence
-research lifecycle state
+ResearchProgram lifecycle state
 ```
 
-The gate should return an explicit pass/fail decision with reasons and no authority to mutate live financial state.
+The gate returns explicit pass/fail reasons and has no authority to bypass model registry or paper/shadow controls.
 
-## 6. Current architecture after this increment
+## 4. Current architecture
 
 ```text
-PIT data / provider evidence
+PIT market data + immutable manifest
         ↓
-Generated factor candidates
+LLM/generated candidates
         ↓
 ResearchProgram budget
         ↓
-Formal ExperimentFamily
+Formal ExperimentFamily FROZEN
         ↓
 Governed nested research
         ↓
-Family-level promotion statistics        <- next
+Development evidence for all formal members
         ↓
-FinalStrategySpec                        <- next
+Multiplicity + DSR + PBO + Reality Check       PR #23
+        ↓
+Eligible candidate set
+        ↓
+FinalStrategySpec                              NEXT
         ↓
 ResearchProgram FROZEN
         ↓
-One-time sealed holdout                  <- next
+One-time sealed holdout                        NEXT
         ↓
-SEALED_HOLDOUT scoped evidence           <- next
+Atomic SEALED_HOLDOUT evidence                 NEXT
         ↓
-Deterministic ResearchPromotionGate      <- next
+Deterministic ResearchPromotionGate            NEXT
         ↓
 Model registry / paper-shadow workflow
 ```
 
-## 7. Completion criterion for 1.2.2 research governance
+## 5. 1.2.2 completion criterion
 
-1.2.2 should not be marked complete merely because all listed classes exist. Completion requires an executable end-to-end test proving:
+1.2.2 must not be marked complete because all named classes exist. Completion requires an executable end-to-end test proving:
 
 ```text
 candidate generation
 → formal family freeze
-→ development-only research
-→ family statistical validation
-→ final strategy freeze
-→ program freeze
+→ development-only nested research
+→ full-family statistical validation
+→ immutable final strategy freeze
+→ ResearchProgram freeze
 → one-time sealed holdout
 → sealed evidence remains invisible to adaptive Agent reads
 → deterministic final promotion decision
 ```
 
-Any missing transition means the governance chain remains incomplete.
+Any missing or bypassable transition means the research-governance chain remains incomplete.
