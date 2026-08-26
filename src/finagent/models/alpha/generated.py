@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import timedelta
 
 import numpy as np
 
@@ -23,9 +24,9 @@ class GeneratedFeatureCalibration:
 class GeneratedFeatureAlphaModel:
     """Calibrate a validated generated feature into an ``AlphaForecast``.
 
-    Generated code never receives a full panel.  During fit and predict each call is
+    Generated code never receives a full panel. During fit and predict each call is
     evaluated on one trailing PIT window, preserving the same sandbox boundary used
-    by generated-feature research.  Calibration is a deterministic pooled linear
+    by generated-feature research. Calibration is a deterministic pooled linear
     regression with optional ridge shrinkage on the slope.
     """
 
@@ -56,7 +57,7 @@ class GeneratedFeatureAlphaModel:
         self.sandbox = sandbox or LocalFeatureSandbox()
         self.batch_size = int(batch_size)
         self._artifact: ArtifactRef | None = None
-        self._horizon = None
+        self._horizon: timedelta | None = None
         self._calibration: GeneratedFeatureCalibration | None = None
 
     @property
@@ -128,7 +129,9 @@ class GeneratedFeatureAlphaModel:
                     inputs[feature_name] = [float(value) for value in values]
                 if not valid:
                     continue
-                requests.append(FeatureSandboxRequest(self.artifact.spec, self.artifact.source, inputs))
+                requests.append(
+                    FeatureSandboxRequest(self.artifact.spec, self.artifact.source, inputs)
+                )
                 targets.append(float(target))
 
         scores = self._evaluate_requests(requests)
@@ -194,7 +197,9 @@ class GeneratedFeatureAlphaModel:
                 if not np.all(np.isfinite(values)):
                     raise ValueError("generated alpha prediction encountered non-finite PIT inputs")
                 inputs[feature_name] = [float(value) for value in values]
-            requests.append(FeatureSandboxRequest(self.artifact.spec, self.artifact.source, inputs))
+            requests.append(
+                FeatureSandboxRequest(self.artifact.spec, self.artifact.source, inputs)
+            )
         scores = self._evaluate_requests(requests)
         if len(scores) != len(window.assets) or any(score is None for score in scores):
             raise ValueError("generated feature did not produce a finite terminal score for every asset")
