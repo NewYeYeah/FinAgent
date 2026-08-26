@@ -201,12 +201,19 @@ class GeneratedFeatureAlphaModel:
                 FeatureSandboxRequest(self.artifact.spec, self.artifact.source, inputs)
             )
         scores = self._evaluate_requests(requests)
-        if len(scores) != len(window.assets) or any(score is None for score in scores):
-            raise ValueError("generated feature did not produce a finite terminal score for every asset")
+        if len(scores) != len(window.assets):
+            raise ValueError("generated feature output count does not match asset count")
+        finite_scores: list[float] = []
+        for score in scores:
+            if score is None or not np.isfinite(score):
+                raise ValueError(
+                    "generated feature did not produce a finite terminal score for every asset"
+                )
+            finite_scores.append(float(score))
 
         expected_returns = {
-            asset: self._calibration.intercept + self._calibration.slope * float(score)
-            for asset, score in zip(window.assets, scores)
+            asset: self._calibration.intercept + self._calibration.slope * score
+            for asset, score in zip(window.assets, finite_scores)
         }
         return AlphaForecast(
             asof=window.asof,
