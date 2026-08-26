@@ -25,6 +25,14 @@ from .agent_market import (
     one_sided_mean_pvalue,
 )
 from .family_validation import ExperimentFamilyValidator, RegisteredFamilyValidation
+from .final_strategy import (
+    FINAL_STRATEGY_SELECTION_RULE,
+    FinalStrategyFreezeResult,
+    FinalStrategyFreezer,
+    FinalStrategySelector,
+    FinalStrategySpec,
+    SQLiteFinalStrategyStore,
+)
 from .generated_feature_eval import (
     GeneratedFeatureEvaluationConfig,
     GeneratedFeatureEvaluator,
@@ -98,7 +106,12 @@ __all__ = [
     "ExperimentFamilyValidator",
     "ExperimentQuerySnapshot",
     "ExperimentRunner",
+    "FINAL_STRATEGY_SELECTION_RULE",
     "FamilyValidationReport",
+    "FinalStrategyFreezeResult",
+    "FinalStrategyFreezer",
+    "FinalStrategySelector",
+    "FinalStrategySpec",
     "FormalAgentExperimentFamilyValidator",
     "GeneratedFeatureEvaluationConfig",
     "GeneratedFeatureEvaluator",
@@ -125,6 +138,7 @@ __all__ = [
     "SQLiteAgentFamilyValidationStore",
     "SQLiteAgentMarketResearchStore",
     "SQLiteAgentMarketValidationStore",
+    "SQLiteFinalStrategyStore",
     "SQLiteGeneratedFeatureResearchStore",
     "SQLiteResearchProgramStore",
     "SQLiteResearchQueryService",
