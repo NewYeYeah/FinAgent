@@ -7,12 +7,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Mapping, Protocol
+from typing import Mapping, Protocol
 
 from finagent.domain._validation import require_non_empty
-
-if TYPE_CHECKING:
-    from finagent.agents.planning import ResearchPlan
 
 
 class PlanLike(Protocol):
@@ -27,6 +24,7 @@ class PlanLike(Protocol):
 class ResearchProgramStatus(str, Enum):
     OPEN = "open"
     FROZEN = "frozen"
+    CLOSED = "closed"
 
 
 @dataclass(frozen=True, slots=True)
@@ -72,8 +70,39 @@ class ProgramBudgetSnapshot:
     max_experiments: int
 
 
+@dataclass(frozen=True, slots=True)
+class ProgramLifecycleEvent:
+    program_id: str
+    from_status: ResearchProgramStatus
+    to_status: ResearchProgramStatus
+    actor: str
+    reason: str
+    occurred_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class ProgramLifecycleSnapshot:
+    program_id: str
+    status: ResearchProgramStatus
+    holdout_consumed: bool
+    frozen_at: datetime | None = None
+    closed_at: datetime | None = None
+
+
 class SQLiteResearchProgramStore:
-    """Durable alpha-spending/search-budget ledger across ExperimentFamily objects."""
+    """Durable search-budget and lifecycle ledger across ExperimentFamily objects.
+
+    Program registration remains immutable. Lifecycle transitions are append-only so
+    older 1.0/1.2 databases can be upgraded without rewriting their program payloads.
+    Exact replay of an already-reserved plan remains idempotent after freezing; only
+    new research reservations are blocked.
+    """
+
+    _ALLOWED_TRANSITIONS = {
+        ResearchProgramStatus.OPEN: frozenset({ResearchProgramStatus.FROZEN}),
+        ResearchProgramStatus.FROZEN: frozenset({ResearchProgramStatus.CLOSED}),
+        ResearchProgramStatus.CLOSED: frozenset(),
+    }
 
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
@@ -99,11 +128,84 @@ class SQLiteResearchProgramStore:
                     actor TEXT NOT NULL,
                     accessed_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS research_program_lifecycle_events (
+                    event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    program_id TEXT NOT NULL,
+                    from_status TEXT NOT NULL,
+                    to_status TEXT NOT NULL,
+                    actor TEXT NOT NULL,
+                    reason TEXT NOT NULL,
+                    occurred_at TEXT NOT NULL
+                );
+                CREATE UNIQUE INDEX IF NOT EXISTS ux_research_program_lifecycle_target
+                    ON research_program_lifecycle_events(program_id, to_status);
                 """
             )
 
     def _connect(self) -> sqlite3.Connection:
         return sqlite3.connect(self.path)
+
+    @staticmethod
+    def _decode_program(payload_json: str, status: ResearchProgramStatus) -> ResearchProgram:
+        payload = json.loads(payload_json)
+        return ResearchProgram(
+            program_id=payload["program_id"],
+            alpha_budget=float(payload["alpha_budget"]),
+            max_families=int(payload["max_families"]),
+            max_experiments=int(payload["max_experiments"]),
+            sealed_holdout_id=payload.get("sealed_holdout_id", ""),
+            status=status,
+        )
+
+    @staticmethod
+    def _base_status(payload_json: str) -> ResearchProgramStatus:
+        payload = json.loads(payload_json)
+        return ResearchProgramStatus(payload.get("status", ResearchProgramStatus.OPEN.value))
+
+    @staticmethod
+    def _payload_row(con: sqlite3.Connection, program_id: str) -> str:
+        row = con.execute(
+            "SELECT payload_json FROM research_programs WHERE program_id=?",
+            (program_id,),
+        ).fetchone()
+        if row is None:
+            raise KeyError(program_id)
+        return str(row[0])
+
+    @classmethod
+    def _status_in_connection(
+        cls,
+        con: sqlite3.Connection,
+        program_id: str,
+        payload_json: str,
+    ) -> ResearchProgramStatus:
+        row = con.execute(
+            "SELECT to_status FROM research_program_lifecycle_events "
+            "WHERE program_id=? ORDER BY event_id DESC LIMIT 1",
+            (program_id,),
+        ).fetchone()
+        if row is None:
+            return cls._base_status(payload_json)
+        return ResearchProgramStatus(str(row[0]))
+
+    @staticmethod
+    def _holdout_consumed_in_connection(con: sqlite3.Connection, program_id: str) -> bool:
+        row = con.execute(
+            "SELECT 1 FROM research_program_holdout_access WHERE program_id=?",
+            (program_id,),
+        ).fetchone()
+        return row is not None
+
+    @staticmethod
+    def _event_from_row(row) -> ProgramLifecycleEvent:
+        return ProgramLifecycleEvent(
+            program_id=str(row[0]),
+            from_status=ResearchProgramStatus(str(row[1])),
+            to_status=ResearchProgramStatus(str(row[2])),
+            actor=str(row[3]),
+            reason=str(row[4]),
+            occurred_at=datetime.fromisoformat(str(row[5])),
+        )
 
     def register(self, program: ResearchProgram) -> None:
         payload = json.dumps(
@@ -134,20 +236,134 @@ class SQLiteResearchProgramStore:
 
     def get(self, program_id: str) -> ResearchProgram:
         with self._connect() as con:
-            row = con.execute(
-                "SELECT payload_json FROM research_programs WHERE program_id=?",
+            payload_json = self._payload_row(con, program_id)
+            status = self._status_in_connection(con, program_id, payload_json)
+        return self._decode_program(payload_json, status)
+
+    def lifecycle_events(self, program_id: str) -> tuple[ProgramLifecycleEvent, ...]:
+        with self._connect() as con:
+            self._payload_row(con, program_id)
+            rows = con.execute(
+                "SELECT program_id, from_status, to_status, actor, reason, occurred_at "
+                "FROM research_program_lifecycle_events WHERE program_id=? "
+                "ORDER BY event_id",
                 (program_id,),
-            ).fetchone()
-        if row is None:
-            raise KeyError(program_id)
-        payload = json.loads(row[0])
-        return ResearchProgram(
-            program_id=payload["program_id"],
-            alpha_budget=float(payload["alpha_budget"]),
-            max_families=int(payload["max_families"]),
-            max_experiments=int(payload["max_experiments"]),
-            sealed_holdout_id=payload["sealed_holdout_id"],
-            status=ResearchProgramStatus(payload["status"]),
+            ).fetchall()
+        return tuple(self._event_from_row(row) for row in rows)
+
+    def lifecycle_snapshot(self, program_id: str) -> ProgramLifecycleSnapshot:
+        program = self.get(program_id)
+        events = self.lifecycle_events(program_id)
+        frozen_at = next(
+            (event.occurred_at for event in events if event.to_status is ResearchProgramStatus.FROZEN),
+            None,
+        )
+        closed_at = next(
+            (event.occurred_at for event in events if event.to_status is ResearchProgramStatus.CLOSED),
+            None,
+        )
+        with self._connect() as con:
+            holdout_consumed = self._holdout_consumed_in_connection(con, program_id)
+        return ProgramLifecycleSnapshot(
+            program_id=program_id,
+            status=program.status,
+            holdout_consumed=holdout_consumed,
+            frozen_at=frozen_at,
+            closed_at=closed_at,
+        )
+
+    def _transition(
+        self,
+        program_id: str,
+        target: ResearchProgramStatus,
+        *,
+        actor: str,
+        reason: str,
+        occurred_at: datetime | None,
+    ) -> ProgramLifecycleEvent:
+        actor = require_non_empty(actor, "actor")
+        reason = require_non_empty(reason, "reason")
+        occurred_at = occurred_at or datetime.now(timezone.utc)
+        with self._connect() as con:
+            con.execute("BEGIN IMMEDIATE")
+            payload_json = self._payload_row(con, program_id)
+            current = self._status_in_connection(con, program_id, payload_json)
+            if current is target:
+                row = con.execute(
+                    "SELECT program_id, from_status, to_status, actor, reason, occurred_at "
+                    "FROM research_program_lifecycle_events "
+                    "WHERE program_id=? AND to_status=?",
+                    (program_id, target.value),
+                ).fetchone()
+                if row is None:
+                    raise PermissionError(
+                        "program was registered in the target state and has no lifecycle event"
+                    )
+                return self._event_from_row(row)
+            if target not in self._ALLOWED_TRANSITIONS[current]:
+                raise PermissionError(
+                    f"invalid research program transition {current.value!r} -> {target.value!r}"
+                )
+            if target is ResearchProgramStatus.CLOSED:
+                payload = json.loads(payload_json)
+                if payload.get("sealed_holdout_id") and not self._holdout_consumed_in_connection(
+                    con, program_id
+                ):
+                    raise PermissionError(
+                        "research program cannot close before its sealed holdout is consumed"
+                    )
+            con.execute(
+                "INSERT INTO research_program_lifecycle_events "
+                "(program_id, from_status, to_status, actor, reason, occurred_at) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (
+                    program_id,
+                    current.value,
+                    target.value,
+                    actor,
+                    reason,
+                    occurred_at.isoformat(),
+                ),
+            )
+        return ProgramLifecycleEvent(
+            program_id=program_id,
+            from_status=current,
+            to_status=target,
+            actor=actor,
+            reason=reason,
+            occurred_at=occurred_at,
+        )
+
+    def freeze_program(
+        self,
+        program_id: str,
+        *,
+        actor: str,
+        reason: str = "research search space frozen before holdout access",
+        occurred_at: datetime | None = None,
+    ) -> ProgramLifecycleEvent:
+        return self._transition(
+            program_id,
+            ResearchProgramStatus.FROZEN,
+            actor=actor,
+            reason=reason,
+            occurred_at=occurred_at,
+        )
+
+    def close_program(
+        self,
+        program_id: str,
+        *,
+        actor: str,
+        reason: str = "research program closed after final evaluation",
+        occurred_at: datetime | None = None,
+    ) -> ProgramLifecycleEvent:
+        return self._transition(
+            program_id,
+            ResearchProgramStatus.CLOSED,
+            actor=actor,
+            reason=reason,
+            occurred_at=occurred_at,
         )
 
     def reserve_plan(
@@ -159,15 +375,16 @@ class SQLiteResearchProgramStore:
     ) -> ProgramReservation:
         if not plan.program_id:
             raise ValueError("ResearchPlan.program_id is required for program-governed execution")
-        program = self.get(plan.program_id)
-        if program.status is not ResearchProgramStatus.OPEN:
-            raise PermissionError("research program is frozen")
         fingerprint = plan.fingerprint(task_id)
         reserved_at = reserved_at or datetime.now(timezone.utc)
         family_alpha = float(plan.alpha)
         experiment_count = len(plan.variants)
 
         with self._connect() as con:
+            con.execute("BEGIN IMMEDIATE")
+            payload_json = self._payload_row(con, plan.program_id)
+            program_status = self._status_in_connection(con, plan.program_id, payload_json)
+            program = self._decode_program(payload_json, program_status)
             existing = con.execute(
                 "SELECT plan_fingerprint, alpha_spent, experiment_count, reserved_at "
                 "FROM research_program_reservations WHERE program_id=? AND family_id=?",
@@ -179,10 +396,15 @@ class SQLiteResearchProgramStore:
                 return ProgramReservation(
                     program.program_id,
                     plan.family_id,
-                    existing[0],
+                    str(existing[0]),
                     float(existing[1]),
                     int(existing[2]),
-                    datetime.fromisoformat(existing[3]),
+                    datetime.fromisoformat(str(existing[3])),
+                )
+            if program.status is not ResearchProgramStatus.OPEN:
+                raise PermissionError(
+                    "new research reservations require an open program; "
+                    f"current status={program.status.value}"
                 )
 
             aggregate = con.execute(
@@ -249,12 +471,20 @@ class SQLiteResearchProgramStore:
         actor: str,
         accessed_at: datetime | None = None,
     ) -> Mapping[str, str]:
-        program = self.get(program_id)
-        if not program.sealed_holdout_id:
-            raise ValueError("research program has no sealed_holdout_id")
-        accessed_at = accessed_at or datetime.now(timezone.utc)
         actor = require_non_empty(actor, "actor")
+        accessed_at = accessed_at or datetime.now(timezone.utc)
         with self._connect() as con:
+            con.execute("BEGIN IMMEDIATE")
+            payload_json = self._payload_row(con, program_id)
+            status = self._status_in_connection(con, program_id, payload_json)
+            program = self._decode_program(payload_json, status)
+            if not program.sealed_holdout_id:
+                raise ValueError("research program has no sealed_holdout_id")
+            if program.status is not ResearchProgramStatus.FROZEN:
+                raise PermissionError(
+                    "sealed holdout access requires a frozen research program; "
+                    f"current status={program.status.value}"
+                )
             existing = con.execute(
                 "SELECT actor, accessed_at FROM research_program_holdout_access WHERE program_id=?",
                 (program_id,),
