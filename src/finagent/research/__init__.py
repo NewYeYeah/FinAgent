@@ -69,6 +69,13 @@ from .programs import (
 from .query import ExperimentQuerySnapshot, SQLiteResearchQueryService
 from .registry import SQLiteResearchRegistry
 from .runner import ExperimentEvaluation, ExperimentRunner
+from .sealed_holdout import (
+    FunctionSealedHoldoutBackend,
+    SealedHoldoutBackend,
+    SealedHoldoutBackendResult,
+    SealedHoldoutEvaluator,
+    SealedHoldoutReport,
+)
 from .validation import (
     DeflatedSharpeResult,
     FamilyValidationReport,
@@ -113,6 +120,7 @@ __all__ = [
     "FinalStrategySelector",
     "FinalStrategySpec",
     "FormalAgentExperimentFamilyValidator",
+    "FunctionSealedHoldoutBackend",
     "GeneratedFeatureEvaluationConfig",
     "GeneratedFeatureEvaluator",
     "GeneratedFeatureFamilyValidationInputProvider",
@@ -135,6 +143,10 @@ __all__ = [
     "ResearchProgram",
     "ResearchProgramGuard",
     "ResearchProgramStatus",
+    "SealedHoldoutBackend",
+    "SealedHoldoutBackendResult",
+    "SealedHoldoutEvaluator",
+    "SealedHoldoutReport",
     "SQLiteAgentFamilyValidationStore",
     "SQLiteAgentMarketResearchStore",
     "SQLiteAgentMarketValidationStore",
