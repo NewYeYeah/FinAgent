@@ -1,14 +1,17 @@
 [agent_market_research]
-# Use an already materialized/validated provider dataset.  Alpaca is the default
-# US primary; an AKShare-normalized dataset can be substituted by changing provider.
+# Use an already materialized/validated provider dataset. Alpaca is the default
+# US primary; a normalized AKShare dataset can be substituted explicitly for
+# frozen-family cross-provider validation.
 bars_path = "data/market/us_etf_alpaca/bars.csv"
 manifest_path = "data/market/us_etf_alpaca/manifest.json"
 report_path = "reports/us_etf_agent_market_research.json"
 provider = "alpaca"
 market = "us_equity"
+expected_symbols = ["SPY", "QQQ", "IWM", "DIA"]
 
-# LLM model IDs are provider/account specific.  Replace this value with a model
-# available to your OpenAI API account before running the script.
+# LLM model IDs are provider/account specific. Replace this value with a model
+# available to your OpenAI API account for first-generation runs. Frozen-family
+# replay does not invoke the LLM and therefore does not require this value.
 llm_model = "REPLACE_WITH_AVAILABLE_MODEL_ID"
 research_question = "Discover interpretable short-horizon cross-sectional signals among SPY, QQQ, IWM and DIA using only PIT-safe price/volume information."
 task_id = "us-etf-agent-research-v1"
@@ -40,7 +43,7 @@ min_cross_section = 2
 min_periods = 5
 state_dir = ".finagent/agent-market-us"
 
-# Nested walk-forward / deterministic portfolio settings.  These mirror the
+# Nested walk-forward / deterministic portfolio settings. These mirror the
 # existing MarketStudyConfig contract so fixed-model and agent-generated studies
 # use the same chronology, risk and execution assumptions.
 outer_train_size = 756

@@ -1,0 +1,20 @@
+[market]
+provider = "alpaca"
+region = "us_equity"
+asset_type = "etf"
+symbols = ["SPY", "QQQ", "IWM", "DIA"]
+start = 2018-01-01
+end = 2026-08-24
+adjustment = "raw"
+feed = "iex"
+output_dir = "data/market/us_etf_alpaca"
+
+[market.venue_overrides]
+SPY = "ARCX"
+QQQ = "XNAS"
+IWM = "ARCX"
+DIA = "ARCX"
+
+[market.metadata]
+purpose = "primary immutable US ETF dataset for Agent market research"
+provider_role = "primary"
