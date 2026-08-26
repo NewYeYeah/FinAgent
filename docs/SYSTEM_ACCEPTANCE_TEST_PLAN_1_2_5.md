@@ -1,37 +1,76 @@
 # FinAgent 1.2.5 系统验收测试计划
 
-**文档版本：** v1.1  
+**文档版本：** v1.2  
 **修订日期：** 2026-08-26  
 **适用代码基线：** FinAgent 1.2.5 acceptance surface  
 **基线分支：** `main`  
-**测试时必须记录：** `git rev-parse HEAD` 的实际提交，不再绑定旧固定 SHA  
-**适用系统：** Ubuntu 22.04/24.04、Windows 10/11 x64（原生 PowerShell）  
+**测试时必须记录：** `git rev-parse HEAD` 的实际提交  
+**适用系统：** Ubuntu 22.04/24.04、Windows 10/11 x64 原生 PowerShell  
 **LLM 主路径：** DeepSeek 官方 DeepSeek-V4-Pro  
 **LLM 兼容路径：** 硅基流动 DeepSeek-V4-Pro、OpenAI Responses API  
+**市场数据主路径：** Alpaca US daily data；AKShare cross-provider validation  
 **重要约束：** 本轮验收不消费正式 sealed holdout，不执行 live broker，不以“策略是否盈利”作为通过标准。
-
-> 接口口径以 2026-08-26 的官方文档为准。DeepSeek V4-Pro 通过 OpenAI-compatible Chat Completions 接入；硅基流动通过 OpenAI-compatible Chat Completions 接入；OpenAI 原 Responses adapter 保留为可选配置。模型供应商可能更新模型 ID 或参数支持，正式验收前必须再次核对供应商文档。
 
 ---
 
-# 1. 测试目标
+# 1. 本轮修订重点
+
+v1.2 对此前测试计划补充两个缺失的工程边界。
+
+第一，**市场数据 API credential 与 LLM API credential 采用同类封装**：
+
+```text
+tracked public profile
+        ↓
+host-side config/factory
+        ↓
+repository-external secret store
+        ↓
+provider SDK/client
+        ↓
+normalized market data
+```
+
+Canonical market-data CLI 不再要求测试人员手动设置：
+
+```text
+ALPACA_API_KEY
+ALPACA_SECRET_KEY
+TUSHARE_TOKEN
+HITHINK_FINANCE_API_KEY
+```
+
+这些旧环境变量入口可以作为底层 adapter 的兼容接口继续存在，但**不再是 1.2.5 canonical test path**。
+
+第二，**Ubuntu shell 与 Windows PowerShell 的命令续行符必须明确区分**：
+
+```text
+Ubuntu / bash       : \
+Windows PowerShell  : `
+```
+
+PowerShell 的反引号 `` ` `` 必须是该行最后一个有效字符，**后面不能有空格**。不要在原生 PowerShell 中复制 bash 的 `\` 续行语法。
+
+---
+
+# 2. 测试目标
 
 本轮系统验收回答以下问题：
 
-1. FinAgent 能否在 Ubuntu 与原生 Windows 上建立可重复的 Python 测试环境；
-2. Alpaca / AKShare 等真实数据能否稳定落入同一 FinAgent 数据契约；
-3. deterministic market baseline 是否可重复运行；
-4. DeepSeek 官方 V4-Pro 能否作为 canonical LLM 生成通过 AST / sandbox 约束的真实因子代码；
-5. 硅基流动提供的 DeepSeek V4-Pro OpenAI-compatible 接口是否可作为第二 LLM 路径；
-6. OpenAI provider 是否仍保持可选兼容；
-7. API key 是否与 Agent/LLM 请求、prompt、metadata、审计记录和结果文件隔离；
-8. Factor Quant Engine v2 是否正确计算 IC、RankIC、IC decay、quantile spread、turnover、coverage 与 factor correlation；
-9. Agent 是否真正利用 development-only Quant Feedback v2 进行下一轮候选改进；
-10. 多轮 discovery 是否完整保留 candidate denominator；
-11. 多因子 Ensemble 是否以完整 AlphaModel 方式独立拟合与验证；
-12. Formal validation 是否在同一 outer fold 中对 `K 个单因子 + 1 个 Ensemble` 执行 Multiplicity / DSR / PBO / Reality Check；
-13. frozen-family deterministic replay 是否在**完全没有 LLM credential**的情况下仍能通过；
-14. 同一 frozen family 在 Alpaca 与 AKShare 间是否可执行 cross-provider robustness 检查；
+1. FinAgent 能否在 Ubuntu 与原生 Windows 上建立可重复环境；
+2. LLM 与市场数据 Provider 是否都能通过 public profile 进行切换；
+3. DeepSeek 官方 V4-Pro 是否能作为 canonical LLM；
+4. 硅基流动 DeepSeek V4-Pro 是否能作为第二 LLM 路径；
+5. OpenAI provider 是否保持可选兼容；
+6. Alpaca credential 是否不再依赖 shell 环境变量逐项配置；
+7. LLM/API key 与 market-data credential 是否都与 Agent prompt、metadata、report、audit 隔离；
+8. Alpaca / AKShare 等真实数据能否稳定落入同一 FinAgent 数据契约；
+9. deterministic market baseline 是否可重复；
+10. Factor Quant Engine v2、Quant Feedback v2、完整 candidate denominator 是否正常；
+11. 多因子 Ensemble 是否以完整 AlphaModel 方式拟合与验证；
+12. `K single factors + 1 ensemble` 是否进入同一正式统计治理面；
+13. frozen-family replay 是否在完全没有 LLM credential 时仍可执行；
+14. 同一 frozen family 是否可做 Alpaca / AKShare cross-provider robustness；
 15. 当前系统是否达到进入 1.2.6 的 GO 条件。
 
 核心判据：
@@ -40,6 +79,7 @@
 系统行为可解释
 + 数据身份可追踪
 + LLM provider 可替换
++ market-data provider 可替换
 + credential 不进入模型上下文
 + 数值输出有限
 + candidate denominator 不漂移
@@ -47,178 +87,237 @@
 + provider 差异不被静默吞掉
 ```
 
-以下内容不是验收标准：
+以下不是验收标准：
 
 ```text
 Sharpe > 1
 Ensemble 必须击败最佳单因子
-LLM 每次必须生成完全相同的候选
+不同 LLM 必须生成相同因子
 ```
 
 ---
 
-# 2. 1.2.5 LLM 架构与接口基线
+# 3. Provider 配置架构
 
-## 2.1 Provider 矩阵
+## 3.1 LLM public profiles
 
-| Profile | Provider | Base URL | Model | API surface | 角色 |
-|---|---|---|---|---|---|
-| `deepseek_official_v4_pro` | DeepSeek 官方 | `https://api.deepseek.com` | `deepseek-v4-pro` | Chat Completions | **主力 / 必测** |
-| `siliconflow_deepseek_v4_pro` | 硅基流动 | `https://api.siliconflow.cn/v1` | `deepseek-ai/DeepSeek-V4-Pro` | Chat Completions | 第三方备选 / 必测接口 |
-| `openai` | OpenAI | SDK 默认或显式 `base_url` | 测试账户可用模型 | Responses API | 可选兼容 |
-
-公共路由配置位于：
+公共配置：
 
 ```text
 configs/llm.toml
 ```
 
-Canonical research config 通过：
+当前 profiles：
+
+| Profile | Provider | Model/API | 角色 |
+|---|---|---|---|
+| `deepseek_official_v4_pro` | DeepSeek 官方 | `deepseek-v4-pro` / Chat Completions | **主力 / 必测** |
+| `siliconflow_deepseek_v4_pro` | 硅基流动 | `deepseek-ai/DeepSeek-V4-Pro` / Chat Completions | 第三方路径 / 必测接口 |
+| `openai` | OpenAI | 测试账户可用模型 / Responses API | 可选兼容 |
+
+Canonical research config：
 
 ```toml
 llm_config_path = "configs/llm.toml"
 llm_profile = "deepseek_official_v4_pro"
 ```
 
-选择主模型。
+## 3.2 Market-data public profiles
 
-CLI 可临时覆盖 profile：
-
-```bash
-python scripts/run_agent_market_research.py \
-  configs/markets/us_etf_agent_research.toml \
-  --llm-profile siliconflow_deepseek_v4_pro
-```
-
-注意：不同 LLM 做独立首次生成测试时，应使用不同的 `task_id`、`program_id`、`family_id`、`state_dir` 和 `report_path`，不得让第二个 LLM 在已冻结的第一组 research identity 上静默替换候选。
-
-## 2.2 DeepSeek V4-Pro 接入原则
-
-当前 DeepSeek V4-Pro 主路径使用 Chat Completions，而不是直接复用 OpenAI Responses adapter。
-
-DeepSeek adapter 默认启用：
+公共配置：
 
 ```text
-thinking = true
-reasoning_effort = high
-response_format = json_object
+configs/market_data.toml
 ```
 
-FinAgent 同时在 system message 中明确要求只返回符合指定 JSON Schema 的 JSON object，再由现有 feature/planner validation 做第二层结构校验。
+当前 profiles：
 
-## 2.3 硅基流动接入原则
+| Profile | Provider | Credential alias | 角色 |
+|---|---|---|---|
+| `alpaca_primary` | Alpaca | `alpaca` | US primary / 必测 |
+| `akshare_free` | AKShare | 无 | 免费 secondary / cross-provider |
+| `tushare_optional` | Tushare | `tushare` | A-share optional |
+| `hithink_official` | HiThink | `hithink` | A-share official daily candidate |
 
-硅基流动使用 OpenAI-compatible Chat Completions 与 JSON mode。
+Market study config 显式绑定 public profile，例如：
 
-由于当前硅基流动模型目录已提供 DeepSeek-V4-Pro，但推理参数文档对 V4-Pro 的支持口径并不完全一致，因此 FinAgent **默认不向该模型强制传入 `reasoning_effort` 或 `thinking` 私有参数**。这不是功能缺失，而是为了避免在测试阶段依赖未明确承诺的 provider-specific 参数。
+```toml
+[market]
+provider = "alpaca"
+market_data_config_path = "configs/market_data.toml"
+market_data_profile = "alpaca_primary"
+```
 
-## 2.4 OpenAI 兼容原则
-
-原 `OpenAIResponsesProvider` 保留，不改为 DeepSeek-compatible adapter。其用途是：
-
-- 保持既有 OpenAI Responses API 测试能力；
-- 允许用户在 `configs/llm.toml` 中选择 `openai` profile；
-- 不影响 DeepSeek 成为 canonical 主模型。
-
----
-
-# 3. Credential 安全边界
-
-## 3.1 设计
-
-FinAgent 将“公共 LLM 配置”和“真实 secret”拆为两个文件：
+`pull_market_data.py` 会检查：
 
 ```text
-configs/llm.toml
-  provider / model / base_url / secret_id
-                 |
-                 v
-        host-side config loader
-                 ^
-                 |
+market.provider == selected market-data profile provider
+```
+
+不允许配置写 `provider = "alpaca"`，却静默用另一个 profile。
+
+## 3.3 统一 host-side secret store
+
+LLM 与收费市场数据 Provider 共用一个仓库外 secret store：
+
+```text
 ~/.config/finagent/secrets.toml
-  actual API keys
-                 |
-                 v
-           SDK client constructor
-                 |
-                 v
-        LLMProvider.complete()
-                 |
-                 v
-        LLMRequest / Agent prompt
-        （不存在 API key）
 ```
 
-仓库只提供：
+Canonical 模板：
+
+```text
+configs/secrets.example.toml
+```
+
+历史模板：
 
 ```text
 configs/llm-secrets.example.toml
 ```
 
-该文件只能包含 placeholder。
+继续保留兼容，但新环境优先使用 `configs/secrets.example.toml`。
 
-真实 secret 文件默认位于仓库外：
+真实 secret 文件结构：
 
-```text
-~/.config/finagent/secrets.toml
+```toml
+[api_keys]
+deepseek_official = "<DeepSeek key>"
+siliconflow = "<SiliconFlow key>"
+openai = "<optional OpenAI key>"
+
+[market_credentials.alpaca]
+api_key = "<Alpaca API key>"
+secret_key = "<Alpaca secret key>"
+
+[market_credentials.tushare]
+token = "<optional Tushare token>"
+
+[market_credentials.hithink]
+api_key = "<optional HiThink key>"
 ```
 
-也可用环境变量只覆盖**文件路径**：
+只填写本轮实际需要测试的 Provider。
+
+---
+
+# 4. Credential 安全边界
+
+## 4.1 LLM
+
+`LLMProfile` 只能包含：
+
+```text
+provider
+model
+base_url
+secret_id
+公开推理参数
+```
+
+不能包含真实 key。
+
+真实 key 只在 host-side loader 构造 SDK client 时读取，不进入：
+
+```text
+LLMRequest
+AgentTask.metadata
+prompt
+system message
+research report
+SQLite Agent/LLM audit payload
+```
+
+## 4.2 Market data
+
+`MarketDataProfile` 只能包含：
+
+```text
+profile name
+provider
+secret_id
+```
+
+public profile 中若直接写入：
+
+```text
+api_key
+secret_key
+token
+password
+api_secret
+```
+
+loader 必须 fail closed。
+
+收费数据 Provider 的 credential 只用于 host-side SDK/client 构造，不进入：
+
+```text
+MarketDataPullRequest.metadata
+manifest
+normalized bars
+Agent task
+LLM prompt
+research report
+```
+
+AKShare 不需要 credential，选择 `akshare_free` 时不得读取 secret 文件。
+
+## 4.3 Secret 文件权限
+
+POSIX 默认要求：
+
+```text
+0600
+```
+
+Windows 当前不使用 POSIX mode-bit 检查，但 secret 文件必须位于用户私有目录，且不得放进 Agent 可读 workspace 或 Git 仓库。
+
+环境变量：
 
 ```text
 FINAGENT_SECRETS_FILE
 ```
 
-不得用它存放 key 本身。
-
-## 3.2 必须满足的安全约束
-
-1. `LLMProfile` 不包含 API key；
-2. API key 只在 host-side loader 中短暂读取，并直接用于 SDK client 构造；
-3. API key 不进入 `LLMRequest`；
-4. API key 不进入 `AgentTask.metadata`；
-5. API key 不进入 prompt / system message；
-6. API key 不进入 research report；
-7. API key 不进入 durable Agent/LLM audit payload；
-8. provider 异常不得原样持久化上游 HTTP/SDK exception text；
-9. POSIX 下真实 secret 文件默认要求权限不宽于 `0600`；
-10. `.gitignore` 必须忽略 `configs/*secrets*.toml`，但允许 example template 被跟踪；
-11. frozen-family replay 不得读取 secret 文件，也不得实例化真实 LLM provider。
-
-## 3.3 安全边界的真实含义
-
-这里的目标是：
-
-> **模型本身无法通过正常 prompt/request/tool payload 获得 API key。**
-
-这不是对任意恶意本地代码的绝对隔离。如果未来给 Agent 增加任意 shell、任意文件读取、Python object introspection 等高权限工具，则同进程 SDK client 内部仍可能持有认证信息。此类工具必须采用独立 sandbox/process，并显式禁止访问 secret 路径和宿主进程对象。
-
-因此本轮验收禁止把任意文件系统读取或 shell 权限暴露给 LLM。
+只允许覆盖**secret 文件路径**，不用于直接存放 key。
 
 ---
 
-# 4. 环境与安装
+# 5. Shell 语法约定
 
-## 4.1 环境矩阵
+## 5.1 Ubuntu / bash
 
-| 环境 | 状态 | 用途 |
-|---|---|---|
-| Ubuntu 24.04 + Python 3.11 | 主参考环境 | 完整测试 |
-| Ubuntu + Python 3.12/3.13 | CI 对齐 | regression |
-| Windows 11 + Python 3.11 | Windows 主测试环境 | 完整测试 |
-| Windows + Python 3.12/3.13 | 可选 | compatibility |
-| WSL2 Ubuntu | 可选 | 不能替代原生 Windows 验收 |
+多行命令使用反斜杠：
 
-GitHub Actions 当前仍以 Ubuntu 为主，因此 Windows 原生测试必须保留人工验收记录。
+```bash
+python some_script.py \
+  first_argument \
+  --option value
+```
 
-## 4.2 Conda 安装方式
+## 5.2 Windows PowerShell
 
-1.2.5 测试基线已经取消 `environment/environment.yml` 内部位置敏感的 `pip -e .`。
+多行命令使用反引号：
 
-因此环境创建和项目安装必须拆成两步。
+```powershell
+python some_script.py `
+  first_argument `
+  --option value
+```
 
-Ubuntu：
+注意：
+
+1. `` ` `` 必须位于行尾；
+2. `` ` `` 后不能再有空格或注释；
+3. bash 的 `\` 在 PowerShell 中不是续行符；
+4. 文档中的 `bash` block 不得直接复制到原生 PowerShell；
+5. Python 自身可以识别 `/` 路径，但本文 Windows 示例优先使用 `\` 以减少歧义。
+
+---
+
+# 6. 环境安装
+
+## 6.1 Ubuntu
 
 ```bash
 git clone https://github.com/NewYeYeah/FinAgent.git
@@ -228,7 +327,7 @@ conda activate finagent
 python -m pip install -e ".[dev,llm,cn-free,us-market,a-share]"
 ```
 
-若环境已存在：
+已有环境：
 
 ```bash
 conda env update -n finagent -f environment/environment.yml --prune
@@ -236,12 +335,12 @@ conda activate finagent
 python -m pip install -e ".[dev,llm,cn-free,us-market,a-share]"
 ```
 
-Windows PowerShell：
+## 6.2 Windows PowerShell
 
 ```powershell
 git clone https://github.com/NewYeYeah/FinAgent.git
 Set-Location FinAgent
-conda env create -f environment/environment.yml
+conda env create -f environment\environment.yml
 conda activate finagent
 python -m pip install -e ".[dev,llm,cn-free,us-market,a-share]"
 python -m pip install tzdata
@@ -253,7 +352,7 @@ python -m pip install tzdata
 python -c "from zoneinfo import ZoneInfo; print(ZoneInfo('America/New_York')); print(ZoneInfo('Asia/Shanghai'))"
 ```
 
-原生 Windows 不使用：
+原生 PowerShell 不使用：
 
 ```text
 scripts/finagent.sh
@@ -261,55 +360,23 @@ scripts/run_tests.sh
 scripts/lib/finagent_env.sh
 ```
 
-## 4.3 基础环境记录
-
-每次正式验收必须保存：
-
-```text
-Git commit SHA
-OS / kernel
-Python version
-Conda environment
-pip check
-LLM public profile
-LLM public model id
-market-data provider
-data_version
-bars SHA256
-research config fingerprint / path
-```
-
-不得保存：
-
-```text
-API key
-secret 文件正文
-Authorization header
-完整 SDK debug HTTP request
-```
-
 ---
 
-# 5. LLM secret 配置
+# 7. Secret store 初始化
 
-## 5.1 Linux / Ubuntu
+## 7.1 Ubuntu
 
 ```bash
 mkdir -p ~/.config/finagent
-cp configs/llm-secrets.example.toml ~/.config/finagent/secrets.toml
+cp configs/secrets.example.toml ~/.config/finagent/secrets.toml
 chmod 600 ~/.config/finagent/secrets.toml
 ```
 
-然后编辑外部文件：
+编辑：
 
-```toml
-[api_keys]
-deepseek_official = "<your key>"
-siliconflow = "<your key>"
-openai = "<optional key>"
+```bash
+nano ~/.config/finagent/secrets.toml
 ```
-
-只填写实际要测试的 provider。
 
 检查权限：
 
@@ -323,32 +390,54 @@ stat -c '%a %n' ~/.config/finagent/secrets.toml
 600 ~/.config/finagent/secrets.toml
 ```
 
-## 5.2 Windows PowerShell
+## 7.2 Windows PowerShell
 
 ```powershell
 New-Item -ItemType Directory -Force "$HOME\.config\finagent" | Out-Null
-Copy-Item configs\llm-secrets.example.toml "$HOME\.config\finagent\secrets.toml"
+Copy-Item configs\secrets.example.toml "$HOME\.config\finagent\secrets.toml"
 notepad "$HOME\.config\finagent\secrets.toml"
 ```
 
-Windows 当前不使用 POSIX mode-bit 校验，但仍要求：
+本轮测试 Alpaca + DeepSeek 时至少需要填写：
 
-- 文件位于用户私有目录；
-- 不放入 Git 仓库；
-- 不上传到测试报告；
-- 不复制到 Agent 可读 workspace。
+```toml
+[api_keys]
+deepseek_official = "..."
+
+[market_credentials.alpaca]
+api_key = "..."
+secret_key = "..."
+```
+
+**不再需要**在 PowerShell 中逐项执行：
+
+```powershell
+$env:ALPACA_API_KEY = "..."
+$env:ALPACA_SECRET_KEY = "..."
+```
+
+Canonical pull path 会从 host-side secret store 读取。
 
 ---
 
-# 6. T0 — 全量 Regression
+# 8. T0 — 全量 Regression
 
-Ubuntu：
+## Ubuntu
 
 ```bash
 ./scripts/finagent.sh python -m pytest -q
 ```
 
-Windows：
+Focused：
+
+```bash
+python -m pytest -q \
+  tests/test_llm_provider_config_v125.py \
+  tests/test_market_data_provider_config_v125.py \
+  tests/test_agent_llm_phase3c.py
+```
+
+## Windows PowerShell
 
 ```powershell
 $env:PYTHONNOUSERSITE = "1"
@@ -357,76 +446,88 @@ $env:PYTHONUTF8 = "1"
 python -m pytest -q
 ```
 
-额外执行 LLM 相关回归：
+Focused：
 
-```bash
-python -m pytest -q \
-  tests/test_llm_provider_config_v125.py \
-  tests/test_agent_llm_phase3c.py
+```powershell
+python -m pytest -q `
+  tests\test_llm_provider_config_v125.py `
+  tests\test_market_data_provider_config_v125.py `
+  tests\test_agent_llm_phase3c.py
 ```
 
 通过条件：
 
 - 全量测试通过；
-- DeepSeek adapter JSON mode 测试通过；
-- SiliconFlow adapter JSON mode 测试通过；
-- provider exception secret-redaction 测试通过；
-- public profile 不含 secret 测试通过；
-- POSIX `0600` negative test 通过。
+- LLM provider config/security 测试通过；
+- market-data provider config/security 测试通过；
+- materialized directory → `bars.csv` resolution 测试通过。
 
 ---
 
-# 7. T1 — 公共配置与 Secret 隔离
+# 9. T1 — Public profile 与 Secret 隔离
 
-首先只读取 public profile，不触碰 secret：
+## 9.1 LLM profile
 
-```bash
+Ubuntu / Windows 均可运行单行命令：
+
+```text
 python -c "from finagent.agents.providers import load_llm_profile; print(load_llm_profile('configs/llm.toml'))"
 ```
 
-期望：
+输出不得包含真实 API key。
+
+## 9.2 Market-data profile
 
 ```text
-provider='deepseek'
-model='deepseek-v4-pro'
-secret_id='deepseek_official'
+python -c "from finagent.data import load_market_data_profile; print(load_market_data_profile('configs/market_data.toml','alpaca_primary'))"
 ```
 
-输出中不得包含真实 API key。
+期望包含：
 
-检查 Git：
+```text
+provider='alpaca'
+secret_id='alpaca'
+```
+
+不得包含：
+
+```text
+api_key value
+secret_key value
+```
+
+## 9.3 Git credential 检查
+
+Ubuntu：
 
 ```bash
 git status --short
 git ls-files | grep -i secret || true
 ```
 
-允许 tracked：
+Windows PowerShell：
+
+```powershell
+git status --short
+git ls-files | Select-String -Pattern "secret" -CaseSensitive:$false
+```
+
+允许 tracked example：
 
 ```text
+configs/secrets.example.toml
 configs/llm-secrets.example.toml
 ```
 
-不得存在已提交的真实 secret 文件。
-
-通过条件：
-
-- public config 可完整决定 provider/model/base_url；
-- secret alias 可见，但 secret value 不可见；
-- git working tree 不包含真实 credential；
-- 正式日志、report、SQLite evidence 中不出现已知 API key 字符串。
+不得提交真实 `secrets.toml`。
 
 ---
 
-# 8. T2 — 真实 LLM Provider Connectivity Smoke
+# 10. T2 — 真实 LLM Provider Connectivity
 
-使用最小结构化输出脚本：
+## 10.1 DeepSeek 官方 — 必测
 
-```text
-scripts/smoke_llm_provider.py
-```
-
-## 8.1 DeepSeek 官方 — 必测
+Ubuntu：
 
 ```bash
 python scripts/smoke_llm_provider.py \
@@ -434,17 +535,17 @@ python scripts/smoke_llm_provider.py \
   --profile deepseek_official_v4_pro
 ```
 
-要求：
+Windows PowerShell：
 
-- HTTP/API 调用成功；
-- `provider == deepseek`；
-- 返回 JSON object；
-- `output.ok == true`；
-- model 与当前官方 V4-Pro 路径一致；
-- 输出只记录 public profile/model、usage、latency、response id；
-- 不打印 API key 或 Authorization header。
+```powershell
+python scripts/smoke_llm_provider.py `
+  configs\llm.toml `
+  --profile deepseek_official_v4_pro
+```
 
-## 8.2 硅基流动 DeepSeek V4-Pro — 必测接口
+## 10.2 硅基流动 — 必测接口
+
+Ubuntu：
 
 ```bash
 python scripts/smoke_llm_provider.py \
@@ -452,19 +553,17 @@ python scripts/smoke_llm_provider.py \
   --profile siliconflow_deepseek_v4_pro
 ```
 
-要求同上，并确认：
+Windows PowerShell：
 
-```text
-provider == siliconflow
+```powershell
+python scripts/smoke_llm_provider.py `
+  configs\llm.toml `
+  --profile siliconflow_deepseek_v4_pro
 ```
 
-本项不要求与 DeepSeek 官方输出 token 数或 latency 一致。
+## 10.3 OpenAI — 可选
 
-## 8.3 OpenAI — 可选
-
-首先在 `configs/llm.toml` 的 `openai` profile 中填写当前账户可用的公开 model ID，不填写 key。
-
-然后：
+Ubuntu：
 
 ```bash
 python scripts/smoke_llm_provider.py \
@@ -472,34 +571,158 @@ python scripts/smoke_llm_provider.py \
   --profile openai
 ```
 
-OpenAI 不作为 1.2.5 DeepSeek-first GO 的强制真实调用条件，但原 adapter 的 unit regression 必须通过。
+Windows PowerShell：
+
+```powershell
+python scripts/smoke_llm_provider.py `
+  configs\llm.toml `
+  --profile openai
+```
+
+通过条件：输出只包含 public provider/model、usage、response metadata，不包含 Authorization header 或 key。
 
 ---
 
-# 9. T3 — 真实市场数据与质量门
+# 11. T3 — 真实市场数据 Provider 与质量门
 
-本轮 US reference universe：
+## 11.1 Alpaca public config 检查
+
+Tracked market config：
 
 ```text
-SPY / QQQ / IWM / DIA
+configs/markets/us_etf_agent_data_alpaca.toml
 ```
 
-## 9.1 Alpaca primary
+应包含：
+
+```toml
+provider = "alpaca"
+market_data_config_path = "configs/market_data.toml"
+market_data_profile = "alpaca_primary"
+```
+
+无需设置 `ALPACA_API_KEY` / `ALPACA_SECRET_KEY` 环境变量。
+
+## 11.2 Alpaca pull — 必测
 
 Ubuntu：
 
 ```bash
-./scripts/finagent.sh python scripts/pull_market_data.py \
+python scripts/pull_market_data.py \
   configs/markets/us_etf_agent_data_alpaca.toml
-./scripts/finagent.sh python scripts/validate_market_data.py \
+```
+
+Windows PowerShell：
+
+```powershell
+python scripts/pull_market_data.py `
+  configs\markets\us_etf_agent_data_alpaca.toml
+```
+
+也可显式覆盖 host secret 文件路径。
+
+Ubuntu：
+
+```bash
+python scripts/pull_market_data.py \
+  configs/markets/us_etf_agent_data_alpaca.toml \
+  --secrets-file ~/.config/finagent/secrets.toml
+```
+
+Windows PowerShell：
+
+```powershell
+python scripts/pull_market_data.py `
+  configs\markets\us_etf_agent_data_alpaca.toml `
+  --secrets-file "$HOME\.config\finagent\secrets.toml"
+```
+
+Pull 成功后必须存在：
+
+```text
+data/market/us_etf_alpaca/bars.csv
+data/market/us_etf_alpaca/manifest.json
+data/market/us_etf_alpaca/quality_report.json
+```
+
+Ubuntu 检查：
+
+```bash
+test -f data/market/us_etf_alpaca/bars.csv
+test -f data/market/us_etf_alpaca/manifest.json
+```
+
+Windows PowerShell：
+
+```powershell
+Test-Path data\market\us_etf_alpaca\bars.csv
+Test-Path data\market\us_etf_alpaca\manifest.json
+```
+
+均应返回存在/True。
+
+## 11.3 Validate materialized dataset
+
+Validator 现在支持两种调用：
+
+```text
+1. 直接传 bars.csv
+2. 传 materialized directory，自动解析 <dir>/bars.csv
+```
+
+Ubuntu：
+
+```bash
+python scripts/validate_market_data.py \
   data/market/us_etf_alpaca
 ```
 
-Windows：
+Windows PowerShell：
 
 ```powershell
-python scripts/pull_market_data.py configs/markets/us_etf_agent_data_alpaca.toml
-python scripts/validate_market_data.py data/market/us_etf_alpaca
+python scripts/validate_market_data.py `
+  data\market\us_etf_alpaca
+```
+
+也可显式：
+
+```powershell
+python scripts/validate_market_data.py `
+  data\market\us_etf_alpaca\bars.csv
+```
+
+### 重要前置条件
+
+如果 pull 阶段失败，不要继续把“不存在的输出目录”当作有效数据执行 validate。
+
+现在 validator 对不存在的路径会明确提示：
+
+```text
+run pull_market_data.py successfully before validation
+```
+
+而不是把目录误当 CSV 后产生难以定位的 `path.open()` traceback。
+
+## 11.4 AKShare secondary
+
+AKShare profile 不读取 secret 文件。
+
+Ubuntu：
+
+```bash
+python scripts/pull_market_data.py \
+  configs/markets/us_etf_agent_data_akshare.toml
+python scripts/validate_market_data.py \
+  data/market/us_etf_akshare
+```
+
+Windows PowerShell：
+
+```powershell
+python scripts/pull_market_data.py `
+  configs\markets\us_etf_agent_data_akshare.toml
+python scripts/validate_market_data.py `
+  data\market\us_etf_akshare
 ```
 
 必须记录：
@@ -513,91 +736,69 @@ calendar range
 quality_passed
 ```
 
-## 9.2 AKShare secondary
-
-```bash
-python scripts/pull_market_data.py \
-  configs/markets/us_etf_agent_data_akshare.toml
-python scripts/validate_market_data.py \
-  data/market/us_etf_akshare
-```
-
-AKShare 用于 development/cross-provider robustness，不作为与 Alpaca 数值完全一致的来源。
-
 ---
 
-# 10. T4 — Deterministic Baseline
+# 12. T4 — Deterministic Baseline
 
-使用现有 deterministic market backtest CLI，在相同 immutable market dataset 上完成 baseline。
+目的：先证明 market/backtest numerical pipeline 与 LLM 无关且可重复。
+
+Ubuntu：
+
+```bash
+python scripts/run_market_backtest.py \
+  configs/markets/us_etf_smoke.toml
+```
+
+Windows PowerShell：
+
+```powershell
+python scripts/run_market_backtest.py `
+  configs\markets\us_etf_smoke.toml
+```
 
 通过条件：
 
-- 输入数据 digest 固定；
+- 输入 digest 固定；
 - chronology / execution lag 明确；
-- 输出指标均为有限值；
-- 同一 commit、同一数据和同一 config 重复执行结果一致；
-- baseline 不依赖 LLM credential。
-
-本项的作用是区分：
-
-```text
-LLM generation failure
-```
-
-和：
-
-```text
-market/backtest numerical pipeline failure
-```
+- 输出指标有限；
+- 同一 commit + data + config 重复执行一致；
+- 不依赖 LLM credential。
 
 ---
 
-# 11. T5 — Canonical Real-LLM Agent Research
+# 13. T5 — Canonical Real-LLM Agent Research
 
-## 11.1 DeepSeek 官方主路径 — 必测
+DeepSeek 官方为主路径。
 
-Canonical config 已默认：
-
-```toml
-llm_profile = "deepseek_official_v4_pro"
-```
-
-首次真实生成建议为 fresh identity 使用独立的：
-
-```text
-task_id
-program_id
-family_id
-state_dir
-report_path
-```
-
-执行：
+Ubuntu：
 
 ```bash
 python scripts/run_agent_market_research.py \
   configs/markets/us_etf_agent_research.toml
 ```
 
+Windows PowerShell：
+
+```powershell
+python scripts/run_agent_market_research.py `
+  configs\markets\us_etf_agent_research.toml
+```
+
 通过条件：
 
-1. 配置自动选择 DeepSeek 官方 profile；
+1. 自动选择 DeepSeek 官方 profile；
 2. real LLM request 成功；
-3. 生成候选数量符合 `candidate_count`；
-4. generated feature 通过 FeatureSpec/AST validation；
-5. restricted sandbox 正常；
-6. 进入 nested market research；
-7. research program denominator 与 alpha budget 有记录；
-8. report 中没有 API key；
-9. SQLite evidence 中没有 API key；
-10. LLM 只能提出候选，不获得最终 portfolio/risk/execution 权限。
+3. generated feature 通过 FeatureSpec / AST validation；
+4. restricted sandbox 正常；
+5. 进入 nested market research；
+6. research program denominator / alpha budget 有记录；
+7. report / SQLite evidence 无 LLM API key；
+8. report / SQLite evidence 无 market-data credential；
+9. Agent 不能控制最终 portfolio/risk/execution。
 
-## 11.2 硅基流动端到端生成 — 接口验收建议执行
-
-不要直接复用 DeepSeek 官方首次生成的 research identity。复制 market research config 到本地 ignored/untracked config，至少修改：
+硅基流动端到端测试必须使用独立的：
 
 ```text
-llm_profile = "siliconflow_deepseek_v4_pro"
 task_id
 program_id
 family_id
@@ -605,63 +806,78 @@ state_dir
 report_path
 ```
 
-然后运行相同 CLI。
-
-本测试判断“接口 + generated-feature workflow 是否打通”，不要求两个 LLM 生成同样的因子。
+不能覆盖 DeepSeek 官方已经冻结的 candidate family。
 
 ---
 
-# 12. T6 — Credential 负向安全测试
+# 14. T6 — Credential 负向测试
 
-## 12.1 Secret 缺失必须 fail closed
-
-创建一个指向不存在文件的 secret 路径，然后执行真实 LLM smoke：
+## 14.1 LLM secret 缺失
 
 Ubuntu：
 
 ```bash
 FINAGENT_SECRETS_FILE=/definitely/missing/finagent-secrets.toml \
-python scripts/smoke_llm_provider.py configs/llm.toml \
+python scripts/smoke_llm_provider.py \
+  configs/llm.toml \
   --profile deepseek_official_v4_pro
 ```
 
-必须在 LLM 请求发出前失败。
-
-Windows：
+Windows PowerShell：
 
 ```powershell
 $env:FINAGENT_SECRETS_FILE = "$PWD\missing-finagent-secrets.toml"
-python scripts/smoke_llm_provider.py configs/llm.toml --profile deepseek_official_v4_pro
+python scripts/smoke_llm_provider.py `
+  configs\llm.toml `
+  --profile deepseek_official_v4_pro
 Remove-Item Env:FINAGENT_SECRETS_FILE
 ```
 
-## 12.2 POSIX 权限过宽必须拒绝
+必须在网络请求前 fail closed。
 
-在临时 secret 文件上设置：
+## 14.2 Market-data secret 缺失
+
+Ubuntu：
+
+```bash
+python scripts/pull_market_data.py \
+  configs/markets/us_etf_agent_data_alpaca.toml \
+  --secrets-file /definitely/missing/finagent-secrets.toml
+```
+
+Windows PowerShell：
+
+```powershell
+python scripts/pull_market_data.py `
+  configs\markets\us_etf_agent_data_alpaca.toml `
+  --secrets-file "$PWD\missing-finagent-secrets.toml"
+```
+
+必须在构造 Alpaca SDK client / 发起 provider request 前失败。
+
+## 14.3 Public market profile 中出现 credential
+
+由：
+
+```text
+tests/test_market_data_provider_config_v125.py
+```
+
+验证。直接在 tracked/public profile 写 `api_key` / `secret_key` / `token` 必须报错。
+
+## 14.4 POSIX mode gate
 
 ```bash
 chmod 644 /tmp/finagent-secrets.toml
 ```
 
-加载 provider 必须报错，并提示使用 `chmod 600`。
-
-## 12.3 上游异常不得回显 secret
-
-由：
-
-```bash
-python -m pytest -q tests/test_llm_provider_config_v125.py
-```
-
-中的 fake upstream exception test 验证。
-
-通过条件：异常中只保留 provider + exception class 等最小诊断信息，不原样记录上游 HTTP/SDK exception body。
+LLM 或收费 market-data provider 加载该文件都必须拒绝，并提示 `chmod 600`。
 
 ---
 
-# 13. T7 — Factor Quant / Feedback / Ensemble 1.2.5 API 验收
+# 15. T7 — Factor Quant / Feedback / Ensemble 1.2.5
 
-运行：
+Ubuntu：
 
 ```bash
 python -m pytest -q \
@@ -672,59 +888,34 @@ python -m pytest -q \
   tests/test_agent_factor_workflow_v123.py
 ```
 
+Windows PowerShell：
+
+```powershell
+python -m pytest -q `
+  tests\test_factor_quant_v2_124.py `
+  tests\test_factor_ensemble_wiring_v124.py `
+  tests\test_ensemble_validation_feedback_v125.py `
+  tests\test_agent_factor_discovery_v123.py `
+  tests\test_agent_factor_workflow_v123.py
+```
+
 必须验证：
 
-### Factor Quant v2
-
-- IC；
-- RankIC；
-- IC decay；
-- quantile spread；
-- turnover；
-- coverage；
+- IC / RankIC / IC decay；
+- quantile spread / turnover / coverage；
 - factor correlation；
-- development-only feedback 不泄漏 outer validation evidence。
-
-### Cumulative discovery
-
-- 每轮候选均进入完整 search denominator；
-- rejected/failed candidate 不被删除；
-- feedback 只能修改后续 proposal，不得重写历史 trial。
-
-### Ensemble
-
-- Ensemble 由完整 `GeneratedFeatureEnsembleAlphaModel` 表示；
-- 不能用简单拼接单因子收益伪装成 Ensemble；
-- 成员选择与权重拟合只使用允许的训练/development evidence。
-
-### Formal K+1 validation
-
-同一 outer fold 中：
-
-```text
-K single-factor candidates
-+
-1 ensemble candidate
-```
-
-必须进入同一统计治理面，并得到：
-
-```text
-Multiplicity
-Deflated Sharpe Ratio
-PBO
-Reality Check
-```
-
-正式 validation metrics 必须是有限值；边界/失败必须显式记录。
+- development-only Quant Feedback；
+- rejected/failed candidates 保留在完整 denominator；
+- Ensemble 为完整 `GeneratedFeatureEnsembleAlphaModel`；
+- `K + 1` formal validation；
+- Multiplicity / DSR / PBO / Reality Check；
+- outer evidence 不反向进入 development feedback。
 
 ---
 
-# 14. T8 — Deterministic Replay 且禁止读取 Secret
+# 16. T8 — Frozen Replay 且禁止读取 LLM Secret
 
-本项是本轮新增的关键安全验收。
-
-完成一次 DeepSeek 官方真实 Agent generation 后，执行：
+完成一次真实 Agent generation 后：
 
 Ubuntu：
 
@@ -737,42 +928,39 @@ python scripts/run_agent_market_research.py \
   --assert-replay
 ```
 
-Windows：
+Windows PowerShell：
 
 ```powershell
 $env:FINAGENT_SECRETS_FILE = "$PWD\missing-finagent-secrets.toml"
 python scripts/run_agent_market_research.py `
-  configs/markets/us_etf_agent_research.toml `
-  --frozen-family-report reports/us_etf_agent_market_research.json `
-  --report reports/us_etf_agent_market_replay.json `
+  configs\markets\us_etf_agent_research.toml `
+  --frozen-family-report reports\us_etf_agent_market_research.json `
+  --report reports\us_etf_agent_market_replay.json `
   --assert-replay
 Remove-Item Env:FINAGENT_SECRETS_FILE
 ```
 
-必须通过。
-
-其含义是：
+必须满足：
 
 ```text
-frozen replay
-!= second LLM generation
-!= credential access
+LLM call count = 0
+LLM secret access = 0
+exact generated feature digests reused
+research budget not double-spent
+replay validation passes
 ```
 
-通过条件：
-
-- 不读取 secret 文件；
-- 不初始化真实 provider；
-- 不发送网络 LLM request；
-- exact generated feature digest 被复用；
-- replay validation 通过；
-- research/search budget 不被重复消费。
+注意：replay 仍然读取已经物化的 market data 文件，但不应重新调用 Alpaca API。因此它不需要 Alpaca credential。
 
 ---
 
-# 15. T9 — Frozen-family Cross-Provider Validation
+# 17. T9 — Frozen-family Cross-Provider Validation
 
-使用已冻结候选 family，在 AKShare 数据上复算：
+AKShare 数据必须先成功物化。
+
+## 17.1 在 AKShare 上复算 frozen family
+
+Ubuntu：
 
 ```bash
 python scripts/run_agent_market_research.py \
@@ -784,7 +972,21 @@ python scripts/run_agent_market_research.py \
   --report reports/us_etf_agent_market_research_akshare.json
 ```
 
-然后：
+Windows PowerShell：
+
+```powershell
+python scripts/run_agent_market_research.py `
+  configs\markets\us_etf_agent_research.toml `
+  --bars data\market\us_etf_akshare\bars.csv `
+  --manifest data\market\us_etf_akshare\manifest.json `
+  --provider akshare `
+  --frozen-family-report reports\us_etf_agent_market_research.json `
+  --report reports\us_etf_agent_market_research_akshare.json
+```
+
+## 17.2 比较 Provider evidence
+
+Ubuntu：
 
 ```bash
 python scripts/validate_agent_market_research.py \
@@ -797,93 +999,153 @@ python scripts/validate_agent_market_research.py \
   --store .finagent/agent-market-us/agent_market_validation.sqlite
 ```
 
-通过条件：
+Windows PowerShell：
 
-- frozen candidate identity 一致；
-- provider/data_version 差异显式记录；
-- calendar evidence 可核对；
-- 金融指标差异被报告，而非被静默“对齐”；
-- 不进行新的 LLM generation。
+```powershell
+python scripts/validate_agent_market_research.py `
+  reports\us_etf_agent_market_research.json `
+  reports\us_etf_agent_market_research_akshare.json `
+  --mode cross_provider `
+  --left-bars data\market\us_etf_alpaca\bars.csv `
+  --right-bars data\market\us_etf_akshare\bars.csv `
+  --output reports\us_etf_agent_cross_provider_validation.json `
+  --store .finagent\agent-market-us\agent_market_validation.sqlite
+```
+
+通过条件：provider/data_version/calendars/financial differences 均显式记录，不进行新的 LLM generation。
 
 ---
 
-# 16. T10 — Static / Build / Dependency Gate
+# 18. T10 — Static / Build / Dependency Gate
 
-执行：
+Ubuntu：
 
 ```bash
 ruff check src tests scripts --select E9,F63,F7,F82
+ruff check \
+  src/finagent/agents/providers \
+  src/finagent/data/ingestion \
+  tests/test_llm_provider_config_v125.py \
+  tests/test_market_data_provider_config_v125.py \
+  scripts/pull_market_data.py \
+  scripts/validate_market_data.py \
+  --select E4,E7,E9,F
 python -m build
 python -m pip check
 ```
 
-针对新增 LLM surface 建议额外执行：
+Windows PowerShell：
 
-```bash
-ruff check \
-  src/finagent/agents/providers \
-  tests/test_llm_provider_config_v125.py \
-  scripts/smoke_llm_provider.py \
-  scripts/run_agent_market_research.py \
+```powershell
+ruff check src tests scripts --select E9,F63,F7,F82
+ruff check `
+  src\finagent\agents\providers `
+  src\finagent\data\ingestion `
+  tests\test_llm_provider_config_v125.py `
+  tests\test_market_data_provider_config_v125.py `
+  scripts\pull_market_data.py `
+  scripts\validate_market_data.py `
   --select E4,E7,E9,F
+python -m build
+python -m pip check
 ```
 
-通过条件：
+---
 
-- build 成功；
-- dependency consistency 通过；
-- 无 critical Ruff error；
-- optional `llm` extra 安装后可使用 OpenAI SDK 作为 DeepSeek/SiliconFlow transport；
-- 旧 `llm-openai` extra 仍保留兼容。
+# 19. 对本次两个报错的解释
+
+## 19.1 `ALPACA_API_KEY and ALPACA_SECRET_KEY are required`
+
+旧 canonical CLI 直接调用：
+
+```python
+AlpacaMarketDataIngestor.from_environment()
+```
+
+因此即使已经采用 LLM secret config，market-data path 仍要求单独设置环境变量，接口不一致。
+
+v1.2 修正为：
+
+```text
+us_etf_agent_data_alpaca.toml
+        ↓
+market_data_profile = alpaca_primary
+        ↓
+configs/market_data.toml
+        ↓
+secret_id = alpaca
+        ↓
+~/.config/finagent/secrets.toml
+        ↓
+StockHistoricalDataClient
+```
+
+测试人员只需要维护同一个 host-side secret store。
+
+## 19.2 `FileNotFoundError: data\\market\\us_etf_alpaca`
+
+这里有两个原因：
+
+1. 前一步 Alpaca pull 已失败，因此 output 尚未成功物化；
+2. 旧 `validate_market_data.py` 只接受 CSV 文件，但旧文档传入的是目录，两者 CLI contract 不一致。
+
+v1.2 后 validator 同时接受：
+
+```text
+data/market/us_etf_alpaca
+```
+
+和：
+
+```text
+data/market/us_etf_alpaca/bars.csv
+```
+
+目录模式自动解析 `bars.csv`。如果路径不存在，会明确提示先完成 `pull_market_data.py`。
 
 ---
 
-# 17. GO / NO-GO 标准
+# 20. GO / NO-GO 标准
 
-## 17.1 GO 必须同时满足
+## GO 必须满足
 
-- [ ] Ubuntu/Python 3.11 主环境创建成功；
-- [ ] Windows/Python 3.11 主环境创建成功；
-- [ ] `environment.yml` 不再触发错误目录下的 editable install；
+- [ ] Ubuntu/Python 3.11 环境通过；
+- [ ] Windows/Python 3.11 环境通过；
 - [ ] 全量 regression 通过；
-- [ ] `tests/test_llm_provider_config_v125.py` 通过；
+- [ ] LLM provider config/security tests 通过；
+- [ ] market-data provider config/security tests 通过；
 - [ ] DeepSeek 官方 V4-Pro real smoke 通过；
-- [ ] 硅基流动 DeepSeek V4-Pro real smoke 通过；
-- [ ] 至少一次 DeepSeek 官方 real Agent feature generation 成功；
-- [ ] generated feature AST/sandbox 通过；
-- [ ] credential 未出现在 prompt / metadata / report / audit output；
-- [ ] POSIX secret permission gate 通过；
-- [ ] missing-secret fail-closed 通过；
-- [ ] Factor Quant v2 integration 通过；
-- [ ] Quant Feedback v2 cumulative behavior 通过；
-- [ ] complete candidate denominator 保持不变；
-- [ ] K+1 Ensemble formal validation 通过；
-- [ ] DSR / PBO / Reality Check 等正式指标均为有限值；
-- [ ] deterministic replay 在不存在 secret 文件时仍通过；
-- [ ] replay 不重复调用 LLM、不重复消费 research budget；
-- [ ] Alpaca primary data quality 通过；
-- [ ] frozen-family cross-provider validation 完成并显式报告差异；
-- [ ] build / pip check / critical Ruff gate 通过。
+- [ ] 硅基流动 V4-Pro real smoke 通过；
+- [ ] Alpaca 可仅依赖 host-side secret store 成功 pull；
+- [ ] 不依赖 `ALPACA_API_KEY` / `ALPACA_SECRET_KEY` shell 配置；
+- [ ] Alpaca materialized directory validation 通过；
+- [ ] AKShare credential-free path 通过；
+- [ ] market-data credential 不进入 manifest/report/Agent/LLM 上下文；
+- [ ] 至少一次 DeepSeek official real Agent generation 成功；
+- [ ] Factor Quant / Feedback / denominator / Ensemble K+1 通过；
+- [ ] DSR / PBO / Reality Check 等正式指标有限；
+- [ ] replay 在缺失 LLM secret 时通过；
+- [ ] replay 不重新调用数据 Provider；
+- [ ] frozen-family cross-provider validation 完成；
+- [ ] build / pip check / Ruff gate 通过。
 
-OpenAI real API smoke **不是** DeepSeek-first 1.2.5 的强制 GO 条件，但 OpenAI adapter 的软件 regression 必须通过。
+## 任一以下情况为 NO-GO
 
-## 17.2 任一以下情况为 NO-GO
-
-- API key 出现在 LLM request、prompt、metadata、result JSON、SQLite audit 或异常文本中；
-- Agent 可直接读取真实 secret 文件；
-- DeepSeek 官方主路径无法稳定完成 structured-output generation；
-- SiliconFlow adapter 只能靠未明确支持的私有参数才能运行；
-- replay 仍要求 secret 或产生第二次 LLM 调用；
-- candidate denominator 在多轮 discovery 中丢失失败/拒绝 trial；
-- Ensemble 以外部测试结果选择成员或拟合权重；
-- outer evidence 反向进入 development feedback；
+- API key 出现在 prompt / metadata / result / manifest / SQLite audit 或异常日志中；
+- public market-data profile 允许直接写真实 credential；
+- canonical Alpaca pull 仍强制依赖 `from_environment()`；
+- market profile provider 与 study provider 可以静默不一致；
+- validator 将 materialized directory 错当普通 CSV；
+- DeepSeek official structured generation 不稳定；
+- replay 产生第二次 LLM 调用或重新拉取 Provider 数据；
+- candidate denominator 漂移；
+- outer evidence 进入 development feedback；
 - provider/data_version 被静默替换；
-- 同一数据/config replay 不确定；
-- build 或 dependency consistency 失败。
+- build/dependency gate 失败。
 
 ---
 
-# 18. 测试记录模板
+# 21. 测试记录模板
 
 ```text
 FinAgent 1.2.5 System Acceptance
@@ -891,6 +1153,7 @@ FinAgent 1.2.5 System Acceptance
 Date:
 Commit SHA:
 OS:
+Shell: bash / PowerShell
 Python:
 Conda env:
 
@@ -901,32 +1164,30 @@ Editable install: PASS / FAIL
 pip check: PASS / FAIL
 Windows tzdata: PASS / FAIL / N/A
 
-LLM security/config
--------------------
-Public config load: PASS / FAIL
+Secret store
+------------
+Path recorded without contents: YES / NO
 Secret outside repo: PASS / FAIL
 POSIX 0600 gate: PASS / FAIL / N/A
-Missing-secret fail-closed: PASS / FAIL
-Secret leak scan: PASS / FAIL
 
 LLM providers
 -------------
-DeepSeek official profile: deepseek_official_v4_pro
-DeepSeek public model id:
-DeepSeek smoke: PASS / FAIL
-SiliconFlow profile: siliconflow_deepseek_v4_pro
-SiliconFlow public model id:
+DeepSeek official smoke: PASS / FAIL
 SiliconFlow smoke: PASS / FAIL
 OpenAI optional smoke: PASS / FAIL / NOT RUN
+LLM credential leak scan: PASS / FAIL
 
-Market data
------------
-Primary provider:
-data_version:
-bars SHA256:
-quality gate: PASS / FAIL
-Secondary provider:
-cross-provider validation: PASS / FAIL
+Market data providers
+---------------------
+Alpaca profile: alpaca_primary
+Alpaca shell env credentials required: NO / YES
+Alpaca pull: PASS / FAIL
+Alpaca data_version:
+Alpaca bars SHA256:
+Alpaca quality gate: PASS / FAIL
+Directory validator: PASS / FAIL
+AKShare pull: PASS / FAIL
+Market credential leak scan: PASS / FAIL
 
 Agent generation
 ----------------
@@ -952,8 +1213,9 @@ Reality Check: PASS / FAIL
 Replay
 ------
 Frozen family report:
-Secret deliberately unavailable: YES / NO
-LLM call count during replay: 0 / NONZERO
+LLM secret deliberately unavailable: YES / NO
+LLM call count: 0 / NONZERO
+Market provider network call during replay: 0 / NONZERO
 Exact replay: PASS / FAIL
 
 Final
@@ -965,37 +1227,28 @@ Non-blocking observations:
 
 ---
 
-# 19. 已知基线事项
-
-1. `pyproject.toml` 的 package version 目前仍可能落后于 1.2.5 acceptance surface；测试报告必须记录实际 commit，不得只凭 `pip show finagent` 的版本号判定代码基线。若进入正式 1.2.5 release/tag，应在发布前统一 package metadata。
-2. GitHub Actions 目前以 Ubuntu 为主要 CI 平台，原生 Windows 仍需要本轮人工验收。
-3. `scripts/run_agent_market_research.py` 负责 canonical real-LLM + generated feature + governed market path；Factor Quant v2 / cumulative feedback / Ensemble K+1 的完整 1.2.5 surface 目前仍主要通过 API/integration tests 验收，而不是一个单命令 production CLI。
-4. LLM credential 隔离保证 key 不进入正常模型上下文，但未来若引入任意 shell/file-system Agent tool，必须重新做 capability sandbox 与 secret namespace 隔离评审。
-
----
-
-# 20. 推荐执行顺序
+# 22. 推荐执行顺序
 
 ```text
 T0  full regression
  ↓
-T1  public config + secret isolation
+T1  LLM + market-data public config / secret isolation
  ↓
-T2  DeepSeek official real smoke
+T2  DeepSeek + SiliconFlow real smoke
  ↓
-     SiliconFlow real smoke
+T3  Alpaca secure-config pull + validation
  ↓
-T3  Alpaca / AKShare data quality
+     AKShare secondary pull + validation
  ↓
 T4  deterministic baseline
  ↓
-T5  DeepSeek official real Agent generation
+T5  DeepSeek real Agent generation
  ↓
 T6  credential negative tests
  ↓
 T7  Factor Quant / Feedback / Ensemble K+1
  ↓
-T8  replay with deliberately missing secret
+T8  replay with deliberately unavailable LLM secret
  ↓
 T9  frozen-family cross-provider validation
  ↓
@@ -1004,4 +1257,4 @@ T10 static / build / dependency gate
 GO / NO-GO
 ```
 
-本顺序的原则是先验证**环境、credential 边界和 provider connectivity**，再消费真实 LLM 调用；随后验证 Agent 与量化研究链，最后用“无 secret replay”和 cross-provider validation 检查可重复性与治理边界。
+执行原则：先验证**环境、shell 语法、credential 边界和 Provider connectivity**，再消费真实 LLM/API 调用；随后验证量化研究链，最后通过无 LLM secret replay 与 cross-provider validation 检查可重复性和治理边界。
