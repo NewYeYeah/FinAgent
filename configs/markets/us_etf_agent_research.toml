@@ -9,10 +9,14 @@ provider = "alpaca"
 market = "us_equity"
 expected_symbols = ["SPY", "QQQ", "IWM", "DIA"]
 
-# LLM model IDs are provider/account specific. Replace this value with a model
-# available to your OpenAI API account for first-generation runs. Frozen-family
-# replay does not invoke the LLM and therefore does not require this value.
-llm_model = "REPLACE_WITH_AVAILABLE_MODEL_ID"
+# LLM routing is public configuration. API keys are loaded separately by the host
+# from ~/.config/finagent/secrets.toml and never enter Agent prompts or metadata.
+# DeepSeek official V4-Pro is the default; SiliconFlow and OpenAI can be selected
+# through --llm-profile or by changing llm_profile below.
+llm_config_path = "configs/llm.toml"
+llm_profile = "deepseek_official_v4_pro"
+# Optional per-study model override. Normally leave unset and use the profile model.
+# llm_model = "deepseek-v4-pro"
 research_question = "Discover interpretable short-horizon cross-sectional signals among SPY, QQQ, IWM and DIA using only PIT-safe price/volume information."
 task_id = "us-etf-agent-research-v1"
 program_id = "us-etf-agent-program-v1"
