@@ -82,6 +82,14 @@ from .programs import (
     ResearchProgramStatus,
     SQLiteResearchProgramStore,
 )
+from .promotion import (
+    ResearchPromotionDecision,
+    ResearchPromotionGate,
+    ResearchPromotionResult,
+    ResearchPromotionService,
+    ResearchPromotionStatus,
+    SQLiteResearchPromotionStore,
+)
 from .query import ExperimentQuerySnapshot, SQLiteResearchQueryService
 from .registry import SQLiteResearchRegistry
 from .runner import ExperimentEvaluation, ExperimentRunner
@@ -156,6 +164,11 @@ __all__ = [
     "ResearchProgram",
     "ResearchProgramGuard",
     "ResearchProgramStatus",
+    "ResearchPromotionDecision",
+    "ResearchPromotionGate",
+    "ResearchPromotionResult",
+    "ResearchPromotionService",
+    "ResearchPromotionStatus",
     "SQLiteAgentFamilyValidationStore",
     "SQLiteAgentMarketResearchStore",
     "SQLiteAgentMarketValidationStore",
@@ -165,6 +178,7 @@ __all__ = [
     "SQLiteHoldoutEligibilityStore",
     "SQLiteHoldoutEvaluationStore",
     "SQLiteResearchProgramStore",
+    "SQLiteResearchPromotionStore",
     "SQLiteResearchQueryService",
     "SQLiteResearchRegistry",
     "SQLiteSealedHoldoutStore",
