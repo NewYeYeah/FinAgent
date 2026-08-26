@@ -6,6 +6,7 @@ from .calibration import (
     CrossSectionalCalibrationResult,
     CrossSectionalLinearAlphaCalibrator,
 )
+from .generated import GeneratedFeatureAlphaModel, GeneratedFeatureCalibration
 from .primitives import (
     CanonicalSignalSpec,
     SignalPrimitive,
@@ -27,6 +28,8 @@ __all__ = [
     "CanonicalSignalSpec",
     "CrossSectionalCalibrationResult",
     "CrossSectionalLinearAlphaCalibrator",
+    "GeneratedFeatureAlphaModel",
+    "GeneratedFeatureCalibration",
     "RandomWalkAlphaModel",
     "SignalPrimitive",
     "cross_sectional_zscore",
