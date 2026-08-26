@@ -13,6 +13,7 @@ from .domain import (
     ResearchMemorySummary,
     SimilarityMatch,
 )
+from .scoped_writer import AtomicScopedEvidenceWriter, ScopedEvidenceWrite
 from .service import EvidenceAwareBudgetPolicy, ResearchMemoryService
 from .store import SQLiteResearchMemoryStore
 from .visibility import (
@@ -24,6 +25,7 @@ from .visibility import (
 
 __all__ = [
     "AgentResearchMemoryView",
+    "AtomicScopedEvidenceWriter",
     "BudgetRecommendation",
     "EvidenceAwareBudgetPolicy",
     "EvidenceScope",
@@ -42,5 +44,6 @@ __all__ = [
     "ResearchMemorySummary",
     "SQLiteMemoryVisibilityStore",
     "SQLiteResearchMemoryStore",
+    "ScopedEvidenceWrite",
     "SimilarityMatch",
 ]
