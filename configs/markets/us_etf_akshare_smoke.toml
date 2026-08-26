@@ -1,5 +1,7 @@
 [market]
 provider = "akshare"
+market_data_config_path = "configs/market_data.toml"
+market_data_profile = "akshare_free"
 region = "us_equity"
 asset_type = "etf"
 symbols = ["SPY", "QQQ", "IWM", "DIA"]
