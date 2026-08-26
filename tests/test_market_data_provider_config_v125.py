@@ -84,7 +84,11 @@ def test_alpaca_factory_uses_host_secret_without_exposing_it(tmp_path, monkeypat
     alpaca = types.ModuleType("alpaca")
     data = types.ModuleType("alpaca.data")
     historical = types.ModuleType("alpaca.data.historical")
+    alpaca.__path__ = []
+    data.__path__ = []
     historical.StockHistoricalDataClient = FakeClient
+    alpaca.data = data
+    data.historical = historical
     monkeypatch.setitem(sys.modules, "alpaca", alpaca)
     monkeypatch.setitem(sys.modules, "alpaca.data", data)
     monkeypatch.setitem(sys.modules, "alpaca.data.historical", historical)
