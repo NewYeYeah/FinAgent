@@ -24,6 +24,15 @@ from .agent_market import (
     holm_adjusted_pvalues,
     one_sided_mean_pvalue,
 )
+from .ensemble_validation import (
+    FactorEnsembleFormalValidator,
+    FactorEnsembleIncrementalComparison,
+    FactorEnsembleStatisticalReport,
+    FactorEnsembleValidationEvidence,
+    FactorEnsembleValidationEvidenceBuilder,
+    FactorModelStatisticalValidation,
+    FactorPortfolioTrialEvidence,
+)
 from .factor_discovery import (
     AgentFactorDiscoveryConfig,
     AgentFactorDiscoveryLoop,
@@ -36,6 +45,14 @@ from .factor_discovery import (
     FeedbackAwareMarketFeatureCandidateGenerator,
 )
 from .factor_ensemble import FactorEnsembleModelBuilder
+from .factor_feedback_v2 import (
+    FactorQuantAgentFeedbackV2,
+    FactorQuantFeedbackAwareMarketFeatureCandidateGenerator,
+    FactorQuantFeedbackCandidate,
+    FactorQuantFeedbackHorizon,
+    factor_ensemble_selection_id,
+    factor_quant_development_data_id,
+)
 from .factor_quant import (
     FactorEnsembleComponentSelection,
     FactorEnsembleSelection,
@@ -47,6 +64,11 @@ from .factor_quant import (
     FactorQuantConfig,
     FactorQuantFamilyReport,
     QuantilePortfolioDiagnostics,
+)
+from .factor_quant_discovery import (
+    AgentFactorQuantDiscoveryLoop,
+    AgentFactorQuantDiscoveryResult,
+    AgentFactorQuantDiscoveryRound,
 )
 from .factor_workflow import AgentFactorResearchWorkflow, AgentFactorResearchWorkflowResult
 from .family_validation import ExperimentFamilyValidator, RegisteredFamilyValidation
@@ -139,6 +161,9 @@ __all__ = [
     "AgentFactorDiscoveryLoop",
     "AgentFactorDiscoveryResult",
     "AgentFactorDiscoveryRound",
+    "AgentFactorQuantDiscoveryLoop",
+    "AgentFactorQuantDiscoveryResult",
+    "AgentFactorQuantDiscoveryRound",
     "AgentFactorResearchWorkflow",
     "AgentFactorResearchWorkflowResult",
     "AgentFamilyDevelopmentEvidence",
@@ -166,15 +191,26 @@ __all__ = [
     "FactorCandidateDiagnostics",
     "FactorDevelopmentAnalyzer",
     "FactorEnsembleComponentSelection",
+    "FactorEnsembleFormalValidator",
+    "FactorEnsembleIncrementalComparison",
     "FactorEnsembleModelBuilder",
     "FactorEnsembleSelection",
     "FactorEnsembleSelectionConfig",
     "FactorEnsembleSelector",
+    "FactorEnsembleStatisticalReport",
+    "FactorEnsembleValidationEvidence",
+    "FactorEnsembleValidationEvidenceBuilder",
     "FactorFamilyDiagnostics",
     "FactorHorizonDiagnostics",
+    "FactorModelStatisticalValidation",
+    "FactorPortfolioTrialEvidence",
+    "FactorQuantAgentFeedbackV2",
     "FactorQuantAnalyzer",
     "FactorQuantCandidateReport",
     "FactorQuantConfig",
+    "FactorQuantFeedbackAwareMarketFeatureCandidateGenerator",
+    "FactorQuantFeedbackCandidate",
+    "FactorQuantFeedbackHorizon",
     "FactorQuantFamilyReport",
     "FamilyValidationReport",
     "FeedbackAwareMarketFeatureCandidateGenerator",
@@ -237,6 +273,8 @@ __all__ = [
     "development_evidence_digest",
     "evaluate_generated_feature_dataset",
     "expected_maximum_sharpe",
+    "factor_ensemble_selection_id",
+    "factor_quant_development_data_id",
     "frozen_feature_family",
     "holm_adjusted_pvalues",
     "one_sided_mean_pvalue",
