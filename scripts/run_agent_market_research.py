@@ -23,13 +23,15 @@ from finagent.data.ingestion.provider import (
     provider_capabilities,
 )
 from finagent.research import (
+    AgentMarketExperimentFamilyBridge,
     AgentMarketResearchConfig,
-    AgentMarketResearchRunner,
     AgentMarketValidationPolicy,
+    GovernedAgentMarketResearchRunner,
     LLMMarketFeatureCandidateGenerator,
     ResearchProgram,
     SQLiteAgentMarketResearchStore,
     SQLiteResearchProgramStore,
+    SQLiteResearchRegistry,
     frozen_feature_family,
     read_agent_market_result,
     validate_agent_market_results,
@@ -223,6 +225,7 @@ def main() -> int:
     state_dir.mkdir(parents=True, exist_ok=True)
     feature_store = SQLiteGeneratedFeatureStore(state_dir / "generated_features.sqlite")
     program_store = SQLiteResearchProgramStore(state_dir / "research_programs.sqlite")
+    research_registry = SQLiteResearchRegistry(state_dir / "research_registry.sqlite")
     evidence_store = SQLiteAgentMarketResearchStore(state_dir / "agent_market_research.sqlite")
     program_store.register(
         ResearchProgram(
@@ -312,12 +315,19 @@ def main() -> int:
         require_statistical_acceptance=bool(values.get("require_statistical_acceptance", False)),
         market=market_config,
     )
-    runner = AgentMarketResearchRunner(
+    runner = GovernedAgentMarketResearchRunner(
         adapter=adapter,
         capabilities=capabilities,
         requirement=requirement,
         program_store=program_store,
+        research_registry=research_registry,
         config=config,
+    )
+    dataset_artifact = AgentMarketExperimentFamilyBridge.market_dataset_artifact(
+        provider=configured_provider,
+        data_version=data_version,
+        normalized_digest=str(manifest["normalized_sha256"]),
+        uri=bars_path.resolve().as_uri(),
     )
     result = runner.run(
         task=task,
@@ -327,6 +337,8 @@ def main() -> int:
         end=end,
         program_id=program_id,
         family_id=family_id,
+        dataset_artifact=dataset_artifact,
+        require_existing_family=args.frozen_family_report is not None,
     )
     if args.assert_replay:
         assert reference is not None
