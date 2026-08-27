@@ -34,6 +34,7 @@ from finagent.data import (
 from finagent.domain.research import DatasetRequest, TimeRange
 from finagent.research.ashare_factor_acceptance import (
     AshareFactorResearchAcceptanceEngine,
+    AshareResearchVerdictPolicy,
 )
 from finagent.research.ashare_universe import (
     AshareCandidateUniverseConfig,
@@ -52,6 +53,7 @@ from finagent.research.factor_quant import (
     FactorQuantConfig,
 )
 from finagent.research.factor_quant_discovery import AgentFactorQuantDiscoveryLoop
+from finagent.research.factor_stability import FactorStabilityConfig
 from finagent.research.panel_feature_materializer import PanelGeneratedFeatureMaterializer
 from finagent.research.resilient_candidate_generator import (
     ResilientLLMMarketFeatureCandidateGenerator,
@@ -527,6 +529,35 @@ def main() -> int:
         development_analyzer=development_analyzer,
         validation_analyzer=validation_analyzer,
         selector=selector,
+        stability_config=FactorStabilityConfig(
+            rolling_window=int(values.get("stability_rolling_window", 63)),
+            rolling_step=int(values.get("stability_rolling_step", 21)),
+            min_rolling_periods=int(
+                values.get("stability_min_rolling_periods", 20)
+            ),
+            hac_lags=int(values.get("stability_hac_lags", 5)),
+            bootstrap_samples=int(
+                values.get("stability_bootstrap_samples", 500)
+            ),
+            bootstrap_block_length=int(
+                values.get("stability_bootstrap_block_length", 20)
+            ),
+            bootstrap_seed=int(
+                values.get("stability_bootstrap_seed", 20_260_827)
+            ),
+        ),
+        verdict_policy=AshareResearchVerdictPolicy(
+            min_validation_rank_icir=float(
+                values.get("verdict_min_validation_rank_icir", 0.0)
+            ),
+            min_validation_long_short_sharpe=float(
+                values.get("verdict_min_validation_long_short_sharpe", 0.0)
+            ),
+            max_hac_pvalue=float(values.get("verdict_max_hac_pvalue", 0.05)),
+            max_bootstrap_pvalue=float(
+                values.get("verdict_max_bootstrap_pvalue", 0.05)
+            ),
+        ),
     )
     result = engine.run(
         mode=mode,

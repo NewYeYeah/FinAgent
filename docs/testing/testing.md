@@ -240,7 +240,7 @@ The command traverses:
 ```text
 content-verified frozen Parquet
 → fixed pre-development candidate universe
-→ per-session PIT universe policy
+→ per-session PIT universe policy with hidden pre-split liquidity warm-up
 → panel-native generated-feature materialization
 → Factor Quant v2 development diagnostics
 → deterministic redundancy-aware factor selection
@@ -258,9 +258,12 @@ Acceptance checks:
 - reserve remains `untouched`;
 - all generated factor digests are retained in both development and validation denominators;
 - validation does not change factor weights or directions;
+- split summaries report non-empty warm-up history and a non-artificial first-session eligibility count;
 - Factor Quant reports contain finite IC/ICIR, quantile and turnover diagnostics;
-- no execution-cost or broker claim appears in the report;
-- report exits with `passed = true` even when factors have weak or negative performance.
+- stability reports contain rolling/yearly RankIC, HAC, deterministic block bootstrap, monotonicity, turnover/coverage stability and Holm/BH adjustments;
+- `passed = true` and `system_acceptance.passed = true` mean workflow completion only; inspect `research_outcome` for factor validity;
+- signed validation deltas use the direction frozen in development; absolute-magnitude deltas are separately named;
+- no execution-cost or broker claim appears in the report, and `promotion_eligible` remains false.
 
 #### T-A4.3 Exact replay
 
@@ -275,7 +278,7 @@ python scripts/run_local_ashare_factor_research.py `
   --report reports\local_ashare_factor_research_a2_replay.json
 ```
 
-The `acceptance_id`, candidate denominator, development report, frozen ensemble and validation report must match exactly. Replay must not call the LLM.
+The `acceptance_id`, candidate denominator, development/validation Factor Quant and stability reports, frozen ensemble and research verdict must match exactly. Replay must not call the LLM. Reports produced before schema v2 must be regenerated before using `--assert-replay`.
 
 #### T-A4.4 Agent discovery and robustness
 
@@ -368,6 +371,7 @@ python -m pytest -q \
   tests/test_ashare_legacy_anomaly_v127.py \
   tests/test_ashare_suspension_session_semantics_v127.py \
   tests/test_ashare_factor_acceptance_a2.py \
+  tests/test_ashare_research_correctness_a25.py \
   tests/test_agent_generation_robustness_observability.py
 ```
 
@@ -380,6 +384,7 @@ python -m pytest -q `
   tests\test_ashare_legacy_anomaly_v127.py `
   tests\test_ashare_suspension_session_semantics_v127.py `
   tests\test_ashare_factor_acceptance_a2.py `
+  tests\test_ashare_research_correctness_a25.py `
   tests\test_agent_generation_robustness_observability.py
 ```
 

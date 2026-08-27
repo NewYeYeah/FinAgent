@@ -221,7 +221,11 @@ def test_panel_materializer_and_universe_policy_use_batched_local_panel(tmp_path
     )
     result = analyzer.analyze((_artifact(),), request=request)
     assert result.candidates[0].primary.periods >= 10
-    assert report.splits["development"].average_eligible_assets >= 5
+    summary = report.splits["development"]
+    assert summary.warmup_timestamps >= 3
+    assert summary.first_session_eligible_assets >= 5
+    assert summary.minimum_eligible_assets >= 5
+    assert summary.average_eligible_assets >= 5
 
 
 def test_a2_cli_runs_deterministic_factor_acceptance_and_exact_replay(tmp_path) -> None:
@@ -274,6 +278,14 @@ policy_min_close = 1.0
 policy_min_median_amount_cny = 1000000.0
 policy_liquidity_lookback = 5
 policy_min_liquidity_observations = 3
+policy_liquidity_warmup_calendar_days = 30
+stability_rolling_window = 20
+stability_rolling_step = 10
+stability_min_rolling_periods = 10
+stability_hac_lags = 3
+stability_bootstrap_samples = 100
+stability_bootstrap_block_length = 5
+stability_bootstrap_seed = 7
 quantiles = 3
 min_cross_section = 5
 min_periods = 15
@@ -328,11 +340,19 @@ def compute_feature(inputs):
     assert first.returncode == 0, first.stderr + first.stdout
     payload = json.loads(report.read_text(encoding="utf-8"))
     assert payload["passed"] is True
+    assert payload["system_acceptance"]["passed"] is True
+    assert payload["research_outcome"]["promotion_eligible"] is False
     assert payload["mode"] == "deterministic"
     assert payload["reserve"]["status"] == "untouched"
     assert len(payload["candidate_denominator"]) == 3
     assert payload["candidate_universe"]["size"] >= 6
     assert payload["validation_ensemble"]["primary_label"] == "forward_simple_return_1"
+    assert payload["universe_policy"]["splits"]["development"]["first_session_eligible_assets"] >= 5
+    assert len(payload["development_stability"]["candidates"]) == 3
+    assert len(payload["validation_stability"]["multiplicity"]) == 3
+    assert payload["validation_comparison"]["comparison_semantics"] == (
+        "development-frozen direction; signed deltas"
+    )
     assert "transaction_cost" not in payload["validation_comparison"]
 
     second = subprocess.run(
@@ -355,3 +375,6 @@ def compute_feature(inputs):
     assert replay_payload["acceptance_id"] == payload["acceptance_id"]
     assert replay_payload["development_report"]["report_id"] == payload["development_report"]["report_id"]
     assert replay_payload["validation_report"]["report_id"] == payload["validation_report"]["report_id"]
+    assert replay_payload["development_stability"]["report_id"] == payload["development_stability"]["report_id"]
+    assert replay_payload["validation_stability"]["report_id"] == payload["validation_stability"]["report_id"]
+    assert replay_payload["research_outcome"] == payload["research_outcome"]
