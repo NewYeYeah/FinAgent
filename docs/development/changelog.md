@@ -2,6 +2,15 @@
 
 This file summarizes meaningful development milestones. Commit and pull-request history remains the detailed audit trail.
 
+## 2026-08-27 — Agent generation robustness and observability
+
+- hardened DeepSeek/OpenAI-compatible calls with termination telemetry and bounded provider retries;
+- aligned the generated-feature prompt with the actual restricted Python sandbox ABI;
+- added bounded JSON/AST/sandbox candidate self-repair and bounded replacement;
+- added scoped SQLite checkpoints so accepted logical candidate slots survive process restart without another LLM call;
+- preserved hidden-reasoning privacy while recording reasoning-token counts, latency and finish status;
+- added vendor-neutral JSONL/OTLP Agent traces and a lightweight Phoenix visualization path without coupling FinAgent to an Agent framework.
+
 ## 2026-08-27 — A2 bounded A-share factor research
 
 - added a fixed pre-development candidate-universe selector for bounded 100–200 stock studies;
