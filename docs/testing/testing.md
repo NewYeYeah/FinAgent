@@ -186,7 +186,7 @@ configs/research/local_ashare_factor_research.example.toml
 
 It performs historical daily factor research only. It does not invoke A-share execution, promotion, sealed holdout, PAPER, realtime or broker code.
 
-#### 3.4.1 Prepare a local config
+#### T-A4.1 Prepare a local config
 
 Windows:
 
@@ -215,9 +215,7 @@ report_path = "reports/local_ashare_factor_research_a2.json"
 
 The example fixes a candidate universe before development, uses 2018–2021 for development, 2022–2024 for validation, and leaves 2025 onward untouched.
 
-#### 3.4.2 Deterministic baseline
-
-Run the five predeclared factors first. This isolates the data/Factor Quant path from LLM availability.
+#### T-A4.2 Deterministic baseline
 
 Windows:
 
@@ -252,8 +250,6 @@ content-verified frozen Parquet
 → untouched reserve record
 ```
 
-The panel-native materializer reads each raw input panel once per candidate and slices causal windows in memory. It must not perform one DuckDB query per asset/session.
-
 Acceptance checks:
 
 - candidate universe meets configured minimum size;
@@ -266,9 +262,7 @@ Acceptance checks:
 - no execution-cost or broker claim appears in the report;
 - report exits with `passed = true` even when factors have weak or negative performance.
 
-#### 3.4.3 Exact replay
-
-Replay uses the immutable generated-feature store and prior report. It does not call the LLM.
+#### T-A4.3 Exact replay
 
 Windows:
 
@@ -281,20 +275,9 @@ python scripts/run_local_ashare_factor_research.py `
   --report reports\local_ashare_factor_research_a2_replay.json
 ```
 
-Ubuntu:
+The `acceptance_id`, candidate denominator, development report, frozen ensemble and validation report must match exactly. Replay must not call the LLM.
 
-```bash
-python scripts/run_local_ashare_factor_research.py \
-  configs/research/local_ashare_factor_research.local.toml \
-  --frozen-report reports/local_ashare_factor_research_a2.json \
-  --assert-replay \
-  --verify-content \
-  --report reports/local_ashare_factor_research_a2_replay.json
-```
-
-The `acceptance_id`, candidate denominator, development report, frozen ensemble and validation report must match exactly.
-
-#### 3.4.4 Agent discovery
+#### T-A4.4 Agent discovery and robustness
 
 Only after deterministic baseline and replay pass:
 
@@ -308,19 +291,75 @@ python scripts/run_local_ashare_factor_research.py `
   --report reports\local_ashare_factor_research_a2_agent.json
 ```
 
-Ubuntu uses the same arguments with `/` and `\` line continuations.
+The A2 example uses a 50,000-token completion ceiling for DeepSeek V4-Pro high-thinking calls. This is a ceiling, not expected usage. The provider response is authoritative for actual token consumption.
+
+The Agent generation path has three bounded resilience layers:
+
+```text
+provider transient / JSON-mode empty content
+→ provider retry (configs/llm.toml)
+
+invalid JSON / forbidden AST / sandbox runtime failure
+→ candidate conformance repair
+
+repair budget exhausted
+→ bounded replacement of the same logical candidate slot
+```
+
+Successful candidate slots are checkpointed under `state_dir`. Restarting the same scoped A2 task must reuse the exact artifact and must not spend another LLM request for already accepted slots.
 
 Agent mode must satisfy:
 
 - at least two discovery rounds;
 - round 2 receives `DEVELOPMENT-ONLY FACTOR QUANT FEEDBACK V2`;
 - candidate digests/feature IDs are unique across rounds;
-- all adaptive candidates remain in the final denominator;
+- all accepted adaptive candidates remain in the final denominator;
+- engineering repair feedback contains no market validation/holdout evidence;
 - Agent feedback contains development metrics only;
 - validation, reserve, promotion, PAPER and live evidence are absent from Agent prompts;
+- hidden `reasoning_content` is never persisted;
 - frozen replay succeeds without another LLM request.
 
-#### 3.4.5 Focused CI tests
+A provider error containing `finish_reason=length` means the configured token ceiling was actually exhausted. An empty-content error now reports finish reason, completion-token count, reasoning-token count/presence and attempt count instead of the old ambiguous `no message content` message.
+
+#### T-A4.5 Agent trace / Phoenix debug view
+
+Local JSONL tracing requires no extra package:
+
+```powershell
+$env:FINAGENT_AGENT_TRACE = "1"
+$env:FINAGENT_AGENT_TRACE_BACKEND = "jsonl"
+$env:FINAGENT_AGENT_TRACE_JSONL = ".finagent\a2-agent-trace.jsonl"
+```
+
+For Phoenix:
+
+```powershell
+python -m pip install -e ".[observability]"
+python -m pip install arize-phoenix
+phoenix serve
+```
+
+Then in the FinAgent terminal:
+
+```powershell
+$env:FINAGENT_AGENT_TRACE = "1"
+$env:FINAGENT_AGENT_TRACE_BACKEND = "both"
+$env:FINAGENT_AGENT_TRACE_OTLP_ENDPOINT = "http://localhost:6006/v1/traces"
+$env:FINAGENT_AGENT_TRACE_PROJECT = "finagent-a2"
+```
+
+Open `http://localhost:6006`. The trace should expose nested discovery rounds, LLM latency/token counts, provider attempt count, AST/sandbox failures, repair/replacement/checkpoint events, Factor Quant report identities and selected factor digests.
+
+Prompt/generated-code display is opt-in:
+
+```powershell
+$env:FINAGENT_AGENT_TRACE_CAPTURE_CONTENT = "1"
+```
+
+Do not enable content capture when exporting or sharing traces. Even when enabled, hidden model reasoning is not recorded; only explicit request/response content is eligible for capture.
+
+#### T-A4.6 Focused CI tests
 
 ```bash
 python -m pytest -q \
@@ -328,7 +367,8 @@ python -m pytest -q \
   tests/test_ashare_freeze_supplemental_v127.py \
   tests/test_ashare_legacy_anomaly_v127.py \
   tests/test_ashare_suspension_session_semantics_v127.py \
-  tests/test_ashare_factor_acceptance_a2.py
+  tests/test_ashare_factor_acceptance_a2.py \
+  tests/test_agent_generation_robustness_observability.py
 ```
 
 Windows:
@@ -339,10 +379,11 @@ python -m pytest -q `
   tests\test_ashare_freeze_supplemental_v127.py `
   tests\test_ashare_legacy_anomaly_v127.py `
   tests\test_ashare_suspension_session_semantics_v127.py `
-  tests\test_ashare_factor_acceptance_a2.py
+  tests\test_ashare_factor_acceptance_a2.py `
+  tests\test_agent_generation_robustness_observability.py
 ```
 
-CI uses synthetic Parquet; the real multi-GB acceptance must still be run locally.
+CI uses synthetic Parquet and fake LLM providers; the real multi-GB/DeepSeek acceptance must still be run locally.
 
 ## 4. Interpretation boundary
 
@@ -376,18 +417,21 @@ P0 — block the next milestone:
 - validation evidence entering Agent feedback;
 - reserve access;
 - replay failure;
+- accepted generated code bypassing AST/sandbox guardrails;
+- stale candidate checkpoint reused after scope change;
 - `+/-inf` in accepted evidence.
 
 P1 — record and continue when bounded:
 
 - incomplete supplemental status coverage;
 - candidate-only, non-survivorship-certified universe;
-- secondary provider instability;
-- large-panel performance limits;
-- low-probability crash-recovery windows.
+- bounded provider transient/retry;
+- generated candidate requiring conformance repair/replacement;
+- large-panel performance limits.
 
 P2 — deployment hardening:
 
 - cryptographic/physical evidence isolation;
 - production realtime feeds and broker connectivity;
+- centralized multi-user observability/evaluation infrastructure;
 - high-availability reconciliation infrastructure.
