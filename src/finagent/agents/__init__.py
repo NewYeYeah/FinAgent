@@ -5,20 +5,27 @@ from .domain import (
     AgentDecisionStatus, AgentRunContext, AgentTask, PolicyDecision,
     PolicyOutcome, ToolCallRequest, ToolCallResult, ToolCallStatus, ToolMode,
 )
+from .generation_checkpoint import (
+    FeatureGenerationCheckpoint, SQLiteFeatureGenerationCheckpointStore,
+)
 from .generated_features import (
     FeatureCodePolicy, FeatureCodeValidationError, FeatureCodeValidator,
     FeatureSpec, FeatureValidationReport, GeneratedFeatureArtifact,
     SQLiteGeneratedFeatureStore,
 )
 from .llm_feature import (
-    LLMFeatureGenerationError, LLMFeatureGenerationPolicy,
-    LLMFeatureGenerationResult, LLMFeatureGenerator, generated_feature_template,
+    LLMCandidateRepairExhaustedError, LLMFeatureGenerationError,
+    LLMFeatureGenerationPolicy, LLMFeatureGenerationResult, LLMFeatureGenerator,
+    generated_feature_template,
 )
 from .llm_planner import (
     LLMPlanningPolicy, LLMPlanningResult, LLMPlanValidationError, LLMResearchPlanner,
 )
 from .llm_research import LLMResearchAgent, LLMResearchOutcome
 from .metrics import AgentEvaluationMetrics, evaluate_agent_run
+from .observability import (
+    AgentObservabilityConfig, AgentSpan, AgentTracer, default_agent_tracer,
+)
 from .planning import (
     ExperimentVariant, PromotionIntent, ResearchBudget, ResearchPlan,
     ResearchRunSummary, SQLiteAgentPlanStore, StoredResearchPlan,
@@ -50,31 +57,33 @@ from .tools import (
 
 __all__ = [
     "AgentAction", "AgentAuditEvent", "AgentAuditEventType", "AgentAuditStore",
-    "AgentDecision", "AgentDecisionStatus", "AgentEvaluationMetrics", "AgentPolicyEngine",
-    "AgentReplayEngine", "AgentRunContext", "AgentRunCoordinator", "AgentRuntime",
-    "AgentTask", "AgentTool", "ConfiguredLLM", "DeepSeekChatProvider",
-    "DefaultResearchAgentPolicy", "ExperimentEvaluatorRegistry", "ExperimentTemplate",
-    "ExperimentTemplateRegistry", "ExperimentVariant", "FamilyValidationInputProvider",
-    "FamilyValidationInputs", "FamilyValidationPolicy", "FeatureCodePolicy",
-    "FeatureCodeValidationError", "FeatureCodeValidator", "FeatureSpec",
+    "AgentDecision", "AgentDecisionStatus", "AgentEvaluationMetrics",
+    "AgentObservabilityConfig", "AgentPolicyEngine", "AgentReplayEngine", "AgentRunContext",
+    "AgentRunCoordinator", "AgentRuntime", "AgentSpan", "AgentTask", "AgentTool",
+    "AgentTracer", "ConfiguredLLM", "DeepSeekChatProvider", "DefaultResearchAgentPolicy",
+    "ExperimentEvaluatorRegistry", "ExperimentTemplate", "ExperimentTemplateRegistry",
+    "ExperimentVariant", "FamilyValidationInputProvider", "FamilyValidationInputs",
+    "FamilyValidationPolicy", "FeatureCodePolicy", "FeatureCodeValidationError",
+    "FeatureCodeValidator", "FeatureGenerationCheckpoint", "FeatureSpec",
     "FeatureValidationReport", "FunctionTool", "GeneratedFeatureArtifact", "HealthCheck",
-    "HealthLevel", "LLMCallRecord", "LLMCallStore", "LLMFeatureGenerationError",
-    "LLMFeatureGenerationPolicy", "LLMFeatureGenerationResult", "LLMFeatureGenerator",
-    "LLMPlanValidationError", "LLMPlanningPolicy", "LLMPlanningResult", "LLMProfile",
-    "LLMProvider", "LLMProviderError", "LLMRequest", "LLMResearchAgent",
-    "LLMResearchOutcome", "LLMResearchPlanner", "LLMResponse", "LLMUsage",
-    "OpenAICompatibleChatProvider", "OpenAIResponsesProvider", "OperatingMode",
+    "HealthLevel", "LLMCallRecord", "LLMCallStore", "LLMCandidateRepairExhaustedError",
+    "LLMFeatureGenerationError", "LLMFeatureGenerationPolicy", "LLMFeatureGenerationResult",
+    "LLMFeatureGenerator", "LLMPlanValidationError", "LLMPlanningPolicy",
+    "LLMPlanningResult", "LLMProfile", "LLMProvider", "LLMProviderError", "LLMRequest",
+    "LLMResearchAgent", "LLMResearchOutcome", "LLMResearchPlanner", "LLMResponse",
+    "LLMUsage", "OpenAICompatibleChatProvider", "OpenAIResponsesProvider", "OperatingMode",
     "OperatingPolicy", "OperatingPolicyRegistry", "PolicyDecision", "PolicyOutcome",
     "PortfolioBenchmarkSummary", "PortfolioHealthMonitor", "PortfolioHealthSnapshot",
     "PortfolioHealthThresholds", "PortfolioStressSummary", "PortfolioSupervisorPolicy",
     "PortfolioSupervisorToolDependencies", "PromotionIntent", "ReplayComparison",
     "ReplayEntry", "ReplayTrace", "ResearchBudget", "ResearchPlan", "ResearchRunSummary",
-    "ResearchToolDependencies", "SQLiteAgentAuditStore", "SQLiteAgentPlanStore",
+    "ResearchToolDependencies", "SQLiteAgentAuditStore",
+    "SQLiteFeatureGenerationCheckpointStore", "SQLiteAgentPlanStore",
     "SQLiteGeneratedFeatureStore", "SQLiteLLMCallStore", "SQLitePortfolioSupervisionStore",
     "ScriptedPortfolioSupervisorAgent", "ScriptedResearchAgent", "SiliconFlowChatProvider",
     "StaticLLMProvider", "StoredResearchPlan", "ToolCallRequest", "ToolCallResult",
     "ToolCallStatus", "ToolMode", "ToolRegistry", "ToolSpec", "WeightDriftSummary",
     "WinnerSelection", "build_portfolio_supervisor_tools", "build_research_tools",
-    "evaluate_agent_run", "generated_feature_template", "load_configured_llm",
-    "load_llm_profile",
+    "default_agent_tracer", "evaluate_agent_run", "generated_feature_template",
+    "load_configured_llm", "load_llm_profile",
 ]
