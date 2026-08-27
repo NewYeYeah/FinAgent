@@ -38,3 +38,4 @@ def test_streamlit_app_renders_the_default_research_page(
     assert any(title.value == "Research Overview" for title in app.title)
     metric_labels = {metric.label for metric in app.metric}
     assert {"System", "Research", "Candidates", "Reserve"}.issubset(metric_labels)
+    assert any("never mutates" in warning.value.lower() for warning in app.sidebar.warning)
