@@ -1,0 +1,171 @@
+[local_ashare_robust_research]
+mode = "deterministic"
+root = "D:/Data/A-Share"
+frozen_manifest = "data/manifests/local_ashare_daily.json"
+supplement_root = "reference_data/a_share"
+state_dir = ".finagent/local-ashare-robust-a26"
+report_path = "reports/local_ashare_robust_research_a26.json"
+
+# Immutable ResearchProgram and family budget. Changing any governed field requires a
+# new program_id rather than mutating an observed program.
+program_id = "local-ashare-robust-a26-001"
+family_id = "local-ashare-robust-family-001"
+program_alpha_budget = 0.05
+program_max_families = 1
+program_max_experiments = 12
+family_alpha = 0.05
+
+# Candidate universe is selected before the first development observation.
+universe_selection_date = 2017-12-29
+universe_top_n = 150
+min_universe_size = 100
+include_bse = false
+selection_min_listed_days = 250
+selection_min_close = 1.0
+selection_min_amount_cny = 10000000.0
+selection_exclude_st = true
+
+# 2018-2024 is internal development. Every listed year is an expanding one-year test
+# fold. The 2025+ reserve is recorded but never requested or materialized by A2.6.
+program_start = 2018-01-01
+walk_forward_test_years = [2021, 2022, 2023, 2024]
+reserve_start = 2025-01-01
+reserve_end_exclusive = 2026-08-22
+
+approved_input_fields = [
+  "simple_return_1",
+  "simple_return_5",
+  "simple_return_20",
+  "squared_log_return_1",
+  "log_volume_change_1",
+  "log_volume_change_5",
+  "turnover_rate",
+  "circ_mv",
+  "listed_days",
+]
+primary_label = "forward_simple_return_1"
+decay_labels = ["forward_simple_return_5"]
+
+# PIT research-universe policy. Hidden pre-fold warm-up initializes rolling liquidity.
+policy_min_listed_days = 120
+policy_exclude_st = true
+policy_min_close = 1.0
+policy_min_median_amount_cny = 5000000.0
+policy_liquidity_lookback = 20
+policy_min_liquidity_observations = 10
+policy_liquidity_warmup_calendar_days = 120
+
+# Factor Quant settings used consistently in every expanding fold.
+quantiles = 5
+min_cross_section = 50
+min_periods = 150
+annualization = 252.0
+winsor_lower_quantile = 0.01
+winsor_upper_quantile = 0.99
+sandbox_batch_size = 512
+smoke_lookback = 64
+
+# Dependence-aware internal OOS evidence.
+robust_hac_lags = 5
+robust_bootstrap_samples = 500
+robust_bootstrap_block_length = 20
+robust_bootstrap_seed = 20260828
+
+# Pre-registered candidate gate. These are initial research thresholds, not universal
+# market truths. Any change after inspecting this program's result creates a new program.
+gate_min_positive_fold_ratio = 0.75
+gate_min_direction_consistency = 0.75
+gate_min_pooled_rank_icir = 0.05
+gate_min_mean_fold_rank_icir = 0.03
+gate_min_worst_fold_rank_icir = -0.02
+gate_min_mean_fold_long_short_sharpe = 0.0
+gate_min_coverage = 0.90
+gate_min_quantile_monotonicity = 0.50
+gate_min_horizon_sign_consistency = 0.50
+gate_max_hac_pvalue = 0.10
+gate_max_bh_qvalue = 0.20
+gate_max_mean_one_way_turnover = 0.75
+gate_turnover_penalty = 0.50
+
+# Selection is performed only among candidates that pass every hard gate. An empty
+# passed set produces NO_ROBUST_FACTOR_FOUND rather than a forced ensemble.
+selector_max_factors = 3
+selector_max_abs_factor_correlation = 0.85
+selector_quality_power = 1.0
+
+# Used only when mode = "agent".
+task_id = "local-ashare-robust-a26"
+research_question = "Discover complementary, economically interpretable A-share daily cross-sectional factors that remain stable across expanding annual walk-forward folds using only approved PIT market inputs."
+llm_config_path = "configs/llm.toml"
+llm_profile = "deepseek_official_v4_pro"
+llm_model = ""
+agent_rounds = 2
+candidates_per_round = 3
+max_total_candidates = 8
+max_feature_lookback = 60
+max_output_tokens = 50000
+candidate_repair_attempts = 3
+candidate_replacement_attempts = 2
+
+[[local_ashare_robust_research.baseline_factors]]
+feature_id = "a26-momentum-20"
+name = "Twenty-session momentum"
+description = "Raw twenty-session adjustment-aware return."
+hypothesis = "Medium-horizon price continuation contains cross-sectional information."
+input_fields = ["simple_return_20"]
+lookback = 1
+source = """
+def compute_feature(inputs):
+    return [None if value is None else value for value in inputs["simple_return_20"]]
+"""
+
+[[local_ashare_robust_research.baseline_factors]]
+feature_id = "a26-reversal-5"
+name = "Five-session reversal"
+description = "Negative five-session adjustment-aware return."
+hypothesis = "Short-horizon overreaction mean-reverts in the next session."
+input_fields = ["simple_return_5"]
+lookback = 1
+source = """
+def compute_feature(inputs):
+    return [None if value is None else -value for value in inputs["simple_return_5"]]
+"""
+
+[[local_ashare_robust_research.baseline_factors]]
+feature_id = "a26-volume-confirmed-momentum"
+name = "Volume-confirmed momentum"
+description = "Five-session return scaled by contemporaneous volume change."
+hypothesis = "Price continuation is stronger when accompanied by expanding activity."
+input_fields = ["simple_return_5", "log_volume_change_5"]
+lookback = 1
+source = """
+def compute_feature(inputs):
+    returns = inputs["simple_return_5"]
+    volume = inputs["log_volume_change_5"]
+    return [None if r is None or v is None else r * (1.0 + v) for r, v in zip(returns, volume)]
+"""
+
+[[local_ashare_robust_research.baseline_factors]]
+feature_id = "a26-low-realized-variance"
+name = "Low realized variance"
+description = "Negative trailing mean squared one-session log return."
+hypothesis = "Lower recent volatility is associated with stronger cross-sectional returns."
+input_fields = ["squared_log_return_1"]
+lookback = 20
+source = """
+def compute_feature(inputs):
+    values = inputs["squared_log_return_1"]
+    return [None if i < 19 or any(value is None for value in values[i - 19:i + 1]) else -sum(values[i - 19:i + 1]) / 20.0 for i in range(len(values))]
+"""
+
+[[local_ashare_robust_research.baseline_factors]]
+feature_id = "a26-small-size"
+name = "Small-size exposure"
+description = "Negative logarithm of circulating market capitalization."
+hypothesis = "Smaller liquid A-share firms may earn a cross-sectional size premium."
+input_fields = ["circ_mv"]
+lookback = 1
+source = """
+def compute_feature(inputs):
+    return [None if value is None or value <= 0 else -math.log(value) for value in inputs["circ_mv"]]
+"""
