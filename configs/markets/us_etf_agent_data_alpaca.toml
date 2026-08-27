@@ -8,7 +8,9 @@ symbols = ["SPY", "QQQ", "IWM", "DIA"]
 start = 2018-01-01
 end = 2026-08-24
 adjustment = "raw"
-feed = "iex"
+# SIP is the canonical historical research feed. IEX is retained only for smoke
+# configurations because single-exchange coverage can create calendar/volume gaps.
+feed = "sip"
 output_dir = "data/market/us_etf_alpaca"
 
 [market.venue_overrides]
