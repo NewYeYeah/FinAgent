@@ -2,6 +2,16 @@
 
 This file summarizes meaningful development milestones. Commit and pull-request history remains the detailed audit trail.
 
+## 2026-08-27 — A2 bounded A-share factor research
+
+- added a fixed pre-development candidate-universe selector for bounded 100–200 stock studies;
+- added a PIT research-universe policy for listing age, ST state, price and rolling liquidity;
+- added panel-native generated-feature materialization to avoid per-asset/session DuckDB queries;
+- added deterministic baseline and multi-round Agent Factor Quant discovery modes;
+- froze ensemble weights and factor directions on development evidence only;
+- added independent factor-level validation, untouched reserve records and exact replay;
+- kept A-share execution, promotion, holdout, PAPER and realtime outside the A2 acceptance claim.
+
 ## 2026-08-27 — A-share suspension/session semantics
 
 - verified five zero-open/high/low daily anomalies as real suspension/no-trade placeholders rather than corrupted market prices;
