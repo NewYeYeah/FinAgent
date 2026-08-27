@@ -1,6 +1,6 @@
 # Development Roadmap
 
-This roadmap is intentionally short. Historical phase plans are preserved in Git history rather than duplicated as active documents.
+This roadmap is intentionally short. Historical phase plans remain in Git history.
 
 ## Current baseline
 
@@ -11,47 +11,53 @@ Completed core capabilities:
 - nested validation, multiplicity control, DSR/PBO/Reality Check;
 - bounded Agent-generated features and structured research memory;
 - development-only Factor Quant feedback loop;
-- deterministic multi-factor ensemble selection and formal model-level validation;
+- deterministic multi-factor ensemble selection and model-level validation;
 - sealed holdout lifecycle, research promotion and human-approved PAPER handoff;
 - supervised internal paper/shadow operations;
-- Alpaca/AKShare/Tushare/HiThink provider configuration surfaces;
+- provider-configured Alpaca/AKShare/Tushare/HiThink data surfaces;
 - local A-share daily and audited 1-minute Parquet adapters;
-- native Windows CI.
+- frozen local A-share dataset identity, supplemental reference layer and Windows CI;
+- A2 bounded daily A-share Factor Quant acceptance with deterministic/Agent discovery and exact replay.
 
 ## Current priority order
 
-### P0 — Historical research usability
+### P0 — A2 real-data acceptance
 
-1. Freeze the current local A-share dataset identity.
-2. Maintain incomplete status data as independent supplemental files.
-3. Add a canonical local A-share system test through `ResearchDataset` and Factor Quant interfaces.
-4. Run bounded daily A-share cross-sectional research on real local data.
-5. Keep Alpaca SIP as the US reference/regression dataset.
+1. Run the deterministic 100–200 stock A2 baseline on the frozen local dataset.
+2. Confirm exact replay and record performance/memory observations.
+3. Run at least two Agent Factor Quant discovery rounds using development-only feedback.
+4. Preserve the complete adaptive candidate denominator and validate frozen ensemble factors on 2022–2024.
+5. Keep the 2025+ reserve untouched.
 
-### P1 — A-share research semantics
+### P1 — A3 A-share execution semantics
 
-- improve historical universe using supplemental delisting/listing data where credible sources exist;
-- add historical ST/suspension/price-limit datasets when affordable/reliable;
-- define A-share T+1, lot size, asymmetric fee and price-limit execution rules;
-- certify 5/15/30/60-minute timestamp conventions before enabling research use;
-- introduce chunked/out-of-core panel materialization for larger universes.
+- define T+1 sellability and 100-share buy lots;
+- model suspension and board/ST price-limit tradeability;
+- implement commission, minimum commission, sell-side stamp duty and applicable transfer fees;
+- distinguish target weights, desired orders and executable orders;
+- only after these rules are tested, evaluate A-share portfolio-level economic returns.
+
+### P1 — Data/research improvements
+
+- improve historical universe with source-bound supplemental data where credible records exist;
+- certify 5/15/30/60-minute timestamp conventions before enabling them;
+- add chunked/out-of-core study orchestration if a 100–200 stock panel no longer suffices;
+- keep Alpaca SIP as the US reference/regression dataset.
 
 ### P2 — Research-to-operation continuation
 
-- ensemble identity/promotion integration where still incomplete;
+- connect A-share execution-valid ensembles to promotion/model identity;
 - repeated PAPER sessions and operational evidence;
 - external broker paper/shadow where useful;
 - Provider Contract v2 entitlement/runtime capability snapshots.
 
 ### Deferred
 
-A-share live-capital or realtime acceptance is not a near-term milestone. Expensive realtime/delisting products are not required before the historical research and execution model are mature.
+A-share live-capital and realtime acceptance are not near-term milestones. Expensive realtime/delisting products are not required before historical research and execution semantics mature.
 
-Advanced ML/RL/multi-agent extensions remain lower priority than data correctness, factor research quality and execution realism.
+Advanced ML/RL/multi-agent extensions remain lower priority than factor quality, data correctness and execution realism.
 
 ## Development rule
-
-Priority remains:
 
 ```text
 core functional loop
@@ -61,4 +67,4 @@ core functional loop
 → later hardening
 ```
 
-Do not stop feature development for speculative P2 infrastructure, but do not proceed past errors that invalidate research chronology, data identity, search denominator or execution clocks.
+Do not stop feature development for speculative P2 infrastructure, but do not proceed past errors that invalidate chronology, data identity, adaptive-search denominator, validation isolation or execution clocks.
