@@ -1,21 +1,18 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import Any
 
 from .local_ashare import LocalAshareDatasetLayout, _duckdb, _parquet_columns, _sql_path
-from .local_ashare_certification import (
-    LocalAshareCertificationIssue,
-    LocalAshareDatasetInspector as _BaseLocalAshareDatasetInspector,
-)
+from .local_ashare_certification import LocalAshareCertificationIssue
+from .local_ashare_compat import LocalAshareDatasetInspector as _BaseLocalAshareDatasetInspector
 
 
 class LocalAshareDatasetInspector(_BaseLocalAshareDatasetInspector):
     """Certification semantics for the audited local A-share vendor dataset.
 
     A daily row with zero open/high/low and zero flow while carrying ``pre_close``
-    forward in ``close`` is treated as a no-trade/suspension placeholder.  It remains
-    visible in the certification report but is not counted as invalid OHLC.  Any other
+    forward in ``close`` is treated as a no-trade/suspension placeholder. It remains
+    visible in the certification report but is not counted as invalid OHLC. Any other
     non-positive or inconsistent price row remains an error.
     """
 
@@ -66,7 +63,16 @@ class LocalAshareDatasetInspector(_BaseLocalAshareDatasetInspector):
         for row in rows:
             values = dict(zip(names, row, strict=True))
             values["trade_date"] = str(values["trade_date"])
-            for name in ("open", "high", "low", "close", "pre_close", "vol", "amount", "adj_factor"):
+            for name in (
+                "open",
+                "high",
+                "low",
+                "close",
+                "pre_close",
+                "vol",
+                "amount",
+                "adj_factor",
+            ):
                 if values.get(name) is not None:
                     values[name] = float(values[name])
             output.append(values)
