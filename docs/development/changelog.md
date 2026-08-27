@@ -2,6 +2,15 @@
 
 This file summarizes meaningful development milestones. Commit and pull-request history remains the detailed audit trail.
 
+## 2026-08-27 — Read-only research visualization
+
+- added a Streamlit/Plotly Research UI for A2/A2.5 reports;
+- added development-versus-validation, rolling/subperiod RankIC, quantile, correlation, ensemble and universe-policy views;
+- added Agent discovery-round, JSONL span, LLM usage, repair/error and Phoenix navigation views;
+- added read-only generated-feature SQLite inspection for accepted Python source and validation metadata;
+- enforced report-denominator alignment before rendering and kept reserve/promotion governance visible;
+- kept every UI page read-only: no LLM calls, reruns, prompt edits, model promotion or research-state mutation;
+- added a dedicated visualization dependency extra, launcher, tests, guide and CI workflow.
 
 ## 2026-08-27 — A2.5 research correctness and stability
 
