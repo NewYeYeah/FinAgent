@@ -70,6 +70,16 @@ from .factor_quant_discovery import (
     AgentFactorQuantDiscoveryResult,
     AgentFactorQuantDiscoveryRound,
 )
+from .factor_stability import (
+    FactorCandidateStabilityReport,
+    FactorFamilyStabilityReport,
+    FactorMultiplicityDiagnostics,
+    FactorRollingICPoint,
+    FactorStabilityAnalyzer,
+    FactorStabilityConfig,
+    FactorSubperiodStability,
+    adjust_family_pvalues,
+)
 from .factor_workflow import AgentFactorResearchWorkflow, AgentFactorResearchWorkflowResult
 from .family_validation import ExperimentFamilyValidator, RegisteredFamilyValidation
 from .final_strategy import (
@@ -189,6 +199,7 @@ __all__ = [
     "FINAL_STRATEGY_SELECTION_RULE",
     "FactorAgentFeedback",
     "FactorCandidateDiagnostics",
+    "FactorCandidateStabilityReport",
     "FactorDevelopmentAnalyzer",
     "FactorEnsembleComponentSelection",
     "FactorEnsembleFormalValidator",
@@ -201,8 +212,10 @@ __all__ = [
     "FactorEnsembleValidationEvidence",
     "FactorEnsembleValidationEvidenceBuilder",
     "FactorFamilyDiagnostics",
+    "FactorFamilyStabilityReport",
     "FactorHorizonDiagnostics",
     "FactorModelStatisticalValidation",
+    "FactorMultiplicityDiagnostics",
     "FactorPortfolioTrialEvidence",
     "FactorQuantAgentFeedbackV2",
     "FactorQuantAnalyzer",
@@ -212,6 +225,10 @@ __all__ = [
     "FactorQuantFeedbackCandidate",
     "FactorQuantFeedbackHorizon",
     "FactorQuantFamilyReport",
+    "FactorRollingICPoint",
+    "FactorStabilityAnalyzer",
+    "FactorStabilityConfig",
+    "FactorSubperiodStability",
     "FamilyValidationReport",
     "FeedbackAwareMarketFeatureCandidateGenerator",
     "FinalStrategyFreezeResult",
@@ -267,6 +284,7 @@ __all__ = [
     "SQLiteSealedHoldoutStore",
     "SealedHoldoutEvaluator",
     "SealedHoldoutSpec",
+    "adjust_family_pvalues",
     "adjust_pvalues",
     "agent_market_result_from_dict",
     "deflated_sharpe_ratio",

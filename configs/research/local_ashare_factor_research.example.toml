@@ -3,8 +3,8 @@ mode = "deterministic"
 root = "D:/Data/A-Share"
 frozen_manifest = "data/manifests/local_ashare_daily.json"
 supplement_root = "reference_data/a_share"
-state_dir = ".finagent/local-ashare-factor-a2"
-report_path = "reports/local_ashare_factor_research_a2.json"
+state_dir = ".finagent/local-ashare-factor-a2p5"
+report_path = "reports/local_ashare_factor_research_a2p5.json"
 
 # The fixed candidate universe is selected using only data observed before development.
 universe_selection_date = 2017-12-29
@@ -45,6 +45,8 @@ policy_min_close = 1.0
 policy_min_median_amount_cny = 5000000.0
 policy_liquidity_lookback = 20
 policy_min_liquidity_observations = 10
+# Hidden pre-split history initializes rolling liquidity without exposing it as evidence.
+policy_liquidity_warmup_calendar_days = 120
 
 # Factor Quant v2 and deterministic ensemble selection.
 quantiles = 5
@@ -60,6 +62,21 @@ ensemble_min_abs_quality = 0.0
 ensemble_quality_power = 1.0
 sandbox_batch_size = 512
 smoke_lookback = 64
+
+# A2.5 stability and dependence-aware inference. These values are part of the report identity.
+stability_rolling_window = 63
+stability_rolling_step = 21
+stability_min_rolling_periods = 20
+stability_hac_lags = 5
+stability_bootstrap_samples = 500
+stability_bootstrap_block_length = 20
+stability_bootstrap_seed = 20260827
+
+# Research verdict. System completion remains separate and A2 is never promotion-eligible.
+verdict_min_validation_rank_icir = 0.0
+verdict_min_validation_long_short_sharpe = 0.0
+verdict_max_hac_pvalue = 0.05
+verdict_max_bootstrap_pvalue = 0.05
 
 # Used only when mode = "agent".
 task_id = "local-ashare-factor-a2"
