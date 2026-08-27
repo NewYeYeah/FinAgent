@@ -1,6 +1,6 @@
 # Testing and System Acceptance
 
-This is the canonical test guide. Tests verify implementation and research invariants; they do not prove alpha persistence.
+This is the canonical test guide. Tests verify implementation, data contracts and research invariants; they do not prove that an alpha will persist.
 
 ## 1. Release gate
 
@@ -16,21 +16,13 @@ package build
 pip dependency consistency
 ```
 
-## 2. Full regression
-
-### Ubuntu
+Ubuntu:
 
 ```bash
 ./scripts/finagent.sh python -m pytest -q
 ```
 
-On a clean shell without ROS contamination:
-
-```bash
-python -m pytest -q
-```
-
-### Windows PowerShell
+Windows PowerShell:
 
 ```powershell
 $env:PYTHONUTF8 = "1"
@@ -39,7 +31,7 @@ $env:PYTEST_DISABLE_PLUGIN_AUTOLOAD = "1"
 python -m pytest -q
 ```
 
-## 3. Static and packaging checks
+Static/package checks:
 
 ```bash
 ruff check src tests scripts --select E9,F63,F7,F82
@@ -49,7 +41,7 @@ python -m build
 python -m pip check
 ```
 
-## 4. Provider smoke tests
+## 2. Provider smoke tests
 
 LLM connectivity:
 
@@ -57,26 +49,26 @@ LLM connectivity:
 python scripts/smoke_llm_provider.py configs/llm.toml --profile deepseek_official_v4_pro
 ```
 
-US reference market data:
+US reference data:
 
 ```bash
 python scripts/pull_market_data.py configs/markets/us_etf_agent_data_alpaca.toml --show-capabilities
 python scripts/validate_market_data.py data/market/us_etf_alpaca
 ```
 
-For US historical research use Alpaca SIP. IEX is a smoke feed and may show single-exchange gaps.
+Use Alpaca SIP for US historical research. IEX is a single-exchange smoke feed and may have calendar gaps.
 
-## 5. Local A-share test sequence
+## 3. Local A-share test sequence
 
-The local A-share path has three different tests. Run them in order.
-
-### T-A0 — source certification
-
-Install:
+Install the local Parquet surface:
 
 ```bash
 python -m pip install -e ".[local-parquet]"
 ```
+
+Run T-A0 through T-A4 in order.
+
+### T-A0 — source certification
 
 Ubuntu:
 
@@ -98,21 +90,9 @@ python scripts/certify_local_ashare_data.py `
   --sample-date 2009-01-05
 ```
 
-Review the report rather than only the exit code. It should explicitly expose:
+Review the JSON, not only the exit code. It must expose schema, duplicates, invalid listing dates, incomplete status coverage, quarantined legacy codes, OHLC/adjustment quality, the 241-row minute convention and daily/minute unit reconciliation.
 
-- basic/daily schema;
-- duplicate securities/bars;
-- invalid/placeholder listing dates;
-- incomplete delisting/list-status coverage;
-- non-canonical/legacy vendor codes quarantined from the canonical universe;
-- OHLC validity;
-- strict no-trade/suspension placeholder rows;
-- positive adjustment factors;
-- 241-row minute convention;
-- daily/minute OHLC reconciliation;
-- daily lots/thousand-CNY vs minute shares/CNY reconciliation.
-
-The audited daily no-trade placeholder is narrowly defined as:
+The audited no-trade placeholder is narrowly defined as:
 
 ```text
 open = high = low = 0
@@ -120,13 +100,11 @@ close = pre_close > 0
 vol = amount = 0
 ```
 
-Such rows are retained in the immutable vendor source, reported as `LA-DAILY-07` warnings and excluded from `PriceBar` construction. Any other non-positive or OHLC-inconsistent row remains `LA-DAILY-03/04` error and must not be silently repaired.
+It remains in immutable vendor data, is reported as `LA-DAILY-07`, and is excluded from `PriceBar`. Any other non-positive or inconsistent OHLC remains an error.
 
-Warnings about incomplete security-master coverage are expected. Do not modify vendor Parquet to remove those warnings.
+### T-A1 — freeze the source identity
 
-### T-A1 — freeze the source used by research
-
-For the current daily research milestone:
+Ubuntu:
 
 ```bash
 python scripts/freeze_local_ashare_data.py \
@@ -144,132 +122,213 @@ python scripts/freeze_local_ashare_data.py `
   --output data\manifests\local_ashare_daily.json
 ```
 
-Default behavior computes content SHA-256 for `stock_basic_data.parquet` and `stock_daily.parquet`. Keep the generated manifest with the research run/evidence; the actual vendor data remains outside Git.
-
-Use `--fast` only for diagnostics. A fast manifest is based on file metadata and is weaker than a content-hashed research freeze.
-
-After freezing, this command should fail if a frozen file has been changed:
-
-```powershell
-python scripts/run_local_ashare_research_smoke.py `
-  configs\research\local_ashare_research_smoke.example.toml `
-  --verify-content
-```
+The default computes SHA-256 for `stock_basic_data.parquet` and `stock_daily.parquet`. Keep the manifest with every research report. Use `--fast` only for diagnostics.
 
 ### T-A2 — supplemental reference data
 
-Tracked templates live in:
-
-```text
-reference_data/a_share/
-```
-
-Validate them through the normal unit tests:
+Tracked source-bound templates live under `reference_data/a_share/`.
 
 ```bash
 python -m pytest -q tests/test_ashare_freeze_supplemental_v127.py
 ```
 
-Rules for adding a real row:
+Every real row must use a registered source, canonical `ts_code`, exact URL and timezone-aware `observed_at`. Partial files must remain marked `coverage = "partial"`.
 
-1. register/identify the source in `sources.toml`;
-2. use canonical six-digit `ts_code` plus `.SH/.SZ/.BJ`;
-3. record the exact announcement/reference URL;
-4. record `observed_at` as timezone-aware ISO-8601;
-5. never imply complete coverage when the source file is partial.
+### T-A3 — adapter/system smoke
 
-The supplemental `data_version` changes when any tracked source/data file changes.
-
-### T-A3 — local A-share system smoke
-
-Copy the example config and adjust paths/universe/windows:
+Copy and edit:
 
 ```text
 configs/research/local_ashare_research_smoke.example.toml
 ```
 
-Run:
+Ubuntu:
 
 ```bash
 python scripts/run_local_ashare_research_smoke.py \
-  configs/research/local_ashare_research_smoke.example.toml
+  configs/research/local_ashare_research_smoke.local.toml \
+  --verify-content
 ```
 
 Windows:
 
 ```powershell
 python scripts/run_local_ashare_research_smoke.py `
-  configs\research\local_ashare_research_smoke.example.toml
+  configs\research\local_ashare_research_smoke.local.toml `
+  --verify-content
 ```
 
-The test traverses:
+This verifies:
 
 ```text
-frozen Parquet identity
-→ supplemental reference store
-→ SupplementedAshareSecurityMaster
-→ LocalAshareParquetDataAdapter (daily)
-→ strict suspension/no-trade filtering
-→ DatasetRequest
-→ ResearchDataset / ResearchSplit
-→ PIT eligibility_mask
-→ lagged feature values
+frozen identity
+→ supplemental master
+→ DuckDB local adapter
+→ strict no-trade filtering
+→ ResearchDataset / eligibility_mask
+→ adjustment-aware lagged features
 → common-panel-session forward labels
-→ deterministic cross-sectional RankIC diagnostic
+→ deterministic RankIC diagnostic
 ```
 
-For daily A-share panels, `forward_*_h` is defined on the common panel session clock. If an asset has no tradable bar on the h-th later panel session, its forward label is `NaN`; the label must not jump to the first post-suspension trade and silently lengthen the horizon.
+`forward_*_h` uses the common panel session clock. If the asset is not tradable on the h-th later panel session, the label is `NaN`; it must not jump to the first post-suspension trade.
 
-The JSON report records:
+The RankIC here is a plumbing diagnostic, not promotion evidence.
 
-- frozen dataset version;
-- supplemental-data version and record counts;
-- security-master limitations;
-- research dataset digest;
-- universe/features/labels;
-- per-split timestamp count;
-- eligible cells;
-- primary feature/label coverage;
-- RankIC period count and diagnostic mean.
+### T-A4 — bounded Factor Quant acceptance (A2)
 
-Acceptance conditions:
+The A2 entry point is:
 
-- script exits 0;
-- no `+/-inf` appears in features or labels;
-- both splits satisfy configured minimum RankIC period count;
-- development/validation windows do not overlap;
-- `security_master.survivorship_certified == false` unless a future explicit certification mechanism changes that contract;
-- adapter `data_version` equals the frozen manifest version;
-- forward-label metadata records `common_panel_sessions`;
-- no realtime API or execution path is invoked.
+```text
+scripts/run_local_ashare_factor_research.py
+configs/research/local_ashare_factor_research.example.toml
+```
 
-RankIC from this script is **not** promotion evidence. It only proves that the real local data adapter can drive a cross-sectional numerical research panel.
+It performs historical daily factor research only. It does not invoke A-share execution, promotion, sealed holdout, PAPER, realtime or broker code.
 
-## 6. Local A-share CI coverage
+#### 3.4.1 Prepare a local config
 
-CI uses synthetic Parquet data; it does not have access to the user's multi-GB local dataset. The synthetic integration suite checks:
+Windows:
 
-- SSE/SZSE/BSE identity and leading zeros;
-- legacy/non-canonical vendor-code quarantine;
-- daily unit normalization;
-- adjustment-aware returns/labels;
-- strict suspension/no-trade placeholder classification;
-- common-session forward-label horizons across suspensions;
-- 241-row minute semantics;
-- supplemental-data parsing/versioning;
-- delisting overlay remains candidate-only;
-- frozen-manifest mutation detection;
-- full `run_local_ashare_research_smoke.py` execution against a temporary Parquet dataset;
-- Windows compatibility.
+```powershell
+Copy-Item `
+  configs\research\local_ashare_factor_research.example.toml `
+  configs\research\local_ashare_factor_research.local.toml
+```
 
-Run focused tests:
+Ubuntu:
+
+```bash
+cp configs/research/local_ashare_factor_research.example.toml \
+   configs/research/local_ashare_factor_research.local.toml
+```
+
+Edit at least:
+
+```toml
+root = "D:/Data/A-Share"
+frozen_manifest = "data/manifests/local_ashare_daily.json"
+supplement_root = "reference_data/a_share"
+state_dir = ".finagent/local-ashare-factor-a2"
+report_path = "reports/local_ashare_factor_research_a2.json"
+```
+
+The example fixes a candidate universe before development, uses 2018–2021 for development, 2022–2024 for validation, and leaves 2025 onward untouched.
+
+#### 3.4.2 Deterministic baseline
+
+Run the five predeclared factors first. This isolates the data/Factor Quant path from LLM availability.
+
+Windows:
+
+```powershell
+python scripts/run_local_ashare_factor_research.py `
+  configs\research\local_ashare_factor_research.local.toml `
+  --mode deterministic `
+  --verify-content
+```
+
+Ubuntu:
+
+```bash
+python scripts/run_local_ashare_factor_research.py \
+  configs/research/local_ashare_factor_research.local.toml \
+  --mode deterministic \
+  --verify-content
+```
+
+The command traverses:
+
+```text
+content-verified frozen Parquet
+→ fixed pre-development candidate universe
+→ per-session PIT universe policy
+→ panel-native generated-feature materialization
+→ Factor Quant v2 development diagnostics
+→ deterministic redundancy-aware factor selection
+→ frozen weights and development directions
+→ independent validation of every searched factor
+→ validation of the frozen factor ensemble
+→ untouched reserve record
+```
+
+The panel-native materializer reads each raw input panel once per candidate and slices causal windows in memory. It must not perform one DuckDB query per asset/session.
+
+Acceptance checks:
+
+- candidate universe meets configured minimum size;
+- candidate selection date precedes development;
+- development, validation and reserve do not overlap;
+- reserve remains `untouched`;
+- all generated factor digests are retained in both development and validation denominators;
+- validation does not change factor weights or directions;
+- Factor Quant reports contain finite IC/ICIR, quantile and turnover diagnostics;
+- no execution-cost or broker claim appears in the report;
+- report exits with `passed = true` even when factors have weak or negative performance.
+
+#### 3.4.3 Exact replay
+
+Replay uses the immutable generated-feature store and prior report. It does not call the LLM.
+
+Windows:
+
+```powershell
+python scripts/run_local_ashare_factor_research.py `
+  configs\research\local_ashare_factor_research.local.toml `
+  --frozen-report reports\local_ashare_factor_research_a2.json `
+  --assert-replay `
+  --verify-content `
+  --report reports\local_ashare_factor_research_a2_replay.json
+```
+
+Ubuntu:
+
+```bash
+python scripts/run_local_ashare_factor_research.py \
+  configs/research/local_ashare_factor_research.local.toml \
+  --frozen-report reports/local_ashare_factor_research_a2.json \
+  --assert-replay \
+  --verify-content \
+  --report reports/local_ashare_factor_research_a2_replay.json
+```
+
+The `acceptance_id`, candidate denominator, development report, frozen ensemble and validation report must match exactly.
+
+#### 3.4.4 Agent discovery
+
+Only after deterministic baseline and replay pass:
+
+```powershell
+python scripts/smoke_llm_provider.py configs\llm.toml --profile deepseek_official_v4_pro
+python scripts/run_local_ashare_factor_research.py `
+  configs\research\local_ashare_factor_research.local.toml `
+  --mode agent `
+  --llm-profile deepseek_official_v4_pro `
+  --verify-content `
+  --report reports\local_ashare_factor_research_a2_agent.json
+```
+
+Ubuntu uses the same arguments with `/` and `\` line continuations.
+
+Agent mode must satisfy:
+
+- at least two discovery rounds;
+- round 2 receives `DEVELOPMENT-ONLY FACTOR QUANT FEEDBACK V2`;
+- candidate digests/feature IDs are unique across rounds;
+- all adaptive candidates remain in the final denominator;
+- Agent feedback contains development metrics only;
+- validation, reserve, promotion, PAPER and live evidence are absent from Agent prompts;
+- frozen replay succeeds without another LLM request.
+
+#### 3.4.5 Focused CI tests
 
 ```bash
 python -m pytest -q \
   tests/test_local_ashare_data_layer_v126.py \
   tests/test_ashare_freeze_supplemental_v127.py \
   tests/test_ashare_legacy_anomaly_v127.py \
-  tests/test_ashare_suspension_session_semantics_v127.py
+  tests/test_ashare_suspension_session_semantics_v127.py \
+  tests/test_ashare_factor_acceptance_a2.py
 ```
 
 Windows:
@@ -279,64 +338,56 @@ python -m pytest -q `
   tests\test_local_ashare_data_layer_v126.py `
   tests\test_ashare_freeze_supplemental_v127.py `
   tests\test_ashare_legacy_anomaly_v127.py `
-  tests\test_ashare_suspension_session_semantics_v127.py
+  tests\test_ashare_suspension_session_semantics_v127.py `
+  tests\test_ashare_factor_acceptance_a2.py
 ```
 
-## 7. Agent research acceptance
+CI uses synthetic Parquet; the real multi-GB acceptance must still be run locally.
 
-Before a full Agent run:
+## 4. Interpretation boundary
 
-1. provider connectivity smoke passes;
-2. dataset/frozen identity verification passes;
-3. deterministic `ResearchDataset` construction passes;
-4. generated-feature sandbox tests pass.
-
-A frozen-family replay must be exact and must not call the LLM.
-
-Formal ensemble validation must retain the complete search denominator:
+A2 validates factor-level evidence:
 
 ```text
-K searched single factors + 1 frozen ensemble
+IC / RankIC / ICIR
+horizon decay
+quantile monotonicity and spread
+turnover proxy
+coverage
+factor-value redundancy
+frozen multi-factor ensemble
+independent validation and replay
 ```
 
-and use aligned outer windows for multiplicity/DSR/PBO/Reality Check evidence.
+It does not certify portfolio execution returns because A-share T+1, lot size, price limits, asymmetric fees and minimum commissions are not yet modeled in the A2 path.
 
-## 8. Current A-share boundary
+Do not send A2 results to sealed holdout, promotion or PAPER. A-share execution semantics are the next gate.
 
-The current acceptance explicitly does **not** require:
+## 5. Failure severity
 
-- realtime A-share feeds;
-- external A-share broker;
-- complete paid historical delisting/status products;
-- 1-minute execution backtesting.
+P0 — block the next milestone:
 
-Those remain deferred. Daily historical research reproducibility and data identity are the current gate.
-
-## 9. Failure severity
-
-P0 — block the next research milestone:
-
-- PIT/look-ahead violation;
-- split leakage;
-- frozen dataset identity mismatch;
-- wrong price/volume/amount unit;
-- wrong timezone/bar timestamp semantics;
-- suspension placeholders treated as tradable price bars;
-- forward label horizon stretching across a suspension;
-- denominator mutation;
+- PIT/look-ahead or split leakage;
+- frozen identity mismatch;
+- wrong units/timezone/timestamp semantics;
+- suspension placeholder treated as tradable;
+- forward horizon stretched across suspension;
+- candidate denominator, direction or weight mutation;
+- validation evidence entering Agent feedback;
+- reserve access;
 - replay failure;
-- invalid finite-value handling.
+- `+/-inf` in accepted evidence.
 
 P1 — record and continue when bounded:
 
 - incomplete supplemental status coverage;
-- provider/network instability on a secondary source;
-- large-panel memory/performance limits;
-- low-probability crash recovery windows.
+- candidate-only, non-survivorship-certified universe;
+- secondary provider instability;
+- large-panel performance limits;
+- low-probability crash-recovery windows.
 
 P2 — deployment hardening:
 
-- cryptographic/HSM-backed evidence sealing;
-- physical data isolation;
-- production external broker connectivity;
-- high-availability realtime feed/reconciliation infrastructure.
+- cryptographic/physical evidence isolation;
+- production realtime feeds and broker connectivity;
+- high-availability reconciliation infrastructure.
