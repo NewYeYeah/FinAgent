@@ -1,0 +1,2 @@
+vendor_ts_code,name,exchange,canonical_alias,status,source_id,source_url,observed_at,notes
+T00018.SH,上港集箱,SH,,legacy_noncanonical,tushare_issue_1683,https://github.com/waditu/tushare/issues/1683,2026-08-27T06:20:00Z,Historical vendor code retained as a separate legacy identity; do not auto-map to 600018.SH.
