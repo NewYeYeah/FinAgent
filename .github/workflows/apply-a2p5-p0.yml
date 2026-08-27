@@ -37,7 +37,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm tools/apply_a2p5_p0.py .github/workflows/apply-a2p5-p0.yml
+          git rm -f tools/apply_a2p5_p0.py .github/workflows/apply-a2p5-p0.yml
           git add src scripts docs
           git commit -m "research: complete A2.5 P0 correctness and stability"
           git push origin HEAD:a2p5-research-correctness-stability
