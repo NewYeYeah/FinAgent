@@ -1,0 +1,43 @@
+[local_ashare_research_smoke]
+# Copy this file locally and change only paths/universe/windows as needed.
+root = "D:/Data/A-Share"
+frozen_manifest = "data/manifests/local_ashare_daily.json"
+supplement_root = "reference_data/a_share"
+report_path = "reports/local_ashare_research_smoke.json"
+
+symbols = [
+  "000001.SZ",
+  "000333.SZ",
+  "000651.SZ",
+  "000858.SZ",
+  "002415.SZ",
+  "300750.SZ",
+  "600000.SH",
+  "600036.SH",
+  "600519.SH",
+  "600900.SH",
+  "601318.SH",
+  "601398.SH",
+  "601888.SH",
+  "603288.SH",
+  "688981.SH",
+]
+
+# Half-open local calendar dates: [start, end_exclusive).
+development_start = 2021-01-01
+development_end_exclusive = 2023-01-01
+validation_start = 2023-01-01
+validation_end_exclusive = 2025-01-01
+
+features = [
+  "simple_return_1",
+  "simple_return_5",
+  "log_volume_change_1",
+  "turnover_rate",
+  "circ_mv",
+]
+labels = ["forward_simple_return_1", "forward_simple_return_5"]
+primary_feature = "simple_return_5"
+primary_label = "forward_simple_return_1"
+min_cross_section = 5
+min_periods = 20

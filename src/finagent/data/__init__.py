@@ -1,4 +1,12 @@
 from .adapters import CSVPriceDataAdapter, InMemoryPriceDataAdapter, SQLitePriceDataAdapter
+from .ashare_supplemental import (
+    AshareDelistingRecord,
+    AshareReferenceSource,
+    AshareStatusPeriod,
+    AshareSupplementalDataStore,
+    AshareSuspensionPeriod,
+)
+from .ashare_supplemental_master import SupplementedAshareSecurityMaster
 from .ingestion import (
     AKSHARE_CAPABILITIES,
     ALPACA_CAPABILITIES,
@@ -43,6 +51,11 @@ from .local_ashare_certification import (
     LocalAshareCertificationReport,
     LocalAshareDatasetInspector,
 )
+from .local_ashare_freeze import (
+    FrozenLocalFile,
+    LocalAshareFrozenManifest,
+    create_local_ashare_frozen_manifest,
+)
 from .store import SQLitePriceStore
 
 __all__ = [
@@ -54,17 +67,24 @@ __all__ = [
     "AlpacaMarketDataIngestor",
     "AshareBarFrequency",
     "AshareBarRecord",
+    "AshareDelistingRecord",
     "AshareInstrumentRecord",
     "AshareIntradayTimestampConvention",
+    "AshareReferenceSource",
+    "AshareStatusPeriod",
+    "AshareSupplementalDataStore",
+    "AshareSuspensionPeriod",
     "CSVPriceDataAdapter",
     "ConfiguredMarketData",
     "DataFrequency",
+    "FrozenLocalFile",
     "HiThinkMarketDataIngestor",
     "InMemoryPriceDataAdapter",
     "LocalAshareCertificationIssue",
     "LocalAshareCertificationReport",
     "LocalAshareDatasetInspector",
     "LocalAshareDatasetLayout",
+    "LocalAshareFrozenManifest",
     "LocalAshareParquetDataAdapter",
     "LocalAshareSecurityMaster",
     "MarketDataManifest",
@@ -81,8 +101,10 @@ __all__ = [
     "ResearchDataRequirement",
     "SQLitePriceDataAdapter",
     "SQLitePriceStore",
+    "SupplementedAshareSecurityMaster",
     "TushareMarketDataIngestor",
     "compare_provider_records",
+    "create_local_ashare_frozen_manifest",
     "load_configured_market_data",
     "load_market_data_profile",
     "provider_capabilities",

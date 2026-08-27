@@ -2,6 +2,20 @@
 
 This file summarizes meaningful development milestones. Commit and pull-request history remains the detailed audit trail.
 
+## 2026-08-27 — A-share dataset freeze and supplemental reference layer
+
+- added content-addressed/metadata frozen manifests for local A-share vendor data;
+- added independently versioned supplemental delisting/ST/suspension files and source registry;
+- kept supplemental status data separate from immutable vendor Parquet;
+- added a historical-only local A-share system smoke through the canonical `ResearchDataset` interface;
+- documented Yahoo Finance as a secondary/reference option rather than replacing Alpaca SIP.
+
+## 2026-08-27 — Documentation consolidation
+
+- replaced phase/version document sprawl with `guides/`, `testing/`, `architecture/` and `development/`;
+- condensed active decisions, roadmap, changelog and risk register;
+- rewrote README for the current A-share historical-research-first baseline.
+
 ## 2026-08-27 — Local A-share data track
 
 - added DuckDB-backed local A-share Parquet data layer;
