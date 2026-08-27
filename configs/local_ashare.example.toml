@@ -1,0 +1,13 @@
+[local_ashare]
+# Windows example: "D:/Data/A-Share"
+# Ubuntu example: "/data/a-share"
+root = "D:/Data/A-Share"
+basic_filename = "stock_basic_data.parquet"
+daily_filename = "stock_daily.parquet"
+
+# The audited 1-minute convention contains 241 vendor rows:
+# 09:30 opening auction + 09:31-11:30 + 13:01-15:00.
+sample_frequency = "1min"
+sample_symbol = "000001.SZ"
+sample_date = 2009-01-05
+report_path = "reports/local_ashare_certification.json"
