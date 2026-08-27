@@ -43,14 +43,13 @@ from .local_ashare import (
     AshareInstrumentRecord,
     AshareIntradayTimestampConvention,
     LocalAshareDatasetLayout,
-    LocalAshareSecurityMaster,
 )
 from .local_ashare_adapter import LocalAshareParquetDataAdapter
 from .local_ashare_certification import (
     LocalAshareCertificationIssue,
     LocalAshareCertificationReport,
-    LocalAshareDatasetInspector,
 )
+from .local_ashare_compat import LocalAshareDatasetInspector, LocalAshareSecurityMaster
 from .local_ashare_freeze import (
     FrozenLocalFile,
     LocalAshareFrozenManifest,
