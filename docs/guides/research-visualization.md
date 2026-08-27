@@ -34,19 +34,30 @@ Seeing validation evidence and then changing a hypothesis requires a new Researc
 
 ## 2. Install
 
-Install the dashboard in the FinAgent environment:
+Install the dashboard in the **FinAgent environment**:
 
 ```bash
+conda activate finagent
 python -m pip install -e ".[visualization]"
 ```
 
 This installs Streamlit and Plotly. Phoenix remains a separate optional service. On Windows, run Phoenix in the dedicated Python 3.12+ environment documented in [Agent research](agent-research.md); FinAgent can remain on Python 3.11 and export traces through OTLP.
+
+Use two terminals when Phoenix is enabled:
+
+```text
+Terminal A: phoenix312 → phoenix serve
+Terminal B: finagent   → run_research_ui.py / research commands
+```
+
+Do not launch the Research UI from `phoenix312`. It may start if FinAgent was also installed there, but that mixes the visualization server with the Phoenix service environment and makes dependency/replay diagnosis less reliable.
 
 ## 3. Launch
 
 ### Windows PowerShell
 
 ```powershell
+conda activate finagent
 python scripts/run_research_ui.py `
   --report reports\local_ashare_factor_research_a2p5.json `
   --feature-store .finagent\local-ashare-factor-a2p5\generated_features.sqlite `
@@ -57,6 +68,7 @@ python scripts/run_research_ui.py `
 ### Ubuntu
 
 ```bash
+conda activate finagent
 python scripts/run_research_ui.py \
   --report reports/local_ashare_factor_research_a2p5.json \
   --feature-store .finagent/local-ashare-factor-a2p5/generated_features.sqlite \
@@ -76,8 +88,12 @@ Useful launcher options:
 --port 8501
 --address localhost
 --headless
+--enable-usage-stats
+--show-email-prompt
 --print-command
 ```
+
+The FinAgent launcher disables Streamlit's first-run email prompt and usage telemetry by default. The two opt-in switches above restore upstream Streamlit behavior when explicitly requested.
 
 A report can also be uploaded through the sidebar. Generated code and Agent trace inputs are optional; the numerical report views work without them.
 
@@ -161,7 +177,7 @@ conda activate phoenix312
 phoenix serve
 ```
 
-Run FinAgent with OTLP and JSONL enabled:
+Run FinAgent with OTLP and JSONL enabled in another terminal:
 
 ```powershell
 conda activate finagent
@@ -180,7 +196,9 @@ Run:
 
 ```bash
 python -m pip install -e ".[dev,visualization]"
-python -m pytest -q tests/test_research_visualization.py
+python -m pytest -q \
+  tests/test_research_visualization.py \
+  tests/test_research_ui_app.py
 ```
 
 Manual acceptance requires:
@@ -192,7 +210,8 @@ Manual acceptance requires:
 5. development and validation charts retain signed values;
 6. reserve status and `promotion_eligible=false` are visible;
 7. malformed/orphan JSONL records are reported as warnings;
-8. Phoenix remains optional and the dashboard works with report JSON alone.
+8. Phoenix remains optional and the dashboard works with report JSON alone;
+9. the launcher command contains `--server.showEmailPrompt false` and `--browser.gatherUsageStats false` unless explicitly opted in.
 
 ## 7. Troubleshooting
 
@@ -202,11 +221,20 @@ Manual acceptance requires:
 RuntimeError: Streamlit is not installed
 ```
 
-Install:
+Install in the FinAgent environment:
 
 ```bash
+conda activate finagent
 python -m pip install -e ".[visualization]"
 ```
+
+### `Failed to fetch metrics URL`
+
+This is an upstream Streamlit first-run telemetry/onboarding request, not a FinAgent report or Phoenix failure. If the log later states that the server started on `localhost:8501`, the dashboard is running. Current FinAgent launcher defaults prevent the request; update `main` and launch again from the `finagent` environment.
+
+### Streamlit skills / Windows symlink warning
+
+`streamlit skills` installs optional AI-agent development guidance. It is unrelated to FinAgent runtime behavior. Windows may fall back to a global installation when project symlinks are unavailable. The dashboard does not require these skills.
 
 ### Report is rejected
 

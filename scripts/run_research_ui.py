@@ -31,6 +31,16 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--port", type=int, default=8501)
     parser.add_argument("--address", default="localhost")
     parser.add_argument("--headless", action="store_true")
+    parser.add_argument(
+        "--enable-usage-stats",
+        action="store_true",
+        help="opt in to Streamlit usage telemetry; disabled by default",
+    )
+    parser.add_argument(
+        "--show-email-prompt",
+        action="store_true",
+        help="show Streamlit's first-run email prompt; disabled by default",
+    )
     parser.add_argument("--print-command", action="store_true")
     return parser
 
@@ -52,6 +62,8 @@ def main() -> int:
         os.environ["FINAGENT_AGENT_TRACE_JSONL"] = str(args.trace.expanduser())
     os.environ["FINAGENT_PHOENIX_URL"] = str(args.phoenix_url)
 
+    usage_stats = "true" if args.enable_usage_stats else "false"
+    show_email_prompt = "true" if args.show_email_prompt else "false"
     command = [
         sys.executable,
         "-m",
@@ -64,11 +76,19 @@ def main() -> int:
         str(args.port),
         "--server.headless",
         "true" if args.headless else "false",
+        "--server.showEmailPrompt",
+        show_email_prompt,
+        "--browser.gatherUsageStats",
+        usage_stats,
     ]
     if args.print_command:
         print(" ".join(command))
         return 0
-    completed = subprocess.run(command, cwd=ROOT, check=False)
+
+    environment = os.environ.copy()
+    environment["STREAMLIT_SERVER_SHOW_EMAIL_PROMPT"] = show_email_prompt
+    environment["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = usage_stats
+    completed = subprocess.run(command, cwd=ROOT, env=environment, check=False)
     return int(completed.returncode)
 
 

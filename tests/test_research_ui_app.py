@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -39,3 +41,20 @@ def test_streamlit_app_renders_the_default_research_page(
     metric_labels = {metric.label for metric in app.metric}
     assert {"System", "Research", "Candidates", "Reserve"}.issubset(metric_labels)
     assert any("never mutates" in warning.value.lower() for warning in app.sidebar.warning)
+
+
+def test_launcher_disables_streamlit_onboarding_and_usage_stats_by_default() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "run_research_ui.py"),
+            "--print-command",
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "--server.showEmailPrompt false" in completed.stdout
+    assert "--browser.gatherUsageStats false" in completed.stdout
