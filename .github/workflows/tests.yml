@@ -93,13 +93,18 @@ jobs:
             src/finagent/data/local_ashare_freeze.py \
             src/finagent/data/ashare_supplemental.py \
             src/finagent/data/ashare_supplemental_master.py \
+            src/finagent/research/ashare_universe.py \
+            src/finagent/research/panel_feature_materializer.py \
+            src/finagent/research/ashare_factor_acceptance.py \
             tests/test_local_ashare_data_layer_v126.py \
             tests/test_ashare_freeze_supplemental_v127.py \
             tests/test_ashare_legacy_anomaly_v127.py \
             tests/test_ashare_suspension_session_semantics_v127.py \
+            tests/test_ashare_factor_acceptance_a2.py \
             scripts/certify_local_ashare_data.py \
             scripts/freeze_local_ashare_data.py \
             scripts/run_local_ashare_research_smoke.py \
+            scripts/run_local_ashare_factor_research.py \
             --select E4,E7,E9,F
       - name: Agent real-market 1.2/1.2.1 surface lint
         run: |
@@ -123,6 +128,9 @@ jobs:
             src/finagent/models/alpha/generated.py \
             src/finagent/research/agent_market.py \
             src/finagent/research/market_validation.py \
+            src/finagent/research/ashare_universe.py \
+            src/finagent/research/panel_feature_materializer.py \
+            src/finagent/research/ashare_factor_acceptance.py \
             src/finagent/services/portfolio.py \
             src/finagent/data/ingestion \
             src/finagent/data/local_ashare_freeze.py \
