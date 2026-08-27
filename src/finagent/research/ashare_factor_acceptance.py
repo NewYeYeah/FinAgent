@@ -27,6 +27,12 @@ from .factor_quant import (
     FactorQuantCandidateReport,
     FactorQuantFamilyReport,
 )
+from .factor_stability import (
+    FactorCandidateStabilityReport,
+    FactorFamilyStabilityReport,
+    FactorStabilityAnalyzer,
+    FactorStabilityConfig,
+)
 
 
 def _canonical_json(payload: object) -> str:
@@ -143,12 +149,17 @@ class AshareFrozenFactorEnsemble:
 @dataclass(frozen=True, slots=True)
 class AshareFactorValidationComparison:
     best_single_feature_digest: str
+    best_single_direction: int
+    best_single_raw_rank_icir: float
     best_single_rank_icir: float
     ensemble_rank_icir: float
     ensemble_minus_best_single_rank_icir: float
+    absolute_rank_icir_magnitude_delta: float
+    best_single_raw_long_short_sharpe: float
     best_single_long_short_sharpe: float
     ensemble_long_short_sharpe: float
     ensemble_minus_best_single_long_short_sharpe: float
+    absolute_long_short_sharpe_magnitude_delta: float
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -156,13 +167,19 @@ class AshareFactorValidationComparison:
             "best_single_feature_digest",
             require_non_empty(self.best_single_feature_digest, "best_single_feature_digest"),
         )
+        if self.best_single_direction not in {-1, 1}:
+            raise ValueError("best_single_direction must be -1 or 1")
         values = (
+            self.best_single_raw_rank_icir,
             self.best_single_rank_icir,
             self.ensemble_rank_icir,
             self.ensemble_minus_best_single_rank_icir,
+            self.absolute_rank_icir_magnitude_delta,
+            self.best_single_raw_long_short_sharpe,
             self.best_single_long_short_sharpe,
             self.ensemble_long_short_sharpe,
             self.ensemble_minus_best_single_long_short_sharpe,
+            self.absolute_long_short_sharpe_magnitude_delta,
         )
         if not all(math.isfinite(value) for value in values):
             raise ValueError("validation comparison metrics must be finite")
@@ -170,14 +187,78 @@ class AshareFactorValidationComparison:
     def to_dict(self) -> dict[str, object]:
         return {
             "best_single_feature_digest": self.best_single_feature_digest,
+            "best_single_direction": self.best_single_direction,
+            "best_single_raw_rank_icir": self.best_single_raw_rank_icir,
             "best_single_rank_icir": self.best_single_rank_icir,
             "ensemble_rank_icir": self.ensemble_rank_icir,
             "ensemble_minus_best_single_rank_icir": self.ensemble_minus_best_single_rank_icir,
+            "absolute_rank_icir_magnitude_delta": self.absolute_rank_icir_magnitude_delta,
+            "best_single_raw_long_short_sharpe": self.best_single_raw_long_short_sharpe,
             "best_single_long_short_sharpe": self.best_single_long_short_sharpe,
             "ensemble_long_short_sharpe": self.ensemble_long_short_sharpe,
-            "ensemble_minus_best_single_long_short_sharpe": (
-                self.ensemble_minus_best_single_long_short_sharpe
-            ),
+            "ensemble_minus_best_single_long_short_sharpe": self.ensemble_minus_best_single_long_short_sharpe,
+            "absolute_long_short_sharpe_magnitude_delta": self.absolute_long_short_sharpe_magnitude_delta,
+            "comparison_semantics": "development-frozen direction; signed deltas",
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class AshareResearchVerdictPolicy:
+    min_validation_rank_icir: float = 0.0
+    min_validation_long_short_sharpe: float = 0.0
+    max_hac_pvalue: float = 0.05
+    max_bootstrap_pvalue: float = 0.05
+
+    def __post_init__(self) -> None:
+        values = (
+            self.min_validation_rank_icir,
+            self.min_validation_long_short_sharpe,
+            self.max_hac_pvalue,
+            self.max_bootstrap_pvalue,
+        )
+        if not all(math.isfinite(value) for value in values):
+            raise ValueError("research verdict policy must be finite")
+        if not 0.0 <= self.max_hac_pvalue <= 1.0:
+            raise ValueError("max_hac_pvalue must be in [0, 1]")
+        if not 0.0 <= self.max_bootstrap_pvalue <= 1.0:
+            raise ValueError("max_bootstrap_pvalue must be in [0, 1]")
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "min_validation_rank_icir": self.min_validation_rank_icir,
+            "min_validation_long_short_sharpe": self.min_validation_long_short_sharpe,
+            "max_hac_pvalue": self.max_hac_pvalue,
+            "max_bootstrap_pvalue": self.max_bootstrap_pvalue,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class AshareResearchOutcome:
+    status: str
+    ensemble_validation_passed: bool
+    promotion_eligible: bool
+    reason_codes: tuple[str, ...]
+    policy: AshareResearchVerdictPolicy
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "status", require_non_empty(self.status, "status"))
+        if not self.reason_codes:
+            raise ValueError("research outcome requires reason codes")
+        object.__setattr__(
+            self,
+            "reason_codes",
+            tuple(require_non_empty(value, "reason code") for value in self.reason_codes),
+        )
+        if self.promotion_eligible:
+            raise ValueError("A2 cannot be promotion eligible before A-share execution certification")
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "status": self.status,
+            "ensemble_validation_passed": self.ensemble_validation_passed,
+            "promotion_eligible": self.promotion_eligible,
+            "reason_codes": list(self.reason_codes),
+            "policy": self.policy.to_dict(),
         }
 
 
@@ -193,6 +274,10 @@ class AshareFactorResearchAcceptanceResult:
     validation_report: FactorQuantFamilyReport
     validation_ensemble: FactorQuantCandidateReport
     validation_comparison: AshareFactorValidationComparison
+    development_stability: FactorFamilyStabilityReport
+    validation_stability: FactorFamilyStabilityReport
+    validation_ensemble_stability: FactorCandidateStabilityReport
+    research_outcome: AshareResearchOutcome
     reserve_start: str
     reserve_end: str
     discovery: Mapping[str, object] | None = None
@@ -218,6 +303,12 @@ class AshareFactorResearchAcceptanceResult:
             raise ValueError("frozen ensemble references a candidate outside the search denominator")
         if self.validation_ensemble.feature_digest != self.frozen_ensemble.ensemble_id:
             raise ValueError("validation ensemble identity differs from frozen ensemble")
+        if {candidate.feature_digest for candidate in self.development_stability.candidates} != candidate_digests:
+            raise ValueError("development stability denominator differs from candidates")
+        if {candidate.feature_digest for candidate in self.validation_stability.candidates} != candidate_digests:
+            raise ValueError("validation stability denominator differs from candidates")
+        if self.validation_ensemble_stability.feature_digest != self.frozen_ensemble.ensemble_id:
+            raise ValueError("ensemble stability identity differs from frozen ensemble")
         object.__setattr__(
             self,
             "discovery",
@@ -237,12 +328,16 @@ class AshareFactorResearchAcceptanceResult:
         include_mode: bool = True,
     ) -> dict[str, object]:
         payload: dict[str, object] = {
-            "schema_version": "finagent.ashare-factor-research-acceptance.v1",
+            "schema_version": "finagent.ashare-factor-research-acceptance.v2",
             "scope": (
                 "bounded historical daily factor research only; no A-share execution, "
                 "promotion, sealed holdout, paper or realtime claim"
             ),
+            # Backward-compatible system-completion alias. Research validity is
+            # reported separately and can fail while the workflow succeeds.
             "passed": True,
+            "system_acceptance": {"passed": True, "status": "PASS"},
+            "research_outcome": self.research_outcome.to_dict(),
             "data_version": self.data_version,
             "candidate_universe": self.candidate_universe.to_dict(),
             "universe_policy": self.universe_policy.to_dict(),
@@ -262,6 +357,9 @@ class AshareFactorResearchAcceptanceResult:
             "validation_report": self.validation_report.to_dict(),
             "validation_ensemble": self.validation_ensemble.to_dict(),
             "validation_comparison": self.validation_comparison.to_dict(),
+            "development_stability": self.development_stability.to_dict(),
+            "validation_stability": self.validation_stability.to_dict(),
+            "validation_ensemble_stability": self.validation_ensemble_stability.to_dict(),
             "reserve": {
                 "start": self.reserve_start,
                 "end": self.reserve_end,
@@ -294,6 +392,8 @@ class AshareFactorResearchAcceptanceEngine:
         development_analyzer: FactorQuantAnalyzer,
         validation_analyzer: FactorQuantAnalyzer,
         selector: FactorEnsembleSelector,
+        stability_config: FactorStabilityConfig = FactorStabilityConfig(),
+        verdict_policy: AshareResearchVerdictPolicy = AshareResearchVerdictPolicy(),
     ) -> None:
         if development_analyzer.config.split_name == validation_analyzer.config.split_name:
             raise ValueError("development and validation analyzers must use different splits")
@@ -302,6 +402,13 @@ class AshareFactorResearchAcceptanceEngine:
         self.development_analyzer = development_analyzer
         self.validation_analyzer = validation_analyzer
         self.selector = selector
+        self.development_stability_analyzer = FactorStabilityAnalyzer(
+            development_analyzer, config=stability_config
+        )
+        self.validation_stability_analyzer = FactorStabilityAnalyzer(
+            validation_analyzer, config=stability_config
+        )
+        self.verdict_policy = verdict_policy
 
     def _ensemble_panel(
         self,
@@ -404,33 +511,77 @@ class AshareFactorResearchAcceptanceEngine:
         )
 
     @staticmethod
+    def _development_direction(candidate: FactorQuantCandidateReport) -> int:
+        metric = candidate.primary.rank_ic
+        if abs(metric) <= 1e-15:
+            metric = candidate.primary.pearson_ic
+        return 1 if metric >= 0 else -1
+
+    @classmethod
     def _comparison(
+        cls,
+        development: FactorQuantFamilyReport,
         validation: FactorQuantFamilyReport,
         ensemble: FactorQuantCandidateReport,
     ) -> AshareFactorValidationComparison:
-        best = max(
-            validation.candidates,
-            key=lambda candidate: (
-                abs(candidate.primary.rank_icir),
-                candidate.feature_digest,
-            ),
+        oriented: list[tuple[float, str, int, FactorQuantCandidateReport]] = []
+        for candidate in validation.candidates:
+            direction = cls._development_direction(development.candidate(candidate.feature_digest))
+            oriented.append(
+                (
+                    direction * candidate.primary.rank_icir,
+                    candidate.feature_digest,
+                    direction,
+                    candidate,
+                )
+            )
+        best_oriented_rank_icir, _, direction, best = max(
+            oriented,
+            key=lambda value: (value[0], value[1]),
         )
+        raw_best_rank_icir = best.primary.rank_icir
+        raw_best_sharpe = best.quantile_diagnostics.long_short_sharpe
+        oriented_best_sharpe = direction * raw_best_sharpe
         ensemble_rank_icir = ensemble.primary.rank_icir
-        best_rank_icir = best.primary.rank_icir
         ensemble_sharpe = ensemble.quantile_diagnostics.long_short_sharpe
-        best_sharpe = best.quantile_diagnostics.long_short_sharpe
         return AshareFactorValidationComparison(
             best_single_feature_digest=best.feature_digest,
-            best_single_rank_icir=best_rank_icir,
+            best_single_direction=direction,
+            best_single_raw_rank_icir=raw_best_rank_icir,
+            best_single_rank_icir=best_oriented_rank_icir,
             ensemble_rank_icir=ensemble_rank_icir,
-            ensemble_minus_best_single_rank_icir=(
-                abs(ensemble_rank_icir) - abs(best_rank_icir)
-            ),
-            best_single_long_short_sharpe=best_sharpe,
+            ensemble_minus_best_single_rank_icir=ensemble_rank_icir - best_oriented_rank_icir,
+            absolute_rank_icir_magnitude_delta=abs(ensemble_rank_icir) - abs(best_oriented_rank_icir),
+            best_single_raw_long_short_sharpe=raw_best_sharpe,
+            best_single_long_short_sharpe=oriented_best_sharpe,
             ensemble_long_short_sharpe=ensemble_sharpe,
-            ensemble_minus_best_single_long_short_sharpe=(
-                abs(ensemble_sharpe) - abs(best_sharpe)
-            ),
+            ensemble_minus_best_single_long_short_sharpe=ensemble_sharpe - oriented_best_sharpe,
+            absolute_long_short_sharpe_magnitude_delta=abs(ensemble_sharpe) - abs(oriented_best_sharpe),
+        )
+
+    def _research_outcome(
+        self,
+        ensemble: FactorQuantCandidateReport,
+        stability: FactorCandidateStabilityReport,
+    ) -> AshareResearchOutcome:
+        policy = self.verdict_policy
+        reasons: list[str] = []
+        if ensemble.primary.rank_icir <= policy.min_validation_rank_icir:
+            reasons.append("ENSEMBLE_RANK_ICIR_BELOW_THRESHOLD")
+        if ensemble.quantile_diagnostics.long_short_sharpe <= policy.min_validation_long_short_sharpe:
+            reasons.append("ENSEMBLE_LONG_SHORT_SHARPE_BELOW_THRESHOLD")
+        if stability.hac_pvalue > policy.max_hac_pvalue:
+            reasons.append("ENSEMBLE_HAC_NOT_SIGNIFICANT")
+        if stability.bootstrap_pvalue > policy.max_bootstrap_pvalue:
+            reasons.append("ENSEMBLE_BLOCK_BOOTSTRAP_NOT_SIGNIFICANT")
+        passed = not reasons
+        reasons.append("A_SHARE_EXECUTION_NOT_CERTIFIED")
+        return AshareResearchOutcome(
+            status=("ENSEMBLE_VALIDATION_PASSED_UNCONFIRMED" if passed else "ENSEMBLE_VALIDATION_FAILED"),
+            ensemble_validation_passed=passed,
+            promotion_eligible=False,
+            reason_codes=tuple(reasons),
+            policy=policy,
         )
 
     def run(
@@ -472,13 +623,25 @@ class AshareFactorResearchAcceptanceEngine:
             development_report,
             selection,
         )
+        development_stability = self.development_stability_analyzer.analyze(
+            artifacts, request=development_request
+        )
         validation_report = self.validation_analyzer.analyze(
             artifacts,
             request=validation_request,
         )
+        validation_stability = self.validation_stability_analyzer.analyze(
+            artifacts, request=validation_request
+        )
         panel = self._ensemble_panel(artifacts, frozen, validation_request)
         ensemble = self._ensemble_report(panel, frozen)
-        comparison = self._comparison(validation_report, ensemble)
+        ensemble_stability = self.validation_stability_analyzer.analyze_panel(
+            feature_id=ensemble.feature_id,
+            feature_digest=ensemble.feature_digest,
+            panel=panel,
+        )
+        comparison = self._comparison(development_report, validation_report, ensemble)
+        research_outcome = self._research_outcome(ensemble, ensemble_stability)
         return AshareFactorResearchAcceptanceResult(
             mode=mode,
             data_version=self.development_analyzer.adapter.data_version,
@@ -490,6 +653,10 @@ class AshareFactorResearchAcceptanceEngine:
             validation_report=validation_report,
             validation_ensemble=ensemble,
             validation_comparison=comparison,
+            development_stability=development_stability,
+            validation_stability=validation_stability,
+            validation_ensemble_stability=ensemble_stability,
+            research_outcome=research_outcome,
             reserve_start=reserve_start,
             reserve_end=reserve_end,
             discovery=discovery,

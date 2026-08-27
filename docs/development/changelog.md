@@ -2,6 +2,15 @@
 
 This file summarizes meaningful development milestones. Commit and pull-request history remains the detailed audit trail.
 
+
+## 2026-08-27 — A2.5 research correctness and stability
+
+- added split-independent liquidity warm-up to remove artificial zero-eligible split starts;
+- separated workflow completion from the factor research verdict;
+- changed validation comparisons to development-frozen direction and signed deltas;
+- added rolling/yearly RankIC stability, HAC inference, deterministic block bootstrap and family-wise Holm/BH adjustments;
+- kept the A-share ensemble ineligible for promotion until execution semantics are certified.
+
 ## 2026-08-27 — Agent generation robustness and observability
 
 - hardened DeepSeek/OpenAI-compatible calls with termination telemetry and bounded provider retries;

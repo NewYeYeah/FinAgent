@@ -21,13 +21,13 @@ Completed core capabilities:
 
 ## Current priority order
 
-### P0 — A2 real-data acceptance
+### P0 — A2.5 research correctness and stability
 
-1. Run the deterministic 100–200 stock A2 baseline on the frozen local dataset.
-2. Confirm exact replay and record performance/memory observations.
-3. Run at least two Agent Factor Quant discovery rounds using development-only feedback.
-4. Preserve the complete adaptive candidate denominator and validate frozen ensemble factors on 2022–2024.
-5. Keep the 2025+ reserve untouched.
+1. Use pre-split warm-up data for rolling universe filters; split starts must not create artificial zero-eligible sessions.
+2. Keep system completion separate from the research verdict and report validation comparisons with development-frozen direction.
+3. Report rolling/yearly RankIC stability, sign consistency, quantile monotonicity, coverage and turnover stability.
+4. Use HAC and deterministic block-bootstrap inference, with Holm and BH adjustments over the complete candidate family.
+5. Keep the 2025+ reserve untouched and do not promote A-share factors before A3 execution semantics.
 
 ### P1 — A3 A-share execution semantics
 

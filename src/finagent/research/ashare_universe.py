@@ -5,7 +5,7 @@ import json
 import math
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from types import MappingProxyType
 
 import numpy as np
@@ -17,7 +17,7 @@ from finagent.data.local_ashare import (
 )
 from finagent.domain._validation import require_aware_datetime, require_non_empty
 from finagent.domain.assets import AssetId
-from finagent.domain.research import DatasetRequest
+from finagent.domain.research import DatasetRequest, TimeRange
 from finagent.domain.universe import UniverseSnapshot
 
 
@@ -198,6 +198,7 @@ class AshareResearchUniversePolicyConfig:
     min_median_amount_cny: float = 5_000_000.0
     liquidity_lookback: int = 20
     min_liquidity_observations: int = 10
+    liquidity_warmup_calendar_days: int = 120
 
     def __post_init__(self) -> None:
         if self.min_listed_days < 0 or self.min_close <= 0 or self.min_median_amount_cny < 0:
@@ -206,6 +207,8 @@ class AshareResearchUniversePolicyConfig:
             raise ValueError("liquidity_lookback must be >= 1")
         if not 1 <= self.min_liquidity_observations <= self.liquidity_lookback:
             raise ValueError("min_liquidity_observations must be in [1, liquidity_lookback]")
+        if self.liquidity_warmup_calendar_days < 1:
+            raise ValueError("liquidity_warmup_calendar_days must be >= 1")
 
     @property
     def required_features(self) -> tuple[str, ...]:
@@ -220,6 +223,8 @@ class AshareUniverseSplitSummary:
     split_name: str
     timestamps: int
     assets: int
+    warmup_timestamps: int
+    first_session_eligible_assets: int
     eligible_cells: int
     average_eligible_assets: float
     minimum_eligible_assets: int
@@ -239,6 +244,8 @@ class AshareUniverseSplitSummary:
             "split_name": self.split_name,
             "timestamps": self.timestamps,
             "assets": self.assets,
+            "warmup_timestamps": self.warmup_timestamps,
+            "first_session_eligible_assets": self.first_session_eligible_assets,
             "eligible_cells": self.eligible_cells,
             "average_eligible_assets": self.average_eligible_assets,
             "minimum_eligible_assets": self.minimum_eligible_assets,
@@ -282,6 +289,9 @@ class AshareResearchUniverseReport:
                 "min_median_amount_cny": self.config.min_median_amount_cny,
                 "liquidity_lookback": self.config.liquidity_lookback,
                 "min_liquidity_observations": self.config.min_liquidity_observations,
+                "liquidity_warmup_calendar_days": (
+                    self.config.liquidity_warmup_calendar_days
+                ),
             },
             "splits": {key: value.to_dict() for key, value in self.splits.items()},
         }
@@ -329,6 +339,14 @@ class AshareResearchUniverseProvider:
 
 
 class AshareResearchUniversePolicy:
+    """Build a PIT research universe with split-independent rolling liquidity.
+
+    Every requested split receives a hidden pre-split panel. The warm-up panel is
+    used only to initialize trailing liquidity and is never returned as a research
+    split or exposed as validation evidence. This prevents split boundaries from
+    manufacturing zero-eligible sessions.
+    """
+
     def __init__(self, config: AshareResearchUniversePolicyConfig) -> None:
         self.config = config
 
@@ -342,16 +360,30 @@ class AshareResearchUniversePolicy:
         missing = set(self.config.required_features) - set(adapter.supported_features)
         if missing:
             raise ValueError(f"local A-share adapter lacks universe-policy fields: {sorted(missing)}")
+
+        policy_splits: dict[str, TimeRange] = {}
+        warmup_names: dict[str, str] = {}
+        for split_name, split_range in request.splits.items():
+            warmup_name = f"__warmup__:{split_name}"
+            if warmup_name in request.splits:
+                raise ValueError(f"reserved universe-policy split name: {warmup_name!r}")
+            warmup_names[split_name] = warmup_name
+            policy_splits[warmup_name] = TimeRange(
+                split_range.start - timedelta(days=self.config.liquidity_warmup_calendar_days),
+                split_range.start,
+            )
+            policy_splits[split_name] = split_range
+
         policy_request = DatasetRequest(
             universe=request.universe,
             features=self.config.required_features,
             labels=request.labels,
-            splits=request.splits,
+            splits=policy_splits,
             dataset_id=f"{request.dataset_id}-universe-policy",
             metadata={
                 **dict(request.metadata),
                 "candidate_selection_id": candidate_selection_id,
-                "purpose": "A-share PIT research universe policy",
+                "purpose": "A-share PIT research universe policy with split warm-up",
             },
         )
         dataset = adapter.build_dataset(policy_request)
@@ -369,15 +401,23 @@ class AshareResearchUniversePolicy:
                     "min_median_amount_cny": self.config.min_median_amount_cny,
                     "liquidity_lookback": self.config.liquidity_lookback,
                     "min_liquidity_observations": self.config.min_liquidity_observations,
+                    "liquidity_warmup_calendar_days": (
+                        self.config.liquidity_warmup_calendar_days
+                    ),
                 }
             ).encode()
         )
 
         for split_name in request.splits:
             panel = dataset.get_split(split_name)
+            warmup = dataset.get_split(warmup_names[split_name])
+            if warmup.assets != panel.assets or warmup.feature_names != panel.feature_names:
+                raise ValueError("universe-policy warm-up panel is not aligned")
+
             base = np.asarray(panel.eligibility_mask, dtype=bool)
             close = panel.feature_panel("close")
             amount = panel.feature_panel("amount")
+            warmup_amount = warmup.feature_panel("amount")
             listed_days = panel.feature_panel("listed_days")
             st = panel.feature_panel("is_st") if self.config.exclude_st else None
 
@@ -386,10 +426,14 @@ class AshareResearchUniversePolicy:
             st_ok = np.ones_like(base, dtype=bool)
             if st is not None:
                 st_ok = np.isfinite(st) & (st <= 0.0)
+
+            amount_history = np.concatenate((warmup_amount, amount), axis=0)
+            offset = warmup.n_times
             liquidity_ok = np.zeros_like(base, dtype=bool)
             for row in range(panel.n_times):
-                start = max(0, row - self.config.liquidity_lookback + 1)
-                window = amount[start : row + 1]
+                history_end = offset + row + 1
+                history_start = max(0, history_end - self.config.liquidity_lookback)
+                window = amount_history[history_start:history_end]
                 for asset_index in range(panel.n_assets):
                     values = window[:, asset_index]
                     values = values[np.isfinite(values)]
@@ -412,6 +456,8 @@ class AshareResearchUniversePolicy:
                 split_name=split_name,
                 timestamps=panel.n_times,
                 assets=panel.n_assets,
+                warmup_timestamps=warmup.n_times,
+                first_session_eligible_assets=int(counts[0]),
                 eligible_cells=int(final.sum()),
                 average_eligible_assets=float(np.mean(counts)),
                 minimum_eligible_assets=int(np.min(counts)),
@@ -425,6 +471,7 @@ class AshareResearchUniversePolicy:
                     if final[row, asset_index]
                 )
             digest.update(split_name.encode())
+            digest.update(str(warmup.n_times).encode())
             digest.update("|".join(timestamp.isoformat() for timestamp in panel.timestamps).encode())
             digest.update(final.tobytes(order="C"))
 
@@ -435,7 +482,4 @@ class AshareResearchUniversePolicy:
             config=self.config,
             splits=summaries,
         )
-        return (
-            AshareResearchUniverseProvider(schedule, data_version=data_version),
-            report,
-        )
+        return AshareResearchUniverseProvider(schedule, data_version=data_version), report

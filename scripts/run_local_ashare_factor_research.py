@@ -348,6 +348,9 @@ def main() -> int:
             min_liquidity_observations=int(
                 values.get("policy_min_liquidity_observations", 10)
             ),
+            liquidity_warmup_calendar_days=int(
+                values.get("policy_liquidity_warmup_calendar_days", 120)
+            ),
         )
     ).build(
         adapter,
