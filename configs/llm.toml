@@ -11,12 +11,20 @@ model = "deepseek-v4-pro"
 secret_id = "deepseek_official"
 thinking = true
 reasoning_effort = "high"
+# V4-Pro high-thinking calls can be long. These are transport/provider retries only;
+# generated-code conformance repair is configured separately by the A2 research job.
+max_attempts = 3
+retry_backoff_seconds = 1.0
+timeout_seconds = 900.0
 
 [llm.profiles.siliconflow_deepseek_v4_pro]
 provider = "siliconflow"
 base_url = "https://api.siliconflow.cn/v1"
 model = "deepseek-ai/DeepSeek-V4-Pro"
 secret_id = "siliconflow"
+max_attempts = 3
+retry_backoff_seconds = 1.0
+timeout_seconds = 900.0
 
 [llm.profiles.openai]
 provider = "openai"
