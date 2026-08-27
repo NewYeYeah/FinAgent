@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import threading
 import uuid
 from contextlib import contextmanager
@@ -12,6 +13,8 @@ from typing import Iterator, Mapping
 
 
 _CURRENT_SPAN: ContextVar[str | None] = ContextVar("finagent_agent_span", default=None)
+_DEFAULT_TRACER: AgentTracer | None = None
+_DEFAULT_LOCK = threading.Lock()
 
 
 def _safe_attribute(value: object) -> str | bool | int | float:
@@ -23,6 +26,13 @@ def _safe_attribute(value: object) -> str | bool | int | float:
 def _trim(value: object, limit: int) -> str:
     text = str(value)
     return text if len(text) <= limit else text[:limit] + "…"
+
+
+def _env_bool(name: str, default: bool = False) -> bool:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,6 +55,29 @@ class AgentObservabilityConfig:
         if not self.project_name.strip():
             raise ValueError("project_name cannot be empty")
 
+    @classmethod
+    def from_env(cls) -> AgentObservabilityConfig:
+        return cls(
+            enabled=_env_bool("FINAGENT_AGENT_TRACE", False),
+            backend=os.environ.get("FINAGENT_AGENT_TRACE_BACKEND", "jsonl").strip().lower(),
+            jsonl_path=os.environ.get(
+                "FINAGENT_AGENT_TRACE_JSONL",
+                ".finagent/agent-traces.jsonl",
+            ),
+            otlp_endpoint=os.environ.get(
+                "FINAGENT_AGENT_TRACE_OTLP_ENDPOINT",
+                "http://localhost:6006/v1/traces",
+            ),
+            project_name=os.environ.get(
+                "FINAGENT_AGENT_TRACE_PROJECT",
+                "finagent",
+            ),
+            capture_content=_env_bool("FINAGENT_AGENT_TRACE_CAPTURE_CONTENT", False),
+            max_content_chars=int(
+                os.environ.get("FINAGENT_AGENT_TRACE_MAX_CONTENT_CHARS", "50000")
+            ),
+        )
+
 
 class AgentSpan:
     def __init__(self, tracer: AgentTracer, span_id: str, otel_span=None) -> None:
@@ -65,12 +98,11 @@ class AgentSpan:
 class AgentTracer:
     """Small vendor-neutral trace surface for FinAgent Agent/LLM workflows.
 
-    JSONL is always local. Phoenix integration uses standard OTLP/OpenTelemetry and
-    OpenInference span-kind attributes, so the same instrumentation can later target
-    another OTLP backend such as Langfuse without changing research code.
-
-    Hidden model reasoning is never recorded. Only explicit prompts/responses may be
-    captured when ``capture_content`` is enabled.
+    JSONL is local. Phoenix integration uses standard OTLP/OpenTelemetry plus
+    OpenInference span-kind attributes, so the same instrumentation can target another
+    compatible backend later. Hidden model reasoning is never recorded; only token counts
+    and a boolean presence flag are retained. Explicit prompts/responses are captured only
+    when the user opts in with ``FINAGENT_AGENT_TRACE_CAPTURE_CONTENT=1``.
     """
 
     def __init__(self, config: AgentObservabilityConfig = AgentObservabilityConfig()) -> None:
@@ -103,7 +135,7 @@ class AgentTracer:
             from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
             from opentelemetry.sdk.resources import Resource
             from opentelemetry.sdk.trace import TracerProvider
-            from opentelemetry.sdk.trace.export import BatchSpanProcessor
+            from opentelemetry.sdk.trace.export import SimpleSpanProcessor
         except ImportError as exc:
             raise ImportError(
                 "Phoenix observability requires the optional 'observability' extra: "
@@ -120,7 +152,7 @@ class AgentTracer:
             endpoint=self.config.otlp_endpoint,
             headers={"x-project-name": self.config.project_name},
         )
-        provider.add_span_processor(BatchSpanProcessor(exporter))
+        provider.add_span_processor(SimpleSpanProcessor(exporter))
         self._otel_provider = provider
         self._otel_tracer = provider.get_tracer("finagent.agents")
 
@@ -166,9 +198,11 @@ class AgentTracer:
             otel_span.set_attribute("openinference.span.kind", kind.upper())
             for key, value in attrs.items():
                 otel_span.set_attribute(key, value)
+        error: Exception | None = None
         try:
             yield AgentSpan(self, span_id, otel_span)
         except Exception as exc:
+            error = exc
             if otel_span is not None:
                 from opentelemetry.trace import Status, StatusCode
 
@@ -198,7 +232,11 @@ class AgentTracer:
             )
         finally:
             if otel_cm is not None:
-                otel_cm.__exit__(None, None, None)
+                otel_cm.__exit__(
+                    type(error) if error is not None else None,
+                    error,
+                    error.__traceback__ if error is not None else None,
+                )
             _CURRENT_SPAN.reset(token)
 
     def event(self, name: str, attributes: Mapping[str, object] | None = None) -> None:
@@ -225,3 +263,13 @@ class AgentTracer:
         if self._otel_provider is not None:
             self._otel_provider.force_flush()
             self._otel_provider.shutdown()
+
+
+def default_agent_tracer() -> AgentTracer:
+    global _DEFAULT_TRACER
+    if _DEFAULT_TRACER is not None:
+        return _DEFAULT_TRACER
+    with _DEFAULT_LOCK:
+        if _DEFAULT_TRACER is None:
+            _DEFAULT_TRACER = AgentTracer(AgentObservabilityConfig.from_env())
+    return _DEFAULT_TRACER
