@@ -87,7 +87,7 @@ The Factor Quant loop is cumulative. Each later round can see development-only I
 
 ## 4. Agent observability and visualization
 
-FinAgent tracing is vendor-neutral. The code emits local JSONL traces and can export the same hierarchy over OTLP/OpenTelemetry with OpenInference-compatible span-kind semantics. Phoenix is the recommended first UI because it is lightweight to run locally and can receive OTLP traces without changing FinAgent's research architecture.
+FinAgent tracing is vendor-neutral. The code emits local JSONL traces and can export the same hierarchy over OTLP/OpenTelemetry with OpenInference-compatible span-kind semantics. Phoenix is the recommended first UI because it can receive OTLP traces without changing FinAgent's research architecture.
 
 ### 4.1 Local JSONL trace
 
@@ -116,17 +116,31 @@ Factor Quant discovery
 
 ### 4.2 Phoenix UI
 
-Install the exporter support into FinAgent and run Phoenix as a separate local service:
+Keep the Phoenix server isolated from the FinAgent research environment. This is especially important when FinAgent uses Python 3.11: current Phoenix 20.x server code contains `dataclass` defaults based on `MappingProxyType`, while Python 3.11 treats those defaults as unhashable/mutable and can fail during `phoenix serve` import. Python 3.12 added hashing support for `MappingProxyType`.
+
+Install only the OTLP exporter support in the FinAgent environment:
 
 ```powershell
+conda activate finagent
 python -m pip install -e ".[observability]"
+```
+
+Run Phoenix in a dedicated Python 3.12+ environment:
+
+```powershell
+conda create -n phoenix312 python=3.12 -y
+conda activate phoenix312
+python -m pip install --upgrade pip
 python -m pip install arize-phoenix
 phoenix serve
 ```
 
-In the terminal used to run FinAgent:
+Do not need to install the full `arize-phoenix` server package into `finagent`. The two environments communicate over HTTP OTLP.
+
+In a second terminal, return to FinAgent and enable export:
 
 ```powershell
+conda activate finagent
 $env:FINAGENT_AGENT_TRACE = "1"
 $env:FINAGENT_AGENT_TRACE_BACKEND = "both"
 $env:FINAGENT_AGENT_TRACE_OTLP_ENDPOINT = "http://localhost:6006/v1/traces"
@@ -134,6 +148,15 @@ $env:FINAGENT_AGENT_TRACE_PROJECT = "finagent-a2"
 ```
 
 Open the Phoenix UI at `http://localhost:6006` and run A2 Agent research normally. The UI should show nested Agent/LLM/guardrail/tool/evaluator spans, token counts, latency, repair errors and Factor Quant round identities.
+
+If `phoenix serve` fails before the server starts, first record the environment identity:
+
+```powershell
+python --version
+python -m pip show arize-phoenix
+```
+
+Do not patch `site-packages/phoenix` in place. Prefer a separate supported interpreter or a deliberately pinned Phoenix server environment so the observability service cannot destabilize FinAgent dependencies.
 
 By default FinAgent does **not** export prompt or response bodies. For local debugging only, opt in explicitly:
 
