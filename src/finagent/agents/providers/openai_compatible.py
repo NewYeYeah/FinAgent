@@ -54,12 +54,17 @@ class OpenAICompatibleChatProvider:
                 raise ImportError(
                     "OpenAICompatibleChatProvider requires the optional 'llm-openai' extra"
                 ) from exc
-            client_kwargs: dict[str, object] = {"timeout": timeout_seconds}
+            client_kwargs: dict[str, object] = {}
             if api_key is not None:
                 client_kwargs["api_key"] = api_key
             if base_url is not None:
                 client_kwargs["base_url"] = base_url
             client = OpenAI(**client_kwargs)
+            # Keep the historical host-boundary invariant that the SDK constructor
+            # receives only connection/credential identity. Timeout is a runtime option.
+            with_options = getattr(client, "with_options", None)
+            if callable(with_options):
+                client = with_options(timeout=timeout_seconds)
         if reasoning_effort is not None and reasoning_effort not in {"low", "high", "max"}:
             raise ValueError("reasoning_effort must be one of: low, high, max")
         self.client = client
@@ -165,11 +170,6 @@ class OpenAICompatibleChatProvider:
             has_reasoning = bool(str(getattr(message, "reasoning_content", "") or "").strip())
 
             if not output_text:
-                # DeepSeek documents occasional empty content in JSON Output mode. Retry
-                # boundedly for provider/resource/empty-stop cases, but never store hidden
-                # reasoning itself. A length termination is reported directly because the
-                # caller must raise the configured output budget rather than silently mutate
-                # the request identity.
                 retryable_empty = finish_reason in {
                     "stop",
                     "completed",
