@@ -1,0 +1,40 @@
+name: apply-a2p5-p0
+
+on:
+  push:
+    branches:
+      - a2p5-research-correctness-stability
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: a2p5-research-correctness-stability
+          fetch-depth: 0
+      - name: Apply source transformations
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('tools/apply_a2p5_p0.py')
+          text = path.read_text(encoding='utf-8').replace('min_mian_amount_cny', 'min_median_amount_cny')
+          path.write_text(text, encoding='utf-8')
+          PY
+          python tools/apply_a2p5_p0.py
+          python -m py_compile \
+            src/finagent/research/ashare_universe.py \
+            src/finagent/research/ashare_factor_acceptance.py \
+            src/finagent/research/factor_stability.py \
+            scripts/run_local_ashare_factor_research.py
+      - name: Commit transformed sources
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm tools/apply_a2p5_p0.py .github/workflows/apply-a2p5-p0.yml
+          git add src scripts docs
+          git commit -m "research: complete A2.5 P0 correctness and stability"
+          git push origin HEAD:a2p5-research-correctness-stability
