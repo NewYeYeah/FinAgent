@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
-from pathlib import Path
 
 from finagent.agents.domain import AgentTask
 from finagent.agents.generation_checkpoint import SQLiteFeatureGenerationCheckpointStore
