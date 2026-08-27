@@ -2,6 +2,14 @@
 
 This file summarizes meaningful development milestones. Commit and pull-request history remains the detailed audit trail.
 
+## 2026-08-27 — A-share suspension/session semantics
+
+- verified five zero-open/high/low daily anomalies as real suspension/no-trade placeholders rather than corrupted market prices;
+- classified the strict vendor pattern `open=high=low=0, close=pre_close>0, vol=amount=0` as non-tradable while keeping all other invalid OHLC fail-closed;
+- excluded suspension placeholders from `PriceBar` construction without modifying the frozen vendor source;
+- changed A-share forward-return labels to a common panel-session clock so one-session labels cannot silently stretch across suspensions;
+- kept legacy vendor identifiers quarantined rather than mapping them to modern securities.
+
 ## 2026-08-27 — A-share dataset freeze and supplemental reference layer
 
 - added content-addressed/metadata frozen manifests for local A-share vendor data;

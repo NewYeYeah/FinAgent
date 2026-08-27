@@ -104,11 +104,23 @@ Review the report rather than only the exit code. It should explicitly expose:
 - duplicate securities/bars;
 - invalid/placeholder listing dates;
 - incomplete delisting/list-status coverage;
+- non-canonical/legacy vendor codes quarantined from the canonical universe;
 - OHLC validity;
+- strict no-trade/suspension placeholder rows;
 - positive adjustment factors;
 - 241-row minute convention;
 - daily/minute OHLC reconciliation;
 - daily lots/thousand-CNY vs minute shares/CNY reconciliation.
+
+The audited daily no-trade placeholder is narrowly defined as:
+
+```text
+open = high = low = 0
+close = pre_close > 0
+vol = amount = 0
+```
+
+Such rows are retained in the immutable vendor source, reported as `LA-DAILY-07` warnings and excluded from `PriceBar` construction. Any other non-positive or OHLC-inconsistent row remains `LA-DAILY-03/04` error and must not be silently repaired.
 
 Warnings about incomplete security-master coverage are expected. Do not modify vendor Parquet to remove those warnings.
 
@@ -197,13 +209,16 @@ frozen Parquet identity
 → supplemental reference store
 → SupplementedAshareSecurityMaster
 → LocalAshareParquetDataAdapter (daily)
+→ strict suspension/no-trade filtering
 → DatasetRequest
 → ResearchDataset / ResearchSplit
 → PIT eligibility_mask
 → lagged feature values
-→ split-contained forward labels
+→ common-panel-session forward labels
 → deterministic cross-sectional RankIC diagnostic
 ```
+
+For daily A-share panels, `forward_*_h` is defined on the common panel session clock. If an asset has no tradable bar on the h-th later panel session, its forward label is `NaN`; the label must not jump to the first post-suspension trade and silently lengthen the horizon.
 
 The JSON report records:
 
@@ -225,6 +240,7 @@ Acceptance conditions:
 - development/validation windows do not overlap;
 - `security_master.survivorship_certified == false` unless a future explicit certification mechanism changes that contract;
 - adapter `data_version` equals the frozen manifest version;
+- forward-label metadata records `common_panel_sessions`;
 - no realtime API or execution path is invoked.
 
 RankIC from this script is **not** promotion evidence. It only proves that the real local data adapter can drive a cross-sectional numerical research panel.
@@ -234,8 +250,11 @@ RankIC from this script is **not** promotion evidence. It only proves that the r
 CI uses synthetic Parquet data; it does not have access to the user's multi-GB local dataset. The synthetic integration suite checks:
 
 - SSE/SZSE/BSE identity and leading zeros;
+- legacy/non-canonical vendor-code quarantine;
 - daily unit normalization;
 - adjustment-aware returns/labels;
+- strict suspension/no-trade placeholder classification;
+- common-session forward-label horizons across suspensions;
 - 241-row minute semantics;
 - supplemental-data parsing/versioning;
 - delisting overlay remains candidate-only;
@@ -248,7 +267,9 @@ Run focused tests:
 ```bash
 python -m pytest -q \
   tests/test_local_ashare_data_layer_v126.py \
-  tests/test_ashare_freeze_supplemental_v127.py
+  tests/test_ashare_freeze_supplemental_v127.py \
+  tests/test_ashare_legacy_anomaly_v127.py \
+  tests/test_ashare_suspension_session_semantics_v127.py
 ```
 
 Windows:
@@ -256,7 +277,9 @@ Windows:
 ```powershell
 python -m pytest -q `
   tests\test_local_ashare_data_layer_v126.py `
-  tests\test_ashare_freeze_supplemental_v127.py
+  tests\test_ashare_freeze_supplemental_v127.py `
+  tests\test_ashare_legacy_anomaly_v127.py `
+  tests\test_ashare_suspension_session_semantics_v127.py
 ```
 
 ## 7. Agent research acceptance
@@ -298,6 +321,8 @@ P0 — block the next research milestone:
 - frozen dataset identity mismatch;
 - wrong price/volume/amount unit;
 - wrong timezone/bar timestamp semantics;
+- suspension placeholders treated as tradable price bars;
+- forward label horizon stretching across a suspension;
 - denominator mutation;
 - replay failure;
 - invalid finite-value handling.

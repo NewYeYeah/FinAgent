@@ -87,11 +87,16 @@ jobs:
             src/finagent/data/local_ashare.py \
             src/finagent/data/local_ashare_adapter.py \
             src/finagent/data/local_ashare_certification.py \
+            src/finagent/data/local_ashare_compat.py \
+            src/finagent/data/local_ashare_research_adapter.py \
+            src/finagent/data/local_ashare_research_certification.py \
             src/finagent/data/local_ashare_freeze.py \
             src/finagent/data/ashare_supplemental.py \
             src/finagent/data/ashare_supplemental_master.py \
             tests/test_local_ashare_data_layer_v126.py \
             tests/test_ashare_freeze_supplemental_v127.py \
+            tests/test_ashare_legacy_anomaly_v127.py \
+            tests/test_ashare_suspension_session_semantics_v127.py \
             scripts/certify_local_ashare_data.py \
             scripts/freeze_local_ashare_data.py \
             scripts/run_local_ashare_research_smoke.py \
@@ -121,6 +126,8 @@ jobs:
             src/finagent/services/portfolio.py \
             src/finagent/data/ingestion \
             src/finagent/data/local_ashare_freeze.py \
+            src/finagent/data/local_ashare_research_adapter.py \
+            src/finagent/data/local_ashare_research_certification.py \
             src/finagent/data/ashare_supplemental.py \
             src/finagent/backtest/market_study.py
       - name: Coverage floor
