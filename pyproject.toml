@@ -52,6 +52,12 @@ observability = [
   "opentelemetry-sdk>=1.30,<2",
   "opentelemetry-exporter-otlp-proto-http>=1.30,<2",
 ]
+# Read-only A2/A2.5 research dashboard. It reads immutable report JSON, Agent JSONL
+# traces and generated_features.sqlite without changing research state.
+visualization = [
+  "streamlit>=1.45,<2",
+  "plotly>=5.24,<7",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
