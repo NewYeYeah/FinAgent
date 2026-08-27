@@ -1,0 +1,21 @@
+[dataset]
+coverage = "partial"
+notes = "Official exchange pages/announcements are registered as sources, but the repository does not claim a complete historical delisting/ST/suspension census."
+
+[sources.sse_delisting]
+name = "Shanghai Stock Exchange - suspended/delisted companies"
+authority = "SSE"
+url = "https://www.sse.com.cn/assortment/stock/list/delisting/"
+notes = "Official exchange listing/delisting reference page."
+
+[sources.szse_company_notices]
+name = "Shenzhen Stock Exchange - listed company notices"
+authority = "SZSE"
+url = "https://www.szse.cn/disclosure/notice/company/index.html"
+notes = "Official exchange notices include stock listing and termination announcements."
+
+[sources.bse_disclosure]
+name = "Beijing Stock Exchange - disclosure/termination announcements"
+authority = "BSE"
+url = "https://www.bse.cn/"
+notes = "Use the exact announcement URL in each record; the root is only the registered authority domain."

@@ -87,8 +87,14 @@ jobs:
             src/finagent/data/local_ashare.py \
             src/finagent/data/local_ashare_adapter.py \
             src/finagent/data/local_ashare_certification.py \
+            src/finagent/data/local_ashare_freeze.py \
+            src/finagent/data/ashare_supplemental.py \
+            src/finagent/data/ashare_supplemental_master.py \
             tests/test_local_ashare_data_layer_v126.py \
+            tests/test_ashare_freeze_supplemental_v127.py \
             scripts/certify_local_ashare_data.py \
+            scripts/freeze_local_ashare_data.py \
+            scripts/run_local_ashare_research_smoke.py \
             --select E4,E7,E9,F
       - name: Agent real-market 1.2/1.2.1 surface lint
         run: |
@@ -114,6 +120,8 @@ jobs:
             src/finagent/research/market_validation.py \
             src/finagent/services/portfolio.py \
             src/finagent/data/ingestion \
+            src/finagent/data/local_ashare_freeze.py \
+            src/finagent/data/ashare_supplemental.py \
             src/finagent/backtest/market_study.py
       - name: Coverage floor
         run: pytest --cov=finagent --cov-report=term --cov-fail-under=50
