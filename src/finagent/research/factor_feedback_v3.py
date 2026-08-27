@@ -172,7 +172,7 @@ class AshareRobustAgentFeedbackV3:
                 "weights": list(self.selected_weights),
             },
             "scope": (
-                "2018-2024 internal development/walk-forward evidence only; "
+                "internal development/walk-forward evidence only; "
                 "excludes 2025+ reserve, execution, promotion, PAPER and live evidence"
             ),
         }

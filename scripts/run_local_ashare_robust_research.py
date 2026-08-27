@@ -871,6 +871,8 @@ def main() -> int:
     result = AshareRobustResearchProgramResult(
         mode=mode,
         program_spec=spec,
+        candidate_universe=candidate_selection,
+        universe_policy=universe_report,
         candidates=tuple(candidates),
         walk_forward_report=walk_forward_report,
         gate_report=gate_report,

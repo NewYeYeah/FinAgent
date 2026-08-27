@@ -16,6 +16,10 @@ from finagent.agents.generated_features import GeneratedFeatureArtifact
 from finagent.domain._validation import require_non_empty
 from finagent.domain.research import DatasetRequest, ResearchDataset, TimeRange
 
+from .ashare_universe import (
+    AshareCandidateUniverseSelection,
+    AshareResearchUniverseReport,
+)
 from .factor_quant import (
     FactorQuantAnalyzer,
     FactorQuantCandidateReport,
@@ -902,8 +906,21 @@ class AshareRobustCandidateGateConfig:
             self.max_hac_pvalue,
             self.max_bh_qvalue,
         )
-        if any(not math.isfinite(value) or not 0.0 <= value <= 1.0 for value in bounded):
+        if any(
+            not math.isfinite(value) or not 0.0 <= value <= 1.0
+            for value in bounded
+        ):
             raise ValueError("bounded robust gate values must be in [0, 1]")
+        unbounded = (
+            self.min_pooled_rank_icir,
+            self.min_mean_fold_rank_icir,
+            self.min_worst_fold_rank_icir,
+            self.min_mean_fold_long_short_sharpe,
+            self.max_mean_one_way_turnover,
+            self.turnover_penalty,
+        )
+        if any(not math.isfinite(value) for value in unbounded):
+            raise ValueError("robust gate values must be finite")
         if self.max_mean_one_way_turnover < 0 or self.turnover_penalty < 0:
             raise ValueError("turnover gate values must be non-negative")
 
@@ -1312,6 +1329,8 @@ class AshareRobustFactorSelector:
 class AshareRobustResearchProgramResult:
     mode: str
     program_spec: AshareResearchProgramSpec
+    candidate_universe: AshareCandidateUniverseSelection
+    universe_policy: AshareResearchUniverseReport
     candidates: tuple[GeneratedFeatureArtifact, ...]
     walk_forward_report: AshareWalkForwardFamilyReport
     gate_report: AshareRobustCandidateGateReport
@@ -1332,6 +1351,20 @@ class AshareRobustResearchProgramResult:
             candidate.feature_digest for candidate in self.gate_report.candidates
         }:
             raise ValueError("gate denominator differs from candidates")
+        if self.walk_forward_report.program_spec_id != self.program_spec.spec_id:
+            raise ValueError("walk-forward report differs from program spec")
+        if self.walk_forward_report.plan_id != self.program_spec.plan.plan_id:
+            raise ValueError("walk-forward report differs from frozen plan")
+        if self.gate_report.walk_forward_report_id != self.walk_forward_report.report_id:
+            raise ValueError("gate report does not belong to walk-forward report")
+        if self.frozen_selection.walk_forward_report_id != self.walk_forward_report.report_id:
+            raise ValueError("robust selection does not belong to walk-forward report")
+        if self.frozen_selection.gate_report_id != self.gate_report.gate_report_id:
+            raise ValueError("robust selection does not belong to gate report")
+        if self.candidate_universe.selection_id != self.program_spec.candidate_selection_id:
+            raise ValueError("candidate universe differs from program spec")
+        if self.universe_policy.data_version != self.program_spec.universe_policy_version:
+            raise ValueError("universe policy differs from program spec")
         if not {
             component.feature_digest for component in self.frozen_selection.components
         }.issubset(digests):
@@ -1386,6 +1419,8 @@ class AshareRobustResearchProgramResult:
             "program_spec": self.program_spec.to_dict(),
             "program_status": self.program_status,
             "data_version": self.program_spec.data_version,
+            "candidate_universe": self.candidate_universe.to_dict(),
+            "universe_policy": self.universe_policy.to_dict(),
             "candidate_denominator": [
                 {
                     "feature_id": artifact.spec.feature_id,
