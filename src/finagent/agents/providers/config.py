@@ -193,6 +193,7 @@ def load_configured_llm(
         enforce_private_permissions=enforce_permissions,
     )
 
+    provider: LLMProvider
     if profile.provider == "deepseek":
         provider = DeepSeekChatProvider(
             api_key=api_key,
