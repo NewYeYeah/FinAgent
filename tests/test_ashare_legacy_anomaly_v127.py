@@ -3,10 +3,16 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from finagent.data import LocalAshareDatasetInspector, LocalAshareDatasetLayout, LocalAshareSecurityMaster
+from finagent.data import (
+    LocalAshareDatasetInspector,
+    LocalAshareDatasetLayout,
+    LocalAshareSecurityMaster,
+)
 
 
-def _write_parquet(tmp_path: Path, name: str, header: list[str], rows: list[list[object]]) -> Path:
+def _write_parquet(
+    tmp_path: Path, name: str, header: list[str], rows: list[list[object]]
+) -> Path:
     import duckdb
 
     csv_path = tmp_path / f"{name}.csv"
@@ -39,8 +45,30 @@ def _layout(tmp_path: Path) -> LocalAshareDatasetLayout:
             "act_ent_type",
         ],
         [
-            ["000001.SZ", "平安银行", "主板", "1991-04-03", "", "", "深圳", "银行", "", ""],
-            ["T00018.SH", "上港集箱", "历史", "2000-07-19", "", "", "上海", "港口", "", ""],
+            [
+                "000001.SZ",
+                "平安银行",
+                "主板",
+                "1991-04-03",
+                "",
+                "",
+                "深圳",
+                "银行",
+                "",
+                "",
+            ],
+            [
+                "T00018.SH",
+                "上港集箱",
+                "历史",
+                "2000-07-19",
+                "",
+                "",
+                "上海",
+                "港口",
+                "",
+                "",
+            ],
         ],
     )
     _write_parquet(
@@ -59,8 +87,19 @@ def _layout(tmp_path: Path) -> LocalAshareDatasetLayout:
             "adj_factor",
         ],
         [
-            ["000001.SZ", "2024-01-02", 10.0, 10.5, 9.8, 10.2, 10.0, 100.0, 1000.0, 1.0],
-            ["000001.SZ", "2024-01-03", 0.0, 0.0, 0.0, 0.0, 10.2, 0.0, 0.0, 1.0],
+            [
+                "000001.SZ",
+                "2024-01-02",
+                10.0,
+                10.5,
+                9.8,
+                10.2,
+                10.0,
+                100.0,
+                1000.0,
+                1.0,
+            ],
+            ["000001.SZ", "2024-01-03", 0.0, 0.0, 1.0, 0.0, 10.2, 0.0, 0.0, 1.0],
         ],
     )
     return LocalAshareDatasetLayout(tmp_path)
@@ -92,7 +131,7 @@ def test_certification_reports_legacy_codes_and_daily_anomaly_rows(tmp_path: Pat
             "trade_date": "2024-01-03",
             "open": 0.0,
             "high": 0.0,
-            "low": 0.0,
+            "low": 1.0,
             "close": 0.0,
             "pre_close": 10.2,
             "vol": 0.0,
