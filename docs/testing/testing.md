@@ -390,6 +390,53 @@ python -m pytest -q `
 
 CI uses synthetic Parquet and fake LLM providers; the real multi-GB/DeepSeek acceptance must still be run locally.
 
+
+### T-A5 — read-only Research UI acceptance
+
+Install and run the dedicated visualization tests:
+
+```bash
+python -m pip install -e ".[dev,visualization]"
+python -m pytest -q tests/test_research_visualization.py
+```
+
+Windows launch:
+
+```powershell
+python scripts/run_research_ui.py `
+  --report reports\local_ashare_factor_research_a2p5.json `
+  --feature-store .finagent\local-ashare-factor-a2p5\generated_features.sqlite `
+  --trace .finagent\a2-agent-trace.jsonl `
+  --phoenix-url http://localhost:6006
+```
+
+Ubuntu launch:
+
+```bash
+python scripts/run_research_ui.py \
+  --report reports/local_ashare_factor_research_a2p5.json \
+  --feature-store .finagent/local-ashare-factor-a2p5/generated_features.sqlite \
+  --trace .finagent/a2-agent-trace.jsonl \
+  --phoenix-url http://localhost:6006
+```
+
+Open `http://localhost:8501` and verify:
+
+- system completion and research outcome are shown separately;
+- candidate denominator count equals development, validation and stability counts;
+- denominator drift causes report rejection rather than candidate omission;
+- development-versus-validation, rolling/subperiod RankIC and quantile charts preserve signed values;
+- HAC, block-bootstrap, Holm and BH evidence is visible for each factor;
+- frozen ensemble weights/directions and signed comparison are visible;
+- split warm-up, first-session and minimum eligible-asset diagnostics are visible;
+- generated feature SQLite is opened in read-only mode and is not modified;
+- malformed/orphan JSONL records produce warnings without corrupting valid spans;
+- hidden reasoning text is absent while reasoning-token metadata may be shown;
+- reserve status and `promotion_eligible=false` remain visible;
+- the UI has no LLM call, rerun, prompt-edit, promotion, PAPER or reserve-access action.
+
+Phoenix remains optional. The Research UI must work from immutable report JSON alone. Full usage and governance details are in `docs/guides/research-visualization.md`.
+
 ## 4. Interpretation boundary
 
 A2 validates factor-level evidence:
