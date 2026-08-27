@@ -29,6 +29,20 @@ from .ingestion import (
     read_normalized_csv,
     validate_records,
 )
+from .local_ashare import (
+    AshareBarFrequency,
+    AshareBarRecord,
+    AshareInstrumentRecord,
+    AshareIntradayTimestampConvention,
+    LocalAshareDatasetLayout,
+    LocalAshareSecurityMaster,
+)
+from .local_ashare_adapter import LocalAshareParquetDataAdapter
+from .local_ashare_certification import (
+    LocalAshareCertificationIssue,
+    LocalAshareCertificationReport,
+    LocalAshareDatasetInspector,
+)
 from .store import SQLitePriceStore
 
 __all__ = [
@@ -38,11 +52,21 @@ __all__ = [
     "TUSHARE_15000_CAPABILITIES",
     "AKShareMarketDataIngestor",
     "AlpacaMarketDataIngestor",
+    "AshareBarFrequency",
+    "AshareBarRecord",
+    "AshareInstrumentRecord",
+    "AshareIntradayTimestampConvention",
     "CSVPriceDataAdapter",
     "ConfiguredMarketData",
     "DataFrequency",
     "HiThinkMarketDataIngestor",
     "InMemoryPriceDataAdapter",
+    "LocalAshareCertificationIssue",
+    "LocalAshareCertificationReport",
+    "LocalAshareDatasetInspector",
+    "LocalAshareDatasetLayout",
+    "LocalAshareParquetDataAdapter",
+    "LocalAshareSecurityMaster",
     "MarketDataManifest",
     "MarketDataProfile",
     "MarketDataPullRequest",

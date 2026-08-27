@@ -5,7 +5,13 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
+POSIX_ONLY = pytest.mark.skipif(
+    os.name != "posix",
+    reason="FinAgent Bash/Conda environment wrappers are a POSIX-only boundary",
+)
 
 
 def test_launchers_are_executable() -> None:
@@ -33,6 +39,7 @@ def _contaminated_environment() -> dict[str, str]:
     return env
 
 
+@POSIX_ONLY
 def test_finagent_wrapper_removes_ros_environment() -> None:
     probe = """
 import os
@@ -55,6 +62,7 @@ assert not any('/opt/ros/' in item for item in sys.path)
     assert result.returncode == 0, result.stderr
 
 
+@POSIX_ONLY
 def test_finagent_check_reports_active_interpreter() -> None:
     result = subprocess.run(
         ["bash", str(ROOT / "scripts" / "finagent.sh"), "--check"],
@@ -70,6 +78,7 @@ def test_finagent_check_reports_active_interpreter() -> None:
     assert "ROS paths:  none" in result.stdout
 
 
+@POSIX_ONLY
 def test_test_wrapper_explicitly_loads_coverage_plugin() -> None:
     result = subprocess.run(
         [
