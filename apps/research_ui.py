@@ -35,24 +35,24 @@ st.set_page_config(
 )
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_resource(show_spinner=False)
 def _cached_report(path: str, modified_ns: int) -> ResearchReportView:
     del modified_ns
     return load_research_report(path)
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_resource(show_spinner=False)
 def _cached_uploaded_report(data: bytes, name: str) -> ResearchReportView:
     return parse_research_report(data, source=name)
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_resource(show_spinner=False)
 def _cached_trace(path: str, modified_ns: int) -> AgentTraceView:
     del modified_ns
     return load_agent_trace(path)
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_resource(show_spinner=False)
 def _cached_features(
     path: str,
     modified_ns: int,
