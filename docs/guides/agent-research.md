@@ -1,26 +1,169 @@
 # Agent Research Workflow
 
-This guide covers the currently supported Agent-assisted research path. The Agent proposes hypotheses and bounded feature code; deterministic code owns evaluation, portfolio construction and state changes.
+The Agent proposes bounded hypotheses and feature code. Deterministic code owns data access, validation, Factor Quant evidence, portfolio logic and state transitions.
 
-## 1. Configure an LLM profile
+## 1. Configure and smoke-test the LLM
 
-Public routing is stored in `configs/llm.toml`. Credentials remain in the external secret store described in `getting-started.md`.
-
-Check the selected profile without exposing a key:
+Public routing lives in `configs/llm.toml`; credentials remain in the external secret store described in `getting-started.md`.
 
 ```bash
 python -c "from finagent.agents.providers import load_llm_profile; print(load_llm_profile('configs/llm.toml'))"
-```
-
-Run provider connectivity first:
-
-```bash
 python scripts/smoke_llm_provider.py configs/llm.toml --profile deepseek_official_v4_pro
 ```
 
-## 2. US reference Agent study
+The DeepSeek V4-Pro profile keeps thinking enabled with high reasoning effort. A2 currently allows a large completion ceiling because real high-thinking feature-generation calls can use substantially more than a short JSON answer. The configured ceiling is not a target; provider-reported usage is the actual token consumption.
 
-Materialize validated Alpaca SIP data first. Then run:
+## 2. Generated-feature contract and repair
+
+Generated code follows:
+
+```text
+provider response
+→ strict JSON schema
+→ FeatureSpec
+→ AST guardrail
+→ restricted subprocess smoke
+→ immutable GeneratedFeatureArtifact
+```
+
+The runtime ABI is intentionally small:
+
+```text
+inputs: dict[str, list[float | None]]
+output: list[float | None]  # same length
+```
+
+Inputs are plain Python lists, not NumPy arrays. Element-wise arithmetic must use comprehensions/loops/`zip`/`enumerate`. Arbitrary object attributes and methods such as `.append()`, `.get()`, `.mean()` and `.tolist()` are forbidden; only the validator-approved `math.*` members are available.
+
+A generated candidate is not accepted merely because the LLM call succeeded. FinAgent separates three failure classes:
+
+```text
+provider transient
+→ bounded provider retry
+
+JSON / AST / sandbox conformance failure
+→ bounded repair of the same logical candidate
+
+repair budget exhausted
+→ bounded replacement for the same candidate slot
+```
+
+Repair feedback contains engineering conformance errors only. It never contains independent validation, reserve, holdout, promotion, PAPER or live evidence.
+
+Successful logical candidate slots are checkpointed in the A2 `state_dir`. Restarting the same scoped research task reuses the exact validated artifact instead of regenerating it and mutating the search denominator.
+
+## 3. A-share Factor Quant A2
+
+The canonical entry point is:
+
+```text
+scripts/run_local_ashare_factor_research.py
+configs/research/local_ashare_factor_research.example.toml
+```
+
+The example freezes a candidate universe before development, uses 2018–2021 for adaptive development, 2022–2024 for independent factor-level validation and leaves 2025 onward untouched.
+
+Deterministic baseline:
+
+```powershell
+python scripts/run_local_ashare_factor_research.py `
+  configs\research\local_ashare_factor_research.local.toml `
+  --mode deterministic `
+  --verify-content
+```
+
+Agent mode:
+
+```powershell
+python scripts/run_local_ashare_factor_research.py `
+  configs\research\local_ashare_factor_research.local.toml `
+  --mode agent `
+  --llm-profile deepseek_official_v4_pro `
+  --verify-content `
+  --report reports\local_ashare_factor_research_a2_agent.json
+```
+
+The Factor Quant loop is cumulative. Each later round can see development-only IC/RankIC/ICIR, explicit horizon decay, quantile behavior, turnover, coverage, redundancy and the current deterministic ensemble selection. Every accepted adaptive candidate remains in the final search denominator.
+
+## 4. Agent observability and visualization
+
+FinAgent tracing is vendor-neutral. The code emits local JSONL traces and can export the same hierarchy over OTLP/OpenTelemetry with OpenInference-compatible span-kind semantics. Phoenix is the recommended first UI because it is lightweight to run locally and can receive OTLP traces without changing FinAgent's research architecture.
+
+### 4.1 Local JSONL trace
+
+No extra dependency is required:
+
+```powershell
+$env:FINAGENT_AGENT_TRACE = "1"
+$env:FINAGENT_AGENT_TRACE_BACKEND = "jsonl"
+$env:FINAGENT_AGENT_TRACE_JSONL = ".finagent\a2-agent-trace.jsonl"
+```
+
+Then run the normal Agent command. The trace records the hierarchy and engineering metadata for:
+
+```text
+Factor Quant discovery
+├─ round
+│  ├─ candidate generation
+│  │  └─ LLM call
+│  ├─ static validation
+│  ├─ sandbox smoke
+│  ├─ repair / replacement / checkpoint events
+│  ├─ Factor Quant evaluator
+│  └─ factor selection
+└─ development feedback identity
+```
+
+### 4.2 Phoenix UI
+
+Install the exporter support into FinAgent and run Phoenix as a separate local service:
+
+```powershell
+python -m pip install -e ".[observability]"
+python -m pip install arize-phoenix
+phoenix serve
+```
+
+In the terminal used to run FinAgent:
+
+```powershell
+$env:FINAGENT_AGENT_TRACE = "1"
+$env:FINAGENT_AGENT_TRACE_BACKEND = "both"
+$env:FINAGENT_AGENT_TRACE_OTLP_ENDPOINT = "http://localhost:6006/v1/traces"
+$env:FINAGENT_AGENT_TRACE_PROJECT = "finagent-a2"
+```
+
+Open the Phoenix UI at `http://localhost:6006` and run A2 Agent research normally. The UI should show nested Agent/LLM/guardrail/tool/evaluator spans, token counts, latency, repair errors and Factor Quant round identities.
+
+By default FinAgent does **not** export prompt or response bodies. For local debugging only, opt in explicitly:
+
+```powershell
+$env:FINAGENT_AGENT_TRACE_CAPTURE_CONTENT = "1"
+```
+
+This can expose research prompts, generated JSON/Python and development Factor Quant feedback, so do not enable it for traces that will be shared externally. Hidden model reasoning / `reasoning_content` is never stored or exported; only reasoning-token count and a presence flag may be recorded.
+
+## 5. Why Phoenix rather than an Agent framework rewrite
+
+FinAgent does not adopt LangChain/LangGraph merely to gain a UI. Its research lifecycle, candidate denominator, sealed evidence and deterministic numerical interfaces already define the application architecture. Replatforming those semantics onto another Agent framework would add coupling without improving research correctness.
+
+The selected boundary is therefore:
+
+```text
+FinAgent domain/research runtime
+        ↓
+OpenTelemetry / OpenInference-style trace semantics
+        ↓
+Phoenix today
+        ↓
+other OTLP-compatible observability backend later if needed
+```
+
+Langfuse remains a viable later backend when centralized prompt management, multi-user evaluation or a heavier hosted/self-hosted observability stack is justified.
+
+## 6. US reference Agent study
+
+After materializing validated Alpaca SIP data:
 
 ```bash
 python scripts/run_agent_market_research.py \
@@ -28,83 +171,20 @@ python scripts/run_agent_market_research.py \
   --report reports/us_etf_agent_market_research.json
 ```
 
-Windows PowerShell:
+Before feature generation the runner verifies provider, market, symbols, normalized bars digest and manifest identity.
 
-```powershell
-python scripts/run_agent_market_research.py `
-  configs\markets\us_etf_agent_research.toml `
-  --report reports\us_etf_agent_market_research.json
-```
+## 7. Replay and evidence boundary
 
-Before feature generation the runner verifies provider, market, symbols, bars digest and manifest identity.
+A2 exact replay uses the immutable generated-feature store and frozen report and must not call the LLM again.
 
-## 3. Generated-feature boundary
-
-Generated code follows:
+Agent-visible feedback may contain development diagnostics. It must never contain:
 
 ```text
-LLM response
-→ FeatureSpec
-→ AST validation
-→ restricted subprocess
-→ immutable GeneratedFeatureArtifact
-→ PIT materialization
-```
-
-Generated code cannot perform file/network I/O, mutate portfolio state or call arbitrary Python APIs.
-
-## 4. Factor discovery and ensemble research
-
-The research layer supports cumulative development-only feedback and Factor Quant diagnostics, including:
-
-- Pearson IC / RankIC;
-- ICIR and explicit-horizon IC decay;
-- quantile portfolios and long-short spread;
-- turnover and coverage;
-- factor-value correlation;
-- deterministic redundancy-aware ensemble selection.
-
-Formal validation keeps development feedback separate from outer/holdout evidence. An ensemble is evaluated as its own `AlphaModel`, not as a post-hoc weighted sum of single-factor returns.
-
-## 5. Replay
-
-Exact replay must reuse the frozen candidate family and must not call the LLM again:
-
-```bash
-python scripts/run_agent_market_research.py \
-  configs/markets/us_etf_agent_research.toml \
-  --frozen-family-report reports/us_etf_agent_market_research.json \
-  --report reports/us_etf_agent_market_replay.json \
-  --assert-replay
-```
-
-Replay failure is a research-governance failure, not a warning.
-
-## 6. A-share Agent research
-
-The local A-share Parquet adapter is now available to the common `ResearchDataset` contract. A-share Agent research should initially use bounded daily universes and historical-only validation. Do not start from full-market 1-minute panels or realtime trading.
-
-Recommended first study:
-
-```text
-200–500 liquid equities
-2018–2025 daily data
-PIT-safe price/volume/market-value features
-1d and 5d forward-return labels
-Factor Quant → ensemble → formal validation
-```
-
-Seller-provided undocumented factor columns are not automatically approved. Prefer features that FinAgent recomputes from observed market fields until their PIT semantics are independently verified.
-
-## 7. Evidence boundary
-
-Agent-visible feedback may contain development diagnostics. It must not contain:
-
-```text
-outer-test results
+independent validation evidence
+untouched reserve evidence
 sealed holdout evidence
 promotion decisions
-paper/live outcomes used for adaptive research
+PAPER/live outcomes used for adaptive research
 ```
 
-Human approval remains required for operational stage transitions.
+Human approval remains required for operational stage transitions. A2 is factor-level historical research; A-share T+1, lots, price limits and asymmetric trading costs remain an A3 execution concern.

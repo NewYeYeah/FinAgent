@@ -23,6 +23,9 @@ class LLMProfile:
     base_url: str | None = None
     thinking: bool | None = None
     reasoning_effort: str | None = None
+    max_attempts: int = 3
+    retry_backoff_seconds: float = 1.0
+    timeout_seconds: float = 900.0
 
     def __post_init__(self) -> None:
         for field_name in ("name", "provider", "model", "secret_id"):
@@ -40,6 +43,12 @@ class LLMProfile:
             "max",
         }:
             raise ValueError("reasoning_effort must be one of: low, high, max")
+        if isinstance(self.max_attempts, bool) or self.max_attempts < 1:
+            raise ValueError("max_attempts must be an integer >= 1")
+        if self.retry_backoff_seconds < 0:
+            raise ValueError("retry_backoff_seconds must be >= 0")
+        if self.timeout_seconds <= 0:
+            raise ValueError("timeout_seconds must be > 0")
 
 
 @dataclass(frozen=True, slots=True)
@@ -98,6 +107,9 @@ def load_llm_profile(config_path: str | Path, profile_name: str | None = None) -
         raise TypeError(f"llm.profiles.{selected}.thinking must be a boolean")
     reasoning_raw = values.get("reasoning_effort")
     reasoning_effort = None if reasoning_raw is None else str(reasoning_raw).strip() or None
+    max_attempts = int(values.get("max_attempts", 3))
+    retry_backoff_seconds = float(values.get("retry_backoff_seconds", 1.0))
+    timeout_seconds = float(values.get("timeout_seconds", 900.0))
 
     return LLMProfile(
         name=selected,
@@ -107,6 +119,9 @@ def load_llm_profile(config_path: str | Path, profile_name: str | None = None) -
         base_url=base_url,
         thinking=thinking_raw,
         reasoning_effort=reasoning_effort,
+        max_attempts=max_attempts,
+        retry_backoff_seconds=retry_backoff_seconds,
+        timeout_seconds=timeout_seconds,
     )
 
 
@@ -178,17 +193,24 @@ def load_configured_llm(
         enforce_private_permissions=enforce_permissions,
     )
 
+    provider: LLMProvider
     if profile.provider == "deepseek":
         provider = DeepSeekChatProvider(
             api_key=api_key,
             base_url=profile.base_url or "https://api.deepseek.com",
             thinking=True if profile.thinking is None else profile.thinking,
             reasoning_effort=profile.reasoning_effort or "high",
+            max_attempts=profile.max_attempts,
+            retry_backoff_seconds=profile.retry_backoff_seconds,
+            timeout_seconds=profile.timeout_seconds,
         )
     elif profile.provider == "siliconflow":
         provider = SiliconFlowChatProvider(
             api_key=api_key,
             base_url=profile.base_url or "https://api.siliconflow.cn/v1",
+            max_attempts=profile.max_attempts,
+            retry_backoff_seconds=profile.retry_backoff_seconds,
+            timeout_seconds=profile.timeout_seconds,
         )
     else:
         provider = OpenAIResponsesProvider(api_key=api_key, base_url=profile.base_url)

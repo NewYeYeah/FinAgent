@@ -18,8 +18,10 @@ from finagent.agents.generated_features import (
     GeneratedFeatureArtifact,
     SQLiteGeneratedFeatureStore,
 )
+from finagent.agents.generation_checkpoint import SQLiteFeatureGenerationCheckpointStore
 from finagent.agents.llm_feature import LLMFeatureGenerationPolicy, LLMFeatureGenerator
-from finagent.agents.providers import load_configured_llm
+from finagent.agents.observability import default_agent_tracer
+from finagent.agents.providers import SQLiteLLMCallStore, load_configured_llm
 from finagent.data import (
     AshareBarFrequency,
     AshareSupplementalDataStore,
@@ -30,7 +32,6 @@ from finagent.data import (
     SupplementedAshareSecurityMaster,
 )
 from finagent.domain.research import DatasetRequest, TimeRange
-from finagent.research.agent_market import LLMMarketFeatureCandidateGenerator
 from finagent.research.ashare_factor_acceptance import (
     AshareFactorResearchAcceptanceEngine,
 )
@@ -52,6 +53,9 @@ from finagent.research.factor_quant import (
 )
 from finagent.research.factor_quant_discovery import AgentFactorQuantDiscoveryLoop
 from finagent.research.panel_feature_materializer import PanelGeneratedFeatureMaterializer
+from finagent.research.resilient_candidate_generator import (
+    ResilientLLMMarketFeatureCandidateGenerator,
+)
 from finagent.sandbox import FeatureSandboxRequest, LocalFeatureSandbox
 
 
@@ -157,7 +161,9 @@ def _baseline_artifacts(
         fields = _strings(raw.get("input_fields"), "baseline factor input_fields")
         missing = set(fields) - set(smoke_inputs)
         if missing:
-            raise ValueError(f"baseline factor references unavailable smoke fields: {sorted(missing)}")
+            raise ValueError(
+                f"baseline factor references unavailable smoke fields: {sorted(missing)}"
+            )
         source = str(raw["source"]).strip() + "\n"
         spec = FeatureSpec(
             feature_id=str(raw["feature_id"]),
@@ -440,6 +446,7 @@ def main() -> int:
                 store=feature_store,
             )
         elif mode == "agent":
+            tracer = default_agent_tracer()
             llm_path = Path(str(values.get("llm_config_path", "configs/llm.toml")))
             profile = str(args.llm_profile or values.get("llm_profile", "")).strip()
             configured_llm = load_configured_llm(
@@ -450,17 +457,31 @@ def main() -> int:
             model = model_override or configured_llm.model
             if not model or model.startswith("REPLACE_WITH_"):
                 raise ValueError("LLM model is not configured")
-            generator = LLMMarketFeatureCandidateGenerator(
+            llm_call_store = SQLiteLLMCallStore(state_dir / "llm_calls.sqlite")
+            checkpoint_store = SQLiteFeatureGenerationCheckpointStore(
+                state_dir / "feature_generation_checkpoints.sqlite"
+            )
+            generator = ResilientLLMMarketFeatureCandidateGenerator(
                 LLMFeatureGenerator(
                     provider=configured_llm.provider,
                     policy=LLMFeatureGenerationPolicy(
                         model=model,
                         max_lookback=int(values.get("max_feature_lookback", 60)),
-                        max_output_tokens=int(values.get("max_output_tokens", 3500)),
+                        max_output_tokens=int(values.get("max_output_tokens", 50_000)),
+                        max_validation_attempts=int(
+                            values.get("candidate_repair_attempts", 3)
+                        ),
                     ),
                     feature_store=feature_store,
+                    call_store=llm_call_store,
+                    tracer=tracer,
                 ),
                 max_candidates=int(values.get("candidates_per_round", 3)),
+                max_replacements_per_candidate=int(
+                    values.get("candidate_replacement_attempts", 2)
+                ),
+                checkpoint_store=checkpoint_store,
+                tracer=tracer,
             )
             loop = AgentFactorQuantDiscoveryLoop(
                 generator=FactorQuantFeedbackAwareMarketFeatureCandidateGenerator(generator),
@@ -471,6 +492,7 @@ def main() -> int:
                     candidates_per_round=int(values.get("candidates_per_round", 3)),
                     max_total_candidates=int(values.get("max_total_candidates", 8)),
                 ),
+                tracer=tracer,
             )
             task = AgentTask(
                 task_id=str(values.get("task_id", "local-ashare-factor-a2")),

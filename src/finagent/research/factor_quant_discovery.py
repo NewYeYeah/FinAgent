@@ -8,6 +8,7 @@ from pathlib import Path
 
 from finagent.agents.domain import AgentTask
 from finagent.agents.generated_features import GeneratedFeatureArtifact
+from finagent.agents.observability import AgentTracer
 from finagent.domain._validation import require_non_empty
 from finagent.domain.research import DatasetRequest
 
@@ -133,15 +134,9 @@ class AgentFactorQuantDiscoveryResult:
 
 
 class AgentFactorQuantDiscoveryLoop:
-    """Cumulative adaptive discovery driven by development-only Factor Quant v2 evidence.
+    """Cumulative adaptive discovery driven by development-only Factor Quant v2 evidence."""
 
-    Every round re-evaluates the complete cumulative candidate set. This intentionally
-    makes redundancy diagnostics cross-round rather than round-local, so the next Agent
-    proposal can see when a seemingly new hypothesis is merely a highly correlated copy.
-    The loop never observes the independent formal validation window.
-    """
-
-    VERSION = "agent-factor-quant-discovery-v2"
+    VERSION = "agent-factor-quant-discovery-v2.1"
 
     def __init__(
         self,
@@ -150,11 +145,13 @@ class AgentFactorQuantDiscoveryLoop:
         analyzer: FactorQuantAnalyzer,
         selector: FactorEnsembleSelector | None = None,
         config: AgentFactorDiscoveryConfig | None = None,
+        tracer: AgentTracer | None = None,
     ) -> None:
         self.generator = generator
         self.analyzer = analyzer
         self.selector = selector or FactorEnsembleSelector()
         self.config = config or AgentFactorDiscoveryConfig()
+        self.tracer = tracer or AgentTracer()
 
     def _preflight(
         self,
@@ -197,56 +194,135 @@ class AgentFactorQuantDiscoveryLoop:
         seen_digests: set[str] = set()
         seen_ids: set[str] = set()
 
-        for round_index in range(1, self.config.rounds + 1):
-            generated = tuple(
-                self.generator.generate(
-                    task=task,
-                    count=self.config.candidates_per_round,
-                    approved_input_fields=approved_input_fields,
-                    smoke_inputs=smoke_inputs,
-                    round_index=round_index,
-                    feedback=feedback,
-                )
-            )
-            if len(generated) != self.config.candidates_per_round:
-                raise RuntimeError("candidate generator returned an unexpected candidate count")
-            for artifact in generated:
-                if artifact.digest in seen_digests or artifact.spec.feature_id in seen_ids:
-                    raise ValueError("factor quant discovery generated a duplicate across rounds")
-                seen_digests.add(artifact.digest)
-                seen_ids.add(artifact.spec.feature_id)
-            all_candidates.extend(generated)
-            if len(all_candidates) > self.config.max_total_candidates:
-                raise RuntimeError("factor quant discovery exceeded max_total_candidates")
+        with self.tracer.span(
+            "finagent.factor_quant.discovery",
+            "AGENT",
+            {
+                "finagent.task_id": task.task_id,
+                "finagent.rounds": self.config.rounds,
+                "finagent.candidates_per_round": self.config.candidates_per_round,
+                "finagent.max_total_candidates": self.config.max_total_candidates,
+                "finagent.development_split": self.analyzer.config.split_name,
+            },
+        ) as discovery_span:
+            for round_index in range(1, self.config.rounds + 1):
+                with self.tracer.span(
+                    f"finagent.factor_quant.round.{round_index}",
+                    "AGENT",
+                    {
+                        "finagent.round_index": round_index,
+                        "finagent.prior_candidate_count": len(all_candidates),
+                        "finagent.has_feedback": feedback is not None,
+                    },
+                ) as round_span:
+                    with self.tracer.span(
+                        "finagent.factor_quant.generate_candidates",
+                        "AGENT",
+                        {"finagent.requested_candidates": self.config.candidates_per_round},
+                    ):
+                        generated = tuple(
+                            self.generator.generate(
+                                task=task,
+                                count=self.config.candidates_per_round,
+                                approved_input_fields=approved_input_fields,
+                                smoke_inputs=smoke_inputs,
+                                round_index=round_index,
+                                feedback=feedback,
+                            )
+                        )
+                    if len(generated) != self.config.candidates_per_round:
+                        raise RuntimeError(
+                            "candidate generator returned an unexpected candidate count"
+                        )
+                    for artifact in generated:
+                        if artifact.digest in seen_digests or artifact.spec.feature_id in seen_ids:
+                            raise ValueError(
+                                "factor quant discovery generated a duplicate across rounds"
+                            )
+                        seen_digests.add(artifact.digest)
+                        seen_ids.add(artifact.spec.feature_id)
+                    all_candidates.extend(generated)
+                    if len(all_candidates) > self.config.max_total_candidates:
+                        raise RuntimeError("factor quant discovery exceeded max_total_candidates")
 
-            report = self.analyzer.analyze(tuple(all_candidates), request=request)
-            selection = self.selector.select(report)
-            feedback = FactorQuantAgentFeedbackV2.from_report(
-                report,
-                request=request,
-                selection=selection,
-            )
-            rounds.append(
-                AgentFactorQuantDiscoveryRound(
-                    round_index=round_index,
-                    candidates=generated,
-                    cumulative_report=report,
-                    selection=selection,
-                    feedback=feedback,
-                )
-            )
+                    with self.tracer.span(
+                        "finagent.factor_quant.analyze",
+                        "EVALUATOR",
+                        {"finagent.cumulative_candidates": len(all_candidates)},
+                    ) as analyzer_span:
+                        report = self.analyzer.analyze(tuple(all_candidates), request=request)
+                        analyzer_span.set_attributes(
+                            {
+                                "finagent.factor_quant_report_id": report.report_id,
+                                "finagent.factor_quant_candidate_count": len(report.candidates),
+                            }
+                        )
+                    with self.tracer.span(
+                        "finagent.factor_quant.select",
+                        "EVALUATOR",
+                        {"finagent.factor_quant_report_id": report.report_id},
+                    ) as selection_span:
+                        selection = self.selector.select(report)
+                        selection_span.set_attributes(
+                            {
+                                "finagent.selected_factor_count": len(selection.components),
+                                "finagent.selected_feature_digests": list(
+                                    selection.feature_digests
+                                ),
+                            }
+                        )
+                    feedback = FactorQuantAgentFeedbackV2.from_report(
+                        report,
+                        request=request,
+                        selection=selection,
+                    )
+                    self.tracer.event(
+                        "development_feedback_created",
+                        {
+                            "feedback_id": feedback.feedback_id,
+                            "report_id": feedback.report_id,
+                            "candidate_count": len(feedback.candidates),
+                            "scope": "development_only",
+                        },
+                    )
+                    rounds.append(
+                        AgentFactorQuantDiscoveryRound(
+                            round_index=round_index,
+                            candidates=generated,
+                            cumulative_report=report,
+                            selection=selection,
+                            feedback=feedback,
+                        )
+                    )
+                    round_span.set_attributes(
+                        {
+                            "finagent.new_candidate_count": len(generated),
+                            "finagent.cumulative_candidate_count": len(all_candidates),
+                            "finagent.feedback_id": feedback.feedback_id,
+                        }
+                    )
 
-        assert feedback is not None
-        final_round = rounds[-1]
-        development_ids = {item.feedback.development_data_id for item in rounds}
-        if len(development_ids) != 1:
-            raise RuntimeError("factor quant discovery rounds changed development data identity")
-        return AgentFactorQuantDiscoveryResult(
-            task_id=task.task_id,
-            development_data_id=next(iter(development_ids)),
-            rounds=tuple(rounds),
-            candidates=tuple(all_candidates),
-            final_report=final_round.cumulative_report,
-            final_selection=final_round.selection,
-            final_feedback=final_round.feedback,
-        )
+            assert feedback is not None
+            final_round = rounds[-1]
+            development_ids = {item.feedback.development_data_id for item in rounds}
+            if len(development_ids) != 1:
+                raise RuntimeError(
+                    "factor quant discovery rounds changed development data identity"
+                )
+            result = AgentFactorQuantDiscoveryResult(
+                task_id=task.task_id,
+                development_data_id=next(iter(development_ids)),
+                rounds=tuple(rounds),
+                candidates=tuple(all_candidates),
+                final_report=final_round.cumulative_report,
+                final_selection=final_round.selection,
+                final_feedback=final_round.feedback,
+            )
+            discovery_span.set_attributes(
+                {
+                    "finagent.discovery_id": result.discovery_id,
+                    "finagent.candidate_denominator": len(result.candidates),
+                    "finagent.final_report_id": result.final_report.report_id,
+                }
+            )
+            return result
