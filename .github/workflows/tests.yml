@@ -128,9 +128,6 @@ jobs:
             src/finagent/models/alpha/generated.py \
             src/finagent/research/agent_market.py \
             src/finagent/research/market_validation.py \
-            src/finagent/research/ashare_universe.py \
-            src/finagent/research/panel_feature_materializer.py \
-            src/finagent/research/ashare_factor_acceptance.py \
             src/finagent/services/portfolio.py \
             src/finagent/data/ingestion \
             src/finagent/data/local_ashare_freeze.py \
