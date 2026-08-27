@@ -11,7 +11,7 @@ from finagent.agents.llm_feature import (
     LLMCandidateRepairExhaustedError,
     LLMFeatureGenerator,
 )
-from finagent.agents.observability import AgentTracer
+from finagent.agents.observability import AgentTracer, default_agent_tracer
 
 
 def _scope_hash(
@@ -33,14 +33,7 @@ def _scope_hash(
 
 
 class ResilientLLMMarketFeatureCandidateGenerator:
-    """Generate a bounded candidate family with repair, replacement and resume semantics.
-
-    Each candidate slot has a stable logical task id. Successful slots are checkpointed
-    after static validation and sandbox smoke, so a restarted A2 run reuses the exact
-    artifact instead of spending tokens and mutating the search denominator. A candidate
-    that exhausts its internal conformance-repair budget may be regenerated a bounded
-    number of times before the run fails.
-    """
+    """Generate a bounded candidate family with repair, replacement and resume semantics."""
 
     def __init__(
         self,
@@ -59,7 +52,7 @@ class ResilientLLMMarketFeatureCandidateGenerator:
         self.max_candidates = max_candidates
         self.max_replacements_per_candidate = max_replacements_per_candidate
         self.checkpoint_store = checkpoint_store
-        self.tracer = tracer or generator.tracer
+        self.tracer = tracer or default_agent_tracer()
 
     def _checkpointed(
         self,
@@ -68,15 +61,10 @@ class ResilientLLMMarketFeatureCandidateGenerator:
     ) -> GeneratedFeatureArtifact | None:
         if self.checkpoint_store is None:
             return None
-        checkpoint = self.checkpoint_store.get(task.task_id)
+        scope = _scope_hash(self.generator, task, approved_input_fields)
+        checkpoint = self.checkpoint_store.get(task.task_id, scope)
         if checkpoint is None:
             return None
-        expected_scope = _scope_hash(self.generator, task, approved_input_fields)
-        if checkpoint.scope_hash != expected_scope:
-            raise ValueError(
-                f"generation checkpoint scope changed for logical candidate {task.task_id!r}; "
-                "use a new task_id/state_dir or clear the stale checkpoint intentionally"
-            )
         if self.generator.feature_store is None:
             raise RuntimeError("checkpoint resume requires LLMFeatureGenerator.feature_store")
         artifact = self.generator.feature_store.get(checkpoint.artifact_digest)
