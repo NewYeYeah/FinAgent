@@ -7,7 +7,6 @@ from typing import Any
 
 import numpy as np
 
-from finagent.domain.assets import AssetId
 from finagent.domain.experiments import ArtifactRef, ArtifactType
 from finagent.domain.research import DatasetRequest, ResearchDataset, ResearchSplit
 
@@ -21,7 +20,7 @@ def is_daily_nontrading_placeholder(row: Mapping[str, Any]) -> bool:
     """Return True for the audited vendor encoding of a suspended/no-trade daily row.
 
     The observed local dataset uses zero open/high/low and zero flow while carrying
-    the previous close forward in ``close``.  This predicate is intentionally strict:
+    the previous close forward in ``close``. This predicate is intentionally strict:
     any other non-positive/OHLC-invalid pattern remains a data-quality error.
     """
 
@@ -53,7 +52,7 @@ class LocalAshareParquetDataAdapter(_BaseLocalAshareParquetDataAdapter):
     """Research adapter with explicit A-share suspension/session semantics.
 
     Daily no-trade placeholders are retained in the immutable vendor source but are
-    not converted into ``PriceBar`` objects.  Forward labels are measured on the
+    not converted into ``PriceBar`` objects. Forward labels are measured on the
     common panel session clock: ``forward_*_h`` targets the h-th later panel session,
     and becomes NaN when the asset has no tradable bar on that target session.
     This prevents a one-session label from silently stretching across a suspension.
