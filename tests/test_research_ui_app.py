@@ -5,12 +5,10 @@ from pathlib import Path
 
 import pytest
 
-streamlit_testing = pytest.importorskip("streamlit.testing.v1")
-from streamlit.testing.v1 import AppTest
-
 from tests.test_research_visualization import _report
 
 
+AppTest = pytest.importorskip("streamlit.testing.v1").AppTest
 ROOT = Path(__file__).resolve().parents[1]
 
 
