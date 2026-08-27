@@ -612,23 +612,41 @@ def main() -> None:
                 lambda: _overview_page(report),
                 title="Overview",
                 icon="📊",
+                url_path="overview",
                 default=True,
             ),
             st.Page(
                 lambda: _factor_page(report, features),
                 title="Factor Lab",
                 icon="🧪",
+                url_path="factor-lab",
             ),
-            st.Page(lambda: _ensemble_page(report), title="Ensemble", icon="🧩"),
-            st.Page(lambda: _universe_page(report), title="Universe", icon="🗂️"),
+            st.Page(
+                lambda: _ensemble_page(report),
+                title="Ensemble",
+                icon="🧩",
+                url_path="ensemble",
+            ),
+            st.Page(
+                lambda: _universe_page(report),
+                title="Universe",
+                icon="🗂️",
+                url_path="universe",
+            ),
         ],
         "Agent & Governance": [
             st.Page(
                 lambda: _agent_page(report, features, trace, phoenix_url),
                 title="Agent Discovery",
                 icon="🤖",
+                url_path="agent-discovery",
             ),
-            st.Page(lambda: _lineage_page(report), title="Lineage", icon="🔒"),
+            st.Page(
+                lambda: _lineage_page(report),
+                title="Lineage",
+                icon="🔒",
+                url_path="lineage",
+            ),
         ],
     }
     navigation = st.navigation(pages)
