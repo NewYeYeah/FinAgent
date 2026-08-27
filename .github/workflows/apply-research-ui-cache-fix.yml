@@ -1,0 +1,39 @@
+name: apply-research-ui-cache-fix
+
+on:
+  push:
+    branches:
+      - research-visualization-v1
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research-visualization-v1
+          fetch-depth: 0
+      - name: Use non-serializing caches for immutable report views
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('apps/research_ui.py')
+          text = path.read_text(encoding='utf-8')
+          old = '@st.cache_data(show_spinner=False)'
+          count = text.count(old)
+          if count != 4:
+              raise RuntimeError(f'expected 4 cache decorators, found {count}')
+          path.write_text(text.replace(old, '@st.cache_resource(show_spinner=False)'), encoding='utf-8')
+          PY
+          python -m py_compile apps/research_ui.py
+      - name: Commit application fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f .github/workflows/apply-research-ui-cache-fix.yml
+          git add apps/research_ui.py
+          git commit -m "ui: use resource caching for immutable report views"
+          git push origin HEAD:research-visualization-v1
