@@ -204,9 +204,9 @@ def _layout(tmp_path: Path) -> LocalAshareDatasetLayout:
     minute_rows: list[list[object]] = []
     for index, timestamp in enumerate(times):
         open_ = 9.8 if index == 0 else 10.0
-        high = 10.5 if index == 100 else max(open_, 10.0)
-        low = 9.5 if index == 80 else min(open_, 10.0)
         close = 10.2 if index == len(times) - 1 else 10.0
+        high = max(open_, close, 10.5 if index == 100 else 10.0)
+        low = min(open_, close, 9.5 if index == 80 else 10.0)
         volume = 0.0 if timestamp.time() == time(14, 59) else 100.0
         amount = volume * close
         minute_rows.append(
