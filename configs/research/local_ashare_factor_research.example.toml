@@ -3,8 +3,8 @@ mode = "deterministic"
 root = "D:/Data/A-Share"
 frozen_manifest = "data/manifests/local_ashare_daily.json"
 supplement_root = "reference_data/a_share"
-state_dir = ".finagent/local-ashare-factor-a2"
-report_path = "reports/local_ashare_factor_research_a2.json"
+state_dir = ".finagent/local-ashare-factor-a2p5"
+report_path = "reports/local_ashare_factor_research_a2p5.json"
 
 # The fixed candidate universe is selected using only data observed before development.
 universe_selection_date = 2017-12-29
