@@ -14,7 +14,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from .semantic import (
     EvidenceAuthority,
@@ -62,7 +62,7 @@ def _number(value: object, default: float = 0.0) -> float:
     if value is None:
         return default
     try:
-        result = float(value)
+        result = float(cast(Any, value))
     except (TypeError, ValueError):
         return default
     return result if math.isfinite(result) else default
@@ -72,7 +72,7 @@ def _integer(value: object, default: int = 0) -> int:
     if value is None:
         return default
     try:
-        return int(value)
+        return int(cast(Any, value))
     except (TypeError, ValueError):
         return default
 
@@ -301,7 +301,7 @@ class WorkspaceV2Projection:
             for ref in bundle.refs:
                 if ref.evidence_id in conflicts:
                     continue
-                row = {
+                row: dict[str, object] = {
                     "evidence_id": ref.evidence_id,
                     "schema_version": ref.schema_version,
                     "evidence_type": ref.evidence_type,
@@ -348,7 +348,8 @@ class WorkspaceV2Projection:
         os.close(fd)
         temp = Path(temp_name)
         try:
-            with sqlite3.connect(temp) as connection:
+            connection = sqlite3.connect(temp)
+            try:
                 connection.execute(
                     """
                     CREATE TABLE evidence_catalog (
@@ -404,6 +405,8 @@ class WorkspaceV2Projection:
                     "INSERT INTO metadata VALUES (?, ?)", tuple(metadata.items())
                 )
                 connection.commit()
+            finally:
+                connection.close()
             os.replace(temp, path)
         finally:
             temp.unlink(missing_ok=True)
@@ -1147,7 +1150,7 @@ class WorkspaceV2Projection:
         reason_counts: Counter[str] = Counter(
             {str(key): int(value) for key, value in _mapping(aggregate.get("reason_counts")).items()}
         )
-        fee_totals: Counter[str] = Counter()
+        fee_totals: dict[str, float] = {}
         session_items: list[dict[str, object]] = []
         target_realized: list[dict[str, object]] = []
         if ledger is not None:
@@ -1177,8 +1180,8 @@ class WorkspaceV2Projection:
                         "exchange_handling_fee",
                         "regulatory_fee",
                     ):
-                        fee_totals[key] += _number(fees.get(key))
-                    fee_totals["slippage"] += _number(fill.get("slippage"))
+                        fee_totals[key] = fee_totals.get(key, 0.0) + _number(fees.get(key))
+                    fee_totals["slippage"] = fee_totals.get("slippage", 0.0) + _number(fill.get("slippage"))
                 session_items.append(
                     {
                         "fold_id": _text(row.get("fold_id")),
@@ -1317,16 +1320,23 @@ class WorkspaceV2Projection:
                 "warning": "source A2.6 report is not present in configured report roots",
             }
         )
-        gate_rows = self.program_gates(source.root.program_id)["items"] if source else []
+        gate_rows = (
+            _sequence(self.program_gates(source.root.program_id).get("items"))
+            if source
+            else ()
+        )
         factor_summary: list[dict[str, object]] = []
-        for item in gate_rows:
+        for raw_item in gate_rows:
+            item = _mapping(raw_item)
             factor_summary.append(
                 {
-                    "feature_id": item["feature_id"],
-                    "feature_digest": item["feature_digest"],
-                    "passed": item["passed"],
-                    "robust_score": item["robust_score"],
-                    "reason_codes": ";".join(str(value) for value in item["reason_codes"]),
+                    "feature_id": item.get("feature_id", ""),
+                    "feature_digest": item.get("feature_digest", ""),
+                    "passed": item.get("passed", False),
+                    "robust_score": item.get("robust_score", 0.0),
+                    "reason_codes": ";".join(
+                        str(value) for value in _sequence(item.get("reason_codes"))
+                    ),
                 }
             )
         fold_summary: list[dict[str, object]] = []
