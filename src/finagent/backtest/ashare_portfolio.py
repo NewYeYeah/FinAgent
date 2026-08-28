@@ -982,6 +982,12 @@ class AshareExecutionAwarePortfolioValidator:
         state: AshareAccountState,
         universe: tuple[AssetId, ...],
     ) -> PortfolioTarget:
+        if alpha_model.calibration.non_negative_slope <= 1e-15:
+            return self._cash_target(
+                asof=signal_asof,
+                state=state,
+                reason="NONPOSITIVE_ALPHA_CALIBRATION_SLOPE",
+            )
         lookback = max(alpha_model.min_lookback, self.config.risk_lookback)
         fields = tuple(dict.fromkeys((*alpha_model.required_features, "simple_return_1")))
         window = self.research_adapter.feature_window(

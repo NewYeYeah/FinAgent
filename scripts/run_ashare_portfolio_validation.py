@@ -107,10 +107,13 @@ def _plan(report: Mapping[str, object]) -> AshareExpandingWalkForwardPlan:
                 test=_time_range(fold["test"], "fold test"),
             )
         )
-    return AshareExpandingWalkForwardPlan(
+    plan = AshareExpandingWalkForwardPlan(
         folds=tuple(folds),
         reserve=_time_range(raw_plan["reserve"], "walk_forward reserve"),
     )
+    if str(raw_plan.get("plan_id", "")) != plan.plan_id:
+        raise ValueError("A2.6 walk-forward content differs from its frozen plan_id")
+    return plan
 
 
 def _selection(report: Mapping[str, object]) -> AshareRobustFactorSelection:
@@ -128,7 +131,7 @@ def _selection(report: Mapping[str, object]) -> AshareRobustFactorSelection:
                 weight=float(value["weight"]),
             )
         )
-    return AshareRobustFactorSelection(
+    selection = AshareRobustFactorSelection(
         walk_forward_report_id=str(raw["walk_forward_report_id"]),
         gate_report_id=str(raw["gate_report_id"]),
         status=str(raw["status"]),
@@ -141,6 +144,9 @@ def _selection(report: Mapping[str, object]) -> AshareRobustFactorSelection:
         ),
         components=tuple(components),
     )
+    if str(raw.get("selection_id", "")) != selection.selection_id:
+        raise ValueError("A2.6 factor-family content differs from its selection_id")
+    return selection
 
 
 def _fee_schedule(values: Mapping[str, object]) -> AshareFeeSchedule:
