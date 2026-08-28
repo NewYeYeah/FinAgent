@@ -5,6 +5,8 @@ import json
 import math
 import os
 import subprocess
+import time
+from concurrent.futures import ThreadPoolExecutor
 import sys
 from dataclasses import dataclass
 from types import MappingProxyType
@@ -166,13 +168,13 @@ class LocalFeatureSandbox:
     def run(self, request: FeatureSandboxRequest) -> FeatureSandboxResult:
         return self.run_batch((request,))[0]
 
-    def run_batch(
+    def _prepare_batch(
         self,
         requests: Sequence[FeatureSandboxRequest],
-    ) -> tuple[FeatureSandboxResult, ...]:
+    ) -> tuple[tuple[FeatureSandboxRequest, ...], str]:
         requests = tuple(requests)
         if not requests:
-            return ()
+            return (), ""
         first = requests[0]
         for request in requests:
             if request.source != first.source or request.spec != first.spec:
@@ -188,29 +190,25 @@ class LocalFeatureSandbox:
             },
             allow_nan=False,
         )
-        env = {"PYTHONIOENCODING": "utf-8", "PYTHONHASHSEED": "0"}
-        try:
-            completed = subprocess.run(
-                [sys.executable, "-I", "-S", "-c", _WRAPPER],
-                input=payload,
-                text=True,
-                capture_output=True,
-                timeout=self.limits.wall_time_seconds,
-                env=env,
-                close_fds=True,
-                preexec_fn=_resource_limiter(self.limits),
-            )
-        except subprocess.TimeoutExpired as exc:
-            raise FeatureSandboxError("generated feature exceeded sandbox wall-time limit") from exc
-        if completed.returncode != 0:
-            error = completed.stderr.strip()[-4000:]
+        return requests, payload
+
+    def _decode_batch(
+        self,
+        requests: tuple[FeatureSandboxRequest, ...],
+        *,
+        stdout: str,
+        stderr: str,
+        returncode: int,
+    ) -> tuple[FeatureSandboxResult, ...]:
+        if returncode != 0:
+            error = stderr.strip()[-4000:]
             raise FeatureSandboxError(
                 f"generated feature failed in sandbox: {error or 'unknown error'}"
             )
-        if len(completed.stdout.encode("utf-8")) > self.limits.max_output_bytes:
+        if len(stdout.encode("utf-8")) > self.limits.max_output_bytes:
             raise FeatureSandboxError("generated feature output exceeded max_output_bytes")
         try:
-            decoded = json.loads(completed.stdout)
+            decoded = json.loads(stdout)
         except json.JSONDecodeError as exc:
             raise FeatureSandboxError("sandbox returned invalid JSON") from exc
         batch_values = decoded.get("batch_values") if isinstance(decoded, dict) else None
@@ -237,3 +235,111 @@ class LocalFeatureSandbox:
                     normalized.append(number)
             results.append(FeatureSandboxResult(tuple(normalized)))
         return tuple(results)
+
+    def _start_process(self) -> subprocess.Popen[str]:
+        env = {"PYTHONIOENCODING": "utf-8", "PYTHONHASHSEED": "0"}
+        return subprocess.Popen(
+            [sys.executable, "-I", "-S", "-c", _WRAPPER],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env=env,
+            close_fds=True,
+            preexec_fn=_resource_limiter(self.limits),
+        )
+
+    def _communicate(
+        self,
+        process: subprocess.Popen[str],
+        payload: str,
+        started_at: float,
+    ) -> tuple[str, str, int]:
+        remaining = max(0.01, self.limits.wall_time_seconds - (time.monotonic() - started_at))
+        try:
+            stdout, stderr = process.communicate(input=payload, timeout=remaining)
+        except subprocess.TimeoutExpired as exc:
+            process.kill()
+            process.communicate()
+            raise FeatureSandboxError(
+                "generated feature exceeded sandbox wall-time limit"
+            ) from exc
+        return stdout, stderr, int(process.returncode or 0)
+
+    def run_batch(
+        self,
+        requests: Sequence[FeatureSandboxRequest],
+    ) -> tuple[FeatureSandboxResult, ...]:
+        prepared, payload = self._prepare_batch(requests)
+        if not prepared:
+            return ()
+        started_at = time.monotonic()
+        process = self._start_process()
+        stdout, stderr, returncode = self._communicate(process, payload, started_at)
+        return self._decode_batch(
+            prepared, stdout=stdout, stderr=stderr, returncode=returncode
+        )
+
+    def run_batches(
+        self,
+        batches: Sequence[Sequence[FeatureSandboxRequest]],
+        *,
+        max_workers: int,
+    ) -> tuple[tuple[FeatureSandboxResult, ...], ...]:
+        """Execute independent batches concurrently without nested Python workers.
+
+        Child processes are created on the caller thread before any communication
+        threads start. This keeps the POSIX ``preexec_fn`` resource limiter out of
+        multithreaded ``Popen`` calls while still allowing multiple generated-feature
+        subprocesses to compute concurrently.
+        """
+
+        if max_workers < 1:
+            raise ValueError("max_workers must be >= 1")
+        prepared_batches = [self._prepare_batch(batch) for batch in batches]
+        if not prepared_batches:
+            return ()
+        output: list[tuple[FeatureSandboxResult, ...]] = []
+        for start in range(0, len(prepared_batches), max_workers):
+            wave = prepared_batches[start : start + max_workers]
+            wave_output: list[tuple[FeatureSandboxResult, ...] | None] = [None] * len(wave)
+            running: list[
+                tuple[int, tuple[FeatureSandboxRequest, ...], str, subprocess.Popen[str], float]
+            ] = []
+            try:
+                for wave_index, (requests, payload) in enumerate(wave):
+                    if not requests:
+                        wave_output[wave_index] = ()
+                        continue
+                    started_at = time.monotonic()
+                    running.append(
+                        (wave_index, requests, payload, self._start_process(), started_at)
+                    )
+                if running:
+                    with ThreadPoolExecutor(
+                        max_workers=len(running),
+                        thread_name_prefix="finagent-sandbox-io",
+                    ) as executor:
+                        futures = [
+                            executor.submit(self._communicate, process, payload, started_at)
+                            for _, _, payload, process, started_at in running
+                        ]
+                        for (wave_index, requests, _, _, _), future in zip(
+                            running, futures
+                        ):
+                            stdout, stderr, returncode = future.result()
+                            wave_output[wave_index] = self._decode_batch(
+                                requests,
+                                stdout=stdout,
+                                stderr=stderr,
+                                returncode=returncode,
+                            )
+                if any(result is None for result in wave_output):
+                    raise FeatureSandboxError("sandbox batch wave produced incomplete results")
+                output.extend(result for result in wave_output if result is not None)
+            except Exception:
+                for _, _, _, process, _ in running:
+                    if process.poll() is None:
+                        process.kill()
+                raise
+        return tuple(output)

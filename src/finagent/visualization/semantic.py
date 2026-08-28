@@ -22,8 +22,11 @@ class EvidenceAuthority(str, Enum):
 
 
 class EvidenceStage(str, Enum):
+    DATA_CERTIFICATION = "data_certification"
+    SYSTEM_SMOKE = "system_smoke"
     A2_FACTOR_ACCEPTANCE = "a2_factor_acceptance"
     A2P6_ROBUST_RESEARCH = "a2p6_robust_research"
+    A3_EXECUTION_SMOKE = "a3_execution_smoke"
     A4_PORTFOLIO_VALIDATION = "a4_portfolio_validation"
     AGENT_RUN = "agent_run"
     UNKNOWN = "unknown"
@@ -1031,6 +1034,155 @@ def _portfolio_validation_bundle(
     )
 
 
+def _diagnostic_root(
+    payload: Mapping[str, Any],
+    *,
+    source_uri: str,
+    git_sha: str,
+    evidence_type: str,
+    stage: EvidenceStage,
+    label: str,
+    data_version: str,
+    status: str,
+    metadata: Mapping[str, Any] | None = None,
+) -> EvidenceRef:
+    schema = _text(payload.get("schema_version"), required=True, name="schema_version")
+    digest = _payload_digest(payload)
+    return EvidenceRef(
+        evidence_id=f"{evidence_type}-{digest[:24]}",
+        evidence_type=evidence_type,
+        schema_version=schema,
+        stage=stage,
+        authority=EvidenceAuthority.DIAGNOSTIC,
+        artifact_digest=digest,
+        source_uri=source_uri,
+        data_version=data_version,
+        git_sha=git_sha,
+        metadata={"label": label, "status": status, **dict(metadata or {})},
+    )
+
+
+def _local_ashare_certification_bundle(
+    payload: Mapping[str, Any],
+    *,
+    source_uri: str,
+    git_sha: str,
+) -> EvidenceBundle:
+    passed = bool(payload.get("passed", False))
+    data_version = _text(payload.get("data_version")) or "unknown"
+    issues = tuple(
+        _mapping(value, "certification issue")
+        for value in _sequence(payload.get("issues"), "issues", required=False)
+    )
+    errors = sum(1 for issue in issues if _text(issue.get("severity")) == "error")
+    warnings = sum(1 for issue in issues if _text(issue.get("severity")) == "warning")
+    status = "PASS" if passed else "FAIL"
+    root = _diagnostic_root(
+        payload,
+        source_uri=source_uri,
+        git_sha=git_sha,
+        evidence_type="local_ashare_certification",
+        stage=EvidenceStage.DATA_CERTIFICATION,
+        label="Local A-share data certification",
+        data_version=data_version,
+        status=status,
+        metadata={
+            "root": _text(payload.get("root")),
+            "issue_count": len(issues),
+            "error_count": errors,
+            "warning_count": warnings,
+        },
+    )
+    return EvidenceBundle(
+        root=root,
+        refs=(root,),
+        system_status=status,
+        research_status=f"DATA_CERTIFICATION_{status}",
+        reserve_status="not_applicable",
+        promotion_eligible=False,
+        metadata={"source_schema": root.schema_version, "diagnostic": True},
+    )
+
+
+def _local_ashare_system_smoke_bundle(
+    payload: Mapping[str, Any],
+    *,
+    source_uri: str,
+    git_sha: str,
+) -> EvidenceBundle:
+    passed = bool(payload.get("passed", False))
+    dataset = _mapping(payload.get("research_dataset"), "research_dataset", required=False)
+    security_master = _mapping(payload.get("security_master"), "security_master", required=False)
+    data_version = (
+        _text(dataset.get("data_version"))
+        or _text(payload.get("frozen_dataset_version"))
+        or "unknown"
+    )
+    status = "PASS" if passed else "FAIL"
+    root = _diagnostic_root(
+        payload,
+        source_uri=source_uri,
+        git_sha=git_sha,
+        evidence_type="local_ashare_system_smoke",
+        stage=EvidenceStage.SYSTEM_SMOKE,
+        label="Local A-share system smoke",
+        data_version=data_version,
+        status=status,
+        metadata={
+            "dataset_digest": _text(dataset.get("digest")),
+            "survivorship_certified": bool(security_master.get("survivorship_certified", False)),
+            "scope": _text(payload.get("scope")),
+        },
+    )
+    return EvidenceBundle(
+        root=root,
+        refs=(root,),
+        system_status=status,
+        research_status=f"SYSTEM_SMOKE_{status}",
+        reserve_status="not_applicable",
+        promotion_eligible=False,
+        metadata={"source_schema": root.schema_version, "diagnostic": True},
+    )
+
+
+def _ashare_execution_smoke_bundle(
+    payload: Mapping[str, Any],
+    *,
+    source_uri: str,
+    git_sha: str,
+) -> EvidenceBundle:
+    passed = bool(payload.get("passed", False))
+    data_version = _text(payload.get("data_version")) or "unknown"
+    checks = _mapping(payload.get("checks"), "checks", required=False)
+    boundaries = _mapping(payload.get("boundaries"), "boundaries", required=False)
+    status = "PASS" if passed else "FAIL"
+    root = _diagnostic_root(
+        payload,
+        source_uri=source_uri,
+        git_sha=git_sha,
+        evidence_type="ashare_execution_smoke",
+        stage=EvidenceStage.A3_EXECUTION_SMOKE,
+        label="A3 execution semantics smoke",
+        data_version=data_version,
+        status=status,
+        metadata={
+            "scope": _text(payload.get("scope")),
+            "check_count": len(checks),
+            "reserve_consumed": bool(boundaries.get("reserve_consumed", False)),
+            "promotion_eligible": bool(boundaries.get("promotion_eligible", False)),
+        },
+    )
+    return EvidenceBundle(
+        root=root,
+        refs=(root,),
+        system_status=status,
+        research_status=f"A3_EXECUTION_SMOKE_{status}",
+        reserve_status="not_applicable",
+        promotion_eligible=False,
+        metadata={"source_schema": root.schema_version, "diagnostic": True},
+    )
+
+
 def _system_status(payload: Mapping[str, Any]) -> str:
     system = _mapping(payload.get("system_acceptance"), "system_acceptance", required=False)
     if system:
@@ -1054,10 +1206,16 @@ def parse_evidence_report(
     if not isinstance(payload, Mapping):
         raise EvidenceContractError("evidence report root must be a JSON object")
     schema = _text(payload.get("schema_version"), required=True, name="schema_version")
+    if schema == "finagent.local-ashare-certification.v1":
+        return _local_ashare_certification_bundle(payload, source_uri=source_uri, git_sha=git_sha)
+    if schema == "finagent.local-ashare-system-smoke.v1":
+        return _local_ashare_system_smoke_bundle(payload, source_uri=source_uri, git_sha=git_sha)
     if schema.startswith("finagent.ashare-factor-research-acceptance.v"):
         return _factor_acceptance_bundle(payload, source_uri=source_uri, git_sha=git_sha)
     if schema == "finagent.ashare-robust-research-program.v1":
         return _robust_program_bundle(payload, source_uri=source_uri, git_sha=git_sha)
+    if schema == "finagent.ashare-execution-smoke.v1":
+        return _ashare_execution_smoke_bundle(payload, source_uri=source_uri, git_sha=git_sha)
     if schema == "finagent.ashare-portfolio-validation.v1":
         return _portfolio_validation_bundle(payload, source_uri=source_uri, git_sha=git_sha)
     raise EvidenceContractError(f"unsupported evidence schema: {schema}")

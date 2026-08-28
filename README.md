@@ -137,6 +137,7 @@ python scripts/run_research_ui.py \
 - [Architecture decisions](docs/architecture/decisions.md)
 - [Roadmap](docs/development/roadmap.md)
 - [Changelog](docs/development/changelog.md)
+- [Automatic parallel runtime](docs/development/parallel-runtime.md)
 - [Risk register](docs/development/risks.md)
 
 ## Core boundary

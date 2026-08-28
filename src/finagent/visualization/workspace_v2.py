@@ -9,12 +9,15 @@ import os
 import sqlite3
 import tempfile
 import zipfile
+from concurrent.futures import ThreadPoolExecutor
 from collections import Counter
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
+
+from finagent.runtime import DEFAULT_PARALLEL_POLICY, ParallelPlan
 
 from .semantic import (
     EvidenceAuthority,
@@ -198,6 +201,7 @@ class WorkspaceV2Projection:
         self._by_root_id = {bundle.root.evidence_id: bundle for bundle in self.bundles}
         self._raw: dict[str, Mapping[str, Any]] = {}
         self._warnings: list[str] = []
+        self._parallel_plans: dict[str, ParallelPlan] = {}
         self._load_raw_reports()
         self._ledgers = self._scan_ledgers()
         self._catalog_rows = self._build_catalog_rows()
@@ -207,6 +211,9 @@ class WorkspaceV2Projection:
     @property
     def warnings(self) -> tuple[str, ...]:
         return tuple(self._warnings)
+
+    def parallel_diagnostics(self) -> dict[str, object]:
+        return {name: plan.to_dict() for name, plan in sorted(self._parallel_plans.items())}
 
     @staticmethod
     def _candidate_roots(paths: Iterable[Path]) -> tuple[Path, ...]:
@@ -219,21 +226,46 @@ class WorkspaceV2Projection:
         return tuple(sorted(roots, key=lambda item: item.as_posix()))
 
     def _load_raw_reports(self) -> None:
-        for bundle in self.bundles:
-            source = Path(bundle.root.source_uri).expanduser()
+        entries = tuple(
+            (bundle.root.evidence_id, Path(bundle.root.source_uri).expanduser())
+            for bundle in self.bundles
+        )
+        plan = DEFAULT_PARALLEL_POLICY.resolve(
+            len(entries), workload="io", per_worker_memory_mb=64
+        )
+        self._parallel_plans["v2_raw_reports"] = plan
+
+        def load(entry: tuple[str, Path]):
+            evidence_id, source = entry
             if not source.is_file():
-                self._warnings.append(
-                    f"{bundle.root.evidence_id}: source report is unavailable for V2 raw projection"
-                )
-                continue
+                return evidence_id, source, None, FileNotFoundError(source)
             try:
-                payload = _read_json(source)
+                return evidence_id, source, _read_json(source), None
             except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
-                self._warnings.append(
-                    f"{source}: V2 raw projection failed: {type(exc).__name__}: {exc}"
-                )
+                return evidence_id, source, None, exc
+
+        if plan.workers > 1 and len(entries) > 1:
+            with ThreadPoolExecutor(
+                max_workers=plan.workers,
+                thread_name_prefix="finagent-v2-raw",
+            ) as executor:
+                loaded = tuple(executor.map(load, entries))
+        else:
+            loaded = tuple(load(entry) for entry in entries)
+
+        for evidence_id, source, payload, error in loaded:
+            if error is not None:
+                if isinstance(error, FileNotFoundError):
+                    self._warnings.append(
+                        f"{evidence_id}: source report is unavailable for V2 raw projection"
+                    )
+                else:
+                    self._warnings.append(
+                        f"{source}: V2 raw projection failed: {type(error).__name__}: {error}"
+                    )
                 continue
-            self._raw[bundle.root.evidence_id] = payload
+            assert payload is not None
+            self._raw[evidence_id] = payload
 
     def _scan_ledgers(self) -> dict[str, LedgerArtifact]:
         expected = {
@@ -243,33 +275,66 @@ class WorkspaceV2Projection:
             == "finagent.ashare-portfolio-validation.v1"
         }
         expected.discard("")
+        paths = tuple(
+            sorted(
+                {
+                    path.resolve()
+                    for root in self._candidate_roots(self.report_paths)
+                    for path in root.rglob("*.jsonl")
+                    if path.is_file()
+                },
+                key=lambda value: value.as_posix(),
+            )
+        )
+        plan = DEFAULT_PARALLEL_POLICY.resolve(
+            len(paths), workload="io", per_worker_memory_mb=128
+        )
+        self._parallel_plans["v2_ledgers"] = plan
         if not expected:
             return {}
+
+        def inspect(path: Path):
+            try:
+                rows = _read_jsonl(path)
+                digest = _digest("a4-execution-ledger", rows, 64)
+                return path, digest, rows, None
+            except (
+                OSError,
+                ValueError,
+                TypeError,
+                json.JSONDecodeError,
+                EvidenceContractError,
+            ) as exc:
+                return path, "", (), exc
+
+        if plan.workers > 1 and len(paths) > 1:
+            with ThreadPoolExecutor(
+                max_workers=plan.workers,
+                thread_name_prefix="finagent-v2-ledger",
+            ) as executor:
+                inspected = tuple(executor.map(inspect, paths))
+        else:
+            inspected = tuple(inspect(path) for path in paths)
+
         output: dict[str, LedgerArtifact] = {}
-        for root in self._candidate_roots(self.report_paths):
-            for path in root.rglob("*.jsonl"):
-                if not path.is_file():
-                    continue
-                try:
-                    rows = _read_jsonl(path)
-                    digest = _digest("a4-execution-ledger", rows, 64)
-                except (OSError, ValueError, TypeError, json.JSONDecodeError, EvidenceContractError) as exc:
-                    self._warnings.append(
-                        f"{path}: ledger scan skipped: {type(exc).__name__}: {exc}"
-                    )
-                    continue
-                if digest not in expected:
-                    continue
-                artifact = LedgerArtifact(path=path.resolve(), digest=digest, rows=rows)
-                existing = output.get(digest)
-                if existing is not None and existing.rows != rows:
-                    self._warnings.append(
-                        f"{path}: conflicting execution ledgers share digest {digest!r}; omitted"
-                    )
-                    output.pop(digest, None)
-                    expected.discard(digest)
-                    continue
-                output[digest] = artifact
+        for path, digest, rows, error in inspected:
+            if error is not None:
+                self._warnings.append(
+                    f"{path}: ledger scan skipped: {type(error).__name__}: {error}"
+                )
+                continue
+            if digest not in expected:
+                continue
+            artifact = LedgerArtifact(path=path, digest=digest, rows=rows)
+            existing = output.get(digest)
+            if existing is not None and existing.rows != rows:
+                self._warnings.append(
+                    f"{path}: conflicting execution ledgers share digest {digest!r}; omitted"
+                )
+                output.pop(digest, None)
+                expected.discard(digest)
+                continue
+            output[digest] = artifact
         missing = sorted(expected - set(output))
         for digest in missing:
             self._warnings.append(

@@ -1,6 +1,9 @@
 export type EvidenceStage =
+  | "data_certification"
+  | "system_smoke"
   | "a2_factor_acceptance"
   | "a2p6_robust_research"
+  | "a3_execution_smoke"
   | "a4_portfolio_validation"
   | "agent_run"
   | "unknown";
@@ -29,6 +32,7 @@ export interface CatalogResponse {
   read_only: boolean;
   items: CatalogItem[];
   warnings: string[];
+  notices?: string[];
 }
 
 export interface EvidenceRef {

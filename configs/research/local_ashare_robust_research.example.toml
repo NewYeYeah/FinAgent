@@ -62,6 +62,7 @@ min_periods = 150
 annualization = 252.0
 winsor_lower_quantile = 0.01
 winsor_upper_quantile = 0.99
+# Batch size controls payload amortization only; worker count is auto-budgeted from CPU/RAM.
 sandbox_batch_size = 512
 smoke_lookback = 64
 

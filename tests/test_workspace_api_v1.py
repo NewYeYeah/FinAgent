@@ -160,3 +160,80 @@ def test_workspace_serves_built_spa_without_exposing_report_files(tmp_path: Path
     assert client.get("/reports/a26.json").text != (reports / "a26.json").read_text(
         encoding="utf-8"
     )
+
+
+def test_workspace_catalog_accepts_project_diagnostics_and_demotes_replays_to_notices(
+    tmp_path: Path,
+) -> None:
+    import json
+
+    a26 = _a2p6_report()
+    (tmp_path / "a26.json").write_text(json.dumps(a26), encoding="utf-8")
+    (tmp_path / "a26_replay.json").write_text(json.dumps(a26), encoding="utf-8")
+    (tmp_path / "execution_smoke.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "finagent.ashare-execution-smoke.v1",
+                "scope": "historical execution semantics only",
+                "passed": True,
+                "data_version": "local-a-share-test",
+                "checks": {"T_plus_1_inventory": True},
+                "boundaries": {
+                    "reserve_consumed": False,
+                    "promotion_eligible": False,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "local_certification.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "finagent.local-ashare-certification.v1",
+                "passed": True,
+                "data_version": "cert-v1",
+                "root": str(tmp_path),
+                "basic": {},
+                "daily": {},
+                "intraday": {},
+                "reconciliation": {},
+                "issues": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "system_smoke.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "finagent.local-ashare-system-smoke.v1",
+                "scope": "historical_daily_research_only_no_execution_no_realtime",
+                "passed": True,
+                "frozen_dataset_version": "frozen-v1",
+                "research_dataset": {
+                    "artifact_id": "smoke",
+                    "digest": "d" * 64,
+                    "data_version": "local-v1",
+                },
+                "security_master": {
+                    "survivorship_certified": False,
+                    "limitations": ["fixture"],
+                },
+                "splits": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    client = TestClient(create_workspace_app(report_paths=(tmp_path,), frontend_dir=None))
+    catalog = client.get("/api/v1/catalog").json()
+    stages = {item["stage"] for item in catalog["items"]}
+    assert {
+        "data_certification",
+        "system_smoke",
+        "a2p6_robust_research",
+        "a3_execution_smoke",
+    } <= stages
+    assert catalog["warnings"] == []
+    assert len(catalog["notices"]) == 1
+    assert "duplicate replay/equivalent evidence" in catalog["notices"][0]
+    assert client.get("/api/v1/health").json()["notice_count"] == 1

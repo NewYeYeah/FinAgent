@@ -27,9 +27,13 @@ Windows PowerShell:
 ```powershell
 $env:PYTHONUTF8 = "1"
 $env:PYTHONNOUSERSITE = "1"
-$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD = "1"
 python -m pytest -q
 ```
+
+`pytest.ini` blocks environment-level ROS2 and Phoenix plugins that FinAgent does not
+use. This is intentional: an incompatible optional `arize-phoenix` installation must
+not be able to crash FinAgent before test collection. For maximum isolation you may
+still set `$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD = "1"`; CI does so explicitly.
 
 Static/package checks:
 

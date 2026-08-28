@@ -2,6 +2,15 @@
 
 This file summarizes meaningful development milestones. Commit and pull-request history remains the detailed audit trail.
 
+## 2026-08-29 — Workspace compatibility and automatic parallel runtime
+
+- isolated FinAgent pytest from the optional Phoenix pytest entry point so incompatible local observability installs cannot abort test collection;
+- promoted supported local-data certification, local system-smoke and A3 execution-smoke artifacts into diagnostic catalog evidence instead of unsupported-schema warnings;
+- separated harmless replay deduplication into catalog notices while retaining true malformed/identity-conflict warnings;
+- added an automatic CPU/RAM-aware parallel worker budget with operational caps but no research-identity coupling;
+- parallelized generated-feature sandbox batches without launching resource-limited `Popen` calls from worker threads;
+- parallelized deterministic Workspace report/ledger ingestion and exposed runtime plans through health diagnostics.
+
 ## 2026-08-29 — Visualization V2 pre-reserve governance cockpit
 
 - added a rebuildable derived SQLite Evidence Catalog over immutable evidence refs;
