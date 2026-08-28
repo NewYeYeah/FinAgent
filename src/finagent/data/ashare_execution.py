@@ -89,7 +89,7 @@ class LocalAshareDailyExecutionAdapter:
         return self._data_version
 
     @staticmethod
-    def _positive_or_none(value: object) -> float | None:
+    def _positive_or_none(value: Any) -> float | None:
         if value is None:
             return None
         try:
@@ -99,7 +99,7 @@ class LocalAshareDailyExecutionAdapter:
         return number if math.isfinite(number) and number > 0 else None
 
     @staticmethod
-    def _finite(value: object, default: float = 0.0) -> float:
+    def _finite(value: Any, default: float = 0.0) -> float:
         try:
             number = float(value)
         except (TypeError, ValueError):
@@ -142,9 +142,10 @@ class LocalAshareDailyExecutionAdapter:
             LocalAshareDailyExecutionAdapter._positive_or_none(row.get(name))
             for name in ("open", "high", "low", "close")
         ]
-        if any(value is None for value in values):
+        clean = tuple(value for value in values if value is not None)
+        if len(clean) != 4:
             return True
-        open_, high, low, close = (float(value) for value in values)
+        open_, high, low, close = clean
         return high < max(open_, close) or low > min(open_, close) or high < low
 
     def snapshot(

@@ -552,6 +552,7 @@ class AshareOrderCompiler:
                     buy_specs.append((desired, 0, [blocked]))
                 continue
 
+            assert price is not None
             board = market.board
             if side is OrderSide.SELL:
                 position = state.position(asset)
