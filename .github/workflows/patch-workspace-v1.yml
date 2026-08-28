@@ -1,0 +1,55 @@
+name: patch-workspace-v1
+
+on:
+  push:
+    branches:
+      - workspace-v1
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: workspace-v1
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Apply source and documentation patches
+        run: |
+          python tools/patch_workspace_v1_frontend.py
+          python tools/finalize_workspace_v1.py
+      - name: Test API
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev,workspace]"
+          python -m pytest -q tests/test_workspace_api_v1.py tests/test_visualization_semantic_contract_v2.py
+          ruff check src/finagent/visualization/workspace_api.py scripts/run_workspace.py tests/test_workspace_api_v1.py --select E4,E7,E9,F
+          mypy src/finagent/visualization/workspace_api.py
+      - name: Lock, typecheck, test and build frontend
+        working-directory: workspace
+        run: |
+          npm install
+          npm run typecheck
+          npm run test
+          npm run build
+      - name: Commit final V1 tree
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f \
+            tools/patch_workspace_v1_frontend.py \
+            .github/workflows/patch-workspace-v1.yml \
+            tools/finalize_workspace_v1.py \
+            .github/workflows/bootstrap-workspace-v1.yml
+          git add workspace/package-lock.json docs/testing/testing.md docs/guides/research-visualization.md workspace/vite.config.ts workspace/src/App.test.tsx
+          git commit -m "visualization: finalize Workspace V1 release tree"
+          git push origin HEAD:workspace-v1
