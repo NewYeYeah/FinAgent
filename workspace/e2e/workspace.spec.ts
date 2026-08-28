@@ -40,7 +40,7 @@ test("V2 governance cockpit is visibly read-only and reserve-safe", async ({ pag
   await page.goto("/");
   await expect(page.getByText("Read-only evidence workspace")).toBeVisible();
   await expect(page.getByText("Research governance cockpit")).toBeVisible();
-  await expect(page.getByText("One-shot reserve")).toBeVisible();
+  await expect(page.getByText("One-shot reserve", { exact: true })).toBeVisible();
   await expect(page.getByText("LOCKED_NOT_CONSUMED")).toBeVisible();
   await expect(page.getByText("reserve:untouched")).toBeVisible();
   await expect(page.getByRole("button", { name: /promote|reserve|order|rerun/i })).toHaveCount(0);
