@@ -1,3 +1,17 @@
+from .ashare_portfolio import (
+    AshareExecutionAwarePortfolioValidator,
+    AsharePortfolioAggregateResult,
+    AsharePortfolioFoldResult,
+    AsharePortfolioMetrics,
+    AsharePortfolioPoint,
+    AsharePortfolioValidationConfig,
+    AsharePortfolioValidationOutcome,
+    AsharePortfolioValidationPolicy,
+    AsharePortfolioValidationResult,
+    AsharePortfolioValidationSpec,
+    SQLiteAsharePortfolioValidationSpecStore,
+    no_robust_factor_result,
+)
 from .engine import BacktestConfig, BacktestPoint, BacktestResult, EventDrivenBacktestEngine
 from .market_study import (
     MarketStudyConfig,
@@ -23,6 +37,16 @@ from .walk_forward import (
 )
 
 __all__ = [
+    "AshareExecutionAwarePortfolioValidator",
+    "AsharePortfolioAggregateResult",
+    "AsharePortfolioFoldResult",
+    "AsharePortfolioMetrics",
+    "AsharePortfolioPoint",
+    "AsharePortfolioValidationConfig",
+    "AsharePortfolioValidationOutcome",
+    "AsharePortfolioValidationPolicy",
+    "AsharePortfolioValidationResult",
+    "AsharePortfolioValidationSpec",
     "BacktestConfig",
     "BacktestPoint",
     "BacktestResult",
@@ -35,6 +59,7 @@ __all__ = [
     "NestedWalkForwardDatasets",
     "NestedWalkForwardFold",
     "PurgedWalkForwardSplitter",
+    "SQLiteAsharePortfolioValidationSpecStore",
     "TimedBacktestConfig",
     "TimedBacktestPoint",
     "TimedBacktestResult",
@@ -42,5 +67,6 @@ __all__ = [
     "WalkForwardConfig",
     "WalkForwardFold",
     "minimum_purge_bars",
+    "no_robust_factor_result",
     "run_nested_market_study",
 ]
