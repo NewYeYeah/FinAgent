@@ -25,6 +25,12 @@ dev = [
   "mypy>=1.15,<2",
   "build>=1.2,<2",
   "duckdb>=1.4,<2",
+  # The full project pytest suite collects Workspace API tests. Keep the
+  # read-only API test dependencies in dev so `pip install -e .[dev]` is a
+  # complete test environment rather than failing during collection.
+  "fastapi>=0.116,<1",
+  "uvicorn[standard]>=0.35,<1",
+  "httpx>=0.28,<1",
 ]
 llm = [
   "openai>=3.2,<4",
@@ -52,11 +58,17 @@ observability = [
   "opentelemetry-sdk>=1.30,<2",
   "opentelemetry-exporter-otlp-proto-http>=1.30,<2",
 ]
-# Read-only A2/A2.5 research dashboard. It reads immutable report JSON, Agent JSONL
-# traces and generated_features.sqlite without changing research state.
+# Legacy read-only A2/A2.5 diagnostic viewer.
 visualization = [
   "streamlit>=1.45,<2",
   "plotly>=5.24,<7",
+]
+# Read-only V1 Evidence API. The React/TypeScript application is installed with npm
+# from workspace/package-lock.json and served by this FastAPI surface after build.
+workspace = [
+  "fastapi>=0.116,<1",
+  "uvicorn[standard]>=0.35,<1",
+  "httpx>=0.28,<1",
 ]
 
 [tool.setuptools]

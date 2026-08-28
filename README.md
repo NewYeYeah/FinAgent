@@ -17,7 +17,7 @@ The current development baseline supports:
 - supervised paper/shadow operations and sealed-holdout/promotion primitives;
 - US market ingestion through Alpaca SIP and best-effort AKShare validation;
 - local A-share Parquet research through DuckDB-backed adapters;
-- read-only Streamlit/Plotly research visualization plus Phoenix/JSONL Agent traces.
+- a read-only FastAPI + React/TypeScript Evidence Workspace, with legacy Streamlit and optional Phoenix diagnostics retained.
 
 The current market priority is **A-share historical research first**, with **Alpaca SIP as the US reference/regression path**. A-share live-capital or realtime acceptance is intentionally deferred until the frozen research, execution-aware internal validation, one-shot reserve and repeated PAPER gates are complete.
 
@@ -40,7 +40,8 @@ python -m pip install -e ".[cn-free]"       # AKShare
 python -m pip install -e ".[a-share]"       # Tushare
 python -m pip install -e ".[local-parquet]" # local A-share Parquet / DuckDB
 python -m pip install -e ".[observability]" # OTLP Agent trace exporter
-python -m pip install -e ".[visualization]" # Streamlit / Plotly Research UI
+python -m pip install -e ".[visualization]" # legacy Streamlit / Plotly inspector
+python -m pip install -e ".[workspace]"     # FastAPI / Uvicorn Evidence API
 ```
 
 For Windows and Ubuntu setup, credential configuration and provider-specific commands, see the guides below.
@@ -73,9 +74,43 @@ python scripts\run_ashare_portfolio_validation.py `
 
 A completed A4 report remains `promotion_eligible=false` and leaves the 2025+ reserve untouched.
 
-## Research UI
+## FinAgent Workspace V1
 
-After producing an A2/A2.5 report:
+The primary first-generation product surface is a read-only Evidence Workspace. It consumes the stable Visualization V0 semantic contract rather than internal A2.6/A4 report layouts.
+
+Install and build:
+
+```bash
+python -m pip install -e ".[workspace]"
+cd workspace
+npm ci
+npm run build
+cd ..
+```
+
+Launch:
+
+```bash
+python scripts/run_workspace.py \
+  --reports reports \
+  --agent-audit .finagent/agent_audit.sqlite \
+  --open-browser
+```
+
+Windows PowerShell uses the same command with backticks. Open `http://127.0.0.1:8765`.
+
+V1 provides:
+
+- an immutable Evidence catalog for A2/A2.5, A2.6 and A4 reports;
+- ResearchProgram/factor Gate and fold evidence;
+- A4 gross/net NAV, derived drawdown, execution funnel and rejection/cost diagnostics;
+- lineage navigation across A2.6 → A4 identities;
+- canonical Agent audit timelines opened from SQLite in read-only mode;
+- a product-question-driven `FinWidgetSpec` catalog.
+
+It provides no endpoint or control for research reruns, prompt edits, Gate changes, reserve access, promotion or order submission.
+
+The earlier Streamlit/Plotly UI remains available as a diagnostic viewer:
 
 ```bash
 python scripts/run_research_ui.py \
@@ -84,10 +119,6 @@ python scripts/run_research_ui.py \
   --trace .finagent/a2-agent-trace.jsonl
 ```
 
-Open `http://localhost:8501`. The application visualizes development-versus-validation drift, rolling/yearly RankIC, quantiles, HAC/bootstrap and multiplicity evidence, ensemble composition, universe eligibility, Agent discovery rounds and JSONL traces. It is read-only and cannot rerun, mutate, promote or consume reserve evidence.
-
-A4 NAV/order/cost visualization is a planned read-only extension. Until then, use the immutable A4 JSON report and JSONL execution ledger.
-
 ## Documentation
 
 - [Getting started](docs/guides/getting-started.md)
@@ -95,10 +126,12 @@ A4 NAV/order/cost visualization is a planned read-only extension. Until then, us
 - [Agent research workflow](docs/guides/agent-research.md)
 - [A-share execution semantics](docs/guides/ashare-execution.md)
 - [A-share execution-aware portfolio validation](docs/guides/ashare-portfolio-validation.md)
-- [Research visualization](docs/guides/research-visualization.md)
+- [FinAgent Workspace](docs/guides/workspace.md)
+- [Legacy research visualization and Phoenix](docs/guides/research-visualization.md)
 - [Paper/shadow operations](docs/guides/paper-trading.md)
 - [Testing and system acceptance](docs/testing/testing.md)
 - [Architecture overview](docs/architecture/overview.md)
+- [Visualization architecture V2](docs/architecture/visualization-v2.md)
 - [Architecture decisions](docs/architecture/decisions.md)
 - [Roadmap](docs/development/roadmap.md)
 - [Changelog](docs/development/changelog.md)
@@ -140,6 +173,7 @@ The Agent never owns positions, fills, risk limits, validation thresholds or bro
 8. Viewing validation evidence cannot turn the same window into clean validation for a modified ResearchProgram.
 9. A4 cannot consume reserve, alter A2.6 weights/directions or bypass A3 execution rules.
 10. Portfolio and execution evidence must reproduce through exact report and ledger identities.
+11. Workspace presentation derivatives never replace authoritative FinAgent evidence.
 
 ## Data note
 

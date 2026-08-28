@@ -2,6 +2,28 @@
 
 This file summarizes meaningful development milestones. Commit and pull-request history remains the detailed audit trail.
 
+## 2026-08-28 — Visualization V1 read-only Workspace
+
+- added a GET-only FastAPI Evidence API over the V0 semantic contract;
+- added an in-memory, disposable catalog for immutable A2/A2.5, A2.6 and A4 report artifacts;
+- added a React/TypeScript/Vite Workspace with TanStack Table, ECharts and React Flow;
+- added Project, Research, Portfolio, Factor, Agent and Widget catalog pages;
+- added A2.6 factor/Gate/fold navigation and A4 gross/net NAV, derived drawdown, execution funnel and rejection/cost views;
+- labelled browser-computed drawdown as derived rather than authoritative evidence;
+- added canonical Agent audit timelines from read-only SQLite without Phoenix-schema coupling;
+- added a cross-platform launcher, Python API tests, frontend unit/type/build tests and Playwright browser smoke;
+- retained legacy Streamlit/Phoenix diagnostic paths and added no research, reserve, promotion or trading write authority.
+
+## 2026-08-28 — Visualization V0 semantic contract
+
+- added canonical `EvidenceRef`, `EvidenceBundle`, factor, fold, portfolio, execution and lineage contracts;
+- added fail-closed A2/A2.5, A2.6 and A4 semantic adapters;
+- made authoritative, derived and diagnostic evidence explicit;
+- added acyclic lineage validation over immutable evidence identities;
+- added canonical `AgentRunProjection` from read-only Agent audit SQLite;
+- added the first `FinWidgetSpec` catalog defined by product questions and evidence authority;
+- froze the no-hidden-reasoning and no-UI-mutation architecture boundary.
+
 ## 2026-08-28 — A4 execution-aware portfolio validation
 
 - added a feature-only A-share inference adapter that reads no forward-label rows and keeps the 2025+ reserve untouched;
