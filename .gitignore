@@ -16,3 +16,8 @@ build/
 /configs/*secrets*.toml
 !/configs/llm-secrets.example.toml
 !/configs/secrets.example.toml
+/workspace/node_modules/
+/workspace/dist/
+/workspace/test-results/
+/workspace/playwright-report/
+/workspace/.vite/
