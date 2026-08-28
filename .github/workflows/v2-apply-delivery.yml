@@ -37,15 +37,21 @@ jobs:
           print(f'patch bytes={len(patch)} sha256={digest}')
           PY
 
-      - name: Apply V2 delivery
+      - name: Apply V2 product files
         run: |
           git apply --check /tmp/finagent-v2-delivery.patch
           git apply /tmp/finagent-v2-delivery.patch
+          # GITHUB_TOKEN cannot push workflow-file mutations. Keep permanent and
+          # temporary workflow files unchanged in this transport commit; they are
+          # finalized immediately afterwards through the authorized GitHub connector.
+          git checkout HEAD -- \
+            .github/workflows/workspace.yml \
+            .github/workflows/v2-dev-export.yml \
+            .github/workflows/v2-apply-delivery.yml
           git rm -rf tools/v2_delivery_payload
-          git rm -f .github/workflows/v2-apply-delivery.yml
           git diff --check
 
-      - name: Commit clean delivery tree
+      - name: Commit product delivery tree
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
