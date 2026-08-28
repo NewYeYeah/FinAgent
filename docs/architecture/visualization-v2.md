@@ -1,12 +1,10 @@
 # Visualization Architecture V2
 
-Status: **V0 semantic contract**
+Status: **V1 read-only Workspace foundation**
 
 FinAgent visualization is an evidence-navigation surface. It does not own research, execution, promotion or capital authority.
 
 ## 1. Decision
-
-The product direction is:
 
 ```text
                          FinAgent Core
@@ -28,7 +26,7 @@ The product direction is:
                                   │
                     ┌─────────────┴─────────────┐
                     ▼                           ▼
-             legacy Streamlit          future FastAPI API
+             legacy Streamlit          FastAPI GET-only API
              diagnostic UI                    │
                                                ▼
                                       React/TypeScript Workspace
@@ -37,11 +35,9 @@ Agent OTLP/JSONL ─────────────────────
                                              diagnostic only
 ```
 
-The current Streamlit application remains supported as a read-only diagnostic and regression viewer. It is not the long-term product contract. The future React/FastAPI Workspace must consume the semantic contract rather than internal A2.6/A4/Phoenix schemas directly.
+The Streamlit application remains supported as a read-only diagnostic/regression viewer. The React/FastAPI Workspace is the primary V1 product surface and consumes the semantic contract rather than internal A2.6/A4/Phoenix schemas directly.
 
 ## 2. Authority boundary
-
-Four rules are mandatory.
 
 ### Visualization never computes authoritative evidence
 
@@ -53,7 +49,7 @@ V0/V1 expose no operation that:
 
 - changes prompts or factor code;
 - reruns Factor Quant;
-- changes a gate or execution assumption;
+- changes a Gate or execution assumption;
 - modifies ResearchProgram state;
 - consumes a reserve;
 - promotes a strategy;
@@ -63,11 +59,11 @@ Any future research action must fork a new immutable ResearchProgram/protocol id
 
 ### Agent UI never exposes hidden reasoning
 
-The canonical Agent workbench projection contains governed actions, evidence references, decisions, results, errors and approvals. Hidden model reasoning is neither persisted nor projected.
+The canonical Agent projection contains governed actions, evidence references, decisions, results, errors and approvals. Hidden model reasoning is neither persisted nor projected.
 
 ### Every product result is lineage-addressable
 
-A visible result must be traceable to an immutable evidence identity. The semantic layer therefore treats lineage as a first-class contract rather than a display-only table.
+A visible result must be traceable to an immutable evidence identity. Lineage is a first-class contract rather than a display-only table.
 
 ## 3. Canonical evidence contract
 
@@ -85,24 +81,6 @@ LineageEdge
 LineageGraph
 ```
 
-An `EvidenceRef` carries:
-
-```text
-evidence_id
-evidence_type
-schema_version
-stage
-authority
-artifact_digest
-source_uri
-parent_ids
-program_id
-spec_id
-data_version
-git_sha
-metadata
-```
-
 The authority values are:
 
 ```text
@@ -111,7 +89,7 @@ derived        deterministic presentation projection from authoritative evidence
 diagnostic     debugging/observability evidence such as low-level trace metadata
 ```
 
-V0 adapters support:
+Supported adapters:
 
 - `finagent.ashare-factor-research-acceptance.v*`;
 - `finagent.ashare-robust-research-program.v1`;
@@ -121,9 +99,9 @@ Unsupported schemas fail closed.
 
 ## 4. Lineage semantics
 
-`parent_ids` mean "this evidence depends on these immutable parents". The UI edge direction is parent → child.
+`parent_ids` mean “this evidence depends on these immutable parents”. UI edge direction is parent → child.
 
-A2.6 projects approximately as:
+A2.6:
 
 ```text
 ResearchProgramSpec
@@ -137,7 +115,7 @@ FrozenFactorSelection
 ResearchProgramResult
 ```
 
-A4 projects as:
+A4:
 
 ```text
 A2.6 ResearchProgramResult
@@ -153,7 +131,7 @@ The semantic graph rejects missing parents, duplicate identities and cycles.
 
 ## 5. AgentRunProjection
 
-The canonical UI projection is built from `SQLiteAgentAuditStore`, not from Phoenix spans.
+The canonical UI projection is built from `SQLiteAgentAuditStore`, not Phoenix spans.
 
 ```text
 AgentRunProjection
@@ -172,7 +150,7 @@ AgentRunProjection
 └─ error
 ```
 
-Items use a stable product vocabulary:
+Items use:
 
 ```text
 PLAN
@@ -186,13 +164,11 @@ RESULT
 ERROR
 ```
 
-The current Agent audit schema natively projects `RUN_STARTED`, `TOOL_REQUESTED`, `POLICY_DECIDED`, `TOOL_FINISHED` and `RUN_FINISHED`. Phoenix remains the low-level span inspector for model/provider/repair/sandbox latency and token diagnostics.
-
-The audit SQLite file is opened in read-only/query-only mode by the projection layer.
+The audit SQLite file is opened in read-only/query-only mode. Phoenix remains the low-level span inspector for model/provider/repair/sandbox latency and token diagnostics.
 
 ## 6. FinWidgetSpec
 
-`FinWidgetSpec` is the stable product-facing widget contract for V1+.
+`FinWidgetSpec` is the product-facing widget contract.
 
 ```text
 widget_id
@@ -211,63 +187,90 @@ ai_visible
 metadata
 ```
 
-A widget is defined by the financial/research question it answers, not merely by chart type.
+A widget is defined by the financial/research question it answers, not only chart type.
 
-V0 freezes the first semantic widget catalog, including:
+## 7. V1 Evidence API
 
-- ResearchProgram overview;
-- factor evidence matrix;
-- preregistered gate matrix;
-- statistical forest view;
-- A4 gross/net NAV;
-- A4 drawdown;
-- A4 order funnel;
-- A4 rejection attribution;
-- governance lineage;
-- Agent run activity.
+`finagent.visualization.workspace_api` exposes GET-only routes:
 
-The `/api/v1/...` paths in the specs are logical V1 contracts. V0 does not start FastAPI and does not create write endpoints.
+```text
+/api/v1/health
+/api/v1/catalog
+/api/v1/evidence/{evidence_id}
+/api/v1/programs
+/api/v1/programs/{program_id}
+/api/v1/portfolio-validations
+/api/v1/portfolio-validations/{validation_id}
+/api/v1/factors/{feature_digest}
+/api/v1/lineage/{evidence_id}
+/api/v1/widgets
+/api/v1/agent/runs
+/api/v1/agent/runs/{run_id}
+```
 
-## 7. Product surfaces
+The API has no research, reserve, promotion, PAPER or trading write route. CORS permits local Vite development origins and GET/HEAD/OPTIONS only.
 
-The long-term information architecture is:
+The in-memory catalog is disposable. Source JSON/JSONL/SQLite artifacts remain authoritative. Unsupported files become warnings; conflicting payloads sharing one evidence identity are omitted.
+
+## 8. V1 React Workspace
+
+The production frontend lives under `workspace/` and uses:
+
+```text
+React + TypeScript + Vite
+TanStack Table
+ECharts
+React Flow
+```
+
+V1 pages:
+
+```text
+Project Cockpit
+Research Programs
+Portfolio Validations
+Evidence Detail
+Factor Evidence
+Agent Runs
+Widget Catalog
+```
+
+A4 pages render authoritative NAV and execution evidence. Browser-derived drawdown is explicitly labelled derived.
+
+The backend serves the built SPA from `workspace/dist`; Vite development mode proxies `/api` to the read-only FastAPI service.
+
+## 9. Product surfaces
 
 ```text
 FinAgent Workspace
 │
 ├── Agent
-│   ├── Projects
-│   ├── Runs
-│   ├── Activity
-│   └── Artifacts
+│   ├── Runs                    V1
+│   ├── Activity                V1
+│   ├── Projects                V3
+│   └── Artifacts               V3
 │
 ├── Research
-│   ├── Overview
-│   ├── Discovery
-│   ├── Factor Lab
-│   ├── Ensemble
-│   ├── Portfolio
-│   ├── Execution
-│   ├── Risk
-│   ├── Universe
-│   └── Governance
+│   ├── Overview                V1
+│   ├── Factor Lab              V1 foundation / V4 expansion
+│   ├── Portfolio               V1 foundation / V2 cockpit
+│   ├── Execution               V1 foundation / V2 cockpit
+│   ├── Governance              V1 lineage / V2 expansion
+│   ├── Discovery               V3/V4
+│   ├── Risk                    V5
+│   └── Universe                V2+
 │
-└── Live
-    ├── Market
-    ├── Strategy
-    ├── Portfolio
-    ├── Execution
-    └── System Health
+└── Live                        future realtime projection
 ```
 
-V0/V1 focus on Agent + Research. `Live` is a separate future realtime projection and must not reuse historical report semantics as a stream protocol.
+`Live` must not reuse historical report semantics as a stream protocol.
 
-## 8. Implementation sequence
+## 10. Implementation sequence
 
 ```text
-V0  Semantic Contract             ← current
-V1  FastAPI read-only API + React shell
-V2  A4 Portfolio / Execution + Governance / Lineage
+V0  Semantic Contract                                  ✓
+V1  FastAPI read-only API + React Workspace foundation ✓
+V2  A4 Portfolio / Execution + Governance cockpit      ← next
 A5  One-shot reserve
 V3  Codex-like Agent Workbench
 V4  Factor Tear Sheet V2
@@ -277,18 +280,19 @@ R0  QMT event contract
 R1+ QMT shadow/PAPER surfaces
 ```
 
-Streamlit remains available until the new Workspace has functional parity for diagnostic workflows.
+## 11. V1 acceptance criteria
 
-## 9. Acceptance criteria for V0
+V1 passes only if:
 
-V0 passes only if:
-
-1. A2/A2.6/A4 reports project into stable evidence bundles;
-2. A2.6 → A4 lineage preserves authoritative identities;
-3. unsupported report schemas fail closed;
-4. lineage rejects missing parents, duplicates and cycles;
-5. Agent audit projection performs no SQLite writes;
-6. hidden reasoning is absent from the public Agent projection;
-7. widget IDs/link parameters are deterministic and validated;
-8. all existing Streamlit and project-wide tests remain green;
-9. no reserve, promotion or trading authority is added.
+1. API projects A2/A2.6/A4 through the V0 semantic contract;
+2. only GET/HEAD/OPTIONS product operations exist;
+3. unsupported/malformed/conflicting evidence is not silently rendered;
+4. report files and Agent SQLite are never modified;
+5. A2.6 factor/Gate/fold evidence is navigable;
+6. A4 gross/net NAV, costs and execution reasons are navigable;
+7. derived browser series are labelled derived;
+8. lineage is rendered from authoritative identities;
+9. hidden reasoning is absent;
+10. reserve and promotion status remain visible;
+11. Python API, TypeScript, component, production-build and Playwright smoke tests pass;
+12. legacy Streamlit tests remain green.
