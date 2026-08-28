@@ -1433,17 +1433,17 @@ class AshareExecutionAwarePortfolioValidator:
         fold_results: list[AsharePortfolioFoldResult] = []
         ledger_rows: list[dict[str, object]] = []
         for fold in plan.folds:
-            result, rows = self._fold(
+            fold_result, rows = self._fold(
                 fold=fold,
                 universe=universe,
                 primary_label=primary_label,
             )
-            fold_results.append(result)
+            fold_results.append(fold_result)
             ledger_rows.extend(rows)
         aggregate = self._aggregate(fold_results)
         outcome = self._outcome(aggregate)
         ledger_digest = _digest("a4-execution-ledger", ledger_rows, 64)
-        result = AsharePortfolioValidationResult(
+        final_result = AsharePortfolioValidationResult(
             mode=mode,
             spec=spec,
             source_research_status=self.selection.status,
@@ -1454,7 +1454,7 @@ class AshareExecutionAwarePortfolioValidator:
             reserve_start=plan.reserve.start.isoformat(),
             reserve_end=plan.reserve.end.isoformat(),
         )
-        return result, tuple(ledger_rows)
+        return final_result, tuple(ledger_rows)
 
 
 def no_robust_factor_result(

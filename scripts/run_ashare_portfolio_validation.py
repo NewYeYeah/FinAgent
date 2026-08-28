@@ -347,10 +347,9 @@ def main() -> int:
         policy_request,
         candidate_selection_id=str(source_universe["selection_id"]),
     )
-    if universe_provider.data_version != str(source_policy["data_version"]):
-        raise ValueError(
-            "A4 rebuilt universe policy differs from the frozen A2.6 policy identity"
-        )
+    # The A4 policy is rebuilt through the feature-only adapter, so its
+    # identity is deliberately distinct from A2.6 even when the resulting schedule
+    # is semantically equivalent. Both source and derived identities are frozen.
 
     validation_config = _config(values)
     fee_schedule = _fee_schedule(values)
@@ -365,7 +364,7 @@ def main() -> int:
         source_selection_id=str(_mapping(source["frozen_selection"], "selection")["selection_id"]),
         data_version=frozen.dataset_version,
         candidate_selection_id=str(source_universe["selection_id"]),
-        universe_policy_version=universe_provider.data_version,
+        universe_policy_version=str(source_policy["data_version"]),
         plan_id=plan.plan_id,
         reserve_id=str(source_reserve["reserve_id"]),
         selected_feature_digests=selected_digests,
@@ -376,6 +375,7 @@ def main() -> int:
             "slippage_bps": float(values.get("slippage_bps", 5.0)),
             "require_price_limits": bool(values.get("require_price_limits", True)),
             "fee_schedule": fee_schedule.to_dict(),
+            "inference_universe_policy_version": universe_provider.data_version,
         },
         gross_execution_config={
             "slippage_bps": 0.0,

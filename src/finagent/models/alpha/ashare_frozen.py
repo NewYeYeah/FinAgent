@@ -8,9 +8,14 @@ from typing import Mapping, Sequence
 import numpy as np
 
 from finagent.agents.generated_features import GeneratedFeatureArtifact
+from finagent.domain.assets import AssetId
 from finagent.domain.experiments import ArtifactRef
 from finagent.domain.forecasts import AlphaForecast, ModelRef
-from finagent.domain.research import DatasetRequest, FeatureWindow
+from finagent.domain.research import (
+    DatasetRequest,
+    FeatureWindow,
+    ResearchSplit,
+)
 from finagent.models._utils import infer_horizon, model_artifact
 from finagent.models.alpha.primitives import (
     cross_sectional_zscore,
@@ -149,7 +154,7 @@ class AshareFrozenGeneratedFeatureAlphaModel:
         self,
         request: DatasetRequest,
         split_name: str,
-    ) -> tuple[np.ndarray, np.ndarray, object]:
+    ) -> tuple[np.ndarray, np.ndarray, ResearchSplit]:
         datasets = [
             self.materializer.materialize(artifact, request)
             for artifact in self.artifacts
@@ -184,12 +189,15 @@ class AshareFrozenGeneratedFeatureAlphaModel:
                 strict=True,
             ):
                 winsorized = winsorize_cross_section(
-                    values,
+                    values.tolist(),
                     lower_quantile=self.winsor_lower_quantile,
                     upper_quantile=self.winsor_upper_quantile,
-                    eligible=row_mask,
+                    eligible=row_mask.tolist(),
                 )
-                standardized = cross_sectional_zscore(winsorized, eligible=row_mask)
+                standardized = cross_sectional_zscore(
+                    winsorized.tolist(),
+                    eligible=row_mask.tolist(),
+                )
                 output[row_mask] += weight * direction * standardized[row_mask]
             combined[row, row_mask] = output[row_mask]
             eligibility[row] &= row_mask
@@ -289,7 +297,7 @@ class AshareFrozenGeneratedFeatureAlphaModel:
         self,
         window: FeatureWindow,
         *,
-        eligible: Mapping[object, bool] | None = None,
+        eligible: Mapping[AssetId, bool] | None = None,
     ) -> AlphaForecast:
         if self._artifact is None or self._calibration is None or self._horizon is None:
             raise RuntimeError("frozen A-share alpha must be fit before predict")
@@ -323,12 +331,15 @@ class AshareFrozenGeneratedFeatureAlphaModel:
             strict=True,
         ):
             winsorized = winsorize_cross_section(
-                values,
+                values.tolist(),
                 lower_quantile=self.winsor_lower_quantile,
                 upper_quantile=self.winsor_upper_quantile,
-                eligible=mask,
+                eligible=mask.tolist(),
             )
-            standardized = cross_sectional_zscore(winsorized, eligible=mask)
+            standardized = cross_sectional_zscore(
+                winsorized.tolist(),
+                eligible=mask.tolist(),
+            )
             combined[mask] += weight * direction * standardized[mask]
 
         expected = {
