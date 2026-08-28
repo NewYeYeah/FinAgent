@@ -42,7 +42,9 @@ class AgentProjectionItem:
             raise EvidenceContractError("Agent projection item identity/title/status is required")
         if self.occurred_at.tzinfo is None or self.occurred_at.utcoffset() is None:
             raise EvidenceContractError("Agent projection item time must be timezone-aware")
-        evidence = tuple(str(value).strip() for value in self.evidence_ids if str(value).strip())
+        evidence = tuple(
+            str(value).strip() for value in self.evidence_ids if str(value).strip()
+        )
         if len(set(evidence)) != len(evidence):
             raise EvidenceContractError("Agent projection evidence ids must be unique")
         object.__setattr__(self, "evidence_ids", evidence)
@@ -78,8 +80,13 @@ class AgentTokenUsage:
         )
         if any(value < 0 for value in values):
             raise EvidenceContractError("Agent token usage must be non-negative")
-        if self.total_tokens and self.total_tokens < self.prompt_tokens + self.completion_tokens:
-            raise EvidenceContractError("Agent total_tokens is smaller than prompt+completion")
+        if (
+            self.total_tokens
+            and self.total_tokens < self.prompt_tokens + self.completion_tokens
+        ):
+            raise EvidenceContractError(
+                "Agent total_tokens is smaller than prompt+completion"
+            )
 
     def to_dict(self) -> dict[str, int]:
         return {
@@ -110,14 +117,25 @@ class AgentRunProjection:
     error: str = ""
 
     def __post_init__(self) -> None:
-        for name in ("run_id", "task_id", "actor", "trigger_type", "status", "objective"):
+        for name in (
+            "run_id",
+            "task_id",
+            "actor",
+            "trigger_type",
+            "status",
+            "objective",
+        ):
             if not str(getattr(self, name)).strip():
-                raise EvidenceContractError(f"AgentRunProjection.{name} must be non-empty")
+                raise EvidenceContractError(
+                    f"AgentRunProjection.{name} must be non-empty"
+                )
         if self.started_at.tzinfo is None or self.started_at.utcoffset() is None:
             raise EvidenceContractError("Agent run start time must be timezone-aware")
         if self.finished_at is not None:
             if self.finished_at.tzinfo is None or self.finished_at.utcoffset() is None:
-                raise EvidenceContractError("Agent run finish time must be timezone-aware")
+                raise EvidenceContractError(
+                    "Agent run finish time must be timezone-aware"
+                )
             if self.finished_at < self.started_at:
                 raise EvidenceContractError("Agent run cannot finish before it starts")
         if self.latency_ms < 0:
@@ -125,11 +143,17 @@ class AgentRunProjection:
         item_ids = {item.item_id for item in self.items}
         if len(item_ids) != len(self.items):
             raise EvidenceContractError("Agent projection item ids must be unique")
-        artifacts = tuple(str(value).strip() for value in self.artifact_ids if str(value).strip())
+        artifacts = tuple(
+            str(value).strip() for value in self.artifact_ids if str(value).strip()
+        )
         if len(set(artifacts)) != len(artifacts):
             raise EvidenceContractError("Agent projection artifact ids must be unique")
         object.__setattr__(self, "artifact_ids", artifacts)
-        object.__setattr__(self, "governance", MappingProxyType(dict(self.governance)))
+        object.__setattr__(
+            self,
+            "governance",
+            MappingProxyType(dict(self.governance)),
+        )
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -219,6 +243,17 @@ def _extract_evidence_ids(value: object) -> tuple[str, ...]:
     return tuple(output)
 
 
+def _merge_evidence_ids(*groups: Sequence[str]) -> tuple[str, ...]:
+    return tuple(
+        dict.fromkeys(
+            value
+            for group in groups
+            for raw in group
+            if (value := str(raw).strip())
+        )
+    )
+
+
 def _event_item(
     *,
     sequence: int,
@@ -227,6 +262,7 @@ def _event_item(
     occurred_at: datetime,
     call_id: str,
     payload: Mapping[str, Any],
+    result_evidence_ids: Sequence[str] = (),
 ) -> AgentProjectionItem:
     if event_type == "run_started":
         return AgentProjectionItem(
@@ -235,7 +271,10 @@ def _event_item(
             occurred_at=occurred_at,
             title="Run started",
             status="started",
-            summary=f"Actor {payload.get('actor', '')} started task {payload.get('task_id', '')}".strip(),
+            summary=(
+                f"Actor {payload.get('actor', '')} started task "
+                f"{payload.get('task_id', '')}"
+            ).strip(),
             metadata={"sequence": sequence, **dict(payload)},
         )
     if event_type == "tool_requested":
@@ -282,7 +321,10 @@ def _event_item(
             status=status,
             summary=error,
             call_id=call_id,
-            evidence_ids=_extract_evidence_ids(payload),
+            evidence_ids=_merge_evidence_ids(
+                _extract_evidence_ids(payload),
+                result_evidence_ids,
+            ),
             metadata={"sequence": sequence, **dict(payload)},
         )
     if event_type == "run_finished":
@@ -319,8 +361,10 @@ def load_agent_run_projection(
 ) -> AgentRunProjection:
     """Project the canonical Agent audit DB into a UI-ready, read-only run model.
 
-    OTLP/Phoenix spans are deliberately not consumed here.  They remain diagnostic
+    OTLP/Phoenix spans are deliberately not consumed here. They remain diagnostic
     evidence and can be linked separately in V1 without changing this stable contract.
+    Tool outputs are inspected only for stable evidence identities; their full payloads
+    are not copied into the product projection.
     """
 
     source = Path(path).expanduser()
@@ -333,12 +377,25 @@ def load_agent_run_projection(
             raise KeyError(run_id)
         task_id = str(row[0])
         run_payload = _json_object(row[1], "agent run payload")
-        decision = _json_object(row[2], "agent decision") if row[2] is not None else {}
+        decision = (
+            _json_object(row[2], "agent decision") if row[2] is not None else {}
+        )
         event_rows = connection.execute(
             "SELECT sequence, event_id, event_type, occurred_at, call_id, payload_json "
             "FROM agent_audit_events WHERE run_id=? ORDER BY sequence",
             (run_id,),
         ).fetchall()
+        result_rows = connection.execute(
+            "SELECT call_id, result_json FROM agent_tool_calls "
+            "WHERE run_id=? AND result_json IS NOT NULL ORDER BY sequence",
+            (run_id,),
+        ).fetchall()
+        result_evidence = {
+            str(call_id): _extract_evidence_ids(
+                _json_object(result_json, "agent tool result")
+            )
+            for call_id, result_json in result_rows
+        }
         policy_count = int(
             connection.execute(
                 "SELECT COUNT(*) FROM agent_policy_decisions WHERE run_id=?",
@@ -370,14 +427,13 @@ def load_agent_run_projection(
             occurred_at=_parse_time(occurred_at, "audit event"),
             call_id=str(call_id or ""),
             payload=_json_object(payload_json, "agent audit event payload"),
+            result_evidence_ids=result_evidence.get(str(call_id or ""), ()),
         )
         for sequence, event_id, event_type, occurred_at, call_id, payload_json in event_rows
     )
     artifact_ids = tuple(
         dict.fromkeys(
-            evidence_id
-            for item in items
-            for evidence_id in item.evidence_ids
+            evidence_id for item in items for evidence_id in item.evidence_ids
         )
     )
     context_metadata = context.get("metadata", {})
