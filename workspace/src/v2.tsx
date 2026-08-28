@@ -80,9 +80,6 @@ function Lifecycle({ project }: { project: WorkspaceProject }) {
 export function ProjectCockpitPage() {
   const navigate = useNavigate();
   const { data, error, loading } = useAsync(workspaceApi.projectsV2, []);
-  if (loading) return <LoadingState label="Loading governed projects" />;
-  if (error) return <ErrorState error={error} />;
-  const projects = data?.items ?? [];
   const columns = useMemo<ColumnDef<WorkspaceProject, unknown>[]>(
     () => [
       { header: "Program", accessorKey: "program_id" },
@@ -95,6 +92,9 @@ export function ProjectCockpitPage() {
     ],
     [],
   );
+  if (loading) return <LoadingState label="Loading governed projects" />;
+  if (error) return <ErrorState error={error} />;
+  const projects = data?.items ?? [];
   return (
     <div className="page">
       <PageHeader
