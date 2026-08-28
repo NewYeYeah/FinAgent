@@ -1,0 +1,37 @@
+[ashare_execution_smoke]
+# Immutable local A-share source. The smoke reads exact daily rows and never falls
+# back to an earlier tradable quote when a selected session is suspended or absent.
+root = "D:/Data/A-Share"
+frozen_manifest = "data/manifests/local_ashare_daily.json"
+report_path = "reports/ashare_execution_smoke_a3.json"
+
+# Choose liquid equities that have normal, non-limit-up/down rows on both dates.
+# The example uses only historical 2024 rows and does not touch the 2025+ factor reserve.
+symbols = ["600000.SH", "000001.SZ"]
+buy_session = 2024-01-02
+sell_session = 2024-01-03
+initial_cash = 1000000.0
+invested_weight = 0.80
+
+# Broker commission is account-specific. The defaults below are a configurable
+# retail example, not a universal legal tariff.
+broker_commission_rate = 0.0003
+minimum_broker_commission = 5.0
+
+# Explicit asymmetric and settlement-related charges.
+stamp_duty_sell_rate = 0.0005
+transfer_fee_rate = 0.00001
+
+# Exchange/regulatory reference rates are modeled separately. They default to not
+# being passed through because many retail commission schedules quote them all-in.
+sse_szse_handling_rate = 0.0000341
+bse_handling_rate = 0.000125
+regulatory_fee_rate = 0.00002
+pass_through_exchange_handling = false
+pass_through_regulatory_fee = false
+
+# Daily-bar execution acceptance uses exact next-session open and conservative
+# side-specific limit handling from vendor up_limit/down_limit fields.
+require_price_limits = true
+minimum_notional = 0.0
+slippage_bps = 0.0
