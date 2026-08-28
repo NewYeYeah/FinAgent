@@ -1,0 +1,28 @@
+name: apply-a4-testing-docs
+
+on:
+  push:
+    branches:
+      - a4-execution-aware-portfolio-validation
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: a4-execution-aware-portfolio-validation
+          fetch-depth: 0
+      - name: Apply testing documentation
+        run: python tools/apply_a4_testing_docs.py
+      - name: Commit documentation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/testing/testing.md
+          git commit -m "docs: add unified A2.6 A3 A4 acceptance gate"
+          git push origin HEAD:a4-execution-aware-portfolio-validation
