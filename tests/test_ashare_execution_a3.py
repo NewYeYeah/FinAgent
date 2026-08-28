@@ -209,11 +209,15 @@ def test_board_mapping_and_board_specific_lot_rules() -> None:
     assert policy.round_buy(AshareBoard.SSE_MAIN, 157)[0] == 100
     assert policy.round_buy(AshareBoard.SSE_STAR, 157)[0] == 0
     assert policy.round_buy(AshareBoard.SSE_STAR, 257.9)[0] == 257
-    assert policy.round_buy(AshareBoard.BSE, 257)[0] == 200
+    assert policy.round_buy(AshareBoard.BSE, 99)[0] == 0
+    assert policy.round_buy(AshareBoard.BSE, 257)[0] == 257
     assert policy.round_sell(AshareBoard.SSE_MAIN, 160, 250)[0] == 150
     assert policy.round_sell(AshareBoard.SSE_MAIN, 250, 250)[0] == 250
     assert policy.round_sell(AshareBoard.SSE_STAR, 199, 500)[0] == 0
     assert policy.round_sell(AshareBoard.SSE_STAR, 250, 500)[0] == 250
+    assert policy.round_sell(AshareBoard.BSE, 99, 500)[0] == 0
+    assert policy.round_sell(AshareBoard.BSE, 157, 500)[0] == 157
+    assert policy.round_sell(AshareBoard.BSE, 75, 75)[0] == 75
 
 
 def test_tradeability_is_side_specific_and_fail_closed() -> None:
