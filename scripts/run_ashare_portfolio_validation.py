@@ -235,6 +235,39 @@ def _write_ledger(path: Path, rows: tuple[dict[str, object], ...]) -> None:
             )
 
 
+def _first_difference(expected: object, actual: object, path: str = "$") -> str:
+    if type(expected) is not type(actual):
+        return f"{path}: type {type(expected).__name__} != {type(actual).__name__}"
+    if isinstance(expected, Mapping):
+        expected_keys = set(expected)
+        actual_keys = set(actual)
+        if expected_keys != actual_keys:
+            return (
+                f"{path}: keys missing={sorted(expected_keys - actual_keys)} "
+                f"extra={sorted(actual_keys - expected_keys)}"
+            )
+        for key in sorted(expected_keys):
+            difference = _first_difference(
+                expected[key],
+                actual[key],
+                f"{path}.{key}",
+            )
+            if difference:
+                return difference
+        return ""
+    if isinstance(expected, list):
+        if len(expected) != len(actual):
+            return f"{path}: length {len(expected)} != {len(actual)}"
+        for index, (left, right) in enumerate(zip(expected, actual, strict=True)):
+            difference = _first_difference(left, right, f"{path}[{index}]")
+            if difference:
+                return difference
+        return ""
+    if expected != actual:
+        return f"{path}: {expected!r} != {actual!r}"
+    return ""
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -430,17 +463,27 @@ def main() -> int:
             primary_label=primary_label,
         )
 
+    result.write_json(report_path)
+    _write_ledger(ledger_path, ledger_rows)
+
     if args.assert_replay:
         assert reference is not None
         expected_id = str(reference.get("portfolio_validation_id", ""))
         expected_ledger = str(reference.get("ledger_digest", ""))
         if result.result_id != expected_id or result.ledger_digest != expected_ledger:
+            expected_body = dict(reference)
+            actual_body = result.to_dict()
+            for payload in (expected_body, actual_body):
+                payload.pop("mode", None)
+                payload.pop("portfolio_validation_id", None)
+            difference = _first_difference(expected_body, actual_body)
             raise RuntimeError(
-                "A4 exact replay failed: result or execution-ledger identity differs"
+                "A4 exact replay failed: "
+                f"result {result.result_id} != {expected_id}; "
+                f"ledger {result.ledger_digest} != {expected_ledger}; "
+                f"first_difference={difference or 'none'}"
             )
 
-    result.write_json(report_path)
-    _write_ledger(ledger_path, ledger_rows)
     print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
     return 0
 
