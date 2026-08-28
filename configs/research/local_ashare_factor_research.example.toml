@@ -60,6 +60,7 @@ ensemble_max_abs_factor_correlation = 0.85
 ensemble_quality_metric = "rank_icir"
 ensemble_min_abs_quality = 0.0
 ensemble_quality_power = 1.0
+# Batch size controls payload amortization only; worker count is auto-budgeted from CPU/RAM.
 sandbox_batch_size = 512
 smoke_lookback = 64
 

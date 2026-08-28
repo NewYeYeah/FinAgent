@@ -19,6 +19,7 @@ from finagent.domain.experiments import ArtifactRef, ArtifactType, ExperimentSpe
 from finagent.domain.research import DatasetRequest, ResearchDataset, ResearchSplit
 from finagent.domain.trading import TradeActivity
 from finagent.domain.universe import UniverseProvider
+from finagent.runtime import AutoParallelPolicy, DEFAULT_PARALLEL_POLICY, ParallelPlan
 from finagent.sandbox import FeatureSandboxRequest, LocalFeatureSandbox
 
 from .runner import ExperimentEvaluation
@@ -113,6 +114,7 @@ class GeneratedFeatureMaterializer:
         sandbox: LocalFeatureSandbox | None = None,
         universe_provider: UniverseProvider | None = None,
         batch_size: int = 128,
+        parallel_policy: AutoParallelPolicy | None = None,
     ) -> None:
         if batch_size < 1:
             raise ValueError("batch_size must be >= 1")
@@ -120,26 +122,70 @@ class GeneratedFeatureMaterializer:
         self.sandbox = sandbox or LocalFeatureSandbox()
         self.universe_provider = universe_provider
         self.batch_size = batch_size
+        self.parallel_policy = parallel_policy or DEFAULT_PARALLEL_POLICY
+        self.last_parallel_plan: ParallelPlan | None = None
 
     def _run_jobs(
         self,
         jobs: list[tuple[int, int, FeatureSandboxRequest]],
         values: np.ndarray,
     ) -> None:
+        if not jobs:
+            self.last_parallel_plan = self.parallel_policy.resolve(
+                0, workload="subprocess", per_worker_memory_mb=64
+            )
+            return
         run_batch = getattr(self.sandbox, "run_batch", None)
         if callable(run_batch):
-            for start in range(0, len(jobs), self.batch_size):
-                chunk = jobs[start : start + self.batch_size]
-                results = run_batch(tuple(job[2] for job in chunk))
-                if len(results) != len(chunk):
-                    raise RuntimeError("sandbox batch result count does not match request count")
-                for (time_index, asset_index, _), result in zip(chunk, results):
-                    last = result.values[-1]
-                    if last is not None:
-                        values[time_index, asset_index, 0] = float(last)
+            chunks = [
+                jobs[start : start + self.batch_size]
+                for start in range(0, len(jobs), self.batch_size)
+            ]
+            limits = getattr(self.sandbox, "limits", None)
+            sandbox_memory_mb = int(getattr(limits, "memory_mb", 256))
+            plan = self.parallel_policy.resolve(
+                len(chunks),
+                workload="subprocess",
+                per_worker_memory_mb=max(64, sandbox_memory_mb),
+            )
+            self.last_parallel_plan = plan
+
+            request_batches = tuple(
+                tuple(job[2] for job in chunk)
+                for chunk in chunks
+            )
+            run_batches = getattr(self.sandbox, "run_batches", None)
+            if callable(run_batches) and plan.workers > 1 and len(chunks) > 1:
+                batch_results = run_batches(request_batches, max_workers=plan.workers)
+                if len(batch_results) != len(chunks):
+                    raise RuntimeError("sandbox batch-group count does not match request chunks")
+                for chunk, results in zip(chunks, batch_results):
+                    self._store_batch_results(chunk, results, values)
+                return
+
+            for chunk, requests in zip(chunks, request_batches):
+                self._store_batch_results(chunk, run_batch(requests), values)
             return
+
+        plan = self.parallel_policy.resolve(
+            len(jobs), workload="cpu", per_worker_memory_mb=64, configured_cap=1
+        )
+        self.last_parallel_plan = plan
         for time_index, asset_index, request in jobs:
             result = self.sandbox.run(request)
+            last = result.values[-1]
+            if last is not None:
+                values[time_index, asset_index, 0] = float(last)
+
+    @staticmethod
+    def _store_batch_results(
+        chunk: list[tuple[int, int, FeatureSandboxRequest]],
+        results,
+        values: np.ndarray,
+    ) -> None:
+        if len(results) != len(chunk):
+            raise RuntimeError("sandbox batch result count does not match request count")
+        for (time_index, asset_index, _), result in zip(chunk, results):
             last = result.values[-1]
             if last is not None:
                 values[time_index, asset_index, 0] = float(last)

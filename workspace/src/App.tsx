@@ -185,10 +185,19 @@ function CatalogView({
         />
       </div>
       {catalog.warnings.length ? (
-        <Panel title="Catalog warnings" subtitle="Unsupported, malformed or identity-conflicting files are omitted.">
+        <Panel title="Catalog warnings" subtitle="Malformed, unsupported or identity-conflicting files require attention.">
           <ul className="warning-list">
             {catalog.warnings.map((warning) => (
               <li key={warning}><FileWarning size={15} /> {warning}</li>
+            ))}
+          </ul>
+        </Panel>
+      ) : null}
+      {(catalog.notices ?? []).length ? (
+        <Panel title="Catalog notices" subtitle="Equivalent replay files are de-duplicated without removing the authoritative identity.">
+          <ul className="notice-list">
+            {(catalog.notices ?? []).map((notice) => (
+              <li key={notice}><FileWarning size={15} /> {notice}</li>
             ))}
           </ul>
         </Panel>

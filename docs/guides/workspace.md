@@ -304,9 +304,11 @@ python scripts/export_workspace_review_bundle.py <validation_id> --reports repor
 
 The catalog is a disposable, in-memory read model rebuilt at service start.
 
-- supported schemas are parsed through `finagent.visualization.semantic`;
+- A2/A2.6/A4 evidence plus local-data certification, local system-smoke and A3
+  execution-smoke reports are parsed through `finagent.visualization.semantic`;
 - unsupported/malformed files become warnings;
-- equivalent replay copies with the same identity are deduplicated;
+- equivalent replay copies with the same identity are deduplicated and exposed as
+  informational notices rather than warnings;
 - conflicting payloads sharing one evidence identity are omitted until resolved;
 - adding a report requires a Workspace restart in V1.
 
@@ -354,7 +356,21 @@ or start with `--api-only`.
 
 ### Empty catalog
 
-Confirm that `--reports` points to a directory containing supported A2/A2.5, A2.6 or A4 `.json` reports. Check `/api/v1/catalog` for warnings.
+Confirm that `--reports` points to a directory containing supported FinAgent evidence or
+diagnostic `.json` reports. Check `/api/v1/catalog` separately for `warnings` (action
+required) and `notices` (for example an equivalent replay that was safely deduplicated).
+
+### Pytest crashes while importing Phoenix
+
+If a local observability environment contains an old Phoenix pytest plugin, pytest may
+fail before FinAgent tests are collected. FinAgent's `pytest.ini` blocks the `phoenix`
+plugin because the project test suite does not depend on it. `python -m pytest ...` from
+the repository root should therefore work directly. For a fully isolated diagnostic run:
+
+```powershell
+$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD = "1"
+python -m pytest -q tests/test_workspace_api_v1.py
+```
 
 ### Agent page empty
 

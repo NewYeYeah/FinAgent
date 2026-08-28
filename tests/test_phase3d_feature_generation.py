@@ -149,3 +149,31 @@ def test_validated_feature_bridges_to_existing_experiment_template(tmp_path):
     assert template.code.digest == artifact.digest
     assert template.metadata["generated_feature_id"] == "mom2"
     assert template.parameter_names == frozenset()
+
+
+def test_local_sandbox_executes_multiple_batches_concurrently():
+    sandbox = LocalFeatureSandbox()
+    batches = tuple(
+        (
+            FeatureSandboxRequest(
+                _spec(),
+                VALID_SOURCE,
+                {"close": [100 + offset, 101 + offset, 102 + offset, 103 + offset]},
+            ),
+        )
+        for offset in range(4)
+    )
+    results = sandbox.run_batches(batches, max_workers=2)
+    assert len(results) == 4
+    assert all(len(batch) == 1 for batch in results)
+    assert results[0][0].values[2] == pytest.approx(0.02)
+
+
+def test_local_sandbox_parallel_batches_preserve_empty_batch_positions():
+    sandbox = LocalFeatureSandbox()
+    request = FeatureSandboxRequest(_spec(), VALID_SOURCE, {"close": [100, 101, 102, 103]})
+    results = sandbox.run_batches(((), (request,), ()), max_workers=2)
+    assert results[0] == ()
+    assert len(results[1]) == 1
+    assert results[1][0].values[2] == pytest.approx(0.02)
+    assert results[2] == ()

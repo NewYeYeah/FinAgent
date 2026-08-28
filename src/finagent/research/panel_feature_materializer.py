@@ -5,6 +5,7 @@ import numpy as np
 from finagent.agents.generated_features import GeneratedFeatureArtifact
 from finagent.domain.experiments import ArtifactRef, ArtifactType
 from finagent.domain.research import DatasetRequest, ResearchDataset, ResearchSplit
+from finagent.runtime import AutoParallelPolicy
 from finagent.sandbox import FeatureSandboxRequest, LocalFeatureSandbox
 
 from .generated_feature_eval import GeneratedFeatureMaterializer
@@ -29,12 +30,14 @@ class PanelGeneratedFeatureMaterializer(GeneratedFeatureMaterializer):
         sandbox: LocalFeatureSandbox | None = None,
         universe_provider=None,
         batch_size: int = 512,
+        parallel_policy: AutoParallelPolicy | None = None,
     ) -> None:
         super().__init__(
             adapter,
             sandbox=sandbox,
             universe_provider=universe_provider,
             batch_size=batch_size,
+            parallel_policy=parallel_policy,
         )
 
     def materialize(

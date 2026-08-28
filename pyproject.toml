@@ -79,7 +79,10 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+# FinAgent tests do not depend on the optional Phoenix pytest plugin. Blocking it
+# here prevents incompatible user-environment Phoenix installs from crashing
+# before pytest can collect FinAgent tests.
+addopts = "-q -p no:phoenix"
 
 [tool.ruff]
 target-version = "py311"

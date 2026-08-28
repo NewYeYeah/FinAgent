@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import sqlite3
+from concurrent.futures import ThreadPoolExecutor
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -15,6 +16,8 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
+
+from finagent.runtime import DEFAULT_PARALLEL_POLICY, ParallelPlan
 
 from .agent_projection import load_agent_run_projection
 from .semantic import (
@@ -129,6 +132,8 @@ class WorkspaceEvidenceCatalog:
         self._bundles: dict[str, EvidenceBundle] = {}
         self._semantic_digests: dict[str, str] = {}
         self._warnings: list[str] = []
+        self._notices: list[str] = []
+        self._parallel_plan: ParallelPlan | None = None
         self._lock = RLock()
         self._scan()
 
@@ -150,20 +155,39 @@ class WorkspaceEvidenceCatalog:
         bundles: dict[str, EvidenceBundle] = {}
         digests: dict[str, str] = {}
         warnings: list[str] = []
+        notices: list[str] = []
         conflicts: set[str] = set()
-        for path in self._candidates(self.report_paths):
+        paths = self._candidates(self.report_paths)
+        plan = DEFAULT_PARALLEL_POLICY.resolve(
+            len(paths), workload="io", per_worker_memory_mb=64
+        )
+
+        def project(path: Path):
             try:
-                bundle = load_evidence_report(path, git_sha=self.git_sha)
-                semantic_digest = _semantic_payload_digest(path)
+                return path, load_evidence_report(path, git_sha=self.git_sha), _semantic_payload_digest(path), None
             except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
-                warnings.append(f"{path}: {type(exc).__name__}: {exc}")
+                return path, None, None, exc
+
+        if plan.workers > 1 and len(paths) > 1:
+            with ThreadPoolExecutor(
+                max_workers=plan.workers,
+                thread_name_prefix="finagent-evidence-scan",
+            ) as executor:
+                projected = tuple(executor.map(project, paths))
+        else:
+            projected = tuple(project(path) for path in paths)
+
+        for path, bundle, semantic_digest, error in projected:
+            if error is not None:
+                warnings.append(f"{path}: {type(error).__name__}: {error}")
                 continue
+            assert bundle is not None and semantic_digest is not None
             evidence_id = bundle.root.evidence_id
             if evidence_id in conflicts:
                 continue
             if evidence_id in bundles:
                 if digests[evidence_id] == semantic_digest:
-                    warnings.append(
+                    notices.append(
                         f"{path}: duplicate replay/equivalent evidence {evidence_id!r} ignored"
                     )
                     continue
@@ -181,11 +205,23 @@ class WorkspaceEvidenceCatalog:
             self._bundles = bundles
             self._semantic_digests = digests
             self._warnings = warnings
+            self._notices = notices
+            self._parallel_plan = plan
 
     @property
     def warnings(self) -> tuple[str, ...]:
         with self._lock:
             return tuple(self._warnings)
+
+    @property
+    def notices(self) -> tuple[str, ...]:
+        with self._lock:
+            return tuple(self._notices)
+
+    @property
+    def parallel_plan(self) -> ParallelPlan | None:
+        with self._lock:
+            return self._parallel_plan
 
     def bundle(self, evidence_id: str) -> EvidenceBundle:
         with self._lock:
@@ -352,9 +388,14 @@ def create_workspace_app(
             "read_only": True,
             "evidence_count": len(catalog.items()),
             "warning_count": len(catalog.warnings),
+            "notice_count": len(catalog.notices),
             "agent_audit_configured": agent_path is not None,
             "workspace_v2": True,
             "v2_warning_count": len(v2.warnings),
+            "parallelism": {
+                "catalog": catalog.parallel_plan.to_dict() if catalog.parallel_plan else None,
+                **v2.parallel_diagnostics(),
+            },
         }
 
     @app.get("/api/v1/catalog")
@@ -364,6 +405,7 @@ def create_workspace_app(
             "read_only": True,
             "items": [item.to_dict() for item in catalog.items()],
             "warnings": list(catalog.warnings),
+            "notices": list(catalog.notices),
         }
 
     @app.get("/api/v1/evidence/{evidence_id}")
