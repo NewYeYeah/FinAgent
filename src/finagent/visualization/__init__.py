@@ -1,5 +1,12 @@
-"""Read-only research-report and Agent-trace visualization support."""
+"""Read-only research, evidence and Agent visualization support."""
 
+from .agent_projection import (
+    AgentProjectionItem,
+    AgentProjectionItemType,
+    AgentRunProjection,
+    AgentTokenUsage,
+    load_agent_run_projection,
+)
 from .feature_store import StoredFeatureView, load_feature_store
 from .research_report import (
     CandidateSnapshot,
@@ -8,6 +15,23 @@ from .research_report import (
     load_research_report,
     parse_research_report,
 )
+from .semantic import (
+    EvidenceAuthority,
+    EvidenceBundle,
+    EvidenceContractError,
+    EvidenceRef,
+    EvidenceStage,
+    ExecutionEvidence,
+    FactorEvidence,
+    FoldEvidence,
+    LineageEdge,
+    LineageGraph,
+    LineageNode,
+    PortfolioEvidence,
+    PortfolioPointEvidence,
+    load_evidence_report,
+    parse_evidence_report,
+)
 from .trace_reader import (
     AgentTraceView,
     TraceEvent,
@@ -15,18 +39,50 @@ from .trace_reader import (
     load_agent_trace,
     parse_agent_trace,
 )
+from .widgets import (
+    FinWidgetParameter,
+    FinWidgetSpec,
+    WidgetRenderer,
+    WidgetSurface,
+    default_widget_specs,
+)
 
 __all__ = [
+    "AgentProjectionItem",
+    "AgentProjectionItemType",
+    "AgentRunProjection",
+    "AgentTokenUsage",
     "AgentTraceView",
     "CandidateSnapshot",
+    "EvidenceAuthority",
+    "EvidenceBundle",
+    "EvidenceContractError",
+    "EvidenceRef",
+    "EvidenceStage",
+    "ExecutionEvidence",
+    "FactorEvidence",
+    "FinWidgetParameter",
+    "FinWidgetSpec",
+    "FoldEvidence",
+    "LineageEdge",
+    "LineageGraph",
+    "LineageNode",
+    "PortfolioEvidence",
+    "PortfolioPointEvidence",
     "ResearchReportError",
     "ResearchReportView",
     "StoredFeatureView",
     "TraceEvent",
     "TraceSpan",
+    "WidgetRenderer",
+    "WidgetSurface",
+    "default_widget_specs",
+    "load_agent_run_projection",
     "load_agent_trace",
+    "load_evidence_report",
     "load_feature_store",
     "load_research_report",
     "parse_agent_trace",
+    "parse_evidence_report",
     "parse_research_report",
 ]
