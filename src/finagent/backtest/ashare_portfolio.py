@@ -877,13 +877,15 @@ class AshareExecutionAwarePortfolioValidator:
         target: PortfolioTarget,
     ) -> float:
         current = cls._weights(state)
-        assets = set(current) | set(target.weights)
-        risky = sum(
+        assets = sorted(set(current) | set(target.weights))
+        risky = math.fsum(
             abs(target.weights.get(asset, 0.0) - current.get(asset, 0.0))
             for asset in assets
         )
         current_cash = state.cash / state.nav
-        return 0.5 * (risky + abs(target.cash_weight - current_cash))
+        return 0.5 * math.fsum(
+            (risky, abs(target.cash_weight - current_cash))
+        )
 
     @classmethod
     def _implementation_shortfall(
@@ -892,13 +894,15 @@ class AshareExecutionAwarePortfolioValidator:
         target: PortfolioTarget,
     ) -> float:
         actual = cls._weights(state)
-        assets = set(actual) | set(target.weights)
-        risky = sum(
+        assets = sorted(set(actual) | set(target.weights))
+        risky = math.fsum(
             abs(target.weights.get(asset, 0.0) - actual.get(asset, 0.0))
             for asset in assets
         )
         actual_cash = state.cash / state.nav
-        return 0.5 * (risky + abs(target.cash_weight - actual_cash))
+        return 0.5 * math.fsum(
+            (risky, abs(target.cash_weight - actual_cash))
+        )
 
     @staticmethod
     def _reason_counts(cycle: AshareExecutionCycle | None) -> Counter[str]:
