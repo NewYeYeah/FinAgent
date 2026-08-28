@@ -1,4 +1,5 @@
 from .adapters import CSVPriceDataAdapter, InMemoryPriceDataAdapter, SQLitePriceDataAdapter
+from .ashare_close import AshareDailyCloseSnapshot, LocalAshareDailyCloseAdapter
 from .ashare_execution import LocalAshareDailyExecutionAdapter
 from .ashare_supplemental import (
     AshareDelistingRecord,
@@ -55,6 +56,7 @@ from .local_ashare_freeze import (
     LocalAshareFrozenManifest,
     create_local_ashare_frozen_manifest,
 )
+from .local_ashare_inference_adapter import LocalAshareInferenceDataAdapter
 from .local_ashare_research_adapter import LocalAshareParquetDataAdapter
 from .local_ashare_research_certification import LocalAshareDatasetInspector
 from .store import SQLitePriceStore
@@ -68,6 +70,7 @@ __all__ = [
     "AlpacaMarketDataIngestor",
     "AshareBarFrequency",
     "AshareBarRecord",
+    "AshareDailyCloseSnapshot",
     "AshareDelistingRecord",
     "AshareInstrumentRecord",
     "AshareIntradayTimestampConvention",
@@ -83,10 +86,12 @@ __all__ = [
     "InMemoryPriceDataAdapter",
     "LocalAshareCertificationIssue",
     "LocalAshareCertificationReport",
+    "LocalAshareDailyCloseAdapter",
     "LocalAshareDailyExecutionAdapter",
     "LocalAshareDatasetInspector",
     "LocalAshareDatasetLayout",
     "LocalAshareFrozenManifest",
+    "LocalAshareInferenceDataAdapter",
     "LocalAshareParquetDataAdapter",
     "LocalAshareSecurityMaster",
     "MarketDataManifest",
