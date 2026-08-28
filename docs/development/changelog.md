@@ -2,6 +2,28 @@
 
 This file summarizes meaningful development milestones. Commit and pull-request history remains the detailed audit trail.
 
+## 2026-08-28 — A3 A-share execution semantics
+
+- added an exact-session local daily execution adapter that never falls back to stale earlier quotes;
+- added explicit tradable, suspended, missing, invalid-price and price-limit-unavailable states;
+- added side-specific buy-at-limit-up and sell-at-limit-down rejection using vendor limits;
+- added target → desired order → executable order compilation with deterministic identities and reason codes;
+- added board-aware buy lots, STAR minimum quantity and odd-lot sell handling;
+- added immutable T+1 total/sellable/unsettled inventory accounting;
+- separated broker commission, minimum commission, sell-side stamp duty, transfer fee and optional exchange/regulatory fees;
+- added deterministic exact-open fills, fee-aware cash scaling, local historical smoke, Windows/Ubuntu tests and an A3 guide;
+- kept A3 outside factor reserve, promotion, PAPER, realtime and live-capital claims.
+
+## 2026-08-28 — A2.6 robust ResearchProgram
+
+- added immutable A-share ResearchProgram specifications and SQLite identity storage;
+- added annual expanding walk-forward folds with training-frozen factor direction;
+- added pooled internal-OOS RankIC/ICIR, fold minima, HAC, block bootstrap and Holm/BH diagnostics;
+- added preregistered hard candidate gates and a valid `NO_ROBUST_FACTOR_FOUND` result;
+- added deterministic robust factor-family selection and Agent feedback v3;
+- integrated existing program budget/lifecycle controls and exact replay;
+- kept the 2025+ reserve untouched and the result promotion-ineligible before A3/A4.
+
 ## 2026-08-27 — Read-only research visualization
 
 - added a Streamlit/Plotly Research UI for A2/A2.5 reports;

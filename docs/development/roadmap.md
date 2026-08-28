@@ -10,75 +10,65 @@ Completed core capabilities:
 - deterministic alpha/risk/portfolio interfaces;
 - nested validation, multiplicity control, DSR/PBO/Reality Check;
 - bounded Agent-generated features, repair/checkpoint resilience and structured research memory;
-- development-only Factor Quant feedback loop;
-- deterministic multi-factor ensemble selection and model-level validation;
+- development-only Factor Quant feedback and deterministic multi-factor selection;
 - sealed holdout lifecycle, research promotion and human-approved PAPER handoff;
-- supervised internal paper/shadow operations;
-- provider-configured Alpaca/AKShare/Tushare/HiThink data surfaces;
-- local A-share daily and audited 1-minute Parquet adapters;
-- frozen local A-share dataset identity, supplemental reference layer and Windows CI;
-- A2 bounded daily A-share Factor Quant acceptance with deterministic/Agent discovery and exact replay;
-- A2.5 split-independent universe warm-up, signed validation verdicts, rolling/subperiod stability, HAC, block bootstrap and Holm/BH evidence;
-- vendor-neutral Agent JSONL/OTLP tracing with Phoenix as an optional detailed span UI;
-- read-only Streamlit/Plotly Research UI for reports, factors, ensembles, universes, Agent discovery and lineage;
-- A2.6 immutable A-share ResearchProgram specifications, annual expanding walk-forward evidence, preregistered robust-factor gates, Agent feedback v3, explicit no-alpha outcomes and exact replay.
+- provider-configured US/A-share data surfaces and frozen local A-share Parquet identity;
+- A2 bounded A-share factor research and A2.5 correctness/stability diagnostics;
+- A2.6 immutable ResearchProgram, annual expanding walk-forward, preregistered robust gates, feedback v3, explicit no-alpha outcome and exact replay;
+- vendor-neutral Agent JSONL/OTLP tracing and read-only Streamlit/Plotly Research UI;
+- A3 exact-session A-share execution states, T+1 inventory, board-aware lot compilation, side-specific limit handling, asymmetric fees and deterministic execution smoke.
 
-## Completed priority gate — A2.6 robust ResearchProgram
+## Completed priority gate — A3 execution semantics
 
-A2.6 retires the already observed 2022–2024 window as clean independent validation. It treats 2018–2024 as one internal research domain and evaluates every candidate through preregistered expanding annual folds. Training evidence freezes each factor direction before the next-year test.
+A3 keeps the generic planner and exchange market-neutral and adds an isolated A-share target-to-executable-order layer.
 
-The program identity binds the frozen data and universe, fold schedule, approved fields and labels, Factor Quant settings, candidate gate, selector, Agent generation budget and untouched reserve. A program is frozen after the robust factor-family result is produced. If no candidate passes every hard gate, `NO_ROBUST_FACTOR_FOUND` is a valid final result; the system never forces an ensemble.
+The execution adapter reads the exact requested daily row and never substitutes an earlier tradable quote. Suspensions, missing rows, invalid prices and absent price limits are explicit states. Buy-at-limit-up and sell-at-limit-down are rejected conservatively from vendor `up_limit`/`down_limit` fields.
 
-The 2025+ reserve remains untouched. A2.6 is factor-level research only and is not eligible for promotion before A3 execution semantics and an execution-aware validation protocol are frozen.
+Positions separate total, sellable and unsettled quantities. Buy fills become sellable only after the ledger advances to a later session. The compiler records desired quantity, executable quantity, lot/cash/T+1 adjustments and rejection reason codes. Fees separate broker commission, minimum commission, sell-side stamp duty, transfer fee and optional exchange/regulatory pass-through.
+
+A3 certifies execution-rule plumbing only. It does not consume the 2025+ reserve or establish portfolio Alpha, capacity, promotion, PAPER or live-trading evidence.
 
 ## Current priority order
 
-### P1 — A3 A-share execution semantics
-
-- define T+1 sellability and 100-share buy lots;
-- model suspension and board/ST price-limit tradeability;
-- implement commission, minimum commission, sell-side stamp duty and applicable transfer fees;
-- distinguish target weights, desired orders and executable orders;
-- emit explicit order decision/rejection reason codes;
-- only after these rules are tested, evaluate A-share portfolio-level economic returns.
-
 ### P1 — A4 execution-aware portfolio validation
 
-- connect a frozen robust factor family to AlphaModel/RiskModel/Optimizer without changing its research identity;
-- compare gross and net returns under A-share execution rules and asymmetric costs;
-- report rejected-order, limit-blocked, suspension and capacity diagnostics;
-- freeze the portfolio validation protocol before any 2025+ reserve access.
+- connect a frozen A2.6 robust factor family to `AlphaModel → RiskModel → Optimizer` without changing its research identity;
+- route every rebalance through the A3 target/desired/executable-order path;
+- calculate gross and net portfolio returns under T+1, lots, suspensions, price limits, asymmetric fees and slippage;
+- report rejected-order, T+1-clipped, lot-rounded, limit-blocked, suspension and cost attribution;
+- add capacity/participation diagnostics before treating daily-bar results as economic evidence;
+- freeze the A4 protocol before any 2025+ reserve access.
 
-### P1 — Data/research improvements
+### P1 — A4 correctness and performance
 
-- improve historical universe with source-bound supplemental data where credible records exist;
-- certify 5/15/30/60-minute timestamp conventions before enabling them;
-- add chunked/out-of-core study orchestration if a 100–200 stock panel no longer suffices;
-- keep Alpaca SIP as the US reference/regression dataset.
+- preserve `F_t → target_t → next executable open` chronology;
+- prevent stale-price execution and same-close fills;
+- support deterministic exact replay of orders, fills, fees, inventory and NAV;
+- add chunked/out-of-core orchestration if 100–200 stock portfolio studies exceed practical memory/runtime limits;
+- compare the A3 path with the US reference path without mixing market-specific rules.
 
 ### P1.5 — Visualization continuation
 
-The v1 dashboard is complete. Later work should be driven by real debugging needs:
+The current UI remains read-only. Later work should be driven by A4 debugging needs:
 
-- index and compare multiple immutable ResearchProgram reports;
-- show report-to-report identity changes and candidate lineage;
-- add downloadable chart/table evidence bundles;
-- add trace-to-factor deep links when a stable Phoenix project/trace URL contract is available;
-- keep every interactive research action as an explicit fork of a new ResearchProgram rather than an in-place mutation.
+- show desired versus executable orders and reason-code attribution;
+- visualize T+1 inventory, limit/suspension blocks, fee composition and gross-to-net decay;
+- compare immutable ResearchProgram and execution-protocol identities;
+- keep every research modification as an explicit new ResearchProgram rather than in-place mutation.
 
 ### P2 — Research-to-operation continuation
 
 - consume the 2025+ reserve only after A2.6, A3 and A4 protocols are frozen;
-- connect execution-valid ensembles to promotion/model identity;
-- repeated PAPER sessions and operational evidence;
-- external broker paper/shadow where useful;
-- Provider Contract v2 entitlement/runtime capability snapshots.
+- connect reserve-passing execution-valid ensembles to promotion/model identity;
+- run repeated PAPER sessions and operational reconciliation;
+- add external broker paper/shadow only when historical economic validation is stable;
+- improve Provider Contract v2 entitlement/runtime snapshots.
 
 ### Deferred
 
-A-share live-capital and realtime acceptance are not near-term milestones. Expensive realtime/delisting products are not required before historical research and execution semantics mature.
+A-share live-capital and realtime acceptance are not near-term milestones. Expensive realtime/delisting products are not required before historical research and execution-aware validation mature.
 
-Advanced ML/RL/multi-agent extensions remain lower priority than factor quality, data correctness and execution realism.
+Advanced ML/RL/multi-agent extensions remain lower priority than factor stability, data correctness and execution realism.
 
 ## Development rule
 
@@ -90,4 +80,4 @@ core functional loop
 → later hardening
 ```
 
-Do not stop feature development for speculative P2 infrastructure, but do not proceed past errors that invalidate chronology, data identity, adaptive-search denominator, validation isolation or execution clocks.
+Do not proceed past errors that invalidate chronology, data identity, adaptive-search denominator, validation isolation, exact-session tradeability, T+1 inventory or execution clocks.
