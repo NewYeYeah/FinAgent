@@ -18,11 +18,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev,visualization]"
-      - name: Test report, trace, feature-store and Streamlit surfaces
+      - name: Test report, evidence, trace, feature-store and Streamlit surfaces
         run: |
           python -m pytest -q \
             tests/test_research_visualization.py \
-            tests/test_research_ui_app.py
+            tests/test_research_ui_app.py \
+            tests/test_visualization_semantic_contract_v2.py
       - name: Lint visualization surface
         run: |
           ruff check \
@@ -31,12 +32,16 @@ jobs:
             scripts/run_research_ui.py \
             tests/test_research_visualization.py \
             tests/test_research_ui_app.py \
+            tests/test_visualization_semantic_contract_v2.py \
             --select E4,E7,E9,F
-      - name: Compile application entry points
+      - name: Compile application and semantic entry points
         run: |
           python -m py_compile \
             apps/research_ui.py \
-            scripts/run_research_ui.py
+            scripts/run_research_ui.py \
+            src/finagent/visualization/semantic.py \
+            src/finagent/visualization/widgets.py \
+            src/finagent/visualization/agent_projection.py
       - name: Streamlit import smoke
         run: |
           python -c "import streamlit, plotly; print(streamlit.__version__, plotly.__version__)"
