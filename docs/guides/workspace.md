@@ -4,26 +4,28 @@ The FinAgent Workspace is the primary read-only product surface for immutable re
 
 ## 1. Scope
 
-V1 supports:
+V2 supports:
 
 ```text
 A2 / A2.5 factor-acceptance reports
 A2.6 robust ResearchProgram reports
 A4 execution-aware portfolio-validation reports
+digest-matched A4 execution-ledger JSONL
 canonical Agent audit SQLite
 ```
 
 It provides:
 
-- an Evidence catalog;
-- A2.6 factor, fold, Gate and frozen-selection views;
-- A4 gross/net NAV and portfolio metrics;
-- derived drawdown clearly labelled as presentation-only;
-- desired → executable → filled order realization;
-- T+1, lot, suspension, limit, cash and other reason-code attribution;
-- immutable lineage navigation;
-- canonical Agent run timelines;
-- the `FinWidgetSpec` product-question catalog.
+- a rebuildable derived SQLite Evidence Catalog in addition to the V1 in-memory catalog;
+- governed Project lifecycle and immutable protocol comparison;
+- A2.6 Gate Matrix, statistical forest and fold-evidence views;
+- A4 gross/net NAV, portfolio/economic evidence and explicitly derived rolling review series;
+- digest-matched desired → compiled/adjusted → executable → filled execution realization;
+- T+1, lot, suspension, limit, cash, session/data and detailed fee attribution;
+- target-versus-realized close weights and implementation-shortfall review;
+- immutable lineage navigation plus an explicitly derived A3 protocol binding when no standalone A3 evidence identity exists;
+- raw evidence inspection and downloadable human-review bundles;
+- canonical Agent run timelines and the `FinWidgetSpec` product-question catalog.
 
 It does not provide:
 
@@ -42,13 +44,14 @@ order submission
 
 ```text
 Immutable A2/A2.6/A4 JSON
+A4 execution ledger JSONL
 Canonical Agent audit SQLite
              │
              ▼
 Visualization Semantic Contract
              │
              ▼
-Read-only FastAPI /api/v1
+Read-only FastAPI /api/v1 + /api/v2
              │
              ▼
 React + TypeScript Workspace
@@ -132,6 +135,8 @@ Open:
 ```text
 http://127.0.0.1:8765
 ```
+
+By default V2 also rebuilds a disposable review index at `.finagent/visualization/evidence_catalog.sqlite`. Use `--no-catalog-db` to keep the derived index in memory only, or `--catalog-db <path>` to select another disposable index location. The authoritative report/ledger artifacts are never modified.
 
 ### Multiple report roots
 
@@ -236,6 +241,22 @@ Shows the canonical Action / Tool / Guardrail / Approval / Result / Error projec
 
 Displays the frozen `FinWidgetSpec` definitions, including the question, data endpoint, renderer, authority and shared deep-link keys.
 
+## 6.1 V2 review pages
+
+The primary V2 navigation is:
+
+```text
+Research Governance Cockpit
+A2.6 ResearchProgram Cockpit
+A4 Portfolio Cockpit
+Execution Realization Cockpit
+Governance / Protocol Review
+Raw Evidence Inspector
+Review Bundle Export
+```
+
+The A3 lifecycle stage is shown as a `derived` protocol binding to A4 because the current core does not persist a standalone authoritative A3 certification evidence identity. V2 does not fabricate that identity in lineage.
+
 ## 7. API overview
 
 All product endpoints are GET-only:
@@ -255,7 +276,29 @@ GET /api/v1/agent/runs
 GET /api/v1/agent/runs/{run_id}
 ```
 
-There are no write endpoints. `POST`, `PUT`, `PATCH` and `DELETE` are not part of the V1 contract.
+There are no write endpoints. `POST`, `PUT`, `PATCH` and `DELETE` are not part of the V1/V2 product contract.
+
+V2 review endpoints are:
+
+```text
+GET /api/v2/catalog
+GET /api/v2/projects
+GET /api/v2/programs/{program_id}/cockpit
+GET /api/v2/programs/{program_id}/gates
+GET /api/v2/programs/{program_id}/statistics
+GET /api/v2/a4/{validation_id}/cockpit
+GET /api/v2/a4/{validation_id}/execution
+GET /api/v2/governance/{evidence_id}
+GET /api/v2/protocol-diff?left=...&right=...
+GET /api/v2/evidence/{evidence_id}/raw
+GET /api/v2/a4/{validation_id}/review-bundle
+```
+
+The CLI equivalent of the review-bundle download is:
+
+```bash
+python scripts/export_workspace_review_bundle.py <validation_id> --reports reports
+```
 
 ## 8. Catalog behavior
 

@@ -5,6 +5,12 @@ import type {
   EvidenceBundle,
   FactorResponse,
   WidgetSpec,
+  ExecutionCockpitResponse,
+  GovernanceResponse,
+  PortfolioCockpitResponse,
+  ProgramCockpitResponse,
+  ProjectsResponse,
+  ProtocolDiffResponse,
 } from "./types";
 
 const API_BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
@@ -46,4 +52,19 @@ export const workspaceApi = {
   },
   agentRun: (runId: string) =>
     getJson<AgentRunProjection>(`/api/v1/agent/runs/${encodeURIComponent(runId)}`),
+  projectsV2: () => getJson<ProjectsResponse>("/api/v2/projects"),
+  programCockpitV2: (programId: string) =>
+    getJson<ProgramCockpitResponse>(`/api/v2/programs/${encodeURIComponent(programId)}/cockpit`),
+  portfolioCockpitV2: (validationId: string) =>
+    getJson<PortfolioCockpitResponse>(`/api/v2/a4/${encodeURIComponent(validationId)}/cockpit`),
+  executionCockpitV2: (validationId: string) =>
+    getJson<ExecutionCockpitResponse>(`/api/v2/a4/${encodeURIComponent(validationId)}/execution`),
+  governanceV2: (evidenceId: string) =>
+    getJson<GovernanceResponse>(`/api/v2/governance/${encodeURIComponent(evidenceId)}`),
+  protocolDiffV2: (left: string, right: string) =>
+    getJson<ProtocolDiffResponse>(
+      `/api/v2/protocol-diff?left=${encodeURIComponent(left)}&right=${encodeURIComponent(right)}`,
+    ),
+  rawEvidenceV2: (evidenceId: string) =>
+    getJson<Record<string, unknown>>(`/api/v2/evidence/${encodeURIComponent(evidenceId)}/raw`),
 };

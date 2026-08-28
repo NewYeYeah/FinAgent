@@ -17,7 +17,7 @@ The current development baseline supports:
 - supervised paper/shadow operations and sealed-holdout/promotion primitives;
 - US market ingestion through Alpaca SIP and best-effort AKShare validation;
 - local A-share Parquet research through DuckDB-backed adapters;
-- a read-only FastAPI + React/TypeScript Evidence Workspace, with legacy Streamlit and optional Phoenix diagnostics retained.
+- a read-only FastAPI + React/TypeScript Visualization V2 governance Workspace with immutable A4-ledger review, protocol diff/export, legacy Streamlit and optional Phoenix diagnostics retained.
 
 The current market priority is **A-share historical research first**, with **Alpaca SIP as the US reference/regression path**. A-share live-capital or realtime acceptance is intentionally deferred until the frozen research, execution-aware internal validation, one-shot reserve and repeated PAPER gates are complete.
 
@@ -74,9 +74,9 @@ python scripts\run_ashare_portfolio_validation.py `
 
 A completed A4 report remains `promotion_eligible=false` and leaves the 2025+ reserve untouched.
 
-## FinAgent Workspace V1
+## FinAgent Workspace V2
 
-The primary first-generation product surface is a read-only Evidence Workspace. It consumes the stable Visualization V0 semantic contract rather than internal A2.6/A4 report layouts.
+The primary product surface is a read-only pre-reserve Evidence Workspace. V2 retains V0/V1 compatibility and adds governed A2.6/A4/ledger review projections; authoritative calculations remain owned by FinAgent core.
 
 Install and build:
 
@@ -99,14 +99,16 @@ python scripts/run_workspace.py \
 
 Windows PowerShell uses the same command with backticks. Open `http://127.0.0.1:8765`.
 
-V1 provides:
+V2 provides:
 
-- an immutable Evidence catalog for A2/A2.5, A2.6 and A4 reports;
-- ResearchProgram/factor Gate and fold evidence;
-- A4 gross/net NAV, derived drawdown, execution funnel and rejection/cost diagnostics;
-- lineage navigation across A2.6 → A4 identities;
-- canonical Agent audit timelines opened from SQLite in read-only mode;
-- a product-question-driven `FinWidgetSpec` catalog.
+- a rebuildable derived SQLite Evidence Catalog and deterministic frozen-protocol comparison;
+- ResearchProgram lifecycle, Gate matrix, statistical forest and fold evidence;
+- A4 gross/net NAV, derived rolling review series, fold/economic evidence;
+- digest-matched A4 JSONL desired → compiled/adjusted → executable → fill review;
+- T+1/lot/suspension/limit/cash attribution, fill-level fee components and target-versus-realized weights;
+- combined immutable A2.6 → A4 lineage, with A3 binding explicitly marked `derived` where no standalone A3 identity exists;
+- downloadable human-review evidence bundles;
+- canonical Agent audit timelines and the `FinWidgetSpec` catalog.
 
 It provides no endpoint or control for research reruns, prompt edits, Gate changes, reserve access, promotion or order submission.
 

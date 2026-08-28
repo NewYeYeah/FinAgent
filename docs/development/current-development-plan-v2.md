@@ -8,6 +8,21 @@
 
 ---
 
+## 0.1 Implementation status addendum — 2026-08-29
+
+下述条目继续作为冻结的 V2 验收基线。当前代码交付已实现 **V2-1～V2-6**：
+
+- rebuildable SQLite Evidence Catalog 与 deterministic protocol comparison；
+- Project / Governance cockpit；
+- A2.6 Gate / statistical / fold review；
+- A4 portfolio / economic review；
+- immutable JSONL execution lifecycle、cost 与 target-realized projection；
+- human-review ZIP export 与 V2 API/frontend acceptance coverage。
+
+需要明确一个现有 core 约束：仓库当前没有持久化独立的 authoritative A3 certification evidence ID。因此 V2 只把 A3 execution semantics 作为 **`derived` protocol binding** 展示，不在 authoritative lineage DAG 中伪造 A3 节点。A5 仍以 V2 CI/acceptance 全绿、人工复核 exact frozen protocol 且 reserve=`untouched` 为前置条件。
+
+---
+
 ## 1. 规划目标
 
 FinAgent 当前已经从“研究原型”进入“可审计量化研究平台”的阶段。后续开发不再以简单增加 Agent 数量、数据源数量或图表数量为目标，而围绕以下主线推进：
@@ -1095,27 +1110,18 @@ Reserve correctness
 
 # 16. 当前立即执行项
 
-从当前版本开始，下一正式开发项冻结为：
+Visualization V2-1～V2-6 已完成代码交付，下一正式治理项冻结为：
 
-## **Visualization V2-1 — Evidence Catalog + Protocol Comparison**
+## **A5 — One-shot Reserve Protocol**
 
-完成后依次进入：
+进入 A5 前仍必须满足：
 
-```text
-V2-2 Project/Governance
-→ V2-3 Factor Gate Evidence
-→ V2-4 Portfolio
-→ V2-5 Execution
-→ V2-6 Evidence Bundle / Acceptance
-→ A5 Reserve
-```
+- V2 Python/API、TypeScript、Vitest、Vite build、Playwright 与质量检查全部通过；
+- 人工核对 exact A2.6/A4 identity、Gate、execution ledger、protocol diff 与 reserve 状态；
+- 2025+ reserve 仍为 `untouched`；
+- 不因已观察的 A4/V2 结果修改同一 protocol 的 Gate/selection/execution/economic policy。
 
-在 V2 完成前：
-
-- 不消费 2025+ reserve；
-- 不开始 QMT 实现；
-- 不增加 live-capital 能力；
-- 不基于 A4 内部经济结果修改 Gate 并继续宣称同一 protocol 未被观察。
+在 A5 完成前仍不开始 QMT live-capital 实现。
 
 ---
 

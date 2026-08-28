@@ -13,7 +13,7 @@ from urllib.parse import quote
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from .agent_projection import load_agent_run_projection
@@ -24,9 +24,10 @@ from .semantic import (
     load_evidence_report,
 )
 from .widgets import default_widget_specs
+from .workspace_v2 import WorkspaceV2Projection
 
 
-WORKSPACE_API_VERSION = "finagent-workspace-api-v1"
+WORKSPACE_API_VERSION = "finagent-workspace-api-v2"
 SUPPORTED_REPORT_SUFFIX = ".json"
 
 
@@ -307,6 +308,7 @@ def create_workspace_app(
     agent_audit_path: str | Path | None = None,
     frontend_dir: str | Path | None = "workspace/dist",
     git_sha: str = "",
+    catalog_db_path: str | Path | None = None,
     cors_origins: Sequence[str] = (
         "http://127.0.0.1:5173",
         "http://localhost:5173",
@@ -315,6 +317,12 @@ def create_workspace_app(
     catalog = WorkspaceEvidenceCatalog(report_paths, git_sha=git_sha)
     agent_path = Path(agent_audit_path).expanduser() if agent_audit_path else None
     static_root = Path(frontend_dir).expanduser() if frontend_dir else None
+    v2 = WorkspaceV2Projection(
+        catalog.bundles(),
+        report_paths=report_paths,
+        catalog_db_path=catalog_db_path,
+        git_sha=git_sha,
+    )
 
     app = FastAPI(
         title="FinAgent Workspace API",
@@ -327,6 +335,7 @@ def create_workspace_app(
     app.state.catalog = catalog
     app.state.agent_audit_path = agent_path
     app.state.read_only = True
+    app.state.workspace_v2 = v2
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(cors_origins),
@@ -344,6 +353,8 @@ def create_workspace_app(
             "evidence_count": len(catalog.items()),
             "warning_count": len(catalog.warnings),
             "agent_audit_configured": agent_path is not None,
+            "workspace_v2": True,
+            "v2_warning_count": len(v2.warnings),
         }
 
     @app.get("/api/v1/catalog")
@@ -440,6 +451,90 @@ def create_workspace_app(
         except (FileNotFoundError, sqlite3.Error, EvidenceContractError) as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
 
+    # Visualization V2: all product routes remain GET-only. Derived projections
+    # organize immutable evidence for human review before one-shot reserve use.
+    @app.get("/api/v2/catalog")
+    def get_v2_catalog() -> dict[str, object]:
+        return v2.catalog()
+
+    @app.get("/api/v2/projects")
+    def get_v2_projects() -> dict[str, object]:
+        return v2.projects()
+
+    @app.get("/api/v2/programs/{program_id}/cockpit")
+    def get_v2_program_cockpit(program_id: str) -> dict[str, object]:
+        try:
+            return v2.program_cockpit(program_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="program not found") from exc
+
+    @app.get("/api/v2/programs/{program_id}/gates")
+    def get_v2_program_gates(program_id: str) -> dict[str, object]:
+        try:
+            return v2.program_gates(program_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="program not found") from exc
+
+    @app.get("/api/v2/programs/{program_id}/statistics")
+    def get_v2_program_statistics(program_id: str) -> dict[str, object]:
+        try:
+            return v2.program_statistics(program_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="program not found") from exc
+
+    @app.get("/api/v2/a4/{validation_id}/cockpit")
+    def get_v2_a4_cockpit(validation_id: str) -> dict[str, object]:
+        try:
+            return v2.portfolio_cockpit(validation_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="validation not found") from exc
+
+    @app.get("/api/v2/a4/{validation_id}/execution")
+    def get_v2_execution_cockpit(validation_id: str) -> dict[str, object]:
+        try:
+            return v2.execution_cockpit(validation_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="validation not found") from exc
+
+    @app.get("/api/v2/governance/{evidence_id}")
+    def get_v2_governance(evidence_id: str) -> dict[str, object]:
+        try:
+            return v2.governance(evidence_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="evidence not found") from exc
+        except EvidenceContractError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.get("/api/v2/protocol-diff")
+    def get_v2_protocol_diff(left: str, right: str) -> dict[str, object]:
+        try:
+            return v2.protocol_diff(left, right)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="protocol evidence not found") from exc
+
+    @app.get("/api/v2/evidence/{evidence_id}/raw")
+    def get_v2_raw_evidence(evidence_id: str) -> dict[str, object]:
+        try:
+            return v2.raw_evidence(evidence_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="raw evidence not found") from exc
+
+    @app.get("/api/v2/a4/{validation_id}/review-bundle")
+    def get_v2_review_bundle(validation_id: str) -> Response:
+        try:
+            payload = v2.review_bundle(validation_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="validation not found") from exc
+        return Response(
+            content=payload,
+            media_type="application/zip",
+            headers={
+                "Content-Disposition": (
+                    f'attachment; filename="finagent-review-{validation_id}.zip"'
+                )
+            },
+        )
+
     if static_root is not None and static_root.is_dir():
         assets = static_root / "assets"
         if assets.is_dir():
@@ -476,9 +571,11 @@ def create_app_from_environment() -> FastAPI:
     agent_audit = os.environ.get("FINAGENT_WORKSPACE_AGENT_AUDIT") or None
     frontend = os.environ.get("FINAGENT_WORKSPACE_FRONTEND", "workspace/dist") or None
     git_sha = os.environ.get("FINAGENT_WORKSPACE_GIT_SHA", "")
+    catalog_db = os.environ.get("FINAGENT_WORKSPACE_CATALOG_DB") or None
     return create_workspace_app(
         report_paths=report_paths,
         agent_audit_path=agent_audit,
         frontend_dir=frontend,
         git_sha=git_sha,
+        catalog_db_path=catalog_db,
     )

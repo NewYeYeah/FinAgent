@@ -2,112 +2,105 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("echarts-for-react", () => ({
+  default: () => <div data-testid="echarts" />,
+}));
+
+vi.mock("@xyflow/react", () => ({
+  ReactFlow: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="react-flow">{children}</div>
+  ),
+  Background: () => null,
+  Controls: () => null,
+  MarkerType: { ArrowClosed: "arrowclosed" },
+}));
+
 import App from "./App";
 
-const catalog = {
-  schema_version: "finagent.workspace.catalog.v1",
+const projects = {
+  schema_version: "finagent.workspace.projects.v2",
   read_only: true,
   warnings: [],
   items: [
     {
-      evidence_id: "a4-validation-v1",
-      evidence_type: "ashare_portfolio_validation",
-      stage: "a4_portfolio_validation",
-      authority: "authoritative",
-      system_status: "PASS",
-      research_status: "EXECUTION_VALIDATION_PASSED_INTERNAL",
-      reserve_status: "untouched",
-      promotion_eligible: false,
-      program_id: "",
-      spec_id: "a4-spec-v1",
+      project_id: "program-a26",
+      program_id: "program-a26",
+      program_evidence_id: "program-result-v1",
+      program_spec_id: "program-spec-v1",
+      selection_id: "selection-v1",
       data_version: "data-v1",
-      source_uri: "reports/a4.json",
-      factor_count: 0,
-      has_portfolio: true,
-      has_execution: true,
-      detail_url: "/api/v1/evidence/a4-validation-v1",
+      git_sha: "abc123",
+      system_status: "PASS",
+      research_status: "ROBUST_FACTOR_FAMILY_FROZEN",
+      protocol_frozen: true,
+      a3_status: "BOUND_IN_A4_PROTOCOL",
+      a3_authority: "derived",
+      a4_validation_id: "a4-validation-v1",
+      a4_spec_id: "a4-spec-v1",
+      a4_status: "EXECUTION_VALIDATION_PASSED_INTERNAL",
+      a4_execution_validation_passed: true,
+      reserve: { reserve_id: "reserve-v1", status: "untouched" },
+      promotion_eligible: false,
+      a5_status: "LOCKED_NOT_CONSUMED",
+      lifecycle: [
+        { stage: "A2.6", label: "Research frozen", status: "complete", authority: "authoritative" },
+        { stage: "A3", label: "Execution protocol bound", status: "complete", authority: "derived" },
+        { stage: "A4", label: "Internal validation", status: "complete", authority: "authoritative" },
+        { stage: "A5", label: "One-shot reserve", status: "locked", authority: "authoritative" },
+      ],
     },
   ],
 };
 
-const evidence = {
-  schema_version: "finagent.visualization.evidence-bundle.v1",
-  root: {
-    evidence_id: "a4-validation-v1",
-    evidence_type: "ashare_portfolio_validation",
-    schema_version: "finagent.ashare-portfolio-validation.v1",
-    stage: "a4_portfolio_validation",
-    authority: "authoritative",
-    artifact_digest: "digest",
-    source_uri: "reports/a4.json",
-    parent_ids: ["ledger-v1"],
-    program_id: "",
-    spec_id: "a4-spec-v1",
-    data_version: "data-v1",
-    git_sha: "",
-    metadata: { label: "A4 portfolio validation" },
-  },
-  refs: [],
+const portfolio = {
+  schema_version: "finagent.workspace.a4-cockpit.v2",
+  read_only: true,
+  validation_id: "a4-validation-v1",
+  status: "EXECUTION_VALIDATION_PASSED_INTERNAL",
   system_status: "PASS",
-  research_status: "EXECUTION_VALIDATION_PASSED_INTERNAL",
-  reserve_status: "untouched",
+  reserve: { reserve_id: "reserve-v1", status: "untouched" },
   promotion_eligible: false,
-  factors: [],
-  portfolio: {
-    metrics: {
-      net_total_return: 0.1,
-      gross_total_return: 0.12,
-      net_sharpe: 0.9,
-      net_max_drawdown: -0.08,
-      gross_to_net_return_drag: 0.02,
-    },
-    points: [
-      {
-        session_date: "2024-01-02",
-        net_nav: 101,
-        gross_nav: 102,
-        net_return: 0.01,
-        gross_return: 0.02,
-        fees: 1,
-        slippage: 1,
-        one_way_turnover: 0.1,
-        implementation_shortfall: 0.01,
-        maximum_ex_post_participation: 0.02,
-        desired_order_count: 3,
-        order_count: 2,
-        fill_count: 2,
-        rejected_order_count: 1,
-        cash_fallback: false,
-      },
-    ],
-    fold_metrics: [],
-  },
-  execution: {
-    desired_order_count: 3,
-    order_count: 2,
-    fill_count: 2,
-    rejected_order_count: 1,
-    rejected_order_ratio: 0.333,
-    cash_fallback_count: 0,
+  metrics: {
+    gross_return: 0.12,
+    net_return: 0.1,
+    gross_annualized_return: 0.15,
+    net_annualized_return: 0.12,
+    gross_sharpe: 1.1,
+    net_sharpe: 0.9,
+    max_drawdown: -0.08,
+    gross_to_net_drag: 0.02,
+    one_way_turnover: 0.3,
+    implementation_shortfall: 0.01,
     cash_fallback_ratio: 0,
-    reason_counts: { T1_SELLABLE_QUANTITY_CLIPPED: 1 },
-    costs: { fees: 1, slippage: 1, gross_to_net_return_drag: 0.02 },
+    rejected_order_ratio: 0.05,
     maximum_ex_post_participation: 0.02,
   },
-  lineage: {
-    nodes: [
+  nav_series: [
+    {
+      session_date: "2024-01-02",
+      net_nav: 101,
+      gross_nav: 102,
+      net_return: 0.01,
+      gross_return: 0.02,
+      fold_id: "wf-2024",
+    },
+  ],
+  derived_rolling: {
+    authority: "derived",
+    window: 20,
+    annualization: 252,
+    items: [
       {
-        evidence_id: "a4-validation-v1",
-        evidence_type: "ashare_portfolio_validation",
-        stage: "a4_portfolio_validation",
-        authority: "authoritative",
-        status: "PASS",
-        label: "A4 portfolio validation",
+        session_date: "2024-01-02",
+        window_periods: 1,
+        rolling_return: 0.01,
+        rolling_volatility: 0,
+        rolling_sharpe: 0,
       },
     ],
-    edges: [],
   },
-  metadata: {},
+  folds: [],
+  economic_evidence: { hac_pvalue: 0.04 },
 };
 
 function response(payload: unknown) {
@@ -119,16 +112,15 @@ function response(payload: unknown) {
   );
 }
 
-describe("FinAgent Workspace", () => {
+describe("FinAgent Workspace V2", () => {
   beforeEach(() => {
     window.history.pushState({}, "", "/");
     vi.stubGlobal(
       "fetch",
       vi.fn((input: RequestInfo | URL) => {
         const url = String(input);
-        if (url.endsWith("/api/v1/catalog")) return response(catalog);
-        if (url.endsWith("/api/v1/evidence/a4-validation-v1")) return response(evidence);
-        if (url.endsWith("/api/v1/widgets")) return response({ items: [] });
+        if (url.endsWith("/api/v2/projects")) return response(projects);
+        if (url.endsWith("/api/v2/a4/a4-validation-v1/cockpit")) return response(portfolio);
         throw new Error(`unexpected URL: ${url}`);
       }),
     );
@@ -138,16 +130,16 @@ describe("FinAgent Workspace", () => {
     vi.unstubAllGlobals();
   });
 
-  it("shows immutable evidence and opens the A4 cockpit", async () => {
+  it("shows the governed lifecycle and opens the A4 cockpit", async () => {
     render(<App />);
     expect(screen.getByText(/Read-only evidence workspace/i)).toBeInTheDocument();
-    expect(await screen.findByText("ashare_portfolio_validation")).toBeInTheDocument();
-    await userEvent.click(screen.getByText("ashare_portfolio_validation"));
-    await waitFor(() => {
-      expect(screen.getByText("Gross / net NAV")).toBeInTheDocument();
-    });
-    expect(screen.getByText("Order realization")).toBeInTheDocument();
-    expect(screen.getByText("DERIVED PRESENTATION SERIES")).toBeInTheDocument();
+    expect(await screen.findByText("Research governance cockpit")).toBeInTheDocument();
+    expect(screen.getByText("One-shot reserve")).toBeInTheDocument();
+    expect(screen.getByText("LOCKED_NOT_CONSUMED")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("link", { name: "A4" }));
+    await waitFor(() => expect(screen.getByText("A4 Portfolio Validation")).toBeInTheDocument());
+    expect(screen.getByText("Gross / net NAV")).toBeInTheDocument();
+    expect(screen.getAllByText("DERIVED PRESENTATION SERIES").length).toBeGreaterThan(0);
     expect(screen.getByText(/reserve:untouched/i)).toBeInTheDocument();
   });
 });

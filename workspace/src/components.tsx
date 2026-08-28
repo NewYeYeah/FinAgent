@@ -5,7 +5,7 @@ import {
   useReactTable,
   type ColumnDef,
 } from "@tanstack/react-table";
-import { Activity, Boxes, GitBranch, LayoutDashboard, LockKeyhole, Search, ShieldCheck } from "lucide-react";
+import { Activity, Boxes, GitBranch, LayoutDashboard, LockKeyhole, Search, ShieldCheck, Network } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 export function StatusBadge({ value, tone }: { value: string; tone?: string }) {
@@ -125,13 +125,16 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
         </div>
         <nav>
           <NavLink to="/" end>
-            <LayoutDashboard size={17} /> Overview
+            <LayoutDashboard size={17} /> Cockpit
           </NavLink>
           <NavLink to="/research">
             <ShieldCheck size={17} /> Research
           </NavLink>
           <NavLink to="/portfolio">
             <Activity size={17} /> Portfolio
+          </NavLink>
+          <NavLink to="/governance">
+            <Network size={17} /> Governance
           </NavLink>
           <NavLink to="/agent">
             <Boxes size={17} /> Agent Runs
@@ -142,7 +145,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
         </nav>
         <div className="sidebar-footer">
           <GitBranch size={15} />
-          <span>V1 · semantic contract</span>
+          <span>V2 · pre-reserve review</span>
         </div>
       </aside>
       <main>

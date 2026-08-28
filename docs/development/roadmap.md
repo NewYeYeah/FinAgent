@@ -14,12 +14,13 @@ Completed core capabilities:
 - A4 reserve-safe inference, train-only frozen-factor calibration, historical risk/optimizer targets, gross/net A3 execution ledgers, portfolio economic evidence and exact replay;
 - Visualization V0 canonical evidence, Agent projection, Widget and lineage contracts;
 - Visualization V1 GET-only FastAPI Evidence API and usable React/TypeScript Workspace;
+- Visualization V2 pre-reserve A4/governance cockpit, execution-ledger projection and human-review bundle export;
 - legacy read-only Streamlit/Plotly inspection with Phoenix as an optional low-level Agent trace viewer;
 - existing sealed-holdout, promotion, registry, PAPER/shadow and operational-control primitives.
 
 ## Current product state
 
-The Workspace can now navigate A2/A2.5, A2.6, A4 and Agent-audit evidence without coupling the browser to internal report or Phoenix span schemas. It remains strictly read-only. The next product gap is a denser A4/governance cockpit suitable for reviewing the frozen protocol before one-shot reserve use.
+The Workspace now provides the V2 pre-reserve review surface over A2/A2.5, A2.6, A4, immutable A4 JSONL execution ledgers and Agent-audit evidence. It remains strictly read-only. The next governed milestone is A5 one-shot reserve evaluation; Visualization V3/V4 remain subsequent product work.
 
 ## Current priority order
 
@@ -45,22 +46,22 @@ The Workspace can now navigate A2/A2.5, A2.6, A4 and Agent-audit evidence withou
 - Python API, frontend unit/build and Playwright smoke tests;
 - cross-platform launcher and consolidated usage/testing documentation.
 
-### P0.5 — Visualization V2 A4 + governance cockpit
+### Completed — Visualization V2 A4 + governance cockpit
 
-This is the minimum visualization gate before one-shot reserve use:
+The pre-reserve review gate now includes:
 
-- ResearchProgram lifecycle and protocol-identity comparison;
-- A2.6 candidate Gate matrix and statistical forest view;
-- richer A4 gross/net NAV, rolling risk and fold-boundary views;
-- explicit cost-component and gross-to-net drag attribution;
-- desired → compiled → executable → fill lifecycle from A4 ledger;
-- T+1, lot, suspension, limit and cash adjustment attribution;
-- target-versus-realized portfolio and implementation shortfall;
-- A2.6 → A3 → A4 lineage and immutable configuration diff;
-- reserve status prominently visible;
-- immutable evidence bundle export for human review.
+- rebuildable SQLite Evidence Catalog and deterministic allowlisted protocol diff;
+- ResearchProgram lifecycle cockpit with explicit A2.6/A3-binding/A4/A5 status;
+- A2.6 Gate matrix, statistical forest evidence and fold heatmap;
+- richer A4 gross/net NAV, derived rolling review series, fold and economic evidence;
+- immutable A4 JSONL desired → compiled/adjusted → executable → fill projection;
+- T+1, lot, suspension, limit, cash and session/data attribution;
+- fill-level fee components, target-versus-realized weights and implementation shortfall;
+- combined immutable A2.6 → A4 lineage plus an explicitly `derived` A3 protocol binding where no standalone A3 evidence identity exists;
+- reserve/promotion authority visibility and raw evidence inspection;
+- downloadable human-review bundles containing manifest, lineage, protocol diff, CSV summaries and source evidence.
 
-Authoritative metrics must continue to come from FinAgent core. Presentation-only derivatives remain labelled `derived`.
+Authoritative metrics continue to come from FinAgent core. Presentation-only derivatives are labelled `derived`; the UI still exposes no research, reserve, promotion or trading mutation route.
 
 ### P1 — A5 one-shot reserve protocol
 

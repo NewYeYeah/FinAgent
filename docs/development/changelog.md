@@ -2,6 +2,18 @@
 
 This file summarizes meaningful development milestones. Commit and pull-request history remains the detailed audit trail.
 
+## 2026-08-29 — Visualization V2 pre-reserve governance cockpit
+
+- added a rebuildable derived SQLite Evidence Catalog over immutable evidence refs;
+- added deterministic allowlisted A2.6/A4 protocol snapshots and configuration diffs that exclude outcomes;
+- added Project lifecycle and Governance review surfaces with prominent reserve/promotion state;
+- added A2.6 Gate Matrix, bootstrap/HAC/Holm/BH statistical forest evidence and fold heatmaps;
+- added richer A4 portfolio/economic review and explicitly derived rolling review series;
+- added digest-matched A4 JSONL execution lifecycle, reason/cost attribution and target-versus-realized projections;
+- kept A3 protocol binding `derived` because no standalone authoritative A3 certification identity is persisted;
+- added GET-only raw evidence inspection and human-review ZIP export with manifest/lineage/protocol diff/CSV/source artifacts;
+- retained all no-mutation, no-hidden-reasoning, reserve-isolation and promotion boundaries.
+
 ## 2026-08-28 — Visualization V1 read-only Workspace
 
 - added a GET-only FastAPI Evidence API over the V0 semantic contract;

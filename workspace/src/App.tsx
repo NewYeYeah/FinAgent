@@ -32,6 +32,15 @@ import {
   StatusBadge,
   WorkspaceShell,
 } from "./components";
+import {
+  ExecutionCockpitPage,
+  GovernanceIndexPage,
+  GovernancePage,
+  PortfolioCockpitPage,
+  ProgramCockpitPage,
+  ProjectCockpitPage,
+} from "./v2";
+
 import type {
   AgentRunProjection,
   AgentRunSummary,
@@ -189,7 +198,15 @@ function CatalogView({
           <EvidenceTable
             data={items}
             columns={columns}
-            onRowClick={(item) => navigate(`/evidence/${encodeURIComponent(item.evidence_id)}`)}
+            onRowClick={(item) => {
+              if (item.stage === "a2p6_robust_research" && item.program_id) {
+                navigate(`/program/${encodeURIComponent(item.program_id)}`);
+              } else if (item.stage === "a4_portfolio_validation") {
+                navigate(`/portfolio/${encodeURIComponent(item.evidence_id)}`);
+              } else {
+                navigate(`/evidence/${encodeURIComponent(item.evidence_id)}`);
+              }
+            }}
           />
         ) : (
           <EmptyState title="No supported evidence found" detail="Add A2/A2.6/A4 report JSON under a configured report root and restart the Workspace." />
@@ -486,9 +503,15 @@ export default function App() {
     <BrowserRouter>
       <WorkspaceShell>
         <Routes>
-          <Route path="/" element={<CatalogView title="Project cockpit" description="Navigate immutable research, portfolio and execution evidence from one read-only surface." />} />
+          <Route path="/" element={<ProjectCockpitPage />} />
+          <Route path="/catalog" element={<CatalogView title="Evidence catalog" description="V1-compatible immutable evidence index and deep links." />} />
           <Route path="/research" element={<CatalogView title="Research programs" description="A2/A2.5 and A2.6 factor evidence, robust gates and frozen selections." predicate={(item) => !item.has_portfolio} />} />
+          <Route path="/program/:programId" element={<ProgramCockpitPage />} />
           <Route path="/portfolio" element={<CatalogView title="Portfolio validations" description="A4 gross/net portfolio, execution and economic evidence." predicate={(item) => item.has_portfolio} />} />
+          <Route path="/portfolio/:validationId" element={<PortfolioCockpitPage />} />
+          <Route path="/execution/:validationId" element={<ExecutionCockpitPage />} />
+          <Route path="/governance" element={<GovernanceIndexPage />} />
+          <Route path="/governance/:evidenceId" element={<GovernancePage />} />
           <Route path="/evidence/:evidenceId" element={<EvidencePage />} />
           <Route path="/factor/:digest" element={<FactorPage />} />
           <Route path="/agent" element={<AgentListPage />} />
