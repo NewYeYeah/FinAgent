@@ -58,6 +58,8 @@ class AshareLotPolicy:
         reasons: list[AshareOrderReason] = []
         if board is AshareBoard.SSE_STAR:
             quantity = integer if integer >= self.star_minimum_buy else 0
+        elif board is AshareBoard.BSE:
+            quantity = integer if integer >= self.regular_lot_size else 0
         else:
             quantity = (integer // self.regular_lot_size) * self.regular_lot_size
         if quantity <= 0:
@@ -85,6 +87,8 @@ class AshareLotPolicy:
             quantity = sellable
         elif board is AshareBoard.SSE_STAR:
             quantity = capped if capped >= self.star_minimum_buy else 0
+        elif board is AshareBoard.BSE:
+            quantity = capped if capped >= self.regular_lot_size else 0
         else:
             lot = self.regular_lot_size
             remainder = sellable % lot
@@ -443,8 +447,12 @@ class AshareOrderCompiler:
     ) -> int:
         if maximum <= 0 or cash <= 0:
             return 0
-        if board is AshareBoard.SSE_STAR:
-            minimum = self.lot_policy.star_minimum_buy
+        if board in {AshareBoard.SSE_STAR, AshareBoard.BSE}:
+            minimum = (
+                self.lot_policy.star_minimum_buy
+                if board is AshareBoard.SSE_STAR
+                else self.lot_policy.regular_lot_size
+            )
             if maximum < minimum:
                 return 0
             low, high = minimum, maximum

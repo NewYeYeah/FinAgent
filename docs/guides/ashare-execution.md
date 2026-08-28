@@ -69,10 +69,12 @@ A buy fill on session `T` increases `total_quantity` and `unsettled_quantity`, b
 
 A3 models integer shares and board-specific order sizing:
 
-- SSE/SZSE main board, ChiNext and BSE buys: 100-share lots;
+- SSE/SZSE main board and ChiNext buys: 100-share lots;
 - STAR buys: at least 200 shares, then integer-share increments;
-- regular-board sells: 100-share lots plus the existing under-100 odd-lot remainder, which must remain unsplit;
-- STAR sells: at least 200 shares unless the full remaining balance is below 200.
+- BSE buys: at least 100 shares, then integer-share increments;
+- SSE/SZSE regular-board sells: 100-share lots plus the existing under-100 odd-lot remainder, which must remain unsplit;
+- STAR sells: at least 200 shares unless the full remaining balance is below 200;
+- BSE sells: at least 100 shares unless the full remaining balance is below 100.
 
 Every lot adjustment is explicit in `reason_codes`. The compiler never silently rounds a target and presents the result as the original desired order.
 
