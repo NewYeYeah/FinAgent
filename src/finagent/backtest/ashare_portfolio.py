@@ -140,6 +140,7 @@ class AsharePortfolioValidationPolicy:
     max_bootstrap_pvalue: float = 0.10
     max_rejected_order_ratio: float = 0.50
     max_ex_post_participation: float = 0.10
+    max_cash_fallback_ratio: float = 0.25
 
     def __post_init__(self) -> None:
         values = (
@@ -152,6 +153,7 @@ class AsharePortfolioValidationPolicy:
             self.max_bootstrap_pvalue,
             self.max_rejected_order_ratio,
             self.max_ex_post_participation,
+            self.max_cash_fallback_ratio,
         )
         if not all(math.isfinite(value) for value in values):
             raise ValueError("A4 validation policy must be finite")
@@ -163,6 +165,7 @@ class AsharePortfolioValidationPolicy:
             self.max_bootstrap_pvalue,
             self.max_rejected_order_ratio,
             self.max_ex_post_participation,
+            self.max_cash_fallback_ratio,
         )
         if any(not 0.0 <= value <= 1.0 for value in bounded):
             raise ValueError("bounded A4 validation policy values must be in [0, 1]")
@@ -178,6 +181,7 @@ class AsharePortfolioValidationPolicy:
             "max_bootstrap_pvalue": self.max_bootstrap_pvalue,
             "max_rejected_order_ratio": self.max_rejected_order_ratio,
             "max_ex_post_participation": self.max_ex_post_participation,
+            "max_cash_fallback_ratio": self.max_cash_fallback_ratio,
         }
 
 
@@ -439,6 +443,7 @@ class AsharePortfolioPoint:
     session_date: date
     signal_asof: datetime
     rebalanced: bool
+    cash_fallback: bool
     target_id: str
     net_nav: float
     gross_nav: float
@@ -488,6 +493,7 @@ class AsharePortfolioPoint:
             "session_date": self.session_date.isoformat(),
             "signal_asof": self.signal_asof.isoformat(),
             "rebalanced": self.rebalanced,
+            "cash_fallback": self.cash_fallback,
             "target_id": self.target_id,
             "net_nav": self.net_nav,
             "gross_nav": self.gross_nav,
@@ -589,6 +595,9 @@ class AsharePortfolioAggregateResult:
     fill_count: int
     rejected_order_count: int
     rejected_order_ratio: float
+    rebalance_count: int
+    cash_fallback_count: int
+    cash_fallback_ratio: float
     hac_tstat: float
     hac_pvalue: float
     bootstrap_pvalue: float
@@ -620,6 +629,9 @@ class AsharePortfolioAggregateResult:
             "fill_count": self.fill_count,
             "rejected_order_count": self.rejected_order_count,
             "rejected_order_ratio": self.rejected_order_ratio,
+            "rebalance_count": self.rebalance_count,
+            "cash_fallback_count": self.cash_fallback_count,
+            "cash_fallback_ratio": self.cash_fallback_ratio,
             "hac_tstat": self.hac_tstat,
             "hac_pvalue": self.hac_pvalue,
             "bootstrap_pvalue": self.bootstrap_pvalue,
@@ -1117,6 +1129,14 @@ class AshareExecutionAwarePortfolioValidator:
             close_snapshot = self.close_adapter.snapshot(session_date, universe)
             net_signal_state = self.ledger.roll_to_session(net_state, session_date)
             gross_signal_state = self.ledger.roll_to_session(gross_state, session_date)
+            net_pretrade_state = self.ledger.mark_to_snapshot(
+                net_signal_state,
+                execution_snapshot,
+            )
+            gross_pretrade_state = self.ledger.mark_to_snapshot(
+                gross_signal_state,
+                execution_snapshot,
+            )
             signal_asof = execution_snapshot.asof - timedelta(microseconds=1)
             target: PortfolioTarget | None = None
             net_cycle: AshareExecutionCycle | None = None
@@ -1155,15 +1175,17 @@ class AshareExecutionAwarePortfolioValidator:
                 net_open_state = net_cycle.state_after
                 gross_open_state = gross_cycle.state_after
             else:
-                net_open_state = self.ledger.mark_to_snapshot(
-                    net_signal_state,
-                    execution_snapshot,
-                )
-                gross_open_state = self.ledger.mark_to_snapshot(
-                    gross_signal_state,
-                    execution_snapshot,
-                )
+                net_open_state = net_pretrade_state
+                gross_open_state = gross_pretrade_state
 
+            cash_fallback = bool(
+                target is not None and target.source.name == "a4_cash_fallback"
+            )
+            execution_target_deviation = (
+                self._implementation_shortfall(net_open_state, target)
+                if target is not None
+                else 0.0
+            )
             net_state = self._mark_to_close(self.ledger, net_open_state, close_snapshot)
             gross_state = self._mark_to_close(self.ledger, gross_open_state, close_snapshot)
             net_return = net_state.nav / previous_net_nav - 1.0
@@ -1201,15 +1223,11 @@ class AshareExecutionAwarePortfolioValidator:
                 else 0
             )
             target_turnover = (
-                self._target_turnover(net_signal_state, target)
+                self._target_turnover(net_pretrade_state, target)
                 if target is not None
                 else 0.0
             )
-            shortfall = (
-                self._implementation_shortfall(net_state, target)
-                if target is not None
-                else 0.0
-            )
+            shortfall = execution_target_deviation
             participation = self._participation(net_cycle, execution_snapshot)
             target_id = (
                 _digest(
@@ -1229,6 +1247,7 @@ class AshareExecutionAwarePortfolioValidator:
                 session_date=session_date,
                 signal_asof=signal_asof,
                 rebalanced=rebalanced,
+                cash_fallback=cash_fallback,
                 target_id=target_id,
                 net_nav=net_state.nav,
                 gross_nav=gross_state.nav,
@@ -1318,6 +1337,15 @@ class AshareExecutionAwarePortfolioValidator:
         )
         denominator = order_count + rejected
         rejected_ratio = rejected / denominator if denominator else 0.0
+        rebalance_count = sum(
+            point.rebalanced for fold in folds for point in fold.points
+        )
+        cash_fallback_count = sum(
+            point.cash_fallback for fold in folds for point in fold.points
+        )
+        cash_fallback_ratio = (
+            cash_fallback_count / rebalance_count if rebalance_count else 0.0
+        )
         reasons: Counter[str] = Counter()
         for fold in folds:
             reasons.update(fold.reason_counts)
@@ -1359,6 +1387,9 @@ class AshareExecutionAwarePortfolioValidator:
             fill_count=fill_count,
             rejected_order_count=rejected,
             rejected_order_ratio=rejected_ratio,
+            rebalance_count=rebalance_count,
+            cash_fallback_count=cash_fallback_count,
+            cash_fallback_ratio=cash_fallback_ratio,
             hac_tstat=hac_tstat,
             hac_pvalue=hac_pvalue,
             bootstrap_pvalue=bootstrap_pvalue,
@@ -1412,6 +1443,10 @@ class AshareExecutionAwarePortfolioValidator:
                 aggregate.maximum_ex_post_participation
                 <= policy.max_ex_post_participation,
                 "EX_POST_PARTICIPATION_ABOVE_THRESHOLD",
+            ),
+            (
+                aggregate.cash_fallback_ratio <= policy.max_cash_fallback_ratio,
+                "CASH_FALLBACK_RATIO_ABOVE_THRESHOLD",
             ),
         )
         reasons.extend(code for passed, code in checks if not passed)

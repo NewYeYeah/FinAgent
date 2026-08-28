@@ -59,5 +59,6 @@ policy_min_positive_fold_ratio = 0.50
 policy_max_hac_pvalue = 0.10
 policy_max_bootstrap_pvalue = 0.10
 policy_max_rejected_order_ratio = 0.50
+policy_max_cash_fallback_ratio = 0.25
 # Ex-post only: full-day volume is not used to decide fills.
 policy_max_ex_post_participation = 0.10

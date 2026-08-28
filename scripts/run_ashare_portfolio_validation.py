@@ -194,6 +194,9 @@ def _config(values: Mapping[str, object]) -> AsharePortfolioValidationConfig:
         max_ex_post_participation=float(
             values.get("policy_max_ex_post_participation", 0.10)
         ),
+        max_cash_fallback_ratio=float(
+            values.get("policy_max_cash_fallback_ratio", 0.25)
+        ),
     )
     return AsharePortfolioValidationConfig(
         initial_cash=float(values.get("initial_cash", 10_000_000.0)),
