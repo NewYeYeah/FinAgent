@@ -1,4 +1,5 @@
 from .adapters import CSVPriceDataAdapter, InMemoryPriceDataAdapter, SQLitePriceDataAdapter
+from .ashare_execution import LocalAshareDailyExecutionAdapter
 from .ashare_supplemental import (
     AshareDelistingRecord,
     AshareReferenceSource,
@@ -82,6 +83,7 @@ __all__ = [
     "InMemoryPriceDataAdapter",
     "LocalAshareCertificationIssue",
     "LocalAshareCertificationReport",
+    "LocalAshareDailyExecutionAdapter",
     "LocalAshareDatasetInspector",
     "LocalAshareDatasetLayout",
     "LocalAshareFrozenManifest",
