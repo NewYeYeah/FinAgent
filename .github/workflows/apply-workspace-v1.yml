@@ -26,6 +26,11 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Verify payload fragments
+        run: |
+          wc -c tools/workspace_payload/*.txt
+          sha256sum tools/workspace_payload/*.txt
+
       - name: Materialize Workspace V1
         run: python tools/apply_workspace_v1.py
 
