@@ -12,62 +12,55 @@ Completed core capabilities:
 - A2.6 immutable ResearchProgram, expanding walk-forward, preregistered robust gates, explicit no-alpha outcome and exact replay;
 - A3 exact-session tradeability, T+1 inventory, board-aware quantity rules, suspension/price-limit handling and asymmetric fees;
 - A4 reserve-safe inference, train-only frozen-factor calibration, historical risk/optimizer targets, gross/net A3 execution ledgers, portfolio economic evidence and exact replay;
-- read-only Streamlit/Plotly Research UI with Phoenix as an optional low-level Agent trace viewer;
+- Visualization V0 canonical evidence, Agent projection, Widget and lineage contracts;
+- Visualization V1 GET-only FastAPI Evidence API and usable React/TypeScript Workspace;
+- legacy read-only Streamlit/Plotly inspection with Phoenix as an optional low-level Agent trace viewer;
 - existing sealed-holdout, promotion, registry, PAPER/shadow and operational-control primitives.
 
-## Current product gap
+## Current product state
 
-The core now produces substantially more evidence than the legacy Research UI can organize. The Streamlit viewer remains useful for diagnostics, but its primary report model is A2/A2.5-oriented and it is not the long-term product contract for A2.6, A4, Agent activity or future PAPER/realtime projections.
-
-Visualization is therefore promoted from a charting enhancement to an **evidence-navigation subsystem**.
+The Workspace can now navigate A2/A2.5, A2.6, A4 and Agent-audit evidence without coupling the browser to internal report or Phoenix span schemas. It remains strictly read-only. The next product gap is a denser A4/governance cockpit suitable for reviewing the frozen protocol before one-shot reserve use.
 
 ## Current priority order
 
-### P0 — Visualization V0 semantic contract
-
-Freeze a backend-independent, read-only semantic layer before building the new frontend:
+### Completed — Visualization V0 semantic contract
 
 - canonical `EvidenceRef` / `EvidenceBundle` contracts;
 - A2/A2.6/A4 evidence adapters;
-- first-class acyclic lineage graph;
-- `AgentRunProjection` over canonical Agent audit events, separate from Phoenix spans;
-- `FinWidgetSpec` describing the financial/research question, evidence contract, parameters, link keys, renderer and authority;
-- explicit authoritative / derived / diagnostic evidence classes;
-- fail-closed unsupported-schema behavior;
-- no hidden reasoning, reserve access, promotion or write authority.
+- acyclic lineage graph;
+- canonical `AgentRunProjection` separate from Phoenix;
+- `FinWidgetSpec` and authoritative/derived/diagnostic classes;
+- fail-closed unsupported schemas and hidden-reasoning boundary.
 
-The existing Streamlit UI remains available and unchanged as a legacy/debug surface.
+### Completed — Visualization V1 Workspace foundation
 
-### P0.5 — Visualization V1 Workspace foundation
-
-After V0 is green:
-
-- read-only FastAPI `/api/v1` evidence API;
-- React + TypeScript + Vite application shell;
-- shadcn/ui design system;
-- TanStack Table for dense research tables;
-- ECharts for research/portfolio charts;
-- React Flow for lineage and Agent semantic graphs;
-- shared deep-link keys (`program_id`, `validation_id`, `factor_digest`, `run_id`, `fold_id`, `date_range`);
-- frontend/component/API contract tests and Playwright smoke acceptance.
-
-Do not add research mutation endpoints.
+- GET-only FastAPI `/api/v1` Evidence API;
+- in-memory disposable Evidence catalog;
+- React + TypeScript + Vite application;
+- TanStack Table, ECharts and React Flow foundations;
+- Project/Research/Portfolio/Factor/Agent/Widget pages;
+- A2.6 factor/Gate/fold navigation;
+- A4 gross/net NAV, derived drawdown, execution funnel and rejection/cost navigation;
+- Agent audit opened read-only;
+- Python API, frontend unit/build and Playwright smoke tests;
+- cross-platform launcher and consolidated usage/testing documentation.
 
 ### P0.5 — Visualization V2 A4 + governance cockpit
 
 This is the minimum visualization gate before one-shot reserve use:
 
-- ResearchProgram lifecycle overview;
-- A2.6 candidate evidence and preregistered gate matrix;
-- A4 gross/net NAV and drawdown;
-- execution costs and gross-to-net drag;
-- desired → executable → fill funnel;
-- T+1, lot, suspension, limit and cash rejection attribution;
-- target versus realized portfolio and implementation shortfall;
-- A2.6 → A4 lineage and immutable configuration identity;
-- reserve status prominently visible.
+- ResearchProgram lifecycle and protocol-identity comparison;
+- A2.6 candidate Gate matrix and statistical forest view;
+- richer A4 gross/net NAV, rolling risk and fold-boundary views;
+- explicit cost-component and gross-to-net drag attribution;
+- desired → compiled → executable → fill lifecycle from A4 ledger;
+- T+1, lot, suspension, limit and cash adjustment attribution;
+- target-versus-realized portfolio and implementation shortfall;
+- A2.6 → A3 → A4 lineage and immutable configuration diff;
+- reserve status prominently visible;
+- immutable evidence bundle export for human review.
 
-All authoritative metrics come from FinAgent core. Presentation-only derivatives must be labelled derived.
+Authoritative metrics must continue to come from FinAgent core. Presentation-only derivatives remain labelled `derived`.
 
 ### P1 — A5 one-shot reserve protocol
 
@@ -84,17 +77,13 @@ A reserve failure is a valid terminal outcome.
 
 ### P1 — Visualization V3 Agent Workbench
 
-Build the Codex-like research-operations surface from canonical audit semantics rather than Phoenix spans:
-
 - Projects/Runs navigation;
-- activity timeline of Action / Guardrail / Evidence / Decision / Result / Error / Approval;
+- semantic activity timeline of Action / Guardrail / Evidence / Decision / Result / Error / Approval;
 - evidence inspector and source-code artifacts;
 - Agent ↔ Factor ↔ ResearchProgram deep links;
 - optional SSE projection for active runs;
-- Phoenix deep link for low-level LLM/provider/repair/sandbox diagnostics;
+- Phoenix deep links for low-level diagnostics;
 - no hidden chain-of-thought rendering.
-
-This improves research operations but does not need to block the A5 reserve once the V2 evidence cockpit is accepted.
 
 ### P1 — Visualization V4 Factor Tear Sheet
 
@@ -125,8 +114,8 @@ Only render risk evidence that FinAgent core formally produces:
 
 - covariance/correlation and concentration first;
 - later marginal/component risk contribution, factor exposure and stress evidence;
-- immutable evidence bundles for audit/review;
-- report-to-report identity diff and ResearchProgram comparison.
+- report-to-report identity diff and ResearchProgram comparison;
+- signed immutable evidence packages for audit/review.
 
 ### P1.5 — Research and data hardening
 
@@ -145,8 +134,7 @@ Freeze the QMT event contract before implementation, but do not let realtime wor
 - `AccountStatusEvent`, `OrderEvent`, `TradeEvent`, `OrderErrorEvent`;
 - preserve `event_time`, `received_at`, `available_at`, provider/connection/subscription/sequence identity;
 - MiniQMT callbacks write to an async event queue only;
-- normalized projections feed WebSocket Live UI;
-- realtime Market / Strategy / Portfolio / Execution / System Health surfaces;
+- normalized projections feed a future WebSocket Live UI;
 - external paper/shadow reconciliation before any live-capital discussion.
 
 ### Deferred
