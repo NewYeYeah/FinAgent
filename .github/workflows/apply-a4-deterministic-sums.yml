@@ -1,0 +1,30 @@
+name: apply-a4-deterministic-sums
+
+on:
+  push:
+    branches:
+      - a4-execution-aware-portfolio-validation
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: a4-execution-aware-portfolio-validation
+          fetch-depth: 0
+      - name: Apply deterministic sums
+        run: |
+          python tools/apply_a4_deterministic_sums.py
+          python -m py_compile src/finagent/backtest/ashare_portfolio.py
+      - name: Commit source changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src
+          git commit -m "backtest: make A4 cross-asset sums deterministic"
+          git push origin HEAD:a4-execution-aware-portfolio-validation
