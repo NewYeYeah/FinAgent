@@ -1,0 +1,35 @@
+name: apply-a4-core-fixes
+
+on:
+  push:
+    branches:
+      - a4-execution-aware-portfolio-validation
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: a4-execution-aware-portfolio-validation
+          fetch-depth: 0
+      - name: Apply transformations
+        run: |
+          python tools/apply_a4_core_fixes.py
+          python -m py_compile \
+            src/finagent/data/local_ashare_inference_adapter.py \
+            src/finagent/data/ashare_close.py \
+            src/finagent/models/alpha/ashare_frozen.py \
+            src/finagent/backtest/ashare_portfolio.py \
+            scripts/run_ashare_portfolio_validation.py
+      - name: Commit source fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src scripts
+          git commit -m "backtest: apply A4 core consistency fixes"
+          git push origin HEAD:a4-execution-aware-portfolio-validation
