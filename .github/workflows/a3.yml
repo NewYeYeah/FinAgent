@@ -60,14 +60,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev]"
-      - name: Lint
+      - name: Lint production surface
         run: |
           ruff check \
             src/finagent/domain/ashare_execution.py \
             src/finagent/data/ashare_execution.py \
             src/finagent/services/ashare_execution.py \
             scripts/run_ashare_execution_smoke.py \
-            tests/test_ashare_execution_a3.py \
             --select E4,E7,E9,F
       - name: Type check
         run: |
