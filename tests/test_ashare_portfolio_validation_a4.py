@@ -54,6 +54,42 @@ from tests.test_ashare_factor_acceptance_a2 import _reference, _vendor
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _json_difference(expected: object, actual: object, path: str = "$") -> str:
+    if type(expected) is not type(actual):
+        return f"{path}: type {type(expected).__name__} != {type(actual).__name__}"
+    if isinstance(expected, dict):
+        keys = set(expected) | set(actual)
+        for key in sorted(keys):
+            if key not in expected or key not in actual:
+                return f"{path}.{key}: key presence differs"
+            difference = _json_difference(expected[key], actual[key], f"{path}.{key}")
+            if difference:
+                return difference
+        return ""
+    if isinstance(expected, list):
+        if len(expected) != len(actual):
+            return f"{path}: length {len(expected)} != {len(actual)}"
+        for index, (left, right) in enumerate(zip(expected, actual, strict=True)):
+            difference = _json_difference(left, right, f"{path}[{index}]")
+            if difference:
+                return difference
+        return ""
+    if expected != actual:
+        return f"{path}: {expected!r} != {actual!r}"
+    return ""
+
+
+def _ledger_difference(expected_path: Path, actual_path: Path) -> str:
+    expected_lines = expected_path.read_text(encoding="utf-8").splitlines()
+    actual_lines = actual_path.read_text(encoding="utf-8").splitlines()
+    if len(expected_lines) != len(actual_lines):
+        return f"ledger length {len(expected_lines)} != {len(actual_lines)}"
+    for index, (left, right) in enumerate(zip(expected_lines, actual_lines, strict=True)):
+        if left != right:
+            return f"line {index}: " + _json_difference(json.loads(left), json.loads(right))
+    return "no JSONL field difference found"
+
+
 def _range(start: str, end: str) -> TimeRange:
     return TimeRange(
         datetime.fromisoformat(start).replace(tzinfo=UTC),
@@ -393,7 +429,16 @@ policy_max_ex_post_participation = 1.0
         text=True,
         check=False,
     )
-    assert second.returncode == 0, second.stderr + second.stdout
+    assert second.returncode == 0, (
+        second.stderr
+        + second.stdout
+        + "\nledger_difference="
+        + (
+            _ledger_difference(ledger, replay_ledger)
+            if replay_ledger.exists()
+            else "replay ledger was not written"
+        )
+    )
     replay_payload = json.loads(replay.read_text(encoding="utf-8"))
     assert replay_payload["mode"] == "replay"
     assert (
