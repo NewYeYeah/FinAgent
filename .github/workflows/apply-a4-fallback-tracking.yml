@@ -1,0 +1,32 @@
+name: apply-a4-fallback-tracking
+
+on:
+  push:
+    branches:
+      - a4-execution-aware-portfolio-validation
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: a4-execution-aware-portfolio-validation
+          fetch-depth: 0
+      - name: Apply fallback diagnostics
+        run: |
+          python tools/apply_a4_fallback_tracking.py
+          python -m py_compile \
+            src/finagent/backtest/ashare_portfolio.py \
+            scripts/run_ashare_portfolio_validation.py
+      - name: Commit source changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src scripts configs
+          git commit -m "backtest: track A4 cash fallback and open implementation gap"
+          git push origin HEAD:a4-execution-aware-portfolio-validation
