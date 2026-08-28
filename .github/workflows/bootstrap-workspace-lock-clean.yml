@@ -1,0 +1,33 @@
+name: bootstrap-workspace-lock-clean
+
+on:
+  push:
+    branches:
+      - workspace-v1-clean
+
+permissions:
+  contents: write
+
+jobs:
+  lockfile:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: workspace-v1-clean
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Generate npm lockfile
+        working-directory: workspace
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Commit npm lockfile
+        run: |
+          test -f workspace/package-lock.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add workspace/package-lock.json
+          git commit -m "build: lock Workspace V1 frontend dependencies"
+          git push origin HEAD:workspace-v1-clean
