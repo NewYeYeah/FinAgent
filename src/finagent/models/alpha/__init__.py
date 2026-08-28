@@ -1,5 +1,9 @@
 from .ar import ARAlphaModel
 from .arma import ARMA11AlphaModel
+from .ashare_frozen import (
+    AshareFrozenAlphaCalibration,
+    AshareFrozenGeneratedFeatureAlphaModel,
+)
 from .calibration import (
     AlphaEnsembleResult,
     AlphaForecastEnsembler,
@@ -26,6 +30,8 @@ __all__ = [
     "ARMA11AlphaModel",
     "AlphaEnsembleResult",
     "AlphaForecastEnsembler",
+    "AshareFrozenAlphaCalibration",
+    "AshareFrozenGeneratedFeatureAlphaModel",
     "CanonicalSignalSpec",
     "CrossSectionalCalibrationResult",
     "CrossSectionalLinearAlphaCalibrator",
