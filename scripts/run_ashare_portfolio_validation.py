@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import tomllib
 from collections.abc import Mapping
@@ -53,6 +54,17 @@ def _load_toml(path: Path) -> dict[str, object]:
     if not isinstance(values, dict):
         raise TypeError("configuration must contain [ashare_portfolio_validation]")
     return values
+
+
+def _canonical_digest(value: object) -> str:
+    encoded = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    ).encode()
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def _mapping(value: object, name: str) -> Mapping[str, object]:
@@ -402,6 +414,7 @@ def main() -> int:
     selected_directions = tuple(component.direction for component in selection.components)
     spec = AsharePortfolioValidationSpec(
         source_program_result_id=str(source["program_result_id"]),
+        source_report_digest=_canonical_digest(source),
         source_program_spec_id=str(program["spec_id"]),
         source_selection_id=str(_mapping(source["frozen_selection"], "selection")["selection_id"]),
         data_version=frozen.dataset_version,

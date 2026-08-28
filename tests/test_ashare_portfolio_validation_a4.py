@@ -189,6 +189,7 @@ def test_empty_frozen_family_has_explicit_no_execution_outcome(tmp_path: Path) -
     )
     spec = AsharePortfolioValidationSpec(
         source_program_result_id="program-result",
+        source_report_digest="a" * 64,
         source_program_spec_id="program-spec",
         source_selection_id="selection",
         data_version="data",
@@ -410,6 +411,11 @@ policy_max_ex_post_participation = 1.0
     )
     assert payload["aggregate"]["total_fees"] >= 0
     assert payload["aggregate"]["total_slippage"] >= 0
+    assert payload["aggregate"]["desired_order_count"] >= (
+        payload["aggregate"]["rejected_order_count"]
+    )
+    assert 0.0 <= payload["aggregate"]["cash_fallback_ratio"] <= 1.0
+    assert payload["validation_spec"]["source_report_digest"]
     assert payload["ledger_digest"].startswith("a4-execution-ledger-")
     assert ledger.read_text(encoding="utf-8").strip()
 

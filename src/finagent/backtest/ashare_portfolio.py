@@ -282,6 +282,7 @@ class AsharePortfolioValidationConfig:
 @dataclass(frozen=True, slots=True)
 class AsharePortfolioValidationSpec:
     source_program_result_id: str
+    source_report_digest: str
     source_program_spec_id: str
     source_selection_id: str
     data_version: str
@@ -300,6 +301,7 @@ class AsharePortfolioValidationSpec:
     def __post_init__(self) -> None:
         for name in (
             "source_program_result_id",
+            "source_report_digest",
             "source_program_spec_id",
             "source_selection_id",
             "data_version",
@@ -346,6 +348,7 @@ class AsharePortfolioValidationSpec:
         payload: dict[str, object] = {
             "schema_version": "finagent.ashare-portfolio-validation-spec.v1",
             "source_program_result_id": self.source_program_result_id,
+            "source_report_digest": self.source_report_digest,
             "source_program_spec_id": self.source_program_spec_id,
             "source_selection_id": self.source_selection_id,
             "data_version": self.data_version,
@@ -455,6 +458,7 @@ class AsharePortfolioPoint:
     one_way_turnover: float
     target_turnover: float
     implementation_shortfall: float
+    desired_order_count: int
     order_count: int
     fill_count: int
     rejected_order_count: int
@@ -479,7 +483,12 @@ class AsharePortfolioPoint:
             raise ValueError("A4 portfolio point metrics must be finite")
         if self.net_nav <= 0 or self.gross_nav <= 0:
             raise ValueError("A4 NAV must remain positive")
-        counts = (self.order_count, self.fill_count, self.rejected_order_count)
+        counts = (
+            self.desired_order_count,
+            self.order_count,
+            self.fill_count,
+            self.rejected_order_count,
+        )
         if any(value < 0 for value in counts):
             raise ValueError("A4 order counts must be non-negative")
         object.__setattr__(
@@ -505,6 +514,7 @@ class AsharePortfolioPoint:
             "one_way_turnover": self.one_way_turnover,
             "target_turnover": self.target_turnover,
             "implementation_shortfall": self.implementation_shortfall,
+            "desired_order_count": self.desired_order_count,
             "order_count": self.order_count,
             "fill_count": self.fill_count,
             "rejected_order_count": self.rejected_order_count,
@@ -591,6 +601,7 @@ class AsharePortfolioAggregateResult:
     maximum_ex_post_participation: float
     positive_fold_ratio: float
     worst_fold_net_sharpe: float
+    desired_order_count: int
     order_count: int
     fill_count: int
     rejected_order_count: int
@@ -625,6 +636,7 @@ class AsharePortfolioAggregateResult:
             "maximum_ex_post_participation": self.maximum_ex_post_participation,
             "positive_fold_ratio": self.positive_fold_ratio,
             "worst_fold_net_sharpe": self.worst_fold_net_sharpe,
+            "desired_order_count": self.desired_order_count,
             "order_count": self.order_count,
             "fill_count": self.fill_count,
             "rejected_order_count": self.rejected_order_count,
@@ -1211,6 +1223,9 @@ class AshareExecutionAwarePortfolioValidator:
             reasons = self._reason_counts(net_cycle)
             reasons.update((target_reason,))
             fold_reasons.update(reasons)
+            desired_order_count = (
+                len(net_cycle.compilation.decisions) if net_cycle is not None else 0
+            )
             order_count = len(net_cycle.execution.orders) if net_cycle is not None else 0
             fill_count = len(fills)
             rejected_count = (
@@ -1259,6 +1274,7 @@ class AshareExecutionAwarePortfolioValidator:
                 one_way_turnover=one_way_turnover,
                 target_turnover=target_turnover,
                 implementation_shortfall=shortfall,
+                desired_order_count=desired_order_count,
                 order_count=order_count,
                 fill_count=fill_count,
                 rejected_order_count=rejected_count,
@@ -1311,7 +1327,13 @@ class AshareExecutionAwarePortfolioValidator:
                 ),
                 total_one_way_turnover=sum(point.one_way_turnover for point in points),
                 average_implementation_shortfall=float(
-                    np.mean([point.implementation_shortfall for point in points])
+                    np.mean(
+                        [
+                            point.implementation_shortfall
+                            for point in points
+                            if point.rebalanced
+                        ]
+                    )
                 ),
                 maximum_ex_post_participation=max(
                     point.maximum_ex_post_participation for point in points
@@ -1330,13 +1352,17 @@ class AshareExecutionAwarePortfolioValidator:
         gross_returns = [point.gross_return for fold in folds for point in fold.points]
         net = self._metrics(net_returns, self.config.annualization)
         gross = self._metrics(gross_returns, self.config.annualization)
+        desired_order_count = sum(
+            point.desired_order_count for fold in folds for point in fold.points
+        )
         order_count = sum(point.order_count for fold in folds for point in fold.points)
         fill_count = sum(point.fill_count for fold in folds for point in fold.points)
         rejected = sum(
             point.rejected_order_count for fold in folds for point in fold.points
         )
-        denominator = order_count + rejected
-        rejected_ratio = rejected / denominator if denominator else 0.0
+        rejected_ratio = (
+            rejected / desired_order_count if desired_order_count else 0.0
+        )
         rebalance_count = sum(
             point.rebalanced for fold in folds for point in fold.points
         )
@@ -1374,7 +1400,14 @@ class AshareExecutionAwarePortfolioValidator:
                 fold.total_one_way_turnover for fold in folds
             ),
             average_implementation_shortfall=float(
-                np.mean([fold.average_implementation_shortfall for fold in folds])
+                np.mean(
+                    [
+                        point.implementation_shortfall
+                        for fold in folds
+                        for point in fold.points
+                        if point.rebalanced
+                    ]
+                )
             ),
             maximum_ex_post_participation=max(
                 fold.maximum_ex_post_participation for fold in folds
@@ -1383,6 +1416,7 @@ class AshareExecutionAwarePortfolioValidator:
                 np.mean([fold.net_metrics.total_return > 0 for fold in folds])
             ),
             worst_fold_net_sharpe=min(fold.net_metrics.sharpe for fold in folds),
+            desired_order_count=desired_order_count,
             order_count=order_count,
             fill_count=fill_count,
             rejected_order_count=rejected,
