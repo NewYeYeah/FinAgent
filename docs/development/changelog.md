@@ -2,6 +2,18 @@
 
 This file summarizes meaningful development milestones. Commit and pull-request history remains the detailed audit trail.
 
+## 2026-08-28 — A4 execution-aware portfolio validation
+
+- added a feature-only A-share inference adapter that reads no forward-label rows and keeps the 2025+ reserve untouched;
+- added exact-session close marks for end-of-day account valuation without stale-session fallback;
+- added a panel-native frozen-factor AlphaModel that preserves A2.6 weights/directions and calibrates on each fold training range only;
+- connected historical OAS risk, mean-variance targets and A3 target-to-executable-order rules;
+- added synchronized gross and net ledgers to separate explicit fee/slippage drag from T+1, lot, suspension, limit and cash constraints;
+- added NAV, return, Sharpe, drawdown, turnover, implementation-shortfall, order-reason and ex-post participation evidence;
+- added fold consistency, HAC, circular block bootstrap and a preregistered internal economic gate;
+- added immutable A4 specifications, an explicit no-robust-factor path, deterministic JSONL execution ledgers and exact replay;
+- kept A4 internal-only, reserve-untouched and promotion-ineligible.
+
 ## 2026-08-28 — A3 A-share execution semantics
 
 - added an exact-session local daily execution adapter that never falls back to stale earlier quotes;
