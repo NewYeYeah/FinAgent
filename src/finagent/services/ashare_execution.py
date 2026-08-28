@@ -502,8 +502,11 @@ class AshareOrderCompiler:
         if set(relevant_assets) - set(snapshot.states):
             raise ValueError("A-share execution snapshot does not cover target/positions")
 
+        # ``mark_to_snapshot`` preserves the last explicit mark when an exact
+        # session row is unavailable. Use that marked account state for valuation,
+        # while tradeability still rejects the order from the exact-session state.
         nav = state.cash + sum(
-            state.position(asset).total_quantity * snapshot.mark(asset)
+            state.position(asset).total_quantity * state.marks[asset]
             for asset in state.positions
         )
         if nav <= 0:
