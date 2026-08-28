@@ -1,6 +1,6 @@
 # Visualization Architecture V2
 
-Status: **V1 read-only Workspace foundation**
+Status: **V2 pre-reserve A4 + governance cockpit delivered**
 
 FinAgent visualization is an evidence-navigation surface. It does not own research, execution, promotion or capital authority.
 
@@ -35,7 +35,7 @@ Agent OTLP/JSONL ─────────────────────
                                              diagnostic only
 ```
 
-The Streamlit application remains supported as a read-only diagnostic/regression viewer. The React/FastAPI Workspace is the primary V1 product surface and consumes the semantic contract rather than internal A2.6/A4/Phoenix schemas directly.
+The Streamlit application remains supported as a read-only diagnostic/regression viewer. The React/FastAPI Workspace is the primary product surface. V2 adds governed A2.6/A4 review projections and immutable A4 JSONL ledger navigation without moving authoritative calculations into the browser.
 
 ## 2. Authority boundary
 
@@ -45,7 +45,7 @@ Sharpe, IC, statistical gates, execution decisions, reserve state and promotion 
 
 ### Visualization never mutates research state
 
-V0/V1 expose no operation that:
+V0/V1/V2 expose no operation that:
 
 - changes prompts or factor code;
 - reruns Factor Quant;
@@ -239,7 +239,43 @@ A4 pages render authoritative NAV and execution evidence. Browser-derived drawdo
 
 The backend serves the built SPA from `workspace/dist`; Vite development mode proxies `/api` to the read-only FastAPI service.
 
-## 9. Product surfaces
+## 9. Visualization V2 review contract
+
+V2 retains `/api/v1` compatibility and adds GET-only `/api/v2` review routes:
+
+```text
+/api/v2/catalog
+/api/v2/projects
+/api/v2/programs/{program_id}/cockpit
+/api/v2/programs/{program_id}/gates
+/api/v2/programs/{program_id}/statistics
+/api/v2/a4/{validation_id}/cockpit
+/api/v2/a4/{validation_id}/execution
+/api/v2/governance/{evidence_id}
+/api/v2/protocol-diff?left=...&right=...
+/api/v2/evidence/{evidence_id}/raw
+/api/v2/a4/{validation_id}/review-bundle
+```
+
+The disposable SQLite Evidence Catalog is rebuilt from configured immutable evidence at service start. A4 ledger detail is accepted only when the JSONL canonical `a4-execution-ledger-<sha256>` identity matches the A4 report. Conflicts and missing ledgers fail closed or surface explicit warnings.
+
+Protocol comparison uses allowlisted frozen configuration fields only; performance outcomes are excluded. Rolling return/volatility/Sharpe, criterion-level Gate cells, realized close weights and the A3 protocol binding are review derivatives and are labelled `derived`.
+
+The authoritative lineage DAG contains only persisted immutable identities. Because the current core does not persist a standalone A3 certification evidence ID, V2 does **not** synthesize an authoritative A3 lineage node; A3 execution semantics are exposed as a derived binding to the immutable A4 spec.
+
+### V2 primary pages
+
+```text
+Research Governance Cockpit
+A2.6 ResearchProgram Cockpit
+A4 Portfolio Cockpit
+Execution Realization Cockpit
+Governance / Protocol Review
+Raw Evidence Inspector
+Human Review Bundle Export
+```
+
+## 10. Product surfaces
 
 ```text
 FinAgent Workspace
@@ -265,13 +301,13 @@ FinAgent Workspace
 
 `Live` must not reuse historical report semantics as a stream protocol.
 
-## 10. Implementation sequence
+## 11. Implementation sequence
 
 ```text
 V0  Semantic Contract                                  ✓
 V1  FastAPI read-only API + React Workspace foundation ✓
-V2  A4 Portfolio / Execution + Governance cockpit      ← next
-A5  One-shot reserve
+V2  A4 Portfolio / Execution + Governance cockpit      ✓
+A5  One-shot reserve                                   ← next governed milestone
 V3  Codex-like Agent Workbench
 V4  Factor Tear Sheet V2
 A6  Strategy freeze / PAPER
@@ -280,7 +316,7 @@ R0  QMT event contract
 R1+ QMT shadow/PAPER surfaces
 ```
 
-## 11. V1 acceptance criteria
+## 12. V1 acceptance criteria
 
 V1 passes only if:
 
@@ -296,3 +332,21 @@ V1 passes only if:
 10. reserve and promotion status remain visible;
 11. Python API, TypeScript, component, production-build and Playwright smoke tests pass;
 12. legacy Streamlit tests remain green.
+
+
+## 13. V2 acceptance criteria
+
+V2 passes only if:
+
+1. V1 semantic/API compatibility remains green;
+2. the derived catalog rebuild is deterministic and never mutates source reports;
+3. protocol diff is allowlisted and excludes research/economic outcomes;
+4. A2.6 Gate, statistical and fold evidence is traceable to the frozen report;
+5. A4 portfolio/economic metrics remain authoritative and review derivatives are labelled `derived`;
+6. execution lifecycle/cost detail comes from a digest-matched immutable A4 JSONL ledger;
+7. target-versus-realized weights are deterministically derived from authoritative target and close-state evidence;
+8. lineage contains no fabricated authoritative identities;
+9. reserve/promotion state remains visible and immutable;
+10. review ZIP contains manifest, lineage, protocol diff, CSV summaries and source evidence;
+11. all product APIs remain GET-only;
+12. Python API tests, TypeScript, Vitest, production build, Playwright, Ruff, Mypy and dependency checks pass.

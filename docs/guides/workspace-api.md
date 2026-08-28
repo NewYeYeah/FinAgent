@@ -30,3 +30,24 @@ GET /api/v1/agent/runs/{run_id}
 - reserve and promotion state remain visible but cannot be changed.
 
 OpenAPI documentation is available from a running service at `/docs`.
+
+
+## V2 review endpoints
+
+Visualization V2 retains all V1 GET routes and adds:
+
+```text
+GET /api/v2/catalog
+GET /api/v2/projects
+GET /api/v2/programs/{program_id}/cockpit
+GET /api/v2/programs/{program_id}/gates
+GET /api/v2/programs/{program_id}/statistics
+GET /api/v2/a4/{validation_id}/cockpit
+GET /api/v2/a4/{validation_id}/execution
+GET /api/v2/governance/{evidence_id}
+GET /api/v2/protocol-diff?left=...&right=...
+GET /api/v2/evidence/{evidence_id}/raw
+GET /api/v2/a4/{validation_id}/review-bundle
+```
+
+V2 catalog/protocol/rolling/realized-weight/A3-binding projections are explicitly review/derived surfaces. The server accepts detailed execution lifecycle data only from an immutable JSONL ledger whose canonical digest matches the A4 report.

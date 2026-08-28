@@ -619,6 +619,71 @@ python -m pip check
 
 Use the current Research UI/Phoenix for A2.6 factor/Agent diagnosis. A4 report/NAV/order visualization is a read-only follow-up surface; until then use the A4 JSON and JSONL evidence directly.
 
+
+### T-A8 — FinAgent Workspace V2 pre-reserve acceptance
+
+Run after any V2 catalog, protocol, A2.6/A4 review, execution-ledger or frontend-cockpit change and before A5 reserve evaluation.
+
+#### T-A8.1 Python/API contract
+
+```bash
+python -m pytest -q \
+  tests/test_workspace_api_v1.py \
+  tests/test_workspace_api_v2.py \
+  tests/test_visualization_semantic_contract_v2.py \
+  tests/test_visualization_semantic_a2_compat.py \
+  tests/test_research_visualization.py \
+  tests/test_research_ui_app.py
+```
+
+Acceptance:
+
+- V1 compatibility remains green;
+- V2 derived SQLite catalog rebuilds without modifying source reports;
+- protocol diff is deterministic and excludes outcome fields;
+- A2.6 Gate/statistical/fold projections preserve frozen evidence;
+- A4 portfolio/economic metrics preserve authoritative values;
+- derived rolling/Gate-cell/realized-weight/A3-binding projections are labelled `derived`;
+- detailed execution is accepted only from a digest-matched immutable A4 JSONL ledger;
+- no fabricated A3 authoritative lineage node is created;
+- reserve remains visible and unchanged;
+- review bundle contains manifest, lineage, protocol diff, CSV summaries and source evidence;
+- POST/PUT/PATCH/DELETE remain absent from V2 product routes.
+
+#### T-A8.2 Frontend
+
+```bash
+cd workspace
+npm ci
+npm run typecheck
+npm run test
+npm run build
+npx playwright install chromium
+npm run e2e
+cd ..
+```
+
+Browser acceptance must show the Research Governance Cockpit, lifecycle, reserve state and V2 portfolio/execution/governance navigation without any promote/rerun/reserve/order control.
+
+#### T-A8.3 Quality
+
+```bash
+ruff check \
+  src/finagent/visualization/workspace_api.py \
+  src/finagent/visualization/workspace_v2.py \
+  scripts/run_workspace.py \
+  scripts/export_workspace_review_bundle.py \
+  tests/test_workspace_api_v1.py \
+  tests/test_workspace_api_v2.py \
+  --select E4,E7,E9,F
+mypy src/finagent/visualization/workspace_api.py src/finagent/visualization/workspace_v2.py
+python -m pip check
+```
+
+#### T-A8.4 Real-evidence human review
+
+Launch with the exact frozen A2.6/A4 report roots and canonical Agent audit database. Verify one A4 report against its digest-matched ledger: lifecycle IDs, Gate evidence, NAV, fold boundaries, fees, slippage, decisions, fills, reason attribution, target-realized drift, protocol diff and review bundle identities must agree with source artifacts. The 2025+ reserve must still be `untouched` before A5.
+
 ## 4. Interpretation boundary
 
 The A-share evidence layers have different meanings:
