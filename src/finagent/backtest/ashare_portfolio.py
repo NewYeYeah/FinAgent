@@ -306,8 +306,6 @@ class AsharePortfolioValidationSpec:
             "fee_schedule_id",
         ):
             object.__setattr__(self, name, require_non_empty(getattr(self, name), name))
-        if not self.selected_feature_digests:
-            raise ValueError("A4 spec requires a frozen factor family")
         if len(set(self.selected_feature_digests)) != len(self.selected_feature_digests):
             raise ValueError("A4 selected factor digests must be unique")
         if not (
@@ -320,8 +318,11 @@ class AsharePortfolioValidationSpec:
             raise ValueError("A4 selected directions must be +/-1")
         if any(not math.isfinite(value) or value < 0 for value in self.selected_weights):
             raise ValueError("A4 selected weights must be finite and non-negative")
-        if abs(sum(self.selected_weights) - 1.0) > 1e-9:
-            raise ValueError("A4 selected weights must sum to one")
+        if self.selected_feature_digests:
+            if abs(sum(self.selected_weights) - 1.0) > 1e-9:
+                raise ValueError("A4 selected weights must sum to one")
+        elif self.selected_weights or self.selected_directions:
+            raise ValueError("empty A4 factor family requires empty weights/directions")
         object.__setattr__(
             self,
             "net_execution_config",
@@ -986,7 +987,7 @@ class AshareExecutionAwarePortfolioValidator:
             lookback=lookback,
         )
         formation = self.universe_provider.snapshot(window.timestamps[-1], universe)
-        eligible = {asset: formation.is_eligible(asset) for asset in universe}
+        eligible = {asset: bool(formation.eligible.get(asset, False)) for asset in universe}
         alpha = alpha_model.predict(window, eligible=eligible)
         assets, returns = self._risk_assets(alpha, window)
         if len(assets) < self.config.min_active_assets:
