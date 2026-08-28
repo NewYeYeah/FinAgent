@@ -1,6 +1,6 @@
 # Development Roadmap
 
-This roadmap is intentionally short. Historical phase plans remain in Git history.
+This roadmap is intentionally short. Historical phase plans remain in Git history. The detailed frozen planning baseline is maintained in [`current-development-plan-v2.md`](current-development-plan-v2.md).
 
 ## Current baseline
 
