@@ -1,0 +1,63 @@
+[ashare_portfolio_validation]
+# Immutable A2.6 input. The source report must be frozen and its reserve untouched.
+a2p6_report = "reports/local_ashare_robust_research_a26.json"
+feature_store = ".finagent/local-ashare-robust-a26/generated_features.sqlite"
+
+root = "D:/Data/A-Share"
+frozen_manifest = "data/manifests/local_ashare_daily.json"
+supplement_root = "reference_data/a_share"
+state_dir = ".finagent/local-ashare-portfolio-a4"
+report_path = "reports/local_ashare_portfolio_validation_a4.json"
+ledger_path = "reports/local_ashare_portfolio_validation_a4_ledger.jsonl"
+
+# Portfolio construction and internal walk-forward execution.
+initial_cash = 10000000.0
+rebalance_every = 5
+active_asset_count = 20
+min_active_assets = 10
+minimum_expected_return = 0.0
+
+risk_lookback = 120
+risk_min_observations = 60
+risk_aversion = 5.0
+target_cash_weight = 0.05
+max_asset_weight = 0.10
+optimizer_turnover_penalty = 0.01
+
+alpha_ridge = 0.00000001
+alpha_min_observations = 1000
+winsor_lower_quantile = 0.01
+winsor_upper_quantile = 0.99
+annualization = 252.0
+
+# Dependence-aware internal economic evidence.
+hac_lags = 5
+bootstrap_samples = 500
+bootstrap_block_length = 20
+bootstrap_seed = 20260828
+cash_fallback_on_model_error = true
+
+# A3 execution assumptions. Adjust to the actual account before any operational use.
+require_price_limits = true
+slippage_bps = 5.0
+broker_commission_rate = 0.0003
+minimum_broker_commission = 5.0
+stamp_duty_sell_rate = 0.0005
+transfer_fee_rate = 0.00001
+sse_szse_handling_rate = 0.0000341
+bse_handling_rate = 0.000125
+regulatory_fee_rate = 0.00002
+pass_through_exchange_handling = false
+pass_through_regulatory_fee = false
+
+# Pre-registered A4 internal economic gate. Passing remains promotion-ineligible.
+policy_min_net_annualized_return = 0.0
+policy_min_net_sharpe = 0.0
+policy_max_abs_drawdown = 0.35
+policy_max_gross_to_net_return_drag = 0.10
+policy_min_positive_fold_ratio = 0.50
+policy_max_hac_pvalue = 0.10
+policy_max_bootstrap_pvalue = 0.10
+policy_max_rejected_order_ratio = 0.50
+# Ex-post only: full-day volume is not used to decide fills.
+policy_max_ex_post_participation = 0.10
