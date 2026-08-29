@@ -25,6 +25,7 @@ import {
   WORKBENCH_CONTEXT_KEYS,
   WorkbenchContextProvider,
   useWorkbenchContext,
+  workbenchContextSearch,
   type WorkbenchContextKey,
 } from "./context";
 import {
@@ -67,6 +68,7 @@ const CONTEXT_LABELS: Record<WorkbenchContextKey, string> = {
 
 function NavigationItem({ panel }: { panel: WorkbenchPanelDescriptor }) {
   const icon = ICONS[panel.module];
+  const { context } = useWorkbenchContext();
   if (panel.status === "reserved" || !panel.route) {
     return (
       <span className="workbench-nav-item workbench-nav-reserved" aria-disabled="true">
@@ -77,7 +79,11 @@ function NavigationItem({ panel }: { panel: WorkbenchPanelDescriptor }) {
     );
   }
   return (
-    <NavLink className="workbench-nav-item" to={panel.route} end={panel.route === "/"}>
+    <NavLink
+      className="workbench-nav-item"
+      to={{ pathname: panel.route, search: workbenchContextSearch(context) }}
+      end={panel.route === "/"}
+    >
       {icon}
       <span>{panel.title}</span>
     </NavLink>
@@ -112,10 +118,22 @@ export function ContextBar() {
             Clear
           </button>
         ) : null}
-        <button className="workbench-slot-button" type="button" disabled title="V3-2B configuration registry">
+        <button
+          className="workbench-slot-button"
+          data-slot="config-drawer"
+          type="button"
+          disabled
+          title="V3-2B configuration registry"
+        >
           <Settings2 size={14} /> Config
         </button>
-        <button className="workbench-slot-button" type="button" disabled title="V3-2B/V3-2C command catalog and gateway">
+        <button
+          className="workbench-slot-button"
+          data-slot="command-palette"
+          type="button"
+          disabled
+          title="V3-2B/V3-2C command catalog and gateway"
+        >
           <Command size={14} /> Commands
         </button>
       </div>
