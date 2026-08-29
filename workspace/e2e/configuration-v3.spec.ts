@@ -63,7 +63,7 @@ test("V3-2B exposes read-only config and command catalogs without control author
 
   await page.goto("/widgets?surface=configs&program=program-a26");
   await expect(page.getByText("Configuration Registry")).toBeVisible();
-  await expect(page.getByText("A4 portfolio validation")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "A4 portfolio validation" })).toBeVisible();
   await expect(page.getByText("<secret-file-reference>")).toBeVisible();
   await expect(page.getByText("new_identity_required").first()).toBeVisible();
   await expect(page.getByText("governed_change_required")).toBeVisible();
