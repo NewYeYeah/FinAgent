@@ -15,12 +15,13 @@ Completed core capabilities:
 - Visualization V0 canonical evidence, Agent projection, Widget and lineage contracts;
 - Visualization V1 GET-only FastAPI Evidence API and usable React/TypeScript Workspace;
 - Visualization V2 pre-reserve A4/governance cockpit, execution-ledger projection and human-review bundle export;
+- A5-4 read-only reserve lifecycle Workspace integration over eligibility/CONSUMED/terminal/ledger/audit evidence;
 - legacy read-only Streamlit/Plotly inspection with Phoenix as an optional low-level Agent trace viewer;
 - existing sealed-holdout, promotion, registry, PAPER/shadow and operational-control primitives.
 
 ## Current product state
 
-The Workspace now provides the V2 pre-reserve review surface over A2/A2.5, A2.6, A4, immutable A4 JSONL execution ledgers and Agent-audit evidence. It remains strictly read-only. The next governed milestone is A5 one-shot reserve evaluation; Visualization V3/V4 remain subsequent product work.
+The Workspace now provides the V2 research/A4 review surface plus A5-4 authoritative reserve lifecycle inspection over eligibility, irreversible `CONSUMED`, terminal PASS/FAIL, immutable reserve ledger and replay audit. It remains strictly read-only. Production reserve execution is an explicit human-authorized operation rather than a development task; Visualization V3 is the next product-development milestone.
 
 ## Current priority order
 
@@ -72,10 +73,21 @@ Remaining sequence:
 1. issue and independently review the production `ReserveEligibilitySeal`;
 2. independently verify the A5-3 state store/audit acceptance and archive the exact code/data identities;
 3. only then may a human operator execute the exact sealed reserve once through the A5-3 guarded one-shot runner;
-4. **A5-4:** integrate consumption/terminal/audit evidence into the read-only Workspace;
+4. A5-4 Workspace reserve evidence integration is complete; use it for independent post-execution audit;
 5. never relabel the consumed reserve as development data.
 
 A reserve failure is a valid terminal outcome.
+
+### Completed — A5-4 Workspace reserve evidence integration
+
+- read-only A5 eligibility / consumption / terminal SQLite projection;
+- current reserve state separated from immutable A4 report-time `untouched` status;
+- Reserve Cockpit for Seal → CONSUMED Claim → Terminal → Audit lineage;
+- exact ledger SHA-256 and semantic-digest verification before display;
+- consumed-without-terminal interruption shown explicitly without retry authority;
+- A5 lifecycle deep links from Project and Governance surfaces;
+- GET-only reserve detail and ledger APIs;
+- no reserve execution, recovery, promotion or order mutation route.
 
 ### P1 — Visualization V3 Agent Workbench
 

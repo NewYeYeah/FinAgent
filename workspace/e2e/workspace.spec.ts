@@ -45,3 +45,77 @@ test("V2 governance cockpit is visibly read-only and reserve-safe", async ({ pag
   await expect(page.getByText("reserve:untouched")).toBeVisible();
   await expect(page.getByRole("button", { name: /promote|reserve|order|rerun/i })).toHaveCount(0);
 });
+
+const reserveDetail = {
+  schema_version: "finagent.workspace.reserve-lifecycle.v1",
+  read_only: true,
+  authority: "authoritative",
+  reserve_id: "reserve-v2",
+  state: "CONSUMED",
+  a5_status: "RESERVE_PASS",
+  promotion_eligible: false,
+  automatic_retry_allowed: false,
+  program_result_id: "program-result-v2",
+  portfolio_validation_id: "a4-v2",
+  seal: { seal_id: "seal-v2" },
+  claim: { claim_id: "claim-v2", state: "CONSUMED" },
+  terminal: {
+    terminal_evidence_id: "terminal-v2",
+    status: "RESERVE_PASS",
+    reason_codes: ["RESERVE_PASS_TERMINAL"],
+    aggregate: {
+      net_metrics: { total_return: 0.08, sharpe: 0.9, max_drawdown: -0.06 },
+      gross_metrics: { total_return: 0.1, sharpe: 1.0 },
+    },
+  },
+  audit: { audit_id: "audit-v2" },
+  ledger: {
+    available: true,
+    row_count: 1,
+    semantic_digest: "a5-ledger-v2",
+    file_sha256: "a".repeat(64),
+    authority: "authoritative",
+  },
+  integrity: {
+    status: "PASS",
+    checks: [{ name: "claim.seal_id", passed: true, detail: "bound" }],
+    failed_count: 0,
+    fully_audited: true,
+  },
+  lineage: {
+    nodes: [
+      { evidence_id: "seal-v2", evidence_type: "ReserveEligibilitySeal", stage: "A5-1", authority: "authoritative", status: "complete", label: "Eligibility seal" },
+      { evidence_id: "claim-v2", evidence_type: "ReserveConsumptionClaim", stage: "A5-3", authority: "authoritative", status: "CONSUMED", label: "Durable CONSUMED claim" },
+      { evidence_id: "terminal-v2", evidence_type: "ReserveTerminalEvidence", stage: "A5-2/A5-3", authority: "authoritative", status: "RESERVE_PASS", label: "Terminal result" },
+      { evidence_id: "audit-v2", evidence_type: "ReserveConsumptionAudit", stage: "A5-3", authority: "authoritative", status: "PASS", label: "Replay audit" },
+    ],
+    edges: [
+      { parent_id: "seal-v2", child_id: "claim-v2", relation: "authorizes_pre_access_consumption" },
+      { parent_id: "claim-v2", child_id: "terminal-v2", relation: "consumed_before_terminal_evaluation" },
+      { parent_id: "terminal-v2", child_id: "audit-v2", relation: "verified_by_replay_audit" },
+    ],
+  },
+};
+
+const reserveLedger = {
+  schema_version: "finagent.workspace.reserve-ledger.v1",
+  read_only: true,
+  authority: "authoritative",
+  reserve_id: "reserve-v2",
+  terminal_evidence_id: "terminal-v2",
+  row_count: 1,
+  semantic_digest: "a5-ledger-v2",
+  file_sha256: "a".repeat(64),
+  rows: [{ session_date: "2025-01-02", net_nav: 1.01 }],
+};
+
+test("A5-4 reserve cockpit renders authoritative lifecycle without mutation controls", async ({ page }) => {
+  await page.route("**/api/v2/reserves/reserve-v2/ledger", (route) => route.fulfill({ json: reserveLedger }));
+  await page.route("**/api/v2/reserves/reserve-v2", (route) => route.fulfill({ json: reserveDetail }));
+  await page.goto("/reserve/reserve-v2");
+  await expect(page.getByText("A5 One-shot Reserve")).toBeVisible();
+  await expect(page.getByText("Lifecycle integrity")).toBeVisible();
+  await expect(page.getByText("retry:false")).toBeVisible();
+  await expect(page.getByText("RESERVE_PASS").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: /retry|promote|execute|order|recover/i })).toHaveCount(0);
+});

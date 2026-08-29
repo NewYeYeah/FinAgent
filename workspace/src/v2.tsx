@@ -98,15 +98,15 @@ export function ProjectCockpitPage() {
   return (
     <div className="page">
       <PageHeader
-        eyebrow="Visualization V2"
+        eyebrow="Visualization V2 + A5-4"
         title="Research governance cockpit"
-        description="Human-review surface for frozen A2.6 research, A4 execution-aware evidence and the locked one-shot reserve boundary."
+        description="Human-review surface for frozen A2.6/A4 evidence plus the authoritative one-shot reserve lifecycle when A5 stores are configured."
       />
       <div className="metric-grid four">
         <MetricCard label="Research programs" value={String(projects.length)} />
         <MetricCard label="Frozen protocols" value={String(projects.filter((item) => item.protocol_frozen).length)} />
         <MetricCard label="A4 validations" value={String(projects.filter((item) => item.a4_validation_id).length)} />
-        <MetricCard label="Reserve untouched" value={String(projects.filter((item) => item.reserve.status === "untouched").length)} detail="Required before A5" />
+        <MetricCard label="Reserve consumed" value={String(projects.filter((item) => item.reserve.status === "CONSUMED").length)} detail="Durable A5-3 claim" />
       </div>
       {projects.map((project) => (
         <Panel
@@ -117,6 +117,7 @@ export function ProjectCockpitPage() {
             <div className="panel-actions">
               {project.program_id ? <Link className="button secondary" to={`/program/${encodeURIComponent(project.program_id)}`}>Research</Link> : null}
               {project.a4_validation_id ? <Link className="button secondary" to={`/portfolio/${encodeURIComponent(project.a4_validation_id)}`}>A4</Link> : null}
+              {project.reserve.reserve_id ? <Link className="button secondary" to={`/reserve/${encodeURIComponent(String(project.reserve.reserve_id))}`}>Reserve</Link> : null}
               <Link className="button secondary" to={`/governance/${encodeURIComponent(project.a4_validation_id || project.program_evidence_id)}`}>Governance</Link>
             </div>
           }
@@ -388,6 +389,18 @@ export function GovernancePage() {
       <Panel title="A2.6 → A4 lineage" subtitle="Only persisted immutable evidence identities appear in the authoritative DAG.">
         <LineageDiagram graph={governance.lineage} />
       </Panel>
+      {governance.reserve_lifecycle ? (
+        <Panel title="A5 reserve lifecycle" subtitle="Eligibility seal, durable CONSUMED claim, terminal evidence and replay audit are read from authoritative A5 stores.">
+          <div className="identity-strip">
+            <StatusBadge value={`state:${governance.reserve_lifecycle.state}`} />
+            <StatusBadge value={governance.reserve_lifecycle.a5_status} />
+            <StatusBadge value={`integrity:${governance.reserve_lifecycle.integrity.status}`} />
+            <AuthorityBadge value="authoritative" />
+            <Link className="inline-link" to={`/reserve/${encodeURIComponent(governance.reserve_lifecycle.reserve_id)}`}>Open reserve cockpit</Link>
+          </div>
+          <LineageDiagram graph={governance.reserve_lifecycle.lineage} />
+        </Panel>
+      ) : null}
       {governance.a3_protocol_binding ? (
         <Panel title="A3 protocol binding" subtitle="Execution semantics are bound by A4 but no standalone authoritative A3 certification ID is persisted.">
           <div className="identity-strip"><AuthorityBadge value={governance.a3_protocol_binding.authority} /><span className="mono">{governance.a3_protocol_binding.binding_id}</span></div>

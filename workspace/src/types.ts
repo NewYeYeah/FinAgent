@@ -6,6 +6,9 @@ export type EvidenceStage =
   | "a3_execution_smoke"
   | "a4_portfolio_validation"
   | "agent_run"
+  | "A5-1"
+  | "A5-2/A5-3"
+  | "A5-3"
   | "unknown";
 
 export interface CatalogItem {
@@ -250,6 +253,7 @@ export interface WorkspaceProject {
   reserve: Record<string, unknown> & { status?: string; reserve_id?: string };
   promotion_eligible: boolean;
   a5_status: string;
+  reserve_lifecycle?: ReserveLifecycleResponse | null;
   lifecycle: LifecycleStage[];
   warning?: string;
 }
@@ -416,6 +420,7 @@ export interface GovernanceResponse {
   lineage: LineageGraph;
   reserve_status: string;
   promotion_eligible: boolean;
+  reserve_lifecycle?: ReserveLifecycleResponse | null;
   protocol: Record<string, unknown>;
   a3_protocol_binding: null | {
     binding_id: string;
@@ -425,6 +430,69 @@ export interface GovernanceResponse {
     note: string;
   };
   authority_legend: Record<string, string>;
+}
+
+
+export interface ReserveIntegrityCheck {
+  name: string;
+  passed: boolean;
+  detail: string;
+}
+
+export interface ReserveLifecycleResponse {
+  schema_version: string;
+  read_only: boolean;
+  authority: string;
+  reserve_id: string;
+  state: string;
+  a5_status: string;
+  promotion_eligible: boolean;
+  automatic_retry_allowed: boolean | null;
+  program_result_id: string;
+  portfolio_validation_id: string;
+  seal: Record<string, unknown> | null;
+  claim: Record<string, unknown> | null;
+  terminal: (Record<string, unknown> & { status?: string; reason_codes?: string[]; error_type?: string; error_message?: string }) | null;
+  audit: Record<string, unknown> | null;
+  ledger: {
+    available: boolean;
+    row_count: number;
+    semantic_digest: string;
+    file_sha256: string;
+    authority: string;
+  };
+  integrity: {
+    status: string;
+    checks: ReserveIntegrityCheck[];
+    failed_count: number;
+    fully_audited: boolean;
+  };
+  lineage: LineageGraph;
+}
+
+export interface ReserveListResponse {
+  schema_version: string;
+  read_only: boolean;
+  configured: boolean;
+  configuration: {
+    configured: boolean;
+    available: Record<string, boolean>;
+    read_only: boolean;
+  };
+  items: ReserveLifecycleResponse[];
+  warnings: string[];
+}
+
+export interface ReserveLedgerResponse {
+  schema_version: string;
+  read_only: boolean;
+  authority: string;
+  reserve_id: string;
+  terminal_evidence_id: string;
+  row_count: number;
+  semantic_digest: string;
+  file_sha256: string;
+  rows: Array<Record<string, unknown>>;
 }
 
 export interface ProtocolDiffResponse {

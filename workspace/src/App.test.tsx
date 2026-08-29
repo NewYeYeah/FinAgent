@@ -103,6 +103,45 @@ const portfolio = {
   economic_evidence: { hac_pvalue: 0.04 },
 };
 
+
+const reserve = {
+  schema_version: "finagent.workspace.reserve-lifecycle.v1",
+  read_only: true,
+  authority: "authoritative",
+  reserve_id: "reserve-v1",
+  state: "CONSUMED",
+  a5_status: "RESERVE_PASS",
+  promotion_eligible: false,
+  automatic_retry_allowed: false,
+  program_result_id: "program-result-v1",
+  portfolio_validation_id: "a4-validation-v1",
+  seal: { seal_id: "seal-v1" },
+  claim: { claim_id: "claim-v1", state: "CONSUMED" },
+  terminal: { status: "RESERVE_PASS", reason_codes: ["RESERVE_PASS_TERMINAL"], aggregate: { net_metrics: { total_return: 0.12, sharpe: 1.1 }, gross_metrics: { total_return: 0.14, sharpe: 1.2 } } },
+  audit: { audit_id: "audit-v1" },
+  ledger: { available: true, row_count: 2, semantic_digest: "ledger-digest", file_sha256: "a".repeat(64), authority: "authoritative" },
+  integrity: { status: "PASS", checks: [{ name: "claim.seal_id", passed: true, detail: "bound" }], failed_count: 0, fully_audited: true },
+  lineage: {
+    nodes: [
+      { evidence_id: "seal-v1", evidence_type: "ReserveEligibilitySeal", stage: "A5-1", authority: "authoritative", status: "complete", label: "Eligibility seal" },
+      { evidence_id: "claim-v1", evidence_type: "ReserveConsumptionClaim", stage: "A5-3", authority: "authoritative", status: "CONSUMED", label: "Durable CONSUMED claim" },
+    ],
+    edges: [{ parent_id: "seal-v1", child_id: "claim-v1", relation: "authorizes_pre_access_consumption" }],
+  },
+};
+
+const reserveLedger = {
+  schema_version: "finagent.workspace.reserve-ledger.v1",
+  read_only: true,
+  authority: "authoritative",
+  reserve_id: "reserve-v1",
+  terminal_evidence_id: "terminal-v1",
+  row_count: 2,
+  semantic_digest: "ledger-digest",
+  file_sha256: "a".repeat(64),
+  rows: [{ session: "2025-01-02", net_nav: 1.0 }, { session: "2025-01-03", net_nav: 1.01 }],
+};
+
 function response(payload: unknown) {
   return Promise.resolve(
     new Response(JSON.stringify(payload), {
@@ -121,6 +160,8 @@ describe("FinAgent Workspace V2", () => {
         const url = String(input);
         if (url.endsWith("/api/v2/projects")) return response(projects);
         if (url.endsWith("/api/v2/a4/a4-validation-v1/cockpit")) return response(portfolio);
+        if (url.endsWith("/api/v2/reserves/reserve-v1/ledger")) return response(reserveLedger);
+        if (url.endsWith("/api/v2/reserves/reserve-v1")) return response(reserve);
         throw new Error(`unexpected URL: ${url}`);
       }),
     );
@@ -141,5 +182,18 @@ describe("FinAgent Workspace V2", () => {
     expect(screen.getByText("Gross / net NAV")).toBeInTheDocument();
     expect(screen.getAllByText("DERIVED PRESENTATION SERIES").length).toBeGreaterThan(0);
     expect(screen.getByText(/reserve:untouched/i)).toBeInTheDocument();
+  });
+
+
+  it("opens the A5-4 reserve cockpit without mutation controls", async () => {
+    render(<App />);
+    await screen.findByText("Research governance cockpit");
+    const reserveLinks = screen.getAllByRole("link", { name: "Reserve" });
+    await userEvent.click(reserveLinks[reserveLinks.length - 1]);
+    await waitFor(() => expect(screen.getByText("A5 One-shot Reserve")).toBeInTheDocument());
+    expect(screen.getAllByText("RESERVE_PASS").length).toBeGreaterThan(0);
+    expect(screen.getByText("Lifecycle integrity")).toBeInTheDocument();
+    expect(screen.getByText(/retry:false/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /retry|promote|execute|order/i })).not.toBeInTheDocument();
   });
 });

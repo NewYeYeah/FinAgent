@@ -431,7 +431,7 @@ def test_default_widget_contract_is_unique_linkable_and_read_only_oriented() -> 
     for spec in specs:
         parameter_names = {value.name for value in spec.parameters}
         assert set(spec.link_keys).issubset(parameter_names)
-        assert spec.data_endpoint.startswith("/api/v1/")
+        assert spec.data_endpoint.startswith(("/api/v1/", "/api/v2/"))
         assert not spec.data_endpoint.lower().startswith("post ")
 
 

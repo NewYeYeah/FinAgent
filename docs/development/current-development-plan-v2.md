@@ -79,6 +79,21 @@ A5-3 已完成 crash-safe consumed-state persistence 与 replay/audit，**开发
 
 因此下一项为 **A5-4 Workspace reserve evidence integration**；真实 reserve 执行是独立的人类授权操作，不是开发/CI acceptance 的副作用。
 
+
+## 0.5 A5-4 implementation status addendum — 2026-08-29
+
+A5-4 已完成 read-only Workspace reserve evidence integration；**开发与 CI 仍不执行真实生产 reserve**：
+
+- Workspace 可选只读接入 `reserve_eligibility.sqlite` / `reserve_consumption.sqlite` / `reserve_terminal.sqlite`；
+- A4 报告时点的 immutable `untouched` 与当前 A5 lifecycle state 分离展示，避免报告历史状态覆盖 durable `CONSUMED`；
+- 新增 Reserve Cockpit，展示 Seal → CONSUMED Claim → Terminal → Replay Audit 的 authoritative lineage；
+- reserve ledger 在展示前重新验证 exact file SHA-256 与 semantic ledger digest；
+- consumed-without-terminal 明确显示为 `CONSUMED_INTERRUPTED`，Workspace 不提供 retry/recover/execute control；
+- Project / Governance / A4 surfaces 提供 reserve deep link；
+- `/api/v2/reserves*` 全部 GET-only，SQLite 通过 `mode=ro` + `query_only` 打开。
+
+A5 基础设施至此完成 A5-1～A5-4。真实 reserve 的首次执行属于独立 human-authorized operation，不由 merge/CI 自动触发。若继续开发产品面，下一项进入 **Visualization V3 Agent Workbench**。
+
 ---
 
 ## 1. 规划目标

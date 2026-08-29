@@ -20,6 +20,7 @@ from fastapi.staticfiles import StaticFiles
 from finagent.runtime import DEFAULT_PARALLEL_POLICY, ParallelPlan
 
 from .agent_projection import load_agent_run_projection
+from .reserve_projection import ReserveWorkspaceProjection
 from .semantic import (
     EvidenceBundle,
     EvidenceContractError,
@@ -345,6 +346,9 @@ def create_workspace_app(
     frontend_dir: str | Path | None = "workspace/dist",
     git_sha: str = "",
     catalog_db_path: str | Path | None = None,
+    reserve_eligibility_path: str | Path | None = None,
+    reserve_consumption_path: str | Path | None = None,
+    reserve_terminal_path: str | Path | None = None,
     cors_origins: Sequence[str] = (
         "http://127.0.0.1:5173",
         "http://localhost:5173",
@@ -353,11 +357,17 @@ def create_workspace_app(
     catalog = WorkspaceEvidenceCatalog(report_paths, git_sha=git_sha)
     agent_path = Path(agent_audit_path).expanduser() if agent_audit_path else None
     static_root = Path(frontend_dir).expanduser() if frontend_dir else None
+    reserve_projection = ReserveWorkspaceProjection(
+        eligibility_path=reserve_eligibility_path,
+        consumption_path=reserve_consumption_path,
+        terminal_path=reserve_terminal_path,
+    )
     v2 = WorkspaceV2Projection(
         catalog.bundles(),
         report_paths=report_paths,
         catalog_db_path=catalog_db_path,
         git_sha=git_sha,
+        reserve_projection=reserve_projection,
     )
 
     app = FastAPI(
@@ -372,6 +382,7 @@ def create_workspace_app(
     app.state.agent_audit_path = agent_path
     app.state.read_only = True
     app.state.workspace_v2 = v2
+    app.state.reserve_projection = reserve_projection
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(cors_origins),
@@ -392,6 +403,7 @@ def create_workspace_app(
             "agent_audit_configured": agent_path is not None,
             "workspace_v2": True,
             "v2_warning_count": len(v2.warnings),
+            "reserve_lifecycle": reserve_projection.configuration(),
             "parallelism": {
                 "catalog": catalog.parallel_plan.to_dict() if catalog.parallel_plan else None,
                 **v2.parallel_diagnostics(),
@@ -501,7 +513,10 @@ def create_workspace_app(
 
     @app.get("/api/v2/projects")
     def get_v2_projects() -> dict[str, object]:
-        return v2.projects()
+        try:
+            return v2.projects()
+        except EvidenceContractError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     @app.get("/api/v2/programs/{program_id}/cockpit")
     def get_v2_program_cockpit(program_id: str) -> dict[str, object]:
@@ -509,6 +524,8 @@ def create_workspace_app(
             return v2.program_cockpit(program_id)
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="program not found") from exc
+        except EvidenceContractError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     @app.get("/api/v2/programs/{program_id}/gates")
     def get_v2_program_gates(program_id: str) -> dict[str, object]:
@@ -530,6 +547,8 @@ def create_workspace_app(
             return v2.portfolio_cockpit(validation_id)
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="validation not found") from exc
+        except EvidenceContractError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     @app.get("/api/v2/a4/{validation_id}/execution")
     def get_v2_execution_cockpit(validation_id: str) -> dict[str, object]:
@@ -537,6 +556,8 @@ def create_workspace_app(
             return v2.execution_cockpit(validation_id)
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="validation not found") from exc
+        except EvidenceContractError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     @app.get("/api/v2/governance/{evidence_id}")
     def get_v2_governance(evidence_id: str) -> dict[str, object]:
@@ -546,6 +567,37 @@ def create_workspace_app(
             raise HTTPException(status_code=404, detail="evidence not found") from exc
         except EvidenceContractError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.get("/api/v2/reserves")
+    def get_v2_reserves() -> dict[str, object]:
+        try:
+            return reserve_projection.list()
+        except EvidenceContractError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        except sqlite3.Error as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    @app.get("/api/v2/reserves/{reserve_id}")
+    def get_v2_reserve(reserve_id: str) -> dict[str, object]:
+        try:
+            return reserve_projection.get(reserve_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="reserve lifecycle not found") from exc
+        except EvidenceContractError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        except sqlite3.Error as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    @app.get("/api/v2/reserves/{reserve_id}/ledger")
+    def get_v2_reserve_ledger(reserve_id: str) -> dict[str, object]:
+        try:
+            return reserve_projection.ledger(reserve_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="reserve ledger not found") from exc
+        except EvidenceContractError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        except sqlite3.Error as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     @app.get("/api/v2/protocol-diff")
     def get_v2_protocol_diff(left: str, right: str) -> dict[str, object]:
@@ -614,10 +666,16 @@ def create_app_from_environment() -> FastAPI:
     frontend = os.environ.get("FINAGENT_WORKSPACE_FRONTEND", "workspace/dist") or None
     git_sha = os.environ.get("FINAGENT_WORKSPACE_GIT_SHA", "")
     catalog_db = os.environ.get("FINAGENT_WORKSPACE_CATALOG_DB") or None
+    reserve_eligibility = os.environ.get("FINAGENT_WORKSPACE_RESERVE_ELIGIBILITY") or None
+    reserve_consumption = os.environ.get("FINAGENT_WORKSPACE_RESERVE_CONSUMPTION") or None
+    reserve_terminal = os.environ.get("FINAGENT_WORKSPACE_RESERVE_TERMINAL") or None
     return create_workspace_app(
         report_paths=report_paths,
         agent_audit_path=agent_audit,
         frontend_dir=frontend,
         git_sha=git_sha,
         catalog_db_path=catalog_db,
+        reserve_eligibility_path=reserve_eligibility,
+        reserve_consumption_path=reserve_consumption,
+        reserve_terminal_path=reserve_terminal,
     )

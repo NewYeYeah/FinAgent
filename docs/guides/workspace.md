@@ -4,13 +4,16 @@ The FinAgent Workspace is the primary read-only product surface for immutable re
 
 ## 1. Scope
 
-V2 supports:
+V2/A5-4 supports:
 
 ```text
 A2 / A2.5 factor-acceptance reports
 A2.6 robust ResearchProgram reports
 A4 execution-aware portfolio-validation reports
 digest-matched A4 execution-ledger JSONL
+A5 ReserveEligibilitySeal SQLite
+A5 durable CONSUMED / consumption-audit SQLite
+A5 terminal-evidence / immutable reserve-ledger SQLite
 canonical Agent audit SQLite
 ```
 
@@ -25,6 +28,7 @@ It provides:
 - target-versus-realized close weights and implementation-shortfall review;
 - immutable lineage navigation plus an explicitly derived A3 protocol binding when no standalone A3 evidence identity exists;
 - raw evidence inspection and downloadable human-review bundles;
+- A5 Reserve Cockpit with eligibility, durable CONSUMED claim, terminal PASS/FAIL, ledger integrity and replay audit;
 - canonical Agent run timelines and the `FinWidgetSpec` product-question catalog.
 
 It does not provide:
@@ -34,7 +38,7 @@ LLM calls
 prompt or feature-code editing
 research reruns
 Gate/threshold mutation
-reserve access
+reserve execution / recovery / retry
 promotion
 PAPER control
 order submission
@@ -46,6 +50,7 @@ order submission
 Immutable A2/A2.6/A4 JSON
 A4 execution ledger JSONL
 Canonical Agent audit SQLite
+A5 lifecycle SQLite stores
              │
              ▼
 Visualization Semantic Contract
@@ -137,6 +142,16 @@ http://127.0.0.1:8765
 ```
 
 By default V2 also rebuilds a disposable review index at `.finagent/visualization/evidence_catalog.sqlite`. Use `--no-catalog-db` to keep the derived index in memory only, or `--catalog-db <path>` to select another disposable index location. The authoritative report/ledger artifacts are never modified.
+
+A5-4 auto-discovers these files when they exist:
+
+```text
+.finagent/a5/reserve_eligibility.sqlite
+.finagent/a5/reserve_consumption.sqlite
+.finagent/a5/reserve_terminal.sqlite
+```
+
+Override them with `--reserve-eligibility`, `--reserve-consumption` and `--reserve-terminal`. All three are opened by the Workspace with SQLite `mode=ro` / `PRAGMA query_only=ON`; the UI cannot create a claim, recover an interrupted run or execute the reserve.
 
 ### Multiple report roots
 
@@ -392,3 +407,18 @@ This is expected for frontend routes such as `/evidence/...`. Paths under `/api/
 4. Every product result remains lineage-addressable.
 5. Reserve and `promotion_eligible=false` remain visible.
 6. Viewing evidence does not create a new clean validation window.
+
+
+### Reserve (A5-4)
+
+The Reserve page separates historical A4 report-time status from current one-shot lifecycle state and shows:
+
+```text
+ReserveEligibilitySeal
+  → durable CONSUMED claim
+  → RESERVE_PASS / RESERVE_FAIL terminal
+  → immutable reserve ledger (when completed)
+  → replay / consumption audit
+```
+
+A consumed claim without terminal evidence is displayed as `CONSUMED_INTERRUPTED`. Workspace intentionally exposes no retry or recovery button; recovery remains an explicit core governance operation that must not re-open reserve observations.

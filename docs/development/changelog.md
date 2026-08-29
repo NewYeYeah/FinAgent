@@ -204,3 +204,13 @@ Stage-specific PHASE/DEVLOG/release notes were removed from the active `docs/` t
 - added append-only consumption audit linkage plus audit reconciliation for terminal-written/audit-missing crash windows;
 - added lifecycle replay verification and regression coverage for concurrency, persistence failure, store reopen and ledger tampering;
 - kept production 2025+ reserve unconsumed during development and CI; actual execution remains an explicit human-authorized operation over a reviewed production seal.
+
+
+## 2026-08-29 — A5-4 Workspace reserve evidence integration
+
+- added read-only projection over authoritative A5 eligibility, consumption and terminal SQLite stores without instantiating mutable state stores;
+- separated immutable A4 report-time reserve status from the current durable A5 lifecycle state;
+- added Reserve Cockpit and GET-only APIs for Seal → CONSUMED Claim → Terminal → Ledger → Replay Audit evidence;
+- re-verified terminal payload identity, exact reserve-ledger SHA-256 and semantic ledger digest before rendering;
+- surfaced consumed-without-terminal crash states explicitly while preserving no-retry/no-execute Workspace authority;
+- linked A5 lifecycle evidence into Project and Governance review surfaces and extended cross-platform Workspace regression coverage.
