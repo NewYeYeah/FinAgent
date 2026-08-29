@@ -1,159 +1,207 @@
 # Development Roadmap
 
-This roadmap is intentionally short. Historical phase plans remain in Git history. The detailed frozen planning baseline is maintained in [`current-development-plan-v2.md`](current-development-plan-v2.md).
+This roadmap is intentionally short. The current detailed planning baseline is maintained in [`current-development-plan-v3.md`](current-development-plan-v3.md). The previous [`current-development-plan-v2.md`](current-development-plan-v2.md) is retained as the historical design/acceptance record for Visualization V2 and A5-1～A5-4.
 
 ## Current baseline
 
-Completed core capabilities:
+Current `main` planning anchor: `a197a04d6374b0caa605db9892f5c4ee20688067`.
+
+Completed core/product capabilities:
 
 - PIT numerical data contract, split isolation and frozen local A-share Parquet identity;
 - bounded Agent-generated features, conformance repair/checkpointing and JSONL/OTLP traces;
 - Factor Quant, rolling/subperiod stability, HAC/block bootstrap and Holm/BH evidence;
-- A2.6 immutable ResearchProgram, expanding walk-forward, preregistered robust gates, explicit no-alpha outcome and exact replay;
-- A3 exact-session tradeability, T+1 inventory, board-aware quantity rules, suspension/price-limit handling and asymmetric fees;
-- A4 reserve-safe inference, train-only frozen-factor calibration, historical risk/optimizer targets, gross/net A3 execution ledgers, portfolio economic evidence and exact replay;
-- Visualization V0 canonical evidence, Agent projection, Widget and lineage contracts;
-- Visualization V1 GET-only FastAPI Evidence API and usable React/TypeScript Workspace;
-- Visualization V2 pre-reserve A4/governance cockpit, execution-ledger projection and human-review bundle export;
-- A5-4 read-only reserve lifecycle Workspace integration over eligibility/CONSUMED/terminal/ledger/audit evidence;
-- legacy read-only Streamlit/Plotly inspection with Phoenix as an optional low-level Agent trace viewer;
-- existing sealed-holdout, promotion, registry, PAPER/shadow and operational-control primitives.
+- A2.6 immutable ResearchProgram, expanding walk-forward, preregistered robust gates and exact replay;
+- A3 exact-session A-share execution semantics including T+1, board-aware quantity rules, suspension/price limits and asymmetric fees;
+- A4 reserve-safe Alpha/Risk/Optimizer portfolio validation with gross/net A3 execution ledgers and exact replay;
+- Visualization V0 canonical evidence/lineage/Agent/widget contracts;
+- Visualization V1 GET-only FastAPI + React/TypeScript Workspace foundation;
+- Visualization V2 ResearchProgram/A4/execution/governance cockpit and human-review bundle;
+- A5-1 eligibility sealing;
+- A5-2 deterministic one-shot reserve runner and terminal evidence;
+- A5-3 atomic pre-access `CONSUMED` claim, crash-safe terminal/ledger persistence and replay/audit;
+- A5-4 read-only Workspace projection of reserve eligibility/consumption/terminal/ledger/audit evidence;
+- legacy Streamlit/Plotly inspection and optional Phoenix low-level Agent diagnostics;
+- existing registry, promotion, PAPER/shadow and operational-control primitives.
+
+No production 2025+ reserve has been consumed by development or CI. Production reserve execution remains an independent human-authorized operation.
 
 ## Current product state
 
-The Workspace now provides the V2 research/A4 review surface plus A5-4 authoritative reserve lifecycle inspection over eligibility, irreversible `CONSUMED`, terminal PASS/FAIL, immutable reserve ledger and replay audit. It remains strictly read-only. Production reserve execution is an explicit human-authorized operation rather than a development task; Visualization V3 is the next product-development milestone.
+The primary Workspace now covers:
+
+```text
+ResearchProgram / Factor / Gate
+        ↓
+A4 Portfolio / Execution
+        ↓
+A5 Reserve Lifecycle
+        ↓
+Immutable Evidence / Lineage / Audit
+```
+
+The next product milestone is **Visualization V3 Agent Workbench**. The existing `AgentRunProjection` is the canonical product source; Phoenix remains diagnostic rather than a product-data contract.
 
 ## Current priority order
 
-### Completed — Visualization V0 semantic contract
+### P0 — Planning Baseline v3
 
-- canonical `EvidenceRef` / `EvidenceBundle` contracts;
-- A2/A2.6/A4 evidence adapters;
-- acyclic lineage graph;
-- canonical `AgentRunProjection` separate from Phoenix;
-- `FinWidgetSpec` and authoritative/derived/diagnostic classes;
-- fail-closed unsupported schemas and hidden-reasoning boundary.
-
-### Completed — Visualization V1 Workspace foundation
-
-- GET-only FastAPI `/api/v1` Evidence API;
-- in-memory disposable Evidence catalog;
-- React + TypeScript + Vite application;
-- TanStack Table, ECharts and React Flow foundations;
-- Project/Research/Portfolio/Factor/Agent/Widget pages;
-- A2.6 factor/Gate/fold navigation;
-- A4 gross/net NAV, derived drawdown, execution funnel and rejection/cost navigation;
-- Agent audit opened read-only;
-- Python API, frontend unit/build and Playwright smoke tests;
-- cross-platform launcher and consolidated usage/testing documentation.
-
-### Completed — Visualization V2 A4 + governance cockpit
-
-The pre-reserve review gate now includes:
-
-- rebuildable SQLite Evidence Catalog and deterministic allowlisted protocol diff;
-- ResearchProgram lifecycle cockpit with explicit A2.6/A3-binding/A4/A5 status;
-- A2.6 Gate matrix, statistical forest evidence and fold heatmap;
-- richer A4 gross/net NAV, derived rolling review series, fold and economic evidence;
-- immutable A4 JSONL desired → compiled/adjusted → executable → fill projection;
-- T+1, lot, suspension, limit, cash and session/data attribution;
-- fill-level fee components, target-versus-realized weights and implementation shortfall;
-- combined immutable A2.6 → A4 lineage plus an explicitly `derived` A3 protocol binding where no standalone A3 evidence identity exists;
-- reserve/promotion authority visibility and raw evidence inspection;
-- downloadable human-review bundles containing manifest, lineage, protocol diff, CSV summaries and source evidence.
-
-Authoritative metrics continue to come from FinAgent core. Presentation-only derivatives are labelled `derived`; the UI still exposes no research, reserve, promotion or trading mutation route.
-
-### P1 — A5 one-shot reserve protocol
-
-**A5-1, A5-2 and A5-3 implementation are complete; no production reserve has been consumed by development or CI.** The repository now provides deterministic eligibility/review sealing, the frozen one-shot evaluation engine, an irreversible pre-access `CONSUMED` claim, durable terminal/ledger persistence, explicit crash recovery without reserve re-access, and lifecycle replay/audit.
-
-Remaining sequence:
-
-1. issue and independently review the production `ReserveEligibilitySeal`;
-2. independently verify the A5-3 state store/audit acceptance and archive the exact code/data identities;
-3. only then may a human operator execute the exact sealed reserve once through the A5-3 guarded one-shot runner;
-4. A5-4 Workspace reserve evidence integration is complete; use it for independent post-execution audit;
-5. never relabel the consumed reserve as development data.
-
-A reserve failure is a valid terminal outcome.
-
-### Completed — A5-4 Workspace reserve evidence integration
-
-- read-only A5 eligibility / consumption / terminal SQLite projection;
-- current reserve state separated from immutable A4 report-time `untouched` status;
-- Reserve Cockpit for Seal → CONSUMED Claim → Terminal → Audit lineage;
-- exact ledger SHA-256 and semantic-digest verification before display;
-- consumed-without-terminal interruption shown explicitly without retry authority;
-- A5 lifecycle deep links from Project and Governance surfaces;
-- GET-only reserve detail and ledger APIs;
-- no reserve execution, recovery, promotion or order mutation route.
+- freeze post-A5-4 state and dependencies;
+- separate product development from production reserve operation;
+- make V3-1～V3-5 the next bounded product sequence;
+- preserve v2 as historical design/acceptance documentation.
 
 ### P1 — Visualization V3 Agent Workbench
 
-- Projects/Runs navigation;
-- semantic activity timeline of Action / Guardrail / Evidence / Decision / Result / Error / Approval;
-- evidence inspector and source-code artifacts;
-- Agent ↔ Factor ↔ ResearchProgram deep links;
-- optional SSE projection for active runs;
-- Phoenix deep links for low-level diagnostics;
-- no hidden chain-of-thought rendering.
+Recommended bounded sequence:
+
+1. **V3-1 Agent Index Contract**
+   - `AgentProjectProjection` / `AgentThreadProjection` / `AgentRunSummary` / `AgentArtifactRef`;
+   - deterministic project/thread fallback identities;
+   - GET-only project/thread/run navigation APIs;
+   - read-only canonical audit SQLite source.
+2. **V3-2 Workbench Shell**
+   - Projects/Threads navigation;
+   - semantic activity timeline;
+   - Inspector panel;
+   - desktop-first Codex-like task workspace, not a chat clone.
+3. **V3-3 Evidence / Artifact Deep Link**
+   - Agent ↔ Factor ↔ ResearchProgram ↔ A4 ↔ A5 navigation;
+   - source-code/generated-feature artifact inspector;
+   - Phoenix diagnostics deep links.
+4. **V3-4 Active Run SSE**
+   - canonical active-run projection → SSE → browser;
+   - no raw OTLP/provider callback/hidden reasoning stream in React.
+5. **V3-5 Acceptance**
+   - API/read-only authority tests;
+   - Windows/Ubuntu;
+   - ruff/mypy;
+   - TypeScript/Vitest/build/Playwright;
+   - repository-wide regression.
+
+Hidden chain-of-thought remains unavailable and unpersisted. Workbench displays Action / Guardrail / Evidence / Decision / Approval / Result / Error business semantics.
 
 ### P1 — Visualization V4 Factor Tear Sheet
 
-- fold/year IC heatmaps;
-- IC decay and rolling stability;
-- quantile and long-short cumulative evidence once authoritative series are persisted;
+May start from the middle of V3, but only when required authoritative series exist.
+
+Recommended sequence:
+
+- V4-1 `FactorSeriesEvidence` contract for missing authoritative time series;
+- fold/year IC heatmap, rolling IC and IC decay;
+- HAC/bootstrap forest and Holm/BH candidate matrix;
+- quantile/long-short cumulative evidence;
 - turnover and coverage series;
-- HAC/bootstrap forest view;
-- Holm/BH candidate matrix;
 - correlation clustering;
-- discovery evolution across Agent rounds.
+- Agent discovery evolution and candidate → frozen-family lineage.
 
-### P1 — A6 strategy freeze, promotion and PAPER
+The browser must not manufacture cumulative financial evidence from summary metrics.
 
-For a reserve-passing candidate:
+### OPS — Production Reserve Execution
 
-- create an execution-valid `FinalStrategySpec` binding Alpha/Risk/Optimizer/A3/A4/A5 identities;
-- register the immutable model/strategy package;
-- run deterministic promotion gates and retain the human approval boundary;
-- execute repeated internal PAPER sessions;
-- reconcile desired orders, broker orders, fills, fees, positions, cash and NAV;
-- enforce approval, kill switch, stale-data and exposure controls;
-- collect operational evidence before considering an external broker.
+Not a development PR and never a CI side effect.
 
-### P1.5 — Visualization V5 risk / attribution / evidence export
+Before execution independently verify/archive:
 
-Only render risk evidence that FinAgent core formally produces:
+```text
+exact clean Git SHA
+exact data_version
+A2.6 exact replay
+A4 exact replay
+V2 review-bundle digest
+production ReserveEligibilitySeal
+A5-3 state-store locations and audit readiness
+operator identity
+reserve interval / terminal policy
+```
 
-- covariance/correlation and concentration first;
-- later marginal/component risk contribution, factor exposure and stress evidence;
-- report-to-report identity diff and ResearchProgram comparison;
-- signed immutable evidence packages for audit/review.
+Then permit one seal / one execution identity / one reserve / one terminal result.
 
-### P1.5 — Research and data hardening
+```text
+RESERVE_PASS → A6 may begin
+RESERVE_FAIL → no promotion; same reserve cannot validate a modified strategy
+```
 
-- add benchmark, industry and style exposure diagnostics/constraints;
+A5-4 is the post-execution audit surface, not an execution console.
+
+### P1 — A6 Strategy Freeze / Promotion / Internal PAPER
+
+**Conditional on `RESERVE_PASS`.**
+
+Recommended sequence:
+
+- A6-1 immutable `FinalStrategySpec`;
+- A6-2 immutable registry + deterministic promotion gate + human approval;
+- A6-3 repeated internal PAPER runtime;
+- A6-4 reconciliation / restart / recovery / kill switch / incident ledger;
+- A6-5 operational acceptance.
+
+PAPER acceptance focuses on operational correctness:
+
+```text
+desired order
+→ broker-facing order
+→ fill/reject/partial
+→ fee
+→ position/cash/NAV
+→ reconciliation
+```
+
+Agent never owns promotion, broker or live-capital authority.
+
+### P1 — Data hardening required before sustained PAPER
+
+Raise these items ahead of long-running PAPER:
+
+- corporate-action / cash-event ledger so adjusted research returns reconcile with raw-price execution/accounting;
+- preregistered lagged-liquidity participation cap and impact proxy instead of ex-post-only participation diagnostics.
+
+### P1.5 — Additional Research/Data Hardening
+
 - improve source-bound delisting/ST/suspension history without modifying vendor Parquet;
-- add a corporate-action cash/event ledger and verify raw-price execution against adjusted research returns;
-- replace ex-post participation-only capacity checks with a preregistered lagged-liquidity/impact model;
-- add chunked/out-of-core orchestration when the bounded panel no longer suffices;
-- certify 5/15/30/60-minute timestamp conventions before enabling intraday research.
+- benchmark / industry / style diagnostics and constraints;
+- certify 5/15/30/60-minute timestamp conventions, auction handling and session boundaries before intraday research;
+- add chunked/out-of-core orchestration only when profiling demonstrates need.
 
-### P2 — QMT realtime / external PAPER
+### P1.5 — Visualization V5 Risk / Attribution / Signed Audit
 
-Freeze the QMT event contract before implementation, but do not let realtime work block historical reserve validation:
+Only render risk evidence formally produced by core:
 
-- `QuoteEvent`, `BarEvent`, `MarketStatusEvent`;
-- `AccountStatusEvent`, `OrderEvent`, `TradeEvent`, `OrderErrorEvent`;
-- preserve `event_time`, `received_at`, `available_at`, provider/connection/subscription/sequence identity;
-- MiniQMT callbacks write to an async event queue only;
-- normalized projections feed a future WebSocket Live UI;
-- external paper/shadow reconciliation before any live-capital discussion.
+- covariance/correlation and concentration;
+- realized exposure;
+- drawdown attribution;
+- report/protocol comparison;
+- signed immutable evidence packages;
+- later marginal/component risk, factor exposure, stress and benchmark/industry/style attribution.
 
-### Deferred
+Frontend remains non-authoritative for risk math.
 
-A-share live capital is not a near-term milestone. Advanced ML/RL/multi-agent extensions remain lower priority than factor stability, data correctness, execution realism, evidence navigation and operational reliability.
+### P2 — QMT R0-R4 Realtime / External PAPER
+
+Do not reuse historical `ResearchDataset` as the realtime event protocol.
+
+- **R0** freeze `QuoteEvent`, `BarEvent`, `MarketStatusEvent`, `AccountStatusEvent`, `OrderEvent`, `TradeEvent`, `OrderErrorEvent`;
+- **R1** MiniQMT callback → non-blocking async event queue → normalizer;
+- **R2** latest-state projection + append-only Parquet event log + DuckDB analysis;
+- **R3** WebSocket Live Workspace: Market / Strategy / Portfolio / Execution / System Health;
+- **R4** external PAPER reconciliation, latency, partial/reject, disconnect/reconnect and state-drift evidence.
+
+R0 should align with A6 internal order/fill semantics before R1. Live capital remains deferred.
+
+## Parallel runtime rule
+
+Continue CPU/RAM-aware automatic worker budgeting, but use profiling-first optimization.
+
+Prefer independent deterministic work:
+
+```text
+cross-candidate evaluation
+cross-fold statistics
+bootstrap scenario batches
+read-only evidence indexing
+```
+
+Keep governance, reserve, registry, promotion, broker/accounting mutation and shared authoritative writes serial/transactional. Worker count must not alter evidence identity.
 
 ## Development rule
 
@@ -165,8 +213,9 @@ core functional loop
 → semantic projection
 → human-readable audit
 → freeze protocol identity
-→ consume one-shot evidence
+→ human-governed one-shot evidence
 → promotion/PAPER only after explicit gates
+→ external realtime only after internal operational semantics stabilize
 ```
 
-Do not proceed past errors that invalidate chronology, data identity, adaptive-search denominator, reserve isolation, exact-session tradeability, T+1 inventory, accounting conservation, exact replay or evidence lineage.
+Every bounded PR must keep its contract narrow, include tests/docs for schema changes, and merge only after relevant mainline CI is green. Production reserve execution is explicitly outside feature PRs and CI.
