@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { ExternalLink, Link2, LockKeyhole } from "lucide-react";
+import { Link2, LockKeyhole } from "lucide-react";
 import { Link, Navigate, useParams } from "react-router-dom";
 
 import { workspaceApi } from "../api";
@@ -375,12 +375,4 @@ export function LegacyAgentRunRedirect() {
   const { runId = "" } = useParams();
   const decoded = decodeURIComponent(runId);
   return <Navigate replace to={`/agent?run=${encodeURIComponent(decoded)}`} />;
-}
-
-export function AgentArtifactExternalLink({ artifact }: { artifact: AgentArtifactRefV3 }) {
-  return (
-    <a href={artifact.detail_url} className="inline-link">
-      {artifact.artifact_id} <ExternalLink size={12} />
-    </a>
-  );
 }
