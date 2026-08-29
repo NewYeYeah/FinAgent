@@ -17,7 +17,7 @@ The current development baseline supports:
 - supervised paper/shadow operations and sealed-holdout/promotion primitives;
 - US market ingestion through Alpaca SIP and best-effort AKShare validation;
 - local A-share Parquet research through DuckDB-backed adapters;
-- a read-only FastAPI + React/TypeScript Visualization V2 governance Workspace with immutable A4-ledger review, protocol diff/export, legacy Streamlit and optional Phoenix diagnostics retained.
+- a read-only FastAPI + React/TypeScript Visualization V2/A5-4 governance Workspace with immutable A4-ledger review, A5 reserve lifecycle evidence, protocol diff/export, legacy Streamlit and optional Phoenix diagnostics retained.
 
 The current market priority is **A-share historical research first**, with **Alpaca SIP as the US reference/regression path**. A-share live-capital or realtime acceptance is intentionally deferred until the frozen research, execution-aware internal validation, one-shot reserve and repeated PAPER gates are complete.
 
@@ -78,11 +78,11 @@ python scripts\run_ashare_portfolio_validation.py `
   --verify-content
 ```
 
-A completed A4 report remains `promotion_eligible=false`. A5-1 seals the exact frozen A2.6/A4/replay/V2-review identity; A5-2 implements the deterministic final-training/reserve evaluation engine; A5-3 now adds an irreversible, SQLite-transactional pre-access `CONSUMED` claim, durable terminal/ledger persistence, crash recovery without reserve re-access and lifecycle replay/audit. No production 2025+ reserve has been consumed by development or CI; actual execution still requires a reviewed production seal and explicit human authorization. See [`docs/guides/ashare-reserve.md`](docs/guides/ashare-reserve.md).
+A completed A4 report remains `promotion_eligible=false`. A5-1 seals the exact frozen A2.6/A4/replay/V2-review identity; A5-2 implements the deterministic final-training/reserve evaluation engine; A5-3 adds an irreversible, SQLite-transactional pre-access `CONSUMED` claim, durable terminal/ledger persistence, crash recovery without reserve re-access and lifecycle replay/audit. A5-4 now projects those authoritative seal/claim/terminal/ledger/audit stores into the read-only Workspace. No production 2025+ reserve has been consumed by development or CI; actual execution still requires a reviewed production seal and explicit human authorization. See [`docs/guides/ashare-reserve.md`](docs/guides/ashare-reserve.md).
 
-## FinAgent Workspace V2
+## FinAgent Workspace V2 + A5-4
 
-The primary product surface is a read-only pre-reserve Evidence Workspace. V2 retains V0/V1 compatibility and adds governed A2.6/A4/ledger review projections; authoritative calculations remain owned by FinAgent core.
+The primary product surface is a read-only Evidence Workspace. V2 retains V0/V1 compatibility and adds governed A2.6/A4/ledger review projections; A5-4 adds post-reserve lifecycle inspection for eligibility, durable consumption, terminal evidence, ledger and replay audit. Authoritative calculations and state transitions remain owned by FinAgent core.
 
 Install and build:
 

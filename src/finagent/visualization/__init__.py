@@ -8,6 +8,7 @@ from .agent_projection import (
     load_agent_run_projection,
 )
 from .feature_store import StoredFeatureView, load_feature_store
+from .reserve_projection import ReserveWorkspaceProjection
 from .research_report import (
     CandidateSnapshot,
     ResearchReportError,
@@ -69,6 +70,7 @@ __all__ = [
     "LineageNode",
     "PortfolioEvidence",
     "PortfolioPointEvidence",
+    "ReserveWorkspaceProjection",
     "ResearchReportError",
     "ResearchReportView",
     "StoredFeatureView",

@@ -176,3 +176,11 @@ details > summary { cursor: pointer; color: #8fb9f6; font-size: 11px; }
   .protocol-diff-row { grid-template-columns: 1fr; }
   .protocol-diff-row > span { transform: rotate(90deg); }
 }
+
+/* A5-4 reserve lifecycle */
+.reserve-lifecycle-rail { margin: 0 0 18px; }
+.reserve-lifecycle-rail .lifecycle-reserve_pass,
+.reserve-lifecycle-rail .lifecycle-verified { border-color: rgba(72, 199, 156, 0.32); }
+.reserve-lifecycle-rail .lifecycle-reserve_fail { border-color: rgba(255, 113, 134, 0.32); }
+.reserve-lifecycle-rail .lifecycle-pending { border-color: rgba(244, 187, 95, 0.24); }
+details summary { display: flex; align-items: center; gap: 6px; }

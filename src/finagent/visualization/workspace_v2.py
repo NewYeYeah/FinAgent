@@ -19,6 +19,7 @@ from typing import Any, cast
 
 from finagent.runtime import DEFAULT_PARALLEL_POLICY, ParallelPlan
 
+from .reserve_projection import ReserveWorkspaceProjection
 from .semantic import (
     EvidenceAuthority,
     EvidenceBundle,
@@ -193,10 +194,12 @@ class WorkspaceV2Projection:
         report_paths: Sequence[str | Path] = ("reports",),
         catalog_db_path: str | Path | None = None,
         git_sha: str = "",
+        reserve_projection: ReserveWorkspaceProjection | None = None,
     ) -> None:
         self.bundles = tuple(bundles)
         self.report_paths = tuple(Path(value).expanduser() for value in report_paths)
         self.git_sha = git_sha.strip()
+        self.reserve_projection = reserve_projection
         self.catalog_db_path = Path(catalog_db_path).expanduser() if catalog_db_path else None
         self._by_root_id = {bundle.root.evidence_id: bundle for bundle in self.bundles}
         self._raw: dict[str, Mapping[str, Any]] = {}
@@ -546,9 +549,51 @@ class WorkspaceV2Projection:
             "authority": EvidenceAuthority.AUTHORITATIVE.value,
         }
 
+
+    def _reserve_lifecycle_for_a4(self, validation_id: str) -> dict[str, object] | None:
+        if self.reserve_projection is None:
+            return None
+        return self.reserve_projection.find_for_a4(validation_id)
+
+    def _reserve_lifecycle_for_program(self, program_result_id: str) -> dict[str, object] | None:
+        if self.reserve_projection is None:
+            return None
+        return self.reserve_projection.find_for_program(program_result_id)
+
+    @staticmethod
+    def _merge_reserve_lifecycle(
+        reserve: dict[str, object], lifecycle: Mapping[str, object] | None
+    ) -> dict[str, object]:
+        merged = dict(reserve)
+        merged["frozen_report_status"] = reserve.get("status", "")
+        if lifecycle is None:
+            merged["lifecycle_configured"] = False
+            return merged
+        merged["lifecycle_configured"] = True
+        merged["status"] = str(lifecycle.get("state", reserve.get("status", "")))
+        merged["a5_status"] = str(lifecycle.get("a5_status", ""))
+        integrity = lifecycle.get("integrity")
+        merged["integrity_status"] = (
+            str(integrity.get("status", "")) if isinstance(integrity, Mapping) else ""
+        )
+        merged["reserve_id"] = str(lifecycle.get("reserve_id", reserve.get("reserve_id", "")))
+        return merged
+
     def projects(self) -> dict[str, object]:
         items: list[dict[str, object]] = []
         consumed_a4: set[str] = set()
+        reserve_by_a4: dict[str, dict[str, object]] = {}
+        reserve_by_program: dict[str, dict[str, object]] = {}
+        if self.reserve_projection is not None:
+            reserve_payload = self.reserve_projection.list()
+            for raw_item in _sequence(reserve_payload.get("items")):
+                reserve_item = dict(_mapping(raw_item))
+                validation_id = _text(reserve_item.get("portfolio_validation_id"))
+                program_result_id = _text(reserve_item.get("program_result_id"))
+                if validation_id:
+                    reserve_by_a4[validation_id] = reserve_item
+                if program_result_id:
+                    reserve_by_program[program_result_id] = reserve_item
         programs = [
             bundle
             for bundle in self.bundles
@@ -563,7 +608,15 @@ class WorkspaceV2Projection:
                 consumed_a4.add(a4.root.evidence_id)
             a4_raw = self._raw.get(a4.root.evidence_id, {}) if a4 else {}
             a4_spec = _mapping(a4_raw.get("validation_spec"))
-            reserve = self._reserve(a4_raw or raw, program.reserve_status)
+            reserve_lifecycle = (
+                reserve_by_a4.get(a4.root.evidence_id)
+                if a4 is not None
+                else reserve_by_program.get(program.root.evidence_id)
+            )
+            reserve = self._merge_reserve_lifecycle(
+                self._reserve(a4_raw or raw, program.reserve_status),
+                reserve_lifecycle,
+            )
             frozen = (
                 _text(raw.get("program_status")) == "frozen"
                 and _text(selection.get("status")) == "ROBUST_FACTOR_FAMILY_FROZEN"
@@ -592,10 +645,15 @@ class WorkspaceV2Projection:
                     "reserve": reserve,
                     "promotion_eligible": bool(a4.promotion_eligible if a4 else program.promotion_eligible),
                     "a5_status": (
-                        "LOCKED_NOT_CONSUMED"
-                        if a4 and reserve["status"] == "untouched"
-                        else "NOT_READY"
+                        str(reserve_lifecycle.get("a5_status"))
+                        if reserve_lifecycle is not None
+                        else (
+                            "LOCKED_NOT_CONSUMED"
+                            if a4 and reserve["status"] == "untouched"
+                            else "NOT_READY"
+                        )
                     ),
+                    "reserve_lifecycle": reserve_lifecycle,
                     "lifecycle": [
                         {
                             "stage": "A2.6",
@@ -618,7 +676,15 @@ class WorkspaceV2Projection:
                         {
                             "stage": "A5",
                             "label": "One-shot reserve",
-                            "status": "locked" if reserve["status"] == "untouched" else _text(reserve["status"]),
+                            "status": (
+                                str(reserve_lifecycle.get("a5_status"))
+                                if reserve_lifecycle is not None
+                                else (
+                                    "locked"
+                                    if reserve["status"] == "untouched"
+                                    else _text(reserve["status"])
+                                )
+                            ),
                             "authority": EvidenceAuthority.AUTHORITATIVE.value,
                         },
                     ],
@@ -637,6 +703,7 @@ class WorkspaceV2Projection:
             raw = self._raw.get(a4.root.evidence_id, {})
             spec = _mapping(raw.get("validation_spec"))
             source = _text(spec.get("source_program_result_id"))
+            reserve_lifecycle = reserve_by_a4.get(a4.root.evidence_id)
             items.append(
                 {
                     "project_id": source or a4.root.evidence_id,
@@ -657,9 +724,20 @@ class WorkspaceV2Projection:
                     "a4_execution_validation_passed": bool(
                         _mapping(raw.get("research_outcome")).get("execution_validation_passed")
                     ),
-                    "reserve": self._reserve(raw, a4.reserve_status),
+                    "reserve": self._merge_reserve_lifecycle(
+                        self._reserve(raw, a4.reserve_status), reserve_lifecycle
+                    ),
                     "promotion_eligible": a4.promotion_eligible,
-                    "a5_status": "LOCKED_NOT_CONSUMED" if a4.reserve_status == "untouched" else "NOT_READY",
+                    "a5_status": (
+                        str(reserve_lifecycle.get("a5_status"))
+                        if reserve_lifecycle is not None
+                        else (
+                            "LOCKED_NOT_CONSUMED"
+                            if a4.reserve_status == "untouched"
+                            else "NOT_READY"
+                        )
+                    ),
+                    "reserve_lifecycle": reserve_lifecycle,
                     "lifecycle": [],
                     "warning": "source A2.6 evidence is not present in the configured catalog",
                 }
@@ -857,7 +935,10 @@ class WorkspaceV2Projection:
             "evidence_id": bundle.root.evidence_id,
             "system_status": bundle.system_status,
             "research_status": bundle.research_status,
-            "reserve": self._reserve(raw, bundle.reserve_status),
+            "reserve": self._merge_reserve_lifecycle(
+                self._reserve(raw, bundle.reserve_status),
+                self._reserve_lifecycle_for_program(bundle.root.evidence_id),
+            ),
             "promotion_eligible": bundle.promotion_eligible,
             "identity": {
                 "program_spec_id": _text(program.get("spec_id")),
@@ -1033,6 +1114,11 @@ class WorkspaceV2Projection:
                 "payload": a3_payload,
                 "note": "No standalone authoritative A3 certification evidence ID is persisted; this binding is not inserted into the lineage DAG.",
             }
+        reserve_lifecycle = (
+            self._reserve_lifecycle_for_a4(bundle.root.evidence_id)
+            if bundle.root.stage is EvidenceStage.A4_PORTFOLIO_VALIDATION
+            else self._reserve_lifecycle_for_program(bundle.root.evidence_id)
+        )
         graph = self._combine_lineage(graphs)
         return {
             "schema_version": "finagent.workspace.governance.v2",
@@ -1040,8 +1126,13 @@ class WorkspaceV2Projection:
             "evidence_id": evidence_id,
             "source_program_evidence_id": source_program_id,
             "lineage": graph.to_dict(),
-            "reserve_status": bundle.reserve_status,
+            "reserve_status": (
+                str(reserve_lifecycle.get("state"))
+                if reserve_lifecycle is not None
+                else bundle.reserve_status
+            ),
             "promotion_eligible": bundle.promotion_eligible,
+            "reserve_lifecycle": reserve_lifecycle,
             "protocol": self._protocol_snapshot(evidence_id),
             "a3_protocol_binding": a4_binding,
             "authority_legend": {
@@ -1094,7 +1185,10 @@ class WorkspaceV2Projection:
                 "read_only": True,
                 "validation_id": validation_id,
                 "status": bundle.research_status,
-                "reserve": self._reserve(raw, bundle.reserve_status),
+                "reserve": self._merge_reserve_lifecycle(
+                    self._reserve(raw, bundle.reserve_status),
+                    self._reserve_lifecycle_for_a4(validation_id),
+                ),
                 "no_portfolio": True,
             }
         net = _mapping(aggregate.get("net_metrics"))
@@ -1130,7 +1224,10 @@ class WorkspaceV2Projection:
             "validation_id": validation_id,
             "status": bundle.research_status,
             "system_status": bundle.system_status,
-            "reserve": self._reserve(raw, bundle.reserve_status),
+            "reserve": self._merge_reserve_lifecycle(
+                self._reserve(raw, bundle.reserve_status),
+                self._reserve_lifecycle_for_a4(validation_id),
+            ),
             "promotion_eligible": bundle.promotion_eligible,
             "metrics": {
                 "gross_return": _number(gross.get("total_return")),
@@ -1311,11 +1408,16 @@ class WorkspaceV2Projection:
         compiled_adjusted: int | None = None
         if ledger is not None:
             compiled_adjusted = status_counts["accepted"] + status_counts["adjusted"]
+        reserve_lifecycle = self._reserve_lifecycle_for_a4(validation_id)
         return {
             "schema_version": "finagent.workspace.execution-cockpit.v2",
             "read_only": True,
             "validation_id": validation_id,
-            "reserve_status": bundle.reserve_status,
+            "reserve_status": (
+                str(reserve_lifecycle.get("state"))
+                if reserve_lifecycle is not None
+                else bundle.reserve_status
+            ),
             "ledger": ledger.summary() if ledger is not None else {
                 "digest": _text(raw.get("ledger_digest")),
                 "available": False,

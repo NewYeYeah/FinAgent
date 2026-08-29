@@ -11,6 +11,9 @@ import type {
   ProgramCockpitResponse,
   ProjectsResponse,
   ProtocolDiffResponse,
+  ReserveLedgerResponse,
+  ReserveLifecycleResponse,
+  ReserveListResponse,
 } from "./types";
 
 const API_BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
@@ -61,6 +64,11 @@ export const workspaceApi = {
     getJson<ExecutionCockpitResponse>(`/api/v2/a4/${encodeURIComponent(validationId)}/execution`),
   governanceV2: (evidenceId: string) =>
     getJson<GovernanceResponse>(`/api/v2/governance/${encodeURIComponent(evidenceId)}`),
+  reservesV2: () => getJson<ReserveListResponse>("/api/v2/reserves"),
+  reserveV2: (reserveId: string) =>
+    getJson<ReserveLifecycleResponse>(`/api/v2/reserves/${encodeURIComponent(reserveId)}`),
+  reserveLedgerV2: (reserveId: string) =>
+    getJson<ReserveLedgerResponse>(`/api/v2/reserves/${encodeURIComponent(reserveId)}/ledger`),
   protocolDiffV2: (left: string, right: string) =>
     getJson<ProtocolDiffResponse>(
       `/api/v2/protocol-diff?left=${encodeURIComponent(left)}&right=${encodeURIComponent(right)}`,

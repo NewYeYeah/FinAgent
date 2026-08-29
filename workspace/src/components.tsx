@@ -136,6 +136,9 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
           <NavLink to="/governance">
             <Network size={17} /> Governance
           </NavLink>
+          <NavLink to="/reserve">
+            <LockKeyhole size={17} /> Reserve
+          </NavLink>
           <NavLink to="/agent">
             <Boxes size={17} /> Agent Runs
           </NavLink>
@@ -145,7 +148,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
         </nav>
         <div className="sidebar-footer">
           <GitBranch size={15} />
-          <span>V2 · pre-reserve review</span>
+          <span>A5-4 · reserve evidence</span>
         </div>
       </aside>
       <main>

@@ -32,6 +32,7 @@ import {
   StatusBadge,
   WorkspaceShell,
 } from "./components";
+import { ReserveDetailPage, ReserveIndexPage } from "./reserve";
 import {
   ExecutionCockpitPage,
   GovernanceIndexPage,
@@ -521,6 +522,8 @@ export default function App() {
           <Route path="/execution/:validationId" element={<ExecutionCockpitPage />} />
           <Route path="/governance" element={<GovernanceIndexPage />} />
           <Route path="/governance/:evidenceId" element={<GovernancePage />} />
+          <Route path="/reserve" element={<ReserveIndexPage />} />
+          <Route path="/reserve/:reserveId" element={<ReserveDetailPage />} />
           <Route path="/evidence/:evidenceId" element={<EvidencePage />} />
           <Route path="/factor/:digest" element={<FactorPage />} />
           <Route path="/agent" element={<AgentListPage />} />
