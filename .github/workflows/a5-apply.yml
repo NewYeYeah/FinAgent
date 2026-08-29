@@ -41,6 +41,7 @@ jobs:
         run: |
           git apply --check /tmp/a5-reserve-seal.patch
           git apply /tmp/a5-reserve-seal.patch
+          rm -f .github/workflows/a5-reserve.yml
           git rm -rf tools/a5_payload
           git rm .github/workflows/a5-apply.yml
           git diff --check
