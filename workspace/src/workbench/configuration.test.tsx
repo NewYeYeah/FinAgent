@@ -123,7 +123,7 @@ describe("V3-2B Configuration and Command catalogs", () => {
   it("renders read-only config domains, protected references and identity semantics", async () => {
     render(<App />);
     expect(await screen.findByText("Configuration Registry")).toBeInTheDocument();
-    expect(screen.getByText("A2.6 robust A-share research")).toBeInTheDocument();
+    expect(screen.getAllByText("A2.6 robust A-share research").length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText("new_identity_required").length).toBeGreaterThan(0);
     expect(screen.getByText("<secret-file-reference>")).toBeInTheDocument();
     expect(screen.getByText(/secret-like config excluded without parsing/i)).toBeInTheDocument();
