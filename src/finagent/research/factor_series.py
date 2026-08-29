@@ -69,6 +69,23 @@ _METRIC_ORDER = {
     "nav": 10,
     "one_way_turnover": 11,
 }
+_ALLOWED_METRICS = {
+    "coverage": frozenset({"eligible_count", "valid_factor_count", "coverage"}),
+    "ic": frozenset(
+        {
+            "pearson_ic_raw",
+            "rank_ic_raw",
+            "pearson_ic",
+            "rank_ic",
+            "rolling_pearson_ic",
+            "rolling_rank_ic",
+        }
+    ),
+    "quantile": frozenset({"return", "nav"}),
+    "long_short": frozenset({"return", "nav"}),
+    "turnover": frozenset({"one_way_turnover"}),
+}
+_DERIVED_METRICS = frozenset({"rolling_pearson_ic", "rolling_rank_ic", "nav"})
 
 
 def _canonical_json(value: object) -> str:
@@ -96,12 +113,14 @@ def _sha256(path: Path) -> str:
 
 
 def _mapping(value: object) -> Mapping[str, Any]:
-    return value if isinstance(value, Mapping) else {}
+    if isinstance(value, Mapping):
+        return cast(Mapping[str, Any], value)
+    return {}
 
 
 def _sequence(value: object) -> Sequence[Any]:
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return value
+        return cast(Sequence[Any], value)
     return ()
 
 
@@ -218,21 +237,8 @@ class FactorSeriesRow:
         object.__setattr__(self, "value", _number(self.value))
         if self.sample_count < 0 or self.window_count < 0:
             raise ValueError("FactorSeries counts must be non-negative")
-        allowed = {
-            "coverage": {"eligible_count", "valid_factor_count", "coverage"},
-            "ic": {
-                "pearson_ic_raw",
-                "rank_ic_raw",
-                "pearson_ic",
-                "rank_ic",
-                "rolling_pearson_ic",
-                "rolling_rank_ic",
-            },
-            "quantile": {"return", "nav"},
-            "long_short": {"return", "nav"},
-            "turnover": {"one_way_turnover"},
-        }
-        if self.series_kind not in allowed or self.metric not in allowed[self.series_kind]:
+        metrics = _ALLOWED_METRICS.get(self.series_kind)
+        if metrics is None or self.metric not in metrics:
             raise ValueError("invalid FactorSeries series_kind/metric combination")
         if self.series_kind == "coverage":
             if self.label_name or self.quantile is not None:
@@ -240,19 +246,20 @@ class FactorSeriesRow:
         elif self.series_kind == "quantile":
             if not self.label_name or self.quantile is None or self.quantile < 1:
                 raise ValueError("quantile rows require label_name and positive quantile")
-        else:
-            if not self.label_name or self.quantile is not None:
-                raise ValueError(
-                    f"{self.series_kind} rows require label_name and no quantile"
-                )
+        elif not self.label_name or self.quantile is not None:
+            raise ValueError(
+                f"{self.series_kind} rows require label_name and no quantile"
+            )
         if self.metric.startswith("rolling_"):
             if self.authority != "derived" or self.window_count < 2:
                 raise ValueError("rolling IC rows must be derived with window_count >= 2")
-        if self.metric == "nav" and self.authority != "derived":
-            raise ValueError("quantile/long-short NAV is deterministic derived evidence")
-        if self.metric not in {"nav", "rolling_pearson_ic", "rolling_rank_ic"}:
-            if self.authority != "authoritative":
-                raise ValueError("raw FactorSeries metrics must remain authoritative")
+        elif self.window_count != 0:
+            raise ValueError("non-rolling FactorSeries rows require window_count=0")
+        expected_authority = "derived" if self.metric in _DERIVED_METRICS else "authoritative"
+        if self.authority != expected_authority:
+            raise ValueError(
+                f"FactorSeries metric {self.metric!r} requires authority={expected_authority!r}"
+            )
 
     @property
     def row_id(self) -> str:
@@ -298,12 +305,7 @@ class FactorSeriesRow:
 
 
 class AshareFactorSeriesMaterializer:
-    """Rebuild V4-1 period evidence from frozen A2.6 PIT factor panels.
-
-    V4-1 consumes only internal walk-forward test splits. It does not modify A2.6
-    reports, read the reserve, or infer factor direction from the test period. The
-    fold's train_direction is a frozen input from the A2.6 walk-forward report.
-    """
+    """Rebuild V4-1 period evidence from frozen A2.6 PIT factor panels."""
 
     VERSION = "ashare-factor-series-v1"
 
@@ -351,6 +353,67 @@ class AshareFactorSeriesMaterializer:
             window_count=window_count,
         )
 
+    def _append_ic_rows(
+        self,
+        rows: list[FactorSeriesRow],
+        rolling: dict[tuple[str, str], deque[float]],
+        *,
+        artifact: GeneratedFeatureArtifact,
+        fold_id: str,
+        session_date: date,
+        direction: int,
+        label_name: str,
+        sample_count: int,
+        raw_metric: str,
+        oriented_metric: str,
+        raw_value: float,
+    ) -> None:
+        oriented = direction * raw_value
+        rows.append(
+            self._row(
+                artifact=artifact,
+                fold_id=fold_id,
+                session_date=session_date,
+                direction=direction,
+                series_kind="ic",
+                metric=raw_metric,
+                value=raw_value,
+                sample_count=sample_count,
+                label_name=label_name,
+            )
+        )
+        rows.append(
+            self._row(
+                artifact=artifact,
+                fold_id=fold_id,
+                session_date=session_date,
+                direction=direction,
+                series_kind="ic",
+                metric=oriented_metric,
+                value=oriented,
+                sample_count=sample_count,
+                label_name=label_name,
+            )
+        )
+        queue = rolling[(label_name, oriented_metric)]
+        queue.append(oriented)
+        if len(queue) == self.rolling_window:
+            rows.append(
+                self._row(
+                    artifact=artifact,
+                    fold_id=fold_id,
+                    session_date=session_date,
+                    direction=direction,
+                    series_kind="ic",
+                    metric=f"rolling_{oriented_metric}",
+                    value=float(np.mean(tuple(queue))),
+                    sample_count=sample_count,
+                    label_name=label_name,
+                    authority="derived",
+                    window_count=self.rolling_window,
+                )
+            )
+
     def materialize_fold(
         self,
         *,
@@ -369,6 +432,7 @@ class AshareFactorSeriesMaterializer:
         panel = dataset.get_split(split_name)
         factor = np.asarray(panel.feature_values[:, :, 0], dtype=float)
         eligibility = np.asarray(panel.eligibility_mask, dtype=bool)
+        primary_labels = np.asarray(panel.label_panel(config.primary_label), dtype=float)
         rows: list[FactorSeriesRow] = []
         rolling: dict[tuple[str, str], deque[float]] = {
             (label, metric): deque(maxlen=self.rolling_window)
@@ -378,7 +442,6 @@ class AshareFactorSeriesMaterializer:
         quantile_nav = [1.0 for _ in range(config.quantiles)]
         long_short_nav = 1.0
         previous_weights = np.zeros(panel.n_assets, dtype=float)
-        primary_labels = np.asarray(panel.label_panel(config.primary_label), dtype=float)
 
         for index, timestamp in enumerate(panel.timestamps):
             session_date = timestamp.astimezone(_SHANGHAI).date()
@@ -425,58 +488,34 @@ class AshareFactorSeriesMaterializer:
                     rankdata(raw_factor, method="average"),
                     rankdata(target, method="average"),
                 )
-                values = (
-                    ("pearson_ic_raw", pearson, "pearson_ic"),
-                    ("rank_ic_raw", rank_ic, "rank_ic"),
-                )
-                for raw_metric, raw_value, oriented_metric in values:
-                    if raw_value is None:
-                        continue
-                    oriented = train_direction * raw_value
-                    rows.append(
-                        self._row(
-                            artifact=artifact,
-                            fold_id=fold_id,
-                            session_date=session_date,
-                            direction=train_direction,
-                            series_kind="ic",
-                            metric=raw_metric,
-                            value=raw_value,
-                            sample_count=sample_count,
-                            label_name=label_name,
-                        )
+                if pearson is not None:
+                    self._append_ic_rows(
+                        rows,
+                        rolling,
+                        artifact=artifact,
+                        fold_id=fold_id,
+                        session_date=session_date,
+                        direction=train_direction,
+                        label_name=label_name,
+                        sample_count=sample_count,
+                        raw_metric="pearson_ic_raw",
+                        oriented_metric="pearson_ic",
+                        raw_value=pearson,
                     )
-                    rows.append(
-                        self._row(
-                            artifact=artifact,
-                            fold_id=fold_id,
-                            session_date=session_date,
-                            direction=train_direction,
-                            series_kind="ic",
-                            metric=oriented_metric,
-                            value=oriented,
-                            sample_count=sample_count,
-                            label_name=label_name,
-                        )
+                if rank_ic is not None:
+                    self._append_ic_rows(
+                        rows,
+                        rolling,
+                        artifact=artifact,
+                        fold_id=fold_id,
+                        session_date=session_date,
+                        direction=train_direction,
+                        label_name=label_name,
+                        sample_count=sample_count,
+                        raw_metric="rank_ic_raw",
+                        oriented_metric="rank_ic",
+                        raw_value=rank_ic,
                     )
-                    queue = rolling[(label_name, oriented_metric)]
-                    queue.append(oriented)
-                    if len(queue) == self.rolling_window:
-                        rows.append(
-                            self._row(
-                                artifact=artifact,
-                                fold_id=fold_id,
-                                session_date=session_date,
-                                direction=train_direction,
-                                series_kind="ic",
-                                metric=f"rolling_{oriented_metric}",
-                                value=float(np.mean(tuple(queue))),
-                                sample_count=sample_count,
-                                label_name=label_name,
-                                authority="derived",
-                                window_count=self.rolling_window,
-                            )
-                        )
 
             indices = np.flatnonzero(formation)
             if len(indices) < config.min_cross_section:
@@ -668,8 +707,7 @@ def reconcile_factor_series(
             )
             if not raw_rank or not oriented_rank:
                 raise ValueError("V4-1 primary RankIC series is empty")
-            periods = min(len(raw_rank), len(raw_pearson))
-            if periods != _integer(fold.get("periods")):
+            if min(len(raw_rank), len(raw_pearson)) != _integer(fold.get("periods")):
                 raise ValueError("V4-1 IC period count differs from A2.6")
             _close(
                 f"{feature_digest}:{fold_id}:test_raw_rank_ic",
@@ -904,7 +942,9 @@ def order_factor_series_rows(rows: Sequence[FactorSeriesRow]) -> tuple[FactorSer
     return output
 
 
-def _quant_config_payload(program: Mapping[str, Any], rolling_window: int) -> dict[str, object]:
+def _quant_config_payload(
+    program: Mapping[str, Any], rolling_window: int
+) -> dict[str, Any]:
     config = _mapping(program.get("factor_quant_config"))
     return {
         "primary_label": _text(program.get("primary_label")),
@@ -915,7 +955,7 @@ def _quant_config_payload(program: Mapping[str, Any], rolling_window: int) -> di
         "annualization": _number(config.get("annualization"), 252.0),
         "winsor_lower_quantile": _number(config.get("winsor_lower_quantile"), 0.01),
         "winsor_upper_quantile": _number(config.get("winsor_upper_quantile"), 0.99),
-        "rolling_window": rolling_window,
+        "rolling_window": int(rolling_window),
     }
 
 
@@ -1016,6 +1056,16 @@ class FactorSeriesManifest:
         for name in required:
             if not str(getattr(self, name)).strip():
                 raise ValueError(f"FactorSeries manifest {name} must be non-empty")
+        primary = self.primary_label.strip()
+        if not primary:
+            raise ValueError("FactorSeries manifest primary_label must be non-empty")
+        object.__setattr__(self, "primary_label", primary)
+        decay = tuple(value.strip() for value in self.decay_labels)
+        if any(not value for value in decay) or len(set(decay)) != len(decay):
+            raise ValueError("FactorSeries decay labels must be unique and non-empty")
+        if primary in decay:
+            raise ValueError("FactorSeries decay labels must exclude primary_label")
+        object.__setattr__(self, "decay_labels", decay)
         object.__setattr__(
             self,
             "source_report_file",
@@ -1028,16 +1078,35 @@ class FactorSeriesManifest:
             raise ValueError("FactorSeries requires a non-empty candidate denominator")
         if len(set(self.candidate_feature_digests)) != len(self.candidate_feature_digests):
             raise ValueError("FactorSeries candidate factor digests must be unique")
+        if any(not value.strip() for value in self.candidate_feature_digests):
+            raise ValueError("FactorSeries candidate factor digests must be non-empty")
+        if len(set(self.selected_feature_digests)) != len(self.selected_feature_digests):
+            raise ValueError("FactorSeries selected factor digests must be unique")
         if not set(self.selected_feature_digests).issubset(self.candidate_feature_digests):
             raise ValueError("selected FactorSeries factors must belong to denominator")
         if self.quantiles < 2 or self.min_cross_section < self.quantiles:
             raise ValueError("invalid FactorSeries quantile configuration")
         if self.min_periods < 2 or self.rolling_window < 2:
             raise ValueError("invalid FactorSeries period/window configuration")
+        if not math.isfinite(self.annualization) or self.annualization <= 0:
+            raise ValueError("FactorSeries annualization must be positive and finite")
+        if not (
+            0.0
+            <= self.winsor_lower_quantile
+            < self.winsor_upper_quantile
+            <= 1.0
+        ):
+            raise ValueError("invalid FactorSeries winsorization quantiles")
         if self.row_count < 1 or self.factor_count < 1 or self.fold_count < 1:
             raise ValueError("FactorSeries manifest requires rows, factors and folds")
+        if self.factor_count != len(self.candidate_feature_digests):
+            raise ValueError("FactorSeries factor_count differs from candidate denominator")
         if self.session_count < 1:
             raise ValueError("FactorSeries manifest requires sessions")
+        if self.start_date is None or self.end_date is None:
+            raise ValueError("FactorSeries manifest requires a bounded date range")
+        if date.fromisoformat(self.end_date) < date.fromisoformat(self.start_date):
+            raise ValueError("FactorSeries manifest end_date precedes start_date")
         if self.columns != _PARQUET_COLUMNS or self.nullable_columns != _NULLABLE_COLUMNS:
             raise ValueError("FactorSeries manifest column contract differs from V4-1")
         expected_id = _digest(
@@ -1187,7 +1256,7 @@ class FactorSeriesManifest:
         value = json.loads(Path(path).read_text(encoding="utf-8"))
         if not isinstance(value, Mapping):
             raise ValueError("FactorSeries manifest root must be an object")
-        return cls.from_dict(value)
+        return cls.from_dict(cast(Mapping[str, object], value))
 
 
 def _create_parquet(path: Path, rows: Sequence[FactorSeriesRow]) -> None:
@@ -1324,6 +1393,7 @@ def write_factor_series(
     series_id = _digest("factor-series", identity, 40)
     _create_parquet(data_target, ordered)
     dates = [row.session_date for row in ordered]
+    decay_labels = tuple(str(value) for value in quant_payload["decay_labels"])
     manifest = FactorSeriesManifest(
         series_id=series_id,
         program_result_id=_text(source_report.get("program_result_id")),
@@ -1339,13 +1409,13 @@ def write_factor_series(
         candidate_feature_digests=denominator,
         selected_feature_digests=selected,
         primary_label=str(quant_payload["primary_label"]),
-        decay_labels=tuple(str(value) for value in quant_payload["decay_labels"]),
-        quantiles=int(cast(int, quant_payload["quantiles"])),
-        min_cross_section=int(cast(int, quant_payload["min_cross_section"])),
-        min_periods=int(cast(int, quant_payload["min_periods"])),
-        annualization=float(cast(float, quant_payload["annualization"])),
-        winsor_lower_quantile=float(cast(float, quant_payload["winsor_lower_quantile"])),
-        winsor_upper_quantile=float(cast(float, quant_payload["winsor_upper_quantile"])),
+        decay_labels=decay_labels,
+        quantiles=int(quant_payload["quantiles"]),
+        min_cross_section=int(quant_payload["min_cross_section"]),
+        min_periods=int(quant_payload["min_periods"]),
+        annualization=float(quant_payload["annualization"]),
+        winsor_lower_quantile=float(quant_payload["winsor_lower_quantile"]),
+        winsor_upper_quantile=float(quant_payload["winsor_upper_quantile"]),
         rolling_window=rolling_window,
         quant_config_digest=quant_digest,
         rows_digest=rows_digest,
@@ -1394,6 +1464,11 @@ class FactorSeriesProjection:
         report = json.loads(self.report_path.read_text(encoding="utf-8"))
         if not isinstance(report, Mapping):
             raise ValueError("V4-1 source report root must be an object")
+        report_map = cast(Mapping[str, object], report)
+        self._verify_source_report(report_map)
+        self._verify_parquet()
+
+    def _verify_source_report(self, report: Mapping[str, object]) -> None:
         program = _mapping(report.get("program_spec"))
         walk = _mapping(report.get("walk_forward_report"))
         gate = _mapping(report.get("gate_report"))
@@ -1428,10 +1503,24 @@ class FactorSeriesProjection:
             raise ValueError("V4-1 selected factor identities differ from source report")
         if _digest("a2p6-report-content", report, 64) != self.manifest.source_report_content_digest:
             raise ValueError("V4-1 source report content digest mismatch")
-        expected_quant = _quant_config_payload(program, self.manifest.rolling_window)
-        if _digest("factor-series-quant-config", expected_quant, 40) != self.manifest.quant_config_digest:
-            raise ValueError("V4-1 quant configuration differs from source report")
-        self._verify_parquet()
+        expected = _quant_config_payload(program, self.manifest.rolling_window)
+        if _digest("factor-series-quant-config", expected, 40) != self.manifest.quant_config_digest:
+            raise ValueError("V4-1 quant configuration digest differs from source report")
+        expected_fields: dict[str, object] = {
+            "primary_label": str(expected["primary_label"]),
+            "decay_labels": tuple(str(value) for value in expected["decay_labels"]),
+            "quantiles": int(expected["quantiles"]),
+            "min_cross_section": int(expected["min_cross_section"]),
+            "min_periods": int(expected["min_periods"]),
+            "annualization": float(expected["annualization"]),
+            "winsor_lower_quantile": float(expected["winsor_lower_quantile"]),
+            "winsor_upper_quantile": float(expected["winsor_upper_quantile"]),
+            "rolling_window": int(expected["rolling_window"]),
+        }
+        for field, expected_value in expected_fields.items():
+            actual = getattr(self.manifest, field)
+            if actual != expected_value:
+                raise ValueError(f"V4-1 manifest quant metadata drift: {field}")
 
     def _verify_parquet(self) -> None:
         duckdb = _duckdb()
@@ -1481,6 +1570,19 @@ class FactorSeriesProjection:
         digest = _digest("factor-series-rows", [row.to_dict() for row in rows], 64)
         if digest != self.manifest.rows_digest:
             raise ValueError("V4-1 Parquet rows_digest differs from manifest")
+        factors = {row.feature_digest for row in rows}
+        folds = {row.fold_id for row in rows}
+        sessions = {row.session_date for row in rows}
+        if factors != set(self.manifest.candidate_feature_digests):
+            raise ValueError("V4-1 Parquet factor denominator differs from manifest")
+        if len(folds) != self.manifest.fold_count:
+            raise ValueError("V4-1 Parquet fold count differs from manifest")
+        if len(sessions) != self.manifest.session_count:
+            raise ValueError("V4-1 Parquet session count differs from manifest")
+        if min(sessions).isoformat() != self.manifest.start_date:
+            raise ValueError("V4-1 Parquet start_date differs from manifest")
+        if max(sessions).isoformat() != self.manifest.end_date:
+            raise ValueError("V4-1 Parquet end_date differs from manifest")
 
     def query(
         self,
