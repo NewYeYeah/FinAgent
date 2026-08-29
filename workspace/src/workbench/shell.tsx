@@ -18,10 +18,11 @@ import {
   Workflow,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 import { ReadOnlyBanner } from "../components";
 import { ConfigurationCatalogSurface, type ConfigurationSurface } from "./configuration";
+import { CommandPalette, ControlPlaneProvider, useControlPlane } from "./control";
 import {
   WORKBENCH_CONTEXT_KEYS,
   WorkbenchContextProvider,
@@ -101,50 +102,75 @@ function NavigationItem({ panel }: { panel: WorkbenchPanelDescriptor }) {
 
 export function ContextBar() {
   const { context, lastEvent, clear } = useWorkbenchContext();
+  const control = useControlPlane();
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const active = WORKBENCH_CONTEXT_KEYS.flatMap((key) => {
     const value = context[key];
     return value ? [{ key, value }] : [];
   });
   return (
-    <div className="workbench-context-bar" data-testid="workbench-context-bar">
-      <div className="workbench-context-values">
-        <strong>Context</strong>
-        {active.length ? (
-          active.map(({ key, value }) => (
-            <span className="context-chip" key={key} title={value}>
-              <b>{CONTEXT_LABELS[key]}</b>
-              <span className="mono">{value}</span>
-            </span>
-          ))
-        ) : (
-          <span className="workbench-context-empty">No linked selection</span>
-        )}
-      </div>
-      <div className="workbench-context-actions">
-        {lastEvent ? <span className="context-event mono">{lastEvent}</span> : null}
-        {active.length ? (
-          <button className="context-clear" type="button" onClick={() => clear()}>
-            Clear
+    <>
+      <div className="workbench-context-bar" data-testid="workbench-context-bar">
+        <div className="workbench-context-values">
+          <strong>Context</strong>
+          {active.length ? (
+            active.map(({ key, value }) => (
+              <span className="context-chip" key={key} title={value}>
+                <b>{CONTEXT_LABELS[key]}</b>
+                <span className="mono">{value}</span>
+              </span>
+            ))
+          ) : (
+            <span className="workbench-context-empty">No linked selection</span>
+          )}
+        </div>
+        <div className="workbench-context-actions">
+          {lastEvent ? <span className="context-event mono">{lastEvent}</span> : null}
+          {active.length ? (
+            <button className="context-clear" type="button" onClick={() => clear()}>
+              Clear
+            </button>
+          ) : null}
+          <button
+            className="workbench-slot-button"
+            data-slot="config-drawer"
+            type="button"
+            disabled
+            title="Configuration remains read-only; governed protocol edits require a future explicit fork workflow"
+          >
+            <Settings2 size={14} /> Config
           </button>
-        ) : null}
-        <button
-          className="workbench-slot-button"
-          data-slot="config-drawer"
-          type="button"
-          disabled
-          title="V3-2B registry is inspectable under Configuration; editing remains disabled"
-        >
-          <Settings2 size={14} /> Config
-        </button>
-        <button
-          className="workbench-slot-button"
-          data-slot="command-palette"
-          type="button"
-          disabled
-          title="V3-2B catalog only; command gateway remains V3-2C"
-        >
-          <Command size={14} /> Commands
-        </button>
+          <button
+            className="workbench-slot-button"
+            data-slot="command-palette"
+            type="button"
+            disabled={!control.available}
+            onClick={() => setPaletteOpen(true)}
+            title={
+              control.available
+                ? "Open the local governed Command Palette"
+                : "Control Plane unavailable; start scripts/run_workbench_control.py"
+            }
+          >
+            <Command size={14} /> Commands
+          </button>
+        </div>
+      </div>
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+    </>
+  );
+}
+
+function WorkbenchSidebarFooter() {
+  const control = useControlPlane();
+  return (
+    <div className="workbench-sidebar-footer">
+      <ShieldCheck size={15} />
+      <div>
+        <strong>Evidence Plane</strong>
+        <span>
+          GET-only · {control.available ? "local Control connected" : "Control unavailable"}
+        </span>
       </div>
     </div>
   );
@@ -173,13 +199,7 @@ export function WorkbenchShell({ children }: { children: ReactNode }) {
             <NavigationItem key={panel.panel_id} panel={panel} />
           ))}
         </nav>
-        <div className="workbench-sidebar-footer">
-          <ShieldCheck size={15} />
-          <div>
-            <strong>Evidence Plane</strong>
-            <span>GET-only · Control disabled</span>
-          </div>
-        </div>
+        <WorkbenchSidebarFooter />
       </aside>
       <main className="workbench-main">
         <ReadOnlyBanner />
@@ -195,7 +215,9 @@ export function WorkbenchShell({ children }: { children: ReactNode }) {
 export function WorkbenchProviders({ children }: { children: ReactNode }) {
   return (
     <WorkbenchQueryProvider>
-      <WorkbenchContextProvider>{children}</WorkbenchContextProvider>
+      <WorkbenchContextProvider>
+        <ControlPlaneProvider>{children}</ControlPlaneProvider>
+      </WorkbenchContextProvider>
     </WorkbenchQueryProvider>
   );
 }
