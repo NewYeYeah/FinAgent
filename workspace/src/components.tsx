@@ -125,13 +125,32 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <nav>
-          <NavLink to="/" end><LayoutDashboard size={17} /> Project</NavLink>
-          <NavLink to="/research"><Search size={17} /> Research</NavLink>
-          <NavLink to="/portfolio"><Activity size={17} /> Portfolio</NavLink>
-          <NavLink to="/agent"><Boxes size={17} /> Agent</NavLink>
-          <NavLink to="/widgets"><Network size={17} /> Widgets</NavLink>
+          <NavLink to="/" end>
+            <LayoutDashboard size={17} /> Cockpit
+          </NavLink>
+          <NavLink to="/research">
+            <ShieldCheck size={17} /> Research
+          </NavLink>
+          <NavLink to="/portfolio">
+            <Activity size={17} /> Portfolio
+          </NavLink>
+          <NavLink to="/governance">
+            <Network size={17} /> Governance
+          </NavLink>
+          <NavLink to="/reserve">
+            <LockKeyhole size={17} /> Reserve
+          </NavLink>
+          <NavLink to="/agent">
+            <Boxes size={17} /> Agent Runs
+          </NavLink>
+          <NavLink to="/widgets">
+            <Search size={17} /> Widget Catalog
+          </NavLink>
         </nav>
-        <div className="sidebar-footer"><ShieldCheck size={15} /> Read-only evidence</div>
+        <div className="sidebar-footer">
+          <GitBranch size={15} />
+          <span>A5-4 · reserve evidence</span>
+        </div>
       </aside>
       <main>
         <ReadOnlyBanner />
@@ -141,14 +160,14 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function DataTable<T extends object>({
+export function EvidenceTable<T extends object>({
   data,
   columns,
-  empty = "No rows",
+  onRowClick,
 }: {
   data: T[];
   columns: ColumnDef<T, unknown>[];
-  empty?: string;
+  onRowClick?: (row: T) => void;
 }) {
   const stableColumns = useMemo(() => columns, [columns]);
   const table = useReactTable({
@@ -156,14 +175,13 @@ export function DataTable<T extends object>({
     columns: stableColumns,
     getCoreRowModel: getCoreRowModel(),
   });
-  if (!data.length) return <div className="empty-table">{empty}</div>;
   return (
     <div className="table-wrap">
       <table>
         <thead>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
+          {table.getHeaderGroups().map((group) => (
+            <tr key={group.id}>
+              {group.headers.map((header) => (
                 <th key={header.id}>
                   {header.isPlaceholder
                     ? null
@@ -175,9 +193,15 @@ export function DataTable<T extends object>({
         </thead>
         <tbody>
           {table.getRowModel().rows.map((row) => (
-            <tr key={row.id}>
+            <tr
+              key={row.id}
+              className={onRowClick ? "clickable" : ""}
+              onClick={() => onRowClick?.(row.original)}
+            >
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                <td key={cell.id}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
               ))}
             </tr>
           ))}
@@ -187,16 +211,25 @@ export function DataTable<T extends object>({
   );
 }
 
-export function Breadcrumbs({ items }: { items: { label: string; to?: string }[] }) {
+export function PageHeader({
+  eyebrow,
+  title,
+  description,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  children?: React.ReactNode;
+}) {
   return (
-    <div className="breadcrumbs">
-      <GitBranch size={14} />
-      {items.map((item, index) => (
-        <span key={`${item.label}-${index}`}>
-          {index > 0 ? <span className="breadcrumb-separator">/</span> : null}
-          {item.to ? <NavLink to={item.to}>{item.label}</NavLink> : item.label}
-        </span>
-      ))}
-    </div>
+    <header className="page-header">
+      <div>
+        <span className="eyebrow">{eyebrow}</span>
+        <h1>{title}</h1>
+        <p>{description}</p>
+      </div>
+      {children ? <div className="page-actions">{children}</div> : null}
+    </header>
   );
 }
