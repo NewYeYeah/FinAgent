@@ -19,6 +19,7 @@ from fastapi.staticfiles import StaticFiles
 
 from finagent.runtime import DEFAULT_PARALLEL_POLICY, ParallelPlan
 
+from .agent_index import AgentIndexProjection, build_agent_artifact_catalog, load_agent_index
 from .agent_projection import load_agent_run_projection
 from .reserve_projection import ReserveWorkspaceProjection
 from .semantic import (
@@ -355,6 +356,7 @@ def create_workspace_app(
     ),
 ) -> FastAPI:
     catalog = WorkspaceEvidenceCatalog(report_paths, git_sha=git_sha)
+    agent_artifact_catalog = build_agent_artifact_catalog(catalog.bundles())
     agent_path = Path(agent_audit_path).expanduser() if agent_audit_path else None
     static_root = Path(frontend_dir).expanduser() if frontend_dir else None
     reserve_projection = ReserveWorkspaceProjection(
@@ -504,6 +506,58 @@ def create_workspace_app(
             raise HTTPException(status_code=404, detail="agent run not found") from exc
         except (FileNotFoundError, sqlite3.Error, EvidenceContractError) as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+    def _v3_agent_index() -> AgentIndexProjection:
+        if agent_path is None:
+            raise HTTPException(status_code=404, detail="agent audit is not configured")
+        try:
+            return load_agent_index(agent_path, artifact_catalog=agent_artifact_catalog)
+        except FileNotFoundError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except sqlite3.Error as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except EvidenceContractError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.get("/api/v3/agent/projects")
+    def get_v3_agent_projects() -> dict[str, object]:
+        if agent_path is None:
+            return {
+                "schema_version": "finagent.workspace.agent-project-index.v1",
+                "items": [],
+                "configured": False,
+                "read_only": True,
+                "hidden_reasoning": "not_persisted_not_projected",
+            }
+        index = _v3_agent_index()
+        payload = index.projects_response()
+        payload["configured"] = True
+        return payload
+
+    @app.get("/api/v3/agent/projects/{project_id}")
+    def get_v3_agent_project(project_id: str) -> dict[str, object]:
+        index = _v3_agent_index()
+        try:
+            return index.project(project_id).to_dict()
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="agent project not found") from exc
+
+    @app.get("/api/v3/agent/threads/{thread_id}")
+    def get_v3_agent_thread(thread_id: str) -> dict[str, object]:
+        index = _v3_agent_index()
+        try:
+            return index.thread(thread_id).to_dict()
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="agent thread not found") from exc
+
+    @app.get("/api/v3/agent/runs/{run_id}")
+    def get_v3_agent_run(run_id: str) -> dict[str, object]:
+        index = _v3_agent_index()
+        try:
+            return index.run_response(run_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="agent run not found") from exc
 
     # Visualization V2: all product routes remain GET-only. Derived projections
     # organize immutable evidence for human review before one-shot reserve use.

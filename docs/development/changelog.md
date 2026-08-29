@@ -2,6 +2,17 @@
 
 This file summarizes meaningful development milestones. Commit and pull-request history remains the detailed audit trail.
 
+## 2026-08-29 — Visualization V3-1 Agent Index Contract
+
+- added derived `AgentProjectProjection`, `AgentThreadProjection`, `AgentRunSummary` and verified `AgentArtifactRef` contracts over canonical Agent audit SQLite;
+- added deterministic Project/Thread fallback identities without mutating the audit store;
+- added fail-closed thread→project identity conflict detection and strict corrupted-audit handling;
+- added a bulk read-only Agent projection path so the index reuses one SQLite connection rather than reopening one handle per run;
+- added verified artifact resolution against Workspace evidence/factor identities while leaving unknown audit strings unresolved;
+- added GET-only `/api/v3/agent/projects`, project, thread and run detail endpoints;
+- retained Phoenix/OTLP as diagnostic-only input and did not construct product grouping identity from spans;
+- added V3-1 contract/API coverage and Windows/Ubuntu Workspace CI gates.
+
 ## 2026-08-29 — Workspace compatibility and automatic parallel runtime
 
 - isolated FinAgent pytest from the optional Phoenix pytest entry point so incompatible local observability installs cannot abort test collection;

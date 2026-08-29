@@ -252,6 +252,31 @@ The NAV series and A4 metrics are authoritative. Drawdown series drawn by the br
 
 Shows the canonical Action / Tool / Guardrail / Approval / Result / Error projection. Hidden reasoning is not persisted or displayed. Evidence identities in tool results can link back to research pages.
 
+### Agent Index (V3-1)
+
+V3-1 adds a derived, read-only Project → Thread → Run index over the same canonical Agent audit SQLite. It does not add Project or Thread tables to the canonical store. Missing grouping metadata is resolved with deterministic fallback identities derived from existing audit identities only.
+
+```text
+Canonical Agent audit SQLite
+        ↓
+AgentRunProjection
+        ↓
+AgentProjectProjection
+  └─ AgentThreadProjection
+       └─ AgentRunSummary
+```
+
+Rules:
+
+- explicit `project_id` / `thread_id` remain authoritative grouping hints from `AgentRunContext.metadata`;
+- missing IDs use deterministic derived identities and never write back to SQLite;
+- one thread resolving to conflicting projects fails closed;
+- project/thread/run ordering is deterministic;
+- artifact refs are emitted only when the ID is verified against Workspace evidence/factor identities; unknown audit strings remain unresolved rather than becoming product links;
+- Phoenix/OTLP is not used to construct Project or Thread identity.
+
+V3-1 is an index contract only. The Codex-style three-column Workbench UI is V3-2.
+
 ### Widget Catalog
 
 Displays the frozen `FinWidgetSpec` definitions, including the question, data endpoint, renderer, authority and shared deep-link keys.
@@ -291,7 +316,16 @@ GET /api/v1/agent/runs
 GET /api/v1/agent/runs/{run_id}
 ```
 
-There are no write endpoints. `POST`, `PUT`, `PATCH` and `DELETE` are not part of the V1/V2 product contract.
+V3-1 Agent Index endpoints are:
+
+```text
+GET /api/v3/agent/projects
+GET /api/v3/agent/projects/{project_id}
+GET /api/v3/agent/threads/{thread_id}
+GET /api/v3/agent/runs/{run_id}
+```
+
+There are no write endpoints. `POST`, `PUT`, `PATCH` and `DELETE` are not part of the V1/V2/V3-1 product contract.
 
 V2 review endpoints are:
 
