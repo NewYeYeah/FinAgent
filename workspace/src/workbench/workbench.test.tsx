@@ -147,6 +147,11 @@ describe("V3-2A Agent Workbench", () => {
     expect(await screen.findByText("Project → Thread → Run")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: /A-share research/i }));
     await waitFor(() => expect(window.location.search).toContain("project=project-a"));
+    expect(window.location.search).not.toContain("ctx_event");
+    expect(screen.getByRole("link", { name: "Factors" })).toHaveAttribute(
+      "href",
+      "/research?project=project-a",
+    );
     await userEvent.click(await screen.findByRole("button", { name: /Factor discovery/i }));
     await waitFor(() => expect(window.location.search).toContain("thread=thread-a"));
     await userEvent.click(await screen.findByRole("button", { name: /Inspect factor evidence/i }));
