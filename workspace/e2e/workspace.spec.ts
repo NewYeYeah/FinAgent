@@ -38,7 +38,7 @@ const projects = {
 test("V2 governance cockpit is visibly read-only and reserve-safe", async ({ page }) => {
   await page.route("**/api/v2/projects", (route) => route.fulfill({ json: projects }));
   await page.goto("/");
-  await expect(page.getByText("Read-only evidence workspace")).toBeVisible();
+  await expect(page.getByText(/Evidence Plane is GET-only/i)).toBeVisible();
   await expect(page.getByText("Research governance cockpit")).toBeVisible();
   await expect(page.getByText("One-shot reserve", { exact: true })).toBeVisible();
   await expect(page.getByText("LOCKED_NOT_CONSUMED")).toBeVisible();

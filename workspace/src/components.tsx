@@ -77,8 +77,9 @@ export function ReadOnlyBanner() {
     <div className="readonly-banner">
       <LockKeyhole size={16} />
       <span>
-        Read-only evidence workspace. No research rerun, Gate change, reserve access,
-        promotion or order-submission authority.
+        Evidence Plane is GET-only. The optional local Control Plane is separate and
+        limited to reviewed L0/L1 application services; no Gate, reserve, promotion,
+        PAPER, broker-order or live-capital authority.
       </span>
     </div>
   );

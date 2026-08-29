@@ -57,7 +57,7 @@ const commands = {
   }],
 };
 
-test("V3-2B exposes read-only config and command catalogs without control authority", async ({ page }) => {
+test("V3-2 exposes read-only config and command catalogs without fallback control authority", async ({ page }) => {
   await page.route("**/api/v3/config", (route) => route.fulfill({ json: registry }));
   await page.route("**/api/v3/commands", (route) => route.fulfill({ json: commands }));
 
@@ -72,11 +72,14 @@ test("V3-2B exposes read-only config and command catalogs without control author
   await expect(page.getByRole("button", { name: "Commands" })).toBeDisabled();
 
   await page.getByRole("link", { name: "Command Catalog" }).click();
-  await expect(page.getByText("Command Catalog", { exact: true }).first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Command Catalog" })).toBeVisible();
   await expect(page.getByText("Run A4 portfolio validation")).toBeVisible();
   await expect(page.getByText("adapter_required")).toBeVisible();
-  await expect(page.getByText(/Control Plane disabled/i)).toBeVisible();
-  await expect(page.getByRole("button", { name: /Run A4 portfolio validation execution disabled/i })).toBeDisabled();
+  await expect(page.getByText(/Control Plane unavailable/i)).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Run A4 portfolio validation catalog status/i }),
+  ).toBeDisabled();
+  await expect(page.getByText(/Adapter required · not executable/i)).toBeVisible();
   await expect(page.getByText(/production_reserve/)).toBeVisible();
   await expect(page.getByRole("button", { name: /execute|promote|reserve|broker|order/i })).toHaveCount(0);
 });

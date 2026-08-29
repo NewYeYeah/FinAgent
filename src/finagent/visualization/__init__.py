@@ -1,5 +1,7 @@
 """Read-only research, evidence and Agent visualization support."""
 
+from finagent.application.command_contracts import CommandIntent, CommandResult, CommandRun
+
 from .agent_index import (
     AgentArtifactRef,
     AgentIndexProjection,
@@ -59,9 +61,6 @@ from .widgets import (
 )
 from .workbench_control_catalog import (
     CommandCatalog,
-    CommandIntent,
-    CommandResult,
-    CommandRun,
     CommandSpec,
     ConfigDescriptor,
     ConfigDiff,

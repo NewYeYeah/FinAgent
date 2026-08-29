@@ -24,25 +24,62 @@ import type {
   ConfigDiffV3,
   ConfigRegistryResponseV3,
 } from "./workbench/types";
+import type {
+  CommandRecordListV3,
+  CommandRecordV3,
+  ControlCommandCatalogV3,
+  ControlRunRequestV3,
+  ControlStatusV3,
+} from "./workbench/controlTypes";
 
 const API_BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
+const CONTROL_API_BASE = (
+  import.meta.env.VITE_CONTROL_API_BASE ?? "http://127.0.0.1:8766"
+).replace(/\/$/, "");
+
+async function responseError(response: Response): Promise<Error> {
+  let detail = `${response.status} ${response.statusText}`;
+  try {
+    const payload = (await response.json()) as { detail?: string };
+    if (payload.detail) detail = payload.detail;
+  } catch {
+    // Keep the HTTP fallback when the response is not JSON.
+  }
+  return new Error(detail);
+}
 
 async function getJson<T>(path: string): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     method: "GET",
     headers: { Accept: "application/json" },
   });
-  if (!response.ok) {
-    let detail = `${response.status} ${response.statusText}`;
-    try {
-      const payload = (await response.json()) as { detail?: string };
-      if (payload.detail) detail = payload.detail;
-    } catch {
-      // Keep the HTTP fallback when the response is not JSON.
-    }
-    throw new Error(detail);
-  }
+  if (!response.ok) throw await responseError(response);
   return (await response.json()) as T;
+}
+
+async function controlGetJson<T>(path: string): Promise<T> {
+  const response = await fetch(`${CONTROL_API_BASE}${path}`, {
+    method: "GET",
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) throw await responseError(response);
+  return (await response.json()) as T;
+}
+
+async function controlPostJson<TBody extends object, TResult>(
+  path: string,
+  body: TBody,
+): Promise<{ status: number; data: TResult }> {
+  const response = await fetch(`${CONTROL_API_BASE}${path}`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok && response.status !== 422) throw await responseError(response);
+  return { status: response.status, data: (await response.json()) as TResult };
 }
 
 export const workspaceApi = {
@@ -97,4 +134,15 @@ export const workspaceApi = {
     ),
   rawEvidenceV2: (evidenceId: string) =>
     getJson<Record<string, unknown>>(`/api/v2/evidence/${encodeURIComponent(evidenceId)}/raw`),
+};
+
+export const controlApi = {
+  status: () => controlGetJson<ControlStatusV3>("/api/v3/control/status"),
+  commands: () => controlGetJson<ControlCommandCatalogV3>("/api/v3/control/commands"),
+  runs: (limit = 100) =>
+    controlGetJson<CommandRecordListV3>(`/api/v3/control/runs?limit=${limit}`),
+  run: (runId: string) =>
+    controlGetJson<CommandRecordV3>(`/api/v3/control/runs/${encodeURIComponent(runId)}`),
+  createRun: (request: ControlRunRequestV3) =>
+    controlPostJson<ControlRunRequestV3, CommandRecordV3>("/api/v3/control/runs", request),
 };

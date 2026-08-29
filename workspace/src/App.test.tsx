@@ -173,7 +173,7 @@ describe("FinAgent Workspace V2", () => {
 
   it("shows the governed lifecycle and opens the A4 cockpit", async () => {
     render(<App />);
-    expect(screen.getByText(/Read-only evidence workspace/i)).toBeInTheDocument();
+    expect(screen.getByText(/Evidence Plane is GET-only/i)).toBeInTheDocument();
     expect(await screen.findByText("Research governance cockpit")).toBeInTheDocument();
     expect(screen.getByText("One-shot reserve")).toBeInTheDocument();
     expect(screen.getByText("LOCKED_NOT_CONSUMED")).toBeInTheDocument();

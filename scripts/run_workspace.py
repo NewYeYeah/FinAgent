@@ -14,8 +14,9 @@ from finagent.visualization.workbench_api import create_workspace_app
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Run the read-only FinAgent Workbench over immutable evidence, canonical Agent "
-            "audit projections and typed config/command catalogs."
+            "Run the GET-only FinAgent Evidence Plane over immutable evidence, "
+            "canonical Agent audit projections and typed config/command catalogs. "
+            "Governed command execution, when explicitly enabled, runs separately."
         )
     )
     parser.add_argument(
@@ -33,7 +34,8 @@ def _parser() -> argparse.ArgumentParser:
         default=[],
         help=(
             "Public TOML config file or directory for the read-only V3 registry. "
-            "Repeat for multiple roots. Defaults to ./configs. Secret-like files are excluded."
+            "Repeat for multiple roots. Defaults to ./configs. Secret-like files "
+            "are excluded."
         ),
     )
     parser.add_argument(
@@ -97,9 +99,15 @@ def main() -> int:
     configs = tuple(args.configs or ["configs"])
     frontend = None if args.api_only else args.frontend_dir
     catalog_db = None if args.no_catalog_db else args.catalog_db
-    reserve_eligibility = args.reserve_eligibility if args.reserve_eligibility.is_file() else None
-    reserve_consumption = args.reserve_consumption if args.reserve_consumption.is_file() else None
-    reserve_terminal = args.reserve_terminal if args.reserve_terminal.is_file() else None
+    reserve_eligibility = (
+        args.reserve_eligibility if args.reserve_eligibility.is_file() else None
+    )
+    reserve_consumption = (
+        args.reserve_consumption if args.reserve_consumption.is_file() else None
+    )
+    reserve_terminal = (
+        args.reserve_terminal if args.reserve_terminal.is_file() else None
+    )
     if frontend is not None and not frontend.is_dir():
         raise SystemExit(
             f"Workspace frontend is absent at {frontend}. Run `cd workspace && "
@@ -115,12 +123,18 @@ def main() -> int:
         "port": args.port,
         "reload": args.reload,
         "catalog_db": str(catalog_db) if catalog_db else None,
-        "reserve_eligibility": str(reserve_eligibility) if reserve_eligibility else None,
-        "reserve_consumption": str(reserve_consumption) if reserve_consumption else None,
+        "reserve_eligibility": (
+            str(reserve_eligibility) if reserve_eligibility else None
+        ),
+        "reserve_consumption": (
+            str(reserve_consumption) if reserve_consumption else None
+        ),
         "reserve_terminal": str(reserve_terminal) if reserve_terminal else None,
-        "workspace_version": "v3-2c1",
+        "workspace_version": "v3-2",
         "read_only": True,
+        "evidence_plane": True,
         "control_plane_enabled": False,
+        "control_plane_separate": True,
     }
     if args.print_config:
         import json
@@ -138,9 +152,13 @@ def main() -> int:
         os.environ["FINAGENT_WORKSPACE_AGENT_AUDIT"] = (
             str(args.agent_audit) if args.agent_audit else ""
         )
-        os.environ["FINAGENT_WORKSPACE_FRONTEND"] = str(frontend) if frontend else ""
+        os.environ["FINAGENT_WORKSPACE_FRONTEND"] = (
+            str(frontend) if frontend else ""
+        )
         os.environ["FINAGENT_WORKSPACE_GIT_SHA"] = args.git_sha
-        os.environ["FINAGENT_WORKSPACE_CATALOG_DB"] = str(catalog_db) if catalog_db else ""
+        os.environ["FINAGENT_WORKSPACE_CATALOG_DB"] = (
+            str(catalog_db) if catalog_db else ""
+        )
         os.environ["FINAGENT_WORKSPACE_RESERVE_ELIGIBILITY"] = (
             str(reserve_eligibility) if reserve_eligibility else ""
         )
