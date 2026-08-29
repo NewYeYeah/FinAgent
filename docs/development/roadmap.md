@@ -4,7 +4,7 @@ This roadmap is intentionally short. The active detailed planning baseline is [`
 
 ## Current baseline
 
-The implementation baseline has now completed the **Visualization V3-2 governed command foundation** on top of PIT data contracts, bounded Agent research, A2.6 robust ResearchPrograms, A3 execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2, A5-1～A5-4 reserve governance/evidence, V3-1 Agent indexing and V3-2A/B Workbench/config-command infrastructure.
+The implementation baseline has now completed the **Visualization V3-3 typed deep-link foundation** on top of PIT data contracts, bounded Agent research, A2.6 robust ResearchPrograms, A3 execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2, A5-1～A5-4 reserve governance/evidence, V3-1 Agent indexing and the V3-2 governed Workbench/Control foundation.
 
 No production 2025+ reserve has been consumed by development or CI. Production reserve execution remains an independent human-authorized operation.
 
@@ -26,7 +26,7 @@ Configuration
 Live (future)
 ```
 
-Two authority planes are now implemented as separate processes:
+Two authority planes are implemented as separate processes:
 
 ```text
 Evidence Plane  :8765  → default / GET-only / immutable evidence projection
@@ -139,16 +139,20 @@ review.export_bundle
 - Run Inspector shows ordered lifecycle events, result, evidence IDs and artifact paths;
 - configuration editing remains separate/read-only; V3-2 command execution does not imply in-place protocol editing.
 
-### Current — V3-3 Evidence / Artifact / Config Deep Link
+### Completed — V3-3 Evidence / Artifact / Config Deep Link
 
-- Agent ↔ Factor ↔ ResearchProgram ↔ A4 ↔ A5 navigation;
-- Run ↔ ConfigSnapshot/ConfigDiff;
-- CommandRun ↔ produced evidence;
-- generated-feature/source artifact inspector;
-- consider a common typed ref vocabulary across Artifact/Evidence/Config/CommandRun projections;
-- Phoenix remains low-level diagnostic only.
+- introduced a common typed `WorkbenchReference` vocabulary across Evidence, Artifact, Factor, ResearchProgram, A4, A5, AgentRun, ConfigSnapshot/ConfigDiff and CommandRun identities;
+- canonical root evidence wins over duplicate external references; ambiguous non-root identities fail closed;
+- Agent ↔ Factor ↔ ResearchProgram ↔ A4 navigation is verified from configured evidence rather than inferred from URL strings;
+- A5 links are exposed only when the authoritative reserve lifecycle stores resolve the target;
+- ConfigSnapshot ↔ ConfigDiff and ConfigSnapshot ↔ CommandRun relations are available through typed refs;
+- CommandRun ↔ produced Evidence uses a read-only SQLite projection over the durable command store;
+- generated-feature artifacts are metadata-only verified identities and source-report preview is bounded to configured report roots and a server-side size limit;
+- browser-supplied host paths are never accepted by the Artifact Inspector;
+- all V3-3 Evidence Plane endpoints remain GET-only;
+- Phoenix/OTLP remains low-level diagnostic only and hidden reasoning is not persisted or projected.
 
-### P1 — V3-4 Agent + CommandRun SSE
+### Current — V3-4 Agent + CommandRun SSE
 
 Stable product projections only:
 
@@ -158,7 +162,7 @@ AgentActiveRunProjection / CommandRunProjection
 → Workbench
 ```
 
-No raw OTLP/provider callbacks or hidden reasoning stream.
+V3-4 will stream only normalized product snapshots/events derived from canonical Agent audit and durable CommandRun state. It will not expose raw provider callbacks, raw OTLP/Phoenix spans, prompt payloads or hidden reasoning.
 
 ### P1 — V3-5 Workbench Foundation Acceptance
 
