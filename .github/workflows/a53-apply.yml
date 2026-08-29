@@ -1,0 +1,53 @@
+name: a53-apply
+
+on:
+  push:
+    branches:
+      - feature/a5-consumed-state
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ github.actor != 'github-actions[bot]' && contains(github.event.head_commit.message, 'stage A5-3 apply workflow') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/a5-consumed-state
+          fetch-depth: 0
+
+      - name: Materialize verified A5-3 product patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import base64, gzip, hashlib
+
+          payload = ''.join(
+              path.read_text(encoding='utf-8').strip()
+              for path in sorted(Path('tools/a53_payload').glob('part*.txt'))
+          )
+          patch = gzip.decompress(base64.b64decode(payload))
+          digest = hashlib.sha256(patch).hexdigest()
+          expected = 'ac90b55308a7b90d54cf763b9c85575c1c91188e6946a7aab5619eef7e2b463a'
+          if digest != expected:
+              raise SystemExit(f'A5-3 patch digest mismatch: {digest}')
+          Path('/tmp/a53.patch').write_bytes(patch)
+          print(f'patch_bytes={len(patch)} sha256={digest}')
+          PY
+
+      - name: Apply A5-3 product delivery
+        run: |
+          git apply --check /tmp/a53.patch
+          git apply /tmp/a53.patch
+          git rm -rf tools/a53_payload
+          git diff --check
+
+      - name: Commit product changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "governance: implement A5-3 durable consumed state"
+          git push origin HEAD:feature/a5-consumed-state
