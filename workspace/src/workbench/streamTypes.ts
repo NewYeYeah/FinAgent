@@ -52,14 +52,12 @@ export interface CommandRunStreamProjectionV3 {
   updated_at: string;
   result_status: string | null;
   evidence_ids: string[];
-  result_message: string;
   latest_event: null | {
     event_id: string;
     sequence: number;
     event_type: string;
     state: string;
     occurred_at: string;
-    message: string;
   };
   terminal: boolean;
 }
