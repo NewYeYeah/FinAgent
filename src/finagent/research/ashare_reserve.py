@@ -74,6 +74,26 @@ def _string(value: object, name: str) -> str:
     return require_non_empty(str(value), name)
 
 
+def _float_value(value: object, name: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        raise TypeError(f"{name} must be a numeric JSON value")
+    result = float(value)
+    if not math.isfinite(result):
+        raise ValueError(f"{name} must be finite")
+    return result
+
+
+def _int_value(value: object, name: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        raise TypeError(f"{name} must be an integer JSON value")
+    if isinstance(value, float) and not value.is_integer():
+        raise ValueError(f"{name} must be an integer")
+    result = int(value)
+    if isinstance(value, str) and str(result) != value.strip():
+        raise ValueError(f"{name} must be an integer")
+    return result
+
+
 def _semantic_replay_payload(payload: Mapping[str, Any]) -> dict[str, object]:
     result = dict(payload)
     result.pop("mode", None)
@@ -623,9 +643,15 @@ class ReserveEligibilitySealer:
         expected_directions = [int(value.get("direction", 0)) for value in components]
         if list(_sequence(spec.get("selected_feature_digests"), "A4 selected_feature_digests")) != expected_digests:
             raise ValueError("A4 selected feature family drifted from A2.6")
-        if [float(value) for value in _sequence(spec.get("selected_weights"), "A4 selected_weights")] != expected_weights:
+        if [
+            _float_value(value, "A4 selected weight")
+            for value in _sequence(spec.get("selected_weights"), "A4 selected_weights")
+        ] != expected_weights:
             raise ValueError("A4 selected weights drifted from A2.6")
-        if [int(value) for value in _sequence(spec.get("selected_directions"), "A4 selected_directions")] != expected_directions:
+        if [
+            _int_value(value, "A4 selected direction")
+            for value in _sequence(spec.get("selected_directions"), "A4 selected_directions")
+        ] != expected_directions:
             raise ValueError("A4 selected directions drifted from A2.6")
         return spec
 
