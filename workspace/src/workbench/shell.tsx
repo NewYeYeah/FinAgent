@@ -99,28 +99,6 @@ function NavigationItem({ panel }: { panel: WorkbenchPanelDescriptor }) {
   );
 }
 
-function CatalogShortcut({
-  surface,
-  children,
-  slot,
-}: {
-  surface: ConfigurationSurface;
-  children: ReactNode;
-  slot: string;
-}) {
-  const { context } = useWorkbenchContext();
-  return (
-    <NavLink
-      className="workbench-slot-button"
-      data-slot={slot}
-      title={surface === "configs" ? "V3-2B Config Registry" : "V3-2B Command Catalog; execution remains disabled"}
-      to={{ pathname: "/widgets", search: mergedSearch(context, { surface }) }}
-    >
-      {children}
-    </NavLink>
-  );
-}
-
 export function ContextBar() {
   const { context, lastEvent, clear } = useWorkbenchContext();
   const active = WORKBENCH_CONTEXT_KEYS.flatMap((key) => {
@@ -149,12 +127,24 @@ export function ContextBar() {
             Clear
           </button>
         ) : null}
-        <CatalogShortcut surface="configs" slot="config-drawer">
+        <button
+          className="workbench-slot-button"
+          data-slot="config-drawer"
+          type="button"
+          disabled
+          title="V3-2B registry is inspectable under Configuration; editing remains disabled"
+        >
           <Settings2 size={14} /> Config
-        </CatalogShortcut>
-        <CatalogShortcut surface="commands" slot="command-palette">
+        </button>
+        <button
+          className="workbench-slot-button"
+          data-slot="command-palette"
+          type="button"
+          disabled
+          title="V3-2B catalog only; command gateway remains V3-2C"
+        >
           <Command size={14} /> Commands
-        </CatalogShortcut>
+        </button>
       </div>
     </div>
   );
