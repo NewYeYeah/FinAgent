@@ -8,6 +8,7 @@ import tomllib
 from collections.abc import Mapping, Sequence
 from datetime import datetime
 from pathlib import Path
+from typing import Any, cast
 
 from finagent.agents.generated_features import SQLiteGeneratedFeatureStore
 from finagent.backtest.strategy_decision_alpha import (
@@ -51,6 +52,14 @@ def _sequence(value: object, name: str) -> Sequence[object]:
     return value
 
 
+def _integer(value: object) -> int:
+    return int(cast(Any, value))
+
+
+def _number(value: object) -> float:
+    return float(cast(Any, value))
+
+
 def _load_json(path: Path, name: str) -> Mapping[str, object]:
     value = json.loads(path.read_text(encoding="utf-8"))
     return _mapping(value, name)
@@ -59,7 +68,10 @@ def _load_json(path: Path, name: str) -> Mapping[str, object]:
 def _load_config(path: Path) -> Mapping[str, object]:
     with path.open("rb") as handle:
         payload = tomllib.load(handle)
-    return _mapping(payload.get("ashare_portfolio_validation"), "ashare_portfolio_validation")
+    return _mapping(
+        payload.get("ashare_portfolio_validation"),
+        "ashare_portfolio_validation",
+    )
 
 
 def _canonical_digest(value: object) -> str:
@@ -118,13 +130,15 @@ def _policy_config(source: Mapping[str, object]) -> AshareResearchUniversePolicy
     policy = _mapping(source.get("universe_policy"), "universe_policy")
     raw = _mapping(policy.get("config"), "universe_policy.config")
     return AshareResearchUniversePolicyConfig(
-        min_listed_days=int(raw["min_listed_days"]),
+        min_listed_days=_integer(raw["min_listed_days"]),
         exclude_st=bool(raw["exclude_st"]),
-        min_close=float(raw["min_close"]),
-        min_median_amount_cny=float(raw["min_median_amount_cny"]),
-        liquidity_lookback=int(raw["liquidity_lookback"]),
-        min_liquidity_observations=int(raw["min_liquidity_observations"]),
-        liquidity_warmup_calendar_days=int(raw["liquidity_warmup_calendar_days"]),
+        min_close=_number(raw["min_close"]),
+        min_median_amount_cny=_number(raw["min_median_amount_cny"]),
+        liquidity_lookback=_integer(raw["liquidity_lookback"]),
+        min_liquidity_observations=_integer(raw["min_liquidity_observations"]),
+        liquidity_warmup_calendar_days=_integer(
+            raw["liquidity_warmup_calendar_days"]
+        ),
     )
 
 
@@ -184,8 +198,8 @@ def _validate_lineage(
         for value in _sequence(selection.get("components"), "frozen_selection.components")
     ]
     source_digests = tuple(str(value.get("feature_digest", "")) for value in components)
-    source_weights = tuple(float(value.get("weight", 0.0)) for value in components)
-    source_directions = tuple(int(value.get("direction", 0)) for value in components)
+    source_weights = tuple(_number(value.get("weight", 0.0)) for value in components)
+    source_directions = tuple(_integer(value.get("direction", 0)) for value in components)
     if source_digests != tuple(
         str(value)
         for value in _sequence(
@@ -194,12 +208,12 @@ def _validate_lineage(
     ):
         raise ValueError("A4 selected factor digests differ from frozen A2.6 selection")
     if source_weights != tuple(
-        float(value)
+        _number(value)
         for value in _sequence(spec.get("selected_weights"), "selected_weights")
     ):
         raise ValueError("A4 selected factor weights differ from frozen A2.6 selection")
     if source_directions != tuple(
-        int(value)
+        _integer(value)
         for value in _sequence(spec.get("selected_directions"), "selected_directions")
     ):
         raise ValueError("A4 selected factor directions differ from frozen A2.6 selection")
@@ -324,11 +338,11 @@ def main() -> int:
         )
     )
     selected_weights = tuple(
-        float(value)
+        _number(value)
         for value in _sequence(spec.get("selected_weights"), "selected_weights")
     )
     selected_directions = tuple(
-        int(value)
+        _integer(value)
         for value in _sequence(spec.get("selected_directions"), "selected_directions")
     )
     a4_folds = {
@@ -352,11 +366,11 @@ def main() -> int:
             directions=selected_directions,
             universe=universe,
             primary_label=primary_label,
-            risk_lookback=int(validation["risk_lookback"]),
-            alpha_ridge=float(validation["alpha_ridge"]),
-            alpha_min_observations=int(validation["alpha_min_observations"]),
-            winsor_lower_quantile=float(validation["winsor_lower_quantile"]),
-            winsor_upper_quantile=float(validation["winsor_upper_quantile"]),
+            risk_lookback=_integer(validation["risk_lookback"]),
+            alpha_ridge=_number(validation["alpha_ridge"]),
+            alpha_min_observations=_integer(validation["alpha_min_observations"]),
+            winsor_lower_quantile=_number(validation["winsor_lower_quantile"]),
+            winsor_upper_quantile=_number(validation["winsor_upper_quantile"]),
             folds=tuple(
                 StrategyDecisionAlphaFoldSpec(
                     fold_id=fold_id,
@@ -391,7 +405,7 @@ def main() -> int:
     rows = materialize_strategy_decision_rows(
         ledger_rows=ledger_rows,
         expected_ledger_digest=str(a4["ledger_digest"]),
-        initial_cash=float(validation["initial_cash"]),
+        initial_cash=_number(validation["initial_cash"]),
         alpha_provider=alpha_provider,
     )
     manifest = write_strategy_decision_series(
