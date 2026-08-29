@@ -20,6 +20,9 @@ import type {
   AgentProjectsResponseV3,
   AgentRunResponseV3,
   AgentThreadResponseV3,
+  CommandCatalogResponseV3,
+  ConfigDiffV3,
+  ConfigRegistryResponseV3,
 } from "./workbench/types";
 
 const API_BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
@@ -68,6 +71,12 @@ export const workspaceApi = {
     getJson<AgentThreadResponseV3>(`/api/v3/agent/threads/${encodeURIComponent(threadId)}`),
   agentRunV3: (runId: string) =>
     getJson<AgentRunResponseV3>(`/api/v3/agent/runs/${encodeURIComponent(runId)}`),
+  configRegistryV3: () => getJson<ConfigRegistryResponseV3>("/api/v3/config"),
+  configDiffV3: (left: string, right: string) =>
+    getJson<ConfigDiffV3>(
+      `/api/v3/config/diff?left=${encodeURIComponent(left)}&right=${encodeURIComponent(right)}`,
+    ),
+  commandCatalogV3: () => getJson<CommandCatalogResponseV3>("/api/v3/commands"),
   projectsV2: () => getJson<ProjectsResponse>("/api/v2/projects"),
   programCockpitV2: (programId: string) =>
     getJson<ProgramCockpitResponse>(`/api/v2/programs/${encodeURIComponent(programId)}/cockpit`),
