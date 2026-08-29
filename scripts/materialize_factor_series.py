@@ -27,6 +27,7 @@ from finagent.research.ashare_universe import (
 from finagent.research.factor_quant import FactorQuantConfig
 from finagent.research.factor_series import (
     AshareFactorSeriesMaterializer,
+    FactorSeriesRow,
     write_factor_series,
 )
 from finagent.research.panel_feature_materializer import PanelGeneratedFeatureMaterializer
@@ -267,7 +268,7 @@ def main() -> int:
         panel_materializer,
         rolling_window=args.rolling_window,
     )
-    rows = []
+    rows: list[FactorSeriesRow] = []
     for artifact in artifacts:
         candidate_folds = fold_by_candidate[artifact.digest]
         if set(candidate_folds) != {str(fold["fold_id"]) for fold in folds}:
