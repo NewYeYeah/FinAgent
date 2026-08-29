@@ -140,6 +140,13 @@ from .factor_quant_discovery import (
     AgentFactorQuantDiscoveryResult,
     AgentFactorQuantDiscoveryRound,
 )
+from .factor_series import (
+    AshareFactorSeriesMaterializer,
+    FactorSeriesManifest,
+    FactorSeriesProjection,
+    FactorSeriesRow,
+    write_factor_series,
+)
 from .factor_stability import (
     FactorCandidateStabilityReport,
     FactorFamilyStabilityReport,
@@ -257,7 +264,6 @@ __all__ = [
     "V2ReserveReviewAttestation",
     "reserve_execution_ledger_bytes",
     "reserve_execution_ledger_digest",
-
     "AgentAshareRobustDiscoveryLoop",
     "AgentAshareRobustDiscoveryResult",
     "AgentAshareRobustDiscoveryRound",
@@ -287,6 +293,7 @@ __all__ = [
     "AgentMarketValidationPolicy",
     "AgentMarketValidationReport",
     "AshareExpandingWalkForwardPlan",
+    "AshareFactorSeriesMaterializer",
     "AshareProgramReservationPlan",
     "AshareResearchProgramSpec",
     "AshareRobustAgentFeedbackV3",
@@ -342,6 +349,9 @@ __all__ = [
     "FactorQuantFeedbackHorizon",
     "FactorQuantFamilyReport",
     "FactorRollingICPoint",
+    "FactorSeriesManifest",
+    "FactorSeriesProjection",
+    "FactorSeriesRow",
     "FactorStabilityAnalyzer",
     "FactorStabilityConfig",
     "FactorSubperiodStability",
@@ -421,4 +431,5 @@ __all__ = [
     "whites_reality_check",
     "execution_ledger_digest",
     "verify_v2_review_bundle",
+    "write_factor_series",
 ]
