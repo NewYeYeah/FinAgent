@@ -18,11 +18,12 @@ The current development baseline supports:
 - supervised paper/shadow operations and sealed-holdout/promotion primitives;
 - US market ingestion through Alpaca SIP and best-effort AKShare validation;
 - local A-share Parquet research through DuckDB-backed adapters;
-- a read-only FastAPI + React/TypeScript Visualization V2/A5-4 governance Workspace with immutable A4-ledger review, A5 reserve lifecycle evidence, protocol diff/export, legacy Streamlit and optional Phoenix diagnostics retained.
+- a read-only FastAPI + React/TypeScript Workspace with V2/A5-4 research/governance evidence and V3-1 deterministic Agent Project → Thread → Run indexing;
+- legacy Streamlit/Plotly and optional Phoenix low-level diagnostics retained.
 
 The current market priority is **A-share historical research first**, with **Alpaca SIP as the US reference/regression path**. A-share live-capital or realtime acceptance is intentionally deferred until frozen research, execution-aware internal validation, one-shot reserve and repeated PAPER gates are complete.
 
-The next product-development milestone is **Visualization V3 Agent Workbench**. Production reserve execution is a separate explicit human-authorized operation and is never triggered by development or CI.
+The next product-development milestone is **Visualization V3-2A — FinAgent Workbench Shell + Context Bus**. The long-term Workbench is planned as a quantitative research workstation spanning Agent, Strategy, Factors, Portfolio, Execution, Risk, Operations, Evidence/Governance and Configuration. Production reserve execution remains a separate explicit human-authorized operation and is never triggered by development or CI.
 
 ## Quick start
 
@@ -88,9 +89,9 @@ python scripts\run_ashare_portfolio_validation.py `
 
 A completed A4 report remains `promotion_eligible=false`. A5-1 seals the exact frozen A2.6/A4/replay/V2-review identity; A5-2 implements the deterministic final-training/reserve evaluation engine; A5-3 adds an irreversible, SQLite-transactional pre-access `CONSUMED` claim, durable terminal/ledger persistence, crash recovery without reserve re-access and lifecycle replay/audit; A5-4 projects those authoritative seal/claim/terminal/ledger/audit stores into the read-only Workspace. No production 2025+ reserve has been consumed by development or CI; actual execution still requires a reviewed production seal and explicit human authorization. See [`docs/guides/ashare-reserve.md`](docs/guides/ashare-reserve.md).
 
-## FinAgent Workspace V2 + A5-4
+## FinAgent Workspace / Workbench direction
 
-The primary product surface is a read-only Evidence Workspace. V2 retains V0/V1 compatibility and adds governed A2.6/A4/ledger review projections; A5-4 adds reserve lifecycle inspection for eligibility, durable consumption, terminal evidence, ledger and replay audit. Authoritative calculations and state transitions remain owned by FinAgent core.
+The current deployed product surface remains a **read-only Evidence Workspace**. V2 provides governed A2.6/A4/ledger review projections; A5-4 adds reserve lifecycle inspection; V3-1 adds deterministic Agent Project/Thread/Run indexing. Authoritative calculations and state transitions remain owned by FinAgent core.
 
 Install and build:
 
@@ -113,7 +114,7 @@ python scripts/run_workspace.py \
 
 Windows PowerShell uses the same command with backticks. Open `http://127.0.0.1:8765`.
 
-V2/A5-4 provides:
+Current Workspace capabilities include:
 
 - a rebuildable derived SQLite Evidence Catalog and deterministic frozen-protocol comparison;
 - ResearchProgram lifecycle, Gate matrix, statistical forest and fold evidence;
@@ -123,9 +124,14 @@ V2/A5-4 provides:
 - combined immutable A2.6 → A4 lineage, with A3 binding explicitly marked `derived` where no standalone A3 identity exists;
 - downloadable human-review evidence bundles;
 - authoritative A5 eligibility/consumption/terminal/ledger/audit inspection;
-- canonical Agent audit run timelines and the `FinWidgetSpec` catalog.
+- canonical Agent audit timelines and V3-1 Project → Thread → Run navigation APIs;
+- the `FinWidgetSpec` catalog.
 
-It provides no endpoint or control for research reruns, prompt edits, Gate changes, reserve execution/recovery, promotion or order submission.
+It currently provides no endpoint or control for research reruns, prompt edits, Gate changes, reserve execution/recovery, promotion or order submission.
+
+The active v3.1 plan preserves that GET-only **Evidence Plane** and introduces a future explicit opt-in **Control Plane**. The Control Plane will accept only typed, allowlisted, governed commands and will call FinAgent application services; it will not expose arbitrary shell/Python execution. Research/execution protocol edits will create new identities/forks rather than mutating historical evidence.
+
+The same Workbench shell is planned to host linked quant charts. Large/authoritative financial series such as strategy decision paths and factor tear-sheet time series will be persisted by core before their interactive charts are implemented.
 
 The earlier Streamlit/Plotly UI remains available as a diagnostic viewer:
 
@@ -149,8 +155,10 @@ python scripts/run_research_ui.py \
 - [Testing and system acceptance](docs/testing/testing.md)
 - [Architecture overview](docs/architecture/overview.md)
 - [Visualization architecture V2](docs/architecture/visualization-v2.md)
+- [FinAgent Workbench architecture v3.1](docs/architecture/workbench-v3.md)
 - [Architecture decisions](docs/architecture/decisions.md)
-- [Current development planning baseline v3](docs/development/current-development-plan-v3.md)
+- [Current development planning baseline v3.1](docs/development/current-development-plan-v3.1.md)
+- [Historical post-A5 planning baseline v3](docs/development/current-development-plan-v3.md)
 - [Historical V2/A5 development plan](docs/development/current-development-plan-v2.md)
 - [Roadmap](docs/development/roadmap.md)
 - [Changelog](docs/development/changelog.md)
@@ -179,7 +187,7 @@ Internal portfolio validation / reserve governance
 Human-approved paper/shadow operations
 ```
 
-The Agent never owns positions, fills, risk limits, validation thresholds or broker state. The visualization layer never owns prompts, candidate generation, numerical evidence or lifecycle transitions.
+The Agent never owns positions, fills, risk limits, validation thresholds or broker state. The Evidence Plane never owns prompts, candidate generation, numerical evidence or lifecycle transitions. Future Workbench control actions must use typed command/config contracts and the existing governed application services rather than bypassing them.
 
 ## Research invariants
 
@@ -195,6 +203,8 @@ The Agent never owns positions, fills, risk limits, validation thresholds or bro
 10. Portfolio and execution evidence must reproduce through exact report and ledger identities.
 11. Workspace presentation derivatives never replace authoritative FinAgent evidence.
 12. A durable `CONSUMED` reserve is never made clean again by rename, restart or model mutation.
+13. A Workbench protocol edit creates a new identity/fork; it never rewrites the protocol behind existing evidence.
+14. Generic Workbench commands never receive production reserve or unrestricted broker/live-capital authority.
 
 ## Data note
 
