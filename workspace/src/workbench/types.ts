@@ -89,3 +89,109 @@ export interface AgentRunResponseV3 {
   read_only: boolean;
   hidden_reasoning: string;
 }
+
+export type ConfigDomainV3 =
+  | "presentation"
+  | "runtime"
+  | "research_protocol"
+  | "execution_protocol"
+  | "operational_guardrail"
+  | "secret_reference";
+
+export type ConfigMutationPolicyV3 =
+  | "presentation_only"
+  | "restart_or_new_run"
+  | "new_identity_required"
+  | "governed_change_required"
+  | "host_secret_binding_only";
+
+export type JsonValueV3 = string | number | boolean | null | JsonValueV3[] | { [key: string]: JsonValueV3 };
+
+export interface ConfigFieldSpecV3 {
+  field_path: string;
+  label: string;
+  value_type: string;
+  domain: ConfigDomainV3;
+  mutation_policy: ConfigMutationPolicyV3;
+  required: boolean;
+  secret_redacted: boolean;
+  description: string;
+}
+
+export interface ConfigDescriptorV3 {
+  schema_version: string;
+  descriptor_id: string;
+  title: string;
+  section: string;
+  default_domain: ConfigDomainV3;
+  fields: ConfigFieldSpecV3[];
+  snapshot_ids: string[];
+  read_only: boolean;
+}
+
+export interface ConfigSnapshotV3 {
+  schema_version: string;
+  snapshot_id: string;
+  descriptor_id: string;
+  section: string;
+  source_uri: string;
+  source_sha256: string;
+  values: Record<string, JsonValueV3>;
+  domains: Record<string, ConfigDomainV3>;
+  mutation_policies: Record<string, ConfigMutationPolicyV3>;
+  redacted_fields: string[];
+  read_only: boolean;
+}
+
+export interface ConfigRegistryResponseV3 {
+  schema_version: string;
+  read_only: boolean;
+  descriptors: ConfigDescriptorV3[];
+  snapshots: ConfigSnapshotV3[];
+  warnings: string[];
+}
+
+export interface ConfigDiffItemV3 {
+  field_path: string;
+  before: JsonValueV3 | undefined;
+  after: JsonValueV3 | undefined;
+  domain: ConfigDomainV3;
+  mutation_policy: ConfigMutationPolicyV3;
+  requires_new_identity: boolean;
+}
+
+export interface ConfigDiffV3 {
+  schema_version: string;
+  diff_id: string;
+  descriptor_id: string;
+  left_snapshot_id: string;
+  right_snapshot_id: string;
+  changes: ConfigDiffItemV3[];
+  requires_new_identity: boolean;
+  read_only: boolean;
+}
+
+export interface CommandSpecV3 {
+  schema_version: string;
+  command_id: string;
+  title: string;
+  description: string;
+  level: "L0" | "L1";
+  config_descriptor_ids: string[];
+  binding_kind: string;
+  binding_ref: string;
+  gateway_readiness: "catalog_only" | "adapter_required" | "application_service_ready";
+  produces: string[];
+  requires_confirmation: boolean;
+  execution_enabled: false;
+  catalog_only: true;
+}
+
+export interface CommandCatalogResponseV3 {
+  schema_version: string;
+  read_only: true;
+  execution_enabled: false;
+  control_plane_enabled: false;
+  items: CommandSpecV3[];
+  forbidden_authority: string[];
+}
