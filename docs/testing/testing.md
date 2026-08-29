@@ -714,6 +714,32 @@ Acceptance:
 
 CI should run this test on Windows and Ubuntu. Full project tests remain required before merge.
 
+### T-A10 — A5-2 one-shot runner / terminal evidence acceptance
+
+Run after any A5 execution-protocol, final-training, frozen-policy reuse, reserve-engine or terminal-evidence change. Tests use synthetic/fake reserve engines only; CI must not open production reserve data.
+
+```bash
+python -m pytest -q tests/test_ashare_reserve_eligibility_a5.py tests/test_ashare_reserve_runner_a5.py
+python -m py_compile src/finagent/research/ashare_reserve.py src/finagent/research/ashare_reserve_runner.py src/finagent/backtest/ashare_reserve.py src/finagent/backtest/ashare_portfolio.py
+```
+
+Acceptance:
+
+- only the exact persisted A5-1 seal, exact A2.6/A4 reports and sealed Git identity enter execution;
+- final training is half-open and stops at `reserve.start`;
+- reserve test interval is exactly the sealed reserve interval;
+- reserve calendar materialization occurs once and supplies the terminal fold sessions;
+- existing A4 numeric/economic policy is reused without threshold mutation;
+- terminal statuses are limited to `RESERVE_PASS` / `RESERVE_FAIL`;
+- policy failure and operational failure are legal terminal FAIL outcomes;
+- automatic retry after terminal evidence is forbidden/idempotently short-circuited;
+- terminal evidence binds dataset, ledger, fold, aggregate, policy, code and eligibility identities;
+- `promotion_eligible=false` for both PASS and FAIL;
+- A5-2 claims no durable consumed-state guarantee and reports `PENDING_A5_3`;
+- production reserve access remains prohibited until A5-3 acceptance.
+
+CI runs the A5 contract on Windows and Ubuntu. Full project tests remain required before merge.
+
 ## 4. Interpretation boundary
 
 The A-share evidence layers have different meanings:

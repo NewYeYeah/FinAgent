@@ -63,7 +63,9 @@ Visualization V2 acceptance + human review
         ↓
 A5-1 ReserveEligibilitySeal
         ↓
-Future A5-2 one-shot reserve evaluation
+A5-2 one-shot runner + terminal evidence
+        ↓
+Future A5-3 crash-safe CONSUMED state
 ```
 
 Run A4 only from an immutable A2.6 report:
@@ -74,7 +76,7 @@ python scripts\run_ashare_portfolio_validation.py `
   --verify-content
 ```
 
-A completed A4 report remains `promotion_eligible=false` and leaves the 2025+ reserve untouched. A5-1 can now seal the exact frozen A2.6/A4/replay/V2-review identity, but it does not access or consume reserve data; see [`docs/guides/ashare-reserve.md`](docs/guides/ashare-reserve.md).
+A completed A4 report remains `promotion_eligible=false`. A5-1 seals the exact frozen A2.6/A4/replay/V2-review identity; A5-2 now implements the deterministic final-training/reserve evaluation engine and immutable terminal `RESERVE_PASS` / `RESERVE_FAIL` evidence. Production reserve access remains blocked until A5-3 adds a durable pre-access `CONSUMED` claim and crash-safe replay/audit path; see [`docs/guides/ashare-reserve.md`](docs/guides/ashare-reserve.md).
 
 ## FinAgent Workspace V2
 

@@ -37,6 +37,20 @@ A5 已按 bounded-PR 原则进入第一步，但 **reserve 仍未消费**。当�
 
 因此当前立即下一项收敛为 **A5-2 one-shot runner + terminal evidence**，但只有在真实生产 evidence 完成人工 review 并实际签发 A5-1 seal 后才允许执行。
 
+## 0.3 A5-2 implementation status addendum — 2026-08-29
+
+A5-2 已实现 deterministic runner 与 terminal evidence，但 **生产 reserve 仍未消费**：
+
+- final train 使用全部 half-open pre-reserve development history；
+- reserve interval 作为唯一 terminal fold，复用冻结 A4 alpha/risk/optimizer/A3 execution mechanics；
+- reserve calendar 只 materialize 一次并传入 terminal fold；
+- terminal policy 原样复用冻结 A4 economic/execution Gate，不允许 reserve 后调阈值；
+- 输出只有 `RESERVE_PASS` / `RESERVE_FAIL`，运行期异常保守归入 terminal `RESERVE_FAIL`；
+- terminal evidence append-only，bind reserve dataset / ledger / fold / aggregate / policy / code / seal identity；
+- PASS 不自动 promotion，A6 仍是独立 human-governed boundary。
+
+A5-2 不负责 crash-safe pre-access consumed claim，因此 terminal evidence 明确标记 `consumed_state_persistence=PENDING_A5_3`。当前立即下一项是 **A5-3 consumed-state persistence + replay/audit**；在 A5-3 完成前禁止真实 reserve 执行。
+
 ---
 
 ## 1. 规划目标
