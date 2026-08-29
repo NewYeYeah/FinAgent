@@ -4,6 +4,7 @@ import {
   parseWorkbenchContext,
   patchWorkbenchContext,
   serializeWorkbenchContext,
+  workbenchContextSearch,
 } from "./context";
 
 describe("WorkbenchContext URL contract", () => {
@@ -29,6 +30,16 @@ describe("WorkbenchContext URL contract", () => {
       asset_id: "600519.SH",
       date_range: "2024-01-01..2024-12-31",
     });
+  });
+
+  it("serializes only linked context for cross-module navigation", () => {
+    expect(
+      workbenchContextSearch({
+        project_id: "project-a",
+        run_id: "run-a",
+        environment: "research",
+      }),
+    ).toBe("?project=project-a&run=run-a&env=research");
   });
 
   it("clears dependent identities explicitly instead of mutating unrelated context", () => {
