@@ -1,10 +1,10 @@
 # FinAgent Workspace / Workbench
 
-FinAgent Workbench is the primary product surface for immutable research, portfolio, execution, reserve-governance and Agent-audit evidence. V3-2 established a separately launched governed command plane; V3-3 added fail-closed typed deep links; V3-4 adds sanitized Agent/CommandRun SSE without moving numerical or execution authority into the browser.
+FinAgent Workbench is the primary product surface for immutable research, portfolio, execution, reserve-governance and Agent-audit evidence. V3-2 established a separately launched governed command plane; V3-3 added fail-closed typed deep links; V3-4 added sanitized Agent/CommandRun SSE; V3-5 accepts the combined foundation without moving numerical or execution authority into the browser.
 
 ## 1. Frozen authority model
 
-The V3 Workbench runs as two independent local processes:
+The accepted V3 Workbench runs as two independent local processes:
 
 ```text
 Evidence Plane  http://127.0.0.1:8765
@@ -54,6 +54,8 @@ V3-4 AgentActiveRunProjection / CommandRunStreamProjection
 ```
 
 Existing V2/A5 functionality remains read-only: research/economic review, A2.6 gates/statistics/folds, A4 gross/net and execution realization, A5 lifecycle evidence, raw evidence inspection, review bundles, Agent Project → Thread → Run navigation and lineage.
+
+V3-5 adds acceptance coverage, not another data authority. Its cross-plane tests verify that Control-created CommandRun identity is observed through Evidence read models without changing the durable SQLite record.
 
 ## 3. Prerequisites
 
@@ -171,6 +173,8 @@ portfolio.run_a4           adapter_required
 
 Their existing CLIs are still fat orchestration surfaces. V3 does **not** call them with `subprocess`, shell commands or browser-supplied Python. Each command must be separately extracted behind a reviewed typed application service before its readiness can change.
 
+V3-5 also submits reserve/promotion/PAPER/broker/live/shell/Python-like command identities adversarially and requires each attempt to fail closed as a durable rejected audit record.
+
 ## 7. Durable command lifecycle and V3-4 streaming
 
 The Control Plane persists the lifecycle before execution:
@@ -201,6 +205,8 @@ Properties:
 V3-4 replaces active-CommandRun 600 ms UI polling with Evidence Plane SSE. The stream contains a normalized product projection only; on change, the client explicitly reloads the complete durable Control record. If SSE is unavailable, no timed polling fallback is started automatically; the Run Inspector exposes an explicit manual refresh action.
 
 SSE excludes CommandRun parameters, outputs, artifact paths, free-form result/event messages and host filesystem paths. Agent streams likewise exclude prompts, hidden reasoning, raw provider callbacks and raw OTLP/Phoenix spans.
+
+V3-5 verifies deterministic event identity, `Last-Event-ID` replay suppression, disconnect handling, source-disappearance closure, terminal EventSource shutdown and the absence of a hidden polling fallback.
 
 ## 8. Command Palette / Run Inspector
 
@@ -241,6 +247,8 @@ Canonical root evidence is preferred over duplicate external references; ambiguo
 
 The Artifact Inspector accepts a registered artifact ID, never a browser-supplied filesystem path. Source-report previews are bounded to configured report roots and server-side size limits; generated-feature artifacts are metadata-only identities.
 
+V3-5 verifies that typed context survives module navigation, browser back/forward and reload without converting URL presentation state into authoritative evidence.
+
 ## 10. API overview
 
 ### Evidence Plane — GET-only
@@ -269,7 +277,7 @@ GET /api/v3/streams/agent/runs/{run_id}
 GET /api/v3/streams/command-runs/{command_run_id}
 ```
 
-`POST`, `PUT`, `PATCH` and `DELETE` remain outside the Evidence product contract. The stream endpoints are also GET-only.
+`POST`, `PUT`, `PATCH` and `DELETE` remain outside the Evidence product contract. The stream endpoints are also GET-only. V3-5 checks the complete FastAPI route inventory rather than only representative URLs.
 
 ### Control Plane — local and bounded
 
@@ -281,7 +289,7 @@ GET  /api/v3/control/runs/{command_run_id}
 POST /api/v3/control/runs
 ```
 
-The POST model uses `extra=forbid`. There is no generic `args`, `shell`, `python`, `executable`, `cwd`, arbitrary path or arbitrary environment field.
+The POST model uses `extra=forbid`. There is no generic `args`, `shell`, `python`, `executable`, `cwd`, arbitrary path or arbitrary environment field. V3-5 verifies that this is the only Control POST route and that no PUT/PATCH/DELETE API exists.
 
 Unknown command IDs and catalogued `adapter_required` commands do not execute. When their request schema is otherwise valid, they are persisted as rejected audit records.
 
@@ -324,9 +332,23 @@ ReserveEligibilitySeal
   → replay / consumption audit
 ```
 
-A consumed claim without terminal evidence is shown as interrupted evidence. The Control Plane cannot reopen it.
+A consumed claim without terminal evidence is shown as interrupted evidence. The Control Plane cannot reopen it. V3-5 does not create or consume eligibility, consumption or terminal stores while testing generic Control authority.
 
-## 13. Tests
+## 13. V3-5 acceptance
+
+The final acceptance record is [`../development/changelog-v3-5.md`](../development/changelog-v3-5.md).
+
+Dedicated gates:
+
+```text
+tests/test_workbench_foundation_v35.py
+workspace/src/workbench/foundation.test.tsx
+workspace/e2e/foundation-v3.spec.ts
+```
+
+These integrate the previously separate V3-1 through V3-4 contracts into one foundation gate covering route inventory, authority, durable cross-plane identity, context history, deep links, SSE lifecycle and Evidence-only/both-plane browser modes.
+
+## 14. Tests
 
 Backend control/evidence/stream tests are part of repository pytest. Frontend acceptance includes typecheck, Vitest, production build and Playwright. Workspace API CI retains both Ubuntu and Windows Python 3.11 jobs; repository-wide Windows pytest is also retained. Local Windows execution may be repeated manually after delivery.
 
@@ -338,7 +360,8 @@ python -m pytest -q \
   tests/test_workbench_control_api_v32c.py \
   tests/test_workbench_config_command_v32b.py \
   tests/test_workbench_deep_links_v33.py \
-  tests/test_workbench_stream_v34.py
+  tests/test_workbench_stream_v34.py \
+  tests/test_workbench_foundation_v35.py
 
 cd workspace
 npm run typecheck
@@ -347,7 +370,7 @@ npm run build
 npm run e2e
 ```
 
-## 14. Governance invariants
+## 15. Governance invariants
 
 1. UI code never recalculates authoritative IC, Sharpe, Gate, reserve or execution decisions.
 2. Evidence Plane remains GET-only even when Control is running.
@@ -360,3 +383,4 @@ npm run e2e
 9. Typed deep links fail closed on unresolved or ambiguous identity instead of guessing a target.
 10. SSE is notification-only and never becomes a second Agent/evidence/Control authority.
 11. Product streams never expose hidden reasoning, raw provider/OTLP/Phoenix payloads, arbitrary command outputs or host paths.
+12. Passing V3-5 accepts the Workbench foundation only; it does not authorize reserve use, promotion, PAPER or live operation.
