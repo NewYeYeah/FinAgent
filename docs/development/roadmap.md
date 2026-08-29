@@ -4,7 +4,7 @@ This roadmap is intentionally short. The current detailed planning baseline is m
 
 ## Current baseline
 
-Current `main` planning anchor: `a197a04d6374b0caa605db9892f5c4ee20688067`.
+Current planning baseline was frozen on `main @ d5859dfc69f0b734e8d8eba32fe96bc7381e390b`.
 
 Completed core/product capabilities:
 
@@ -21,6 +21,7 @@ Completed core/product capabilities:
 - A5-2 deterministic one-shot reserve runner and terminal evidence;
 - A5-3 atomic pre-access `CONSUMED` claim, crash-safe terminal/ledger persistence and replay/audit;
 - A5-4 read-only Workspace projection of reserve eligibility/consumption/terminal/ledger/audit evidence;
+- Visualization V3-1 derived Agent Project → Thread → Run index contract over canonical read-only audit SQLite;
 - legacy Streamlit/Plotly inspection and optional Phoenix low-level Agent diagnostics;
 - existing registry, promotion, PAPER/shadow and operational-control primitives.
 
@@ -40,31 +41,35 @@ A5 Reserve Lifecycle
 Immutable Evidence / Lineage / Audit
 ```
 
-The next product milestone is **Visualization V3 Agent Workbench**. The existing `AgentRunProjection` is the canonical product source; Phoenix remains diagnostic rather than a product-data contract.
+The Agent product layer now also has a deterministic read-only Project → Thread → Run index. **Visualization V3-2 Workbench Shell is the current product milestone.** Phoenix remains diagnostic rather than a product-data contract.
 
 ## Current priority order
 
-### P0 — Planning Baseline v3
+### Completed — Planning Baseline v3
 
-- freeze post-A5-4 state and dependencies;
-- separate product development from production reserve operation;
-- make V3-1～V3-5 the next bounded product sequence;
-- preserve v2 as historical design/acceptance documentation.
+- frozen post-A5-4 state and dependencies;
+- production reserve operation separated from product development/CI;
+- V3-1～V3-5 frozen as the bounded Agent Workbench sequence;
+- v2 retained as historical V2/A5 design and acceptance documentation.
 
 ### P1 — Visualization V3 Agent Workbench
 
-Recommended bounded sequence:
+Bounded sequence:
 
-1. **V3-1 Agent Index Contract**
+1. **Completed — V3-1 Agent Index Contract**
    - `AgentProjectProjection` / `AgentThreadProjection` / `AgentRunSummary` / `AgentArtifactRef`;
-   - deterministic project/thread fallback identities;
-   - GET-only project/thread/run navigation APIs;
-   - read-only canonical audit SQLite source.
-2. **V3-2 Workbench Shell**
+   - deterministic project/thread fallback identities without canonical-store mutation;
+   - explicit shared-thread → project inference where canonical metadata proves the binding;
+   - conflicting thread/project identity fails closed;
+   - verified artifact refs only; unresolved audit strings remain unresolved rather than becoming product evidence;
+   - bulk read-only projection uses a single SQLite connection;
+   - GET-only `/api/v3/agent/projects`, project detail, thread detail and run detail surfaces.
+2. **Current — V3-2 Workbench Shell**
    - Projects/Threads navigation;
    - semantic activity timeline;
    - Inspector panel;
-   - desktop-first Codex-like task workspace, not a chat clone.
+   - desktop-first Codex-like task workspace, not a chat clone;
+   - persisted run review only; active streaming is deferred to V3-4.
 3. **V3-3 Evidence / Artifact Deep Link**
    - Agent ↔ Factor ↔ ResearchProgram ↔ A4 ↔ A5 navigation;
    - source-code/generated-feature artifact inspector;

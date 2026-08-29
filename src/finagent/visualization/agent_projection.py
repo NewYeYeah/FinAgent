@@ -355,59 +355,48 @@ def _event_item(
     )
 
 
-def load_agent_run_projection(
-    path: str | Path,
+def _project_agent_run_from_connection(
+    connection: sqlite3.Connection,
+    source: Path,
     run_id: str,
 ) -> AgentRunProjection:
-    """Project the canonical Agent audit DB into a UI-ready, read-only run model.
-
-    OTLP/Phoenix spans are deliberately not consumed here. They remain diagnostic
-    evidence and can be linked separately in V1 without changing this stable contract.
-    Tool outputs are inspected only for stable evidence identities; their full payloads
-    are not copied into the product projection.
-    """
-
-    source = Path(path).expanduser()
-    with _connect_read_only(source) as connection:
-        row = connection.execute(
-            "SELECT task_id, payload_json, decision_json FROM agent_runs WHERE run_id=?",
-            (run_id,),
-        ).fetchone()
-        if row is None:
-            raise KeyError(run_id)
-        task_id = str(row[0])
-        run_payload = _json_object(row[1], "agent run payload")
-        decision = (
-            _json_object(row[2], "agent decision") if row[2] is not None else {}
+    row = connection.execute(
+        "SELECT task_id, payload_json, decision_json FROM agent_runs WHERE run_id=?",
+        (run_id,),
+    ).fetchone()
+    if row is None:
+        raise KeyError(run_id)
+    task_id = str(row[0])
+    run_payload = _json_object(row[1], "agent run payload")
+    decision = _json_object(row[2], "agent decision") if row[2] is not None else {}
+    event_rows = connection.execute(
+        "SELECT sequence, event_id, event_type, occurred_at, call_id, payload_json "
+        "FROM agent_audit_events WHERE run_id=? ORDER BY sequence",
+        (run_id,),
+    ).fetchall()
+    result_rows = connection.execute(
+        "SELECT call_id, result_json FROM agent_tool_calls "
+        "WHERE run_id=? AND result_json IS NOT NULL ORDER BY sequence",
+        (run_id,),
+    ).fetchall()
+    result_evidence = {
+        str(call_id): _extract_evidence_ids(
+            _json_object(result_json, "agent tool result")
         )
-        event_rows = connection.execute(
-            "SELECT sequence, event_id, event_type, occurred_at, call_id, payload_json "
-            "FROM agent_audit_events WHERE run_id=? ORDER BY sequence",
+        for call_id, result_json in result_rows
+    }
+    policy_count = int(
+        connection.execute(
+            "SELECT COUNT(*) FROM agent_policy_decisions WHERE run_id=?",
             (run_id,),
-        ).fetchall()
-        result_rows = connection.execute(
-            "SELECT call_id, result_json FROM agent_tool_calls "
-            "WHERE run_id=? AND result_json IS NOT NULL ORDER BY sequence",
+        ).fetchone()[0]
+    )
+    tool_count = int(
+        connection.execute(
+            "SELECT COUNT(*) FROM agent_tool_calls WHERE run_id=?",
             (run_id,),
-        ).fetchall()
-        result_evidence = {
-            str(call_id): _extract_evidence_ids(
-                _json_object(result_json, "agent tool result")
-            )
-            for call_id, result_json in result_rows
-        }
-        policy_count = int(
-            connection.execute(
-                "SELECT COUNT(*) FROM agent_policy_decisions WHERE run_id=?",
-                (run_id,),
-            ).fetchone()[0]
-        )
-        tool_count = int(
-            connection.execute(
-                "SELECT COUNT(*) FROM agent_tool_calls WHERE run_id=?",
-                (run_id,),
-            ).fetchone()[0]
-        )
+        ).fetchone()[0]
+    )
 
     task = run_payload.get("task", {})
     context = run_payload.get("context", {})
@@ -475,3 +464,41 @@ def load_agent_run_projection(
         },
         error=error,
     )
+
+
+def load_agent_run_projection(
+    path: str | Path,
+    run_id: str,
+) -> AgentRunProjection:
+    """Project one canonical Agent audit run into the stable read-only product model."""
+
+    source = Path(path).expanduser()
+    connection = _connect_read_only(source)
+    try:
+        return _project_agent_run_from_connection(connection, source, run_id)
+    finally:
+        connection.close()
+
+
+def load_agent_run_projections(path: str | Path) -> tuple[AgentRunProjection, ...]:
+    """Project all canonical audit runs with one read-only SQLite connection.
+
+    V3-1 uses this bulk path to avoid opening one SQLite handle per row while preserving
+    the same `AgentRunProjection` contract used by the V1 run-detail endpoint.
+    """
+
+    source = Path(path).expanduser()
+    connection = _connect_read_only(source)
+    try:
+        run_ids = tuple(
+            str(row[0])
+            for row in connection.execute(
+                "SELECT run_id FROM agent_runs ORDER BY rowid"
+            ).fetchall()
+        )
+        return tuple(
+            _project_agent_run_from_connection(connection, source, run_id)
+            for run_id in run_ids
+        )
+    finally:
+        connection.close()

@@ -1,11 +1,21 @@
 """Read-only research, evidence and Agent visualization support."""
 
+from .agent_index import (
+    AgentArtifactRef,
+    AgentIndexProjection,
+    AgentProjectProjection,
+    AgentRunSummary,
+    AgentThreadProjection,
+    build_agent_artifact_catalog,
+    load_agent_index,
+)
 from .agent_projection import (
     AgentProjectionItem,
     AgentProjectionItemType,
     AgentRunProjection,
     AgentTokenUsage,
     load_agent_run_projection,
+    load_agent_run_projections,
 )
 from .feature_store import StoredFeatureView, load_feature_store
 from .reserve_projection import ReserveWorkspaceProjection
@@ -49,6 +59,11 @@ from .widgets import (
 )
 
 __all__ = [
+    "AgentArtifactRef",
+    "AgentIndexProjection",
+    "AgentProjectProjection",
+    "AgentRunSummary",
+    "AgentThreadProjection",
     "AgentProjectionItem",
     "AgentProjectionItemType",
     "AgentRunProjection",
@@ -78,8 +93,11 @@ __all__ = [
     "TraceSpan",
     "WidgetRenderer",
     "WidgetSurface",
+    "build_agent_artifact_catalog",
     "default_widget_specs",
+    "load_agent_index",
     "load_agent_run_projection",
+    "load_agent_run_projections",
     "load_agent_trace",
     "load_evidence_report",
     "load_feature_store",

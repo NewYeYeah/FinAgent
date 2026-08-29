@@ -767,6 +767,39 @@ Acceptance:
 
 A5-3 acceptance makes the one-shot state primitive production-capable, but CI still must not execute the real reserve. Actual reserve consumption requires the reviewed production seal and human authorization.
 
+### T-A12 — Visualization V3-1 Agent Index acceptance
+
+Run after any Agent Project/Thread/Run grouping, artifact-reference or `/api/v3/agent/*` contract change. V3-1 is read-only and must not modify the canonical Agent audit store.
+
+```bash
+python -m pytest -q \
+  tests/test_agent_index_v3.py \
+  tests/test_workspace_api_v1.py \
+  tests/test_workspace_api_v2.py \
+  tests/test_visualization_semantic_contract_v2.py
+python -m py_compile \
+  src/finagent/visualization/agent_projection.py \
+  src/finagent/visualization/agent_index.py \
+  src/finagent/visualization/workspace_api.py
+```
+
+Acceptance:
+
+- canonical source remains `SQLiteAgentAuditStore`; no Project/Thread tables are added to the canonical store;
+- missing Project/Thread metadata resolves to deterministic derived identities;
+- explicit Thread→Project conflicts fail closed;
+- corrupted canonical audit JSON fails closed rather than disappearing from the index;
+- Project/Thread/Run ordering is deterministic;
+- bulk projection uses one read-only SQLite connection for the index load;
+- `AgentArtifactRef` is emitted only for identities verified against Workspace evidence/factor artifacts;
+- unknown audit artifact strings remain unresolved and are not promoted to product links;
+- Phoenix/OTLP is not used for grouping identity;
+- `/api/v3/agent/projects`, project, thread and run routes are GET-only;
+- hidden reasoning remains `not_persisted_not_projected`;
+- Windows and Ubuntu Workspace API jobs remain green.
+
+V3-1 acceptance does not imply the V3 Workbench UI is complete. The three-column Project/Thread/Activity/Inspector product shell belongs to V3-2.
+
 ## 4. Interpretation boundary
 
 The A-share evidence layers have different meanings:
