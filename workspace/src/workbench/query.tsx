@@ -91,7 +91,8 @@ export class WorkbenchQueryClient {
       return current.promise;
     }
 
-    const promise = queryFn()
+    const promise = Promise.resolve()
+      .then(queryFn)
       .then((data) => {
         this.entries.set(serializedKey, {
           status: "success",
