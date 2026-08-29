@@ -39,8 +39,8 @@ jobs:
 
       - name: Apply A5-2 product delivery
         run: |
-          git apply --check /tmp/a5p2.patch
-          git apply /tmp/a5p2.patch
+          git apply --check --whitespace=fix /tmp/a5p2.patch
+          git apply --whitespace=fix /tmp/a5p2.patch
           git rm -rf tools/a5p2_payload
           git diff --check
 
