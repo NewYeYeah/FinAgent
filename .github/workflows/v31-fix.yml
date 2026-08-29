@@ -1,0 +1,38 @@
+name: v31-fix
+
+on:
+  push:
+    branches:
+      - feature/v3-agent-index
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: ${{ github.actor != 'github-actions[bot]' && contains(github.event.head_commit.message, 'stage V3-1 lint fix') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/v3-agent-index
+      - name: Remove unused dataclass field import
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('src/finagent/visualization/agent_index.py')
+          text = path.read_text(encoding='utf-8')
+          old = 'from dataclasses import dataclass, field\n'
+          new = 'from dataclasses import dataclass\n'
+          if text.count(old) != 1:
+              raise SystemExit('expected dataclasses import not found exactly once')
+          path.write_text(text.replace(old, new), encoding='utf-8')
+          PY
+          git diff --check
+      - name: Commit lint fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/finagent/visualization/agent_index.py
+          git commit -m "fix: remove unused V3-1 dataclass import"
+          git push origin HEAD:feature/v3-agent-index
