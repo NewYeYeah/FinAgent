@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -137,7 +137,10 @@ describe("V3-2A Agent Workbench", () => {
     }));
   });
 
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
 
   it("navigates Project → Thread → Run through linked URL context", async () => {
     render(<App />);
@@ -150,7 +153,11 @@ describe("V3-2A Agent Workbench", () => {
     await waitFor(() => expect(window.location.search).toContain("run=run-a"));
     expect(await screen.findByText("Run started")).toBeInTheDocument();
     expect(screen.getByText("Run Inspector")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /verified-evidence/i })).toHaveAttribute("href", "/evidence/verified-evidence");
+    const verifiedLinks = screen.getAllByRole("link", { name: /verified-evidence/i });
+    expect(verifiedLinks.length).toBeGreaterThanOrEqual(2);
+    for (const link of verifiedLinks) {
+      expect(link).toHaveAttribute("href", "/evidence/verified-evidence");
+    }
     expect(screen.getByText(/unresolved:unknown-audit-id/i)).toBeInTheDocument();
     expect(screen.getByText(/not_persisted_not_projected/i)).toBeInTheDocument();
     expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("run-a");
