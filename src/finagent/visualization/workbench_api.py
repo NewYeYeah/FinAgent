@@ -8,7 +8,10 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from finagent.application import default_application_service_registry
+from finagent.application import (
+    APPLICATION_SERVICE_BINDINGS,
+    default_application_service_registry,
+)
 
 from .workbench_control_catalog import ConfigRegistry, default_command_catalog
 from .workspace_api import create_workspace_app as create_evidence_app
@@ -87,13 +90,17 @@ def create_workspace_app(
     config_registry = ConfigRegistry(config_paths)
     command_catalog = default_command_catalog()
     service_registry = default_application_service_registry(config_registry)
-    catalog_ready_commands = tuple(
-        sorted(
-            spec.command_id
-            for spec in command_catalog.specs
-            if spec.gateway_readiness == "application_service_ready"
+    catalog_ready_bindings = {
+        spec.command_id: spec.binding_ref
+        for spec in command_catalog.specs
+        if spec.gateway_readiness == "application_service_ready"
+    }
+    if catalog_ready_bindings != APPLICATION_SERVICE_BINDINGS:
+        raise RuntimeError(
+            "command catalog application-service bindings do not match "
+            "the application service registry contract"
         )
-    )
+    catalog_ready_commands = tuple(sorted(catalog_ready_bindings))
     if catalog_ready_commands != service_registry.command_ids():
         raise RuntimeError(
             "command catalog application_service_ready entries do not match "
