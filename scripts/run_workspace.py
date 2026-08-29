@@ -8,14 +8,14 @@ from pathlib import Path
 
 import uvicorn
 
-from finagent.visualization.workspace_api import create_workspace_app
+from finagent.visualization.workbench_api import create_workspace_app
 
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Run the read-only FinAgent Workspace V2 over immutable A2/A2.6/A4 reports, "
-            "A4 ledgers and an optional canonical Agent audit SQLite database."
+            "Run the read-only FinAgent Workbench over immutable evidence, canonical Agent "
+            "audit projections and the V3 config/command catalogs."
         )
     )
     parser.add_argument(
@@ -25,6 +25,15 @@ def _parser() -> argparse.ArgumentParser:
         help=(
             "Report JSON file or directory. Repeat for multiple roots. "
             "Defaults to ./reports."
+        ),
+    )
+    parser.add_argument(
+        "--configs",
+        action="append",
+        default=[],
+        help=(
+            "Public TOML config file or directory for the read-only V3 registry. "
+            "Repeat for multiple roots. Defaults to ./configs. Secret-like files are excluded."
         ),
     )
     parser.add_argument(
@@ -85,6 +94,7 @@ def main() -> int:
     if not 1 <= args.port <= 65535:
         raise SystemExit("--port must be in [1, 65535]")
     reports = tuple(args.reports or ["reports"])
+    configs = tuple(args.configs or ["configs"])
     frontend = None if args.api_only else args.frontend_dir
     catalog_db = None if args.no_catalog_db else args.catalog_db
     reserve_eligibility = args.reserve_eligibility if args.reserve_eligibility.is_file() else None
@@ -98,6 +108,7 @@ def main() -> int:
 
     config = {
         "reports": list(reports),
+        "configs": list(configs),
         "agent_audit": str(args.agent_audit) if args.agent_audit else None,
         "frontend_dir": str(frontend) if frontend else None,
         "host": args.host,
@@ -107,8 +118,9 @@ def main() -> int:
         "reserve_eligibility": str(reserve_eligibility) if reserve_eligibility else None,
         "reserve_consumption": str(reserve_consumption) if reserve_consumption else None,
         "reserve_terminal": str(reserve_terminal) if reserve_terminal else None,
-        "workspace_version": "v2+a5-4",
+        "workspace_version": "v3-2b",
         "read_only": True,
+        "control_plane_enabled": False,
     }
     if args.print_config:
         import json
@@ -122,17 +134,24 @@ def main() -> int:
 
     if args.reload:
         os.environ["FINAGENT_WORKSPACE_REPORTS"] = os.pathsep.join(reports)
+        os.environ["FINAGENT_WORKBENCH_CONFIGS"] = os.pathsep.join(configs)
         os.environ["FINAGENT_WORKSPACE_AGENT_AUDIT"] = (
             str(args.agent_audit) if args.agent_audit else ""
         )
         os.environ["FINAGENT_WORKSPACE_FRONTEND"] = str(frontend) if frontend else ""
         os.environ["FINAGENT_WORKSPACE_GIT_SHA"] = args.git_sha
         os.environ["FINAGENT_WORKSPACE_CATALOG_DB"] = str(catalog_db) if catalog_db else ""
-        os.environ["FINAGENT_WORKSPACE_RESERVE_ELIGIBILITY"] = str(reserve_eligibility) if reserve_eligibility else ""
-        os.environ["FINAGENT_WORKSPACE_RESERVE_CONSUMPTION"] = str(reserve_consumption) if reserve_consumption else ""
-        os.environ["FINAGENT_WORKSPACE_RESERVE_TERMINAL"] = str(reserve_terminal) if reserve_terminal else ""
+        os.environ["FINAGENT_WORKSPACE_RESERVE_ELIGIBILITY"] = (
+            str(reserve_eligibility) if reserve_eligibility else ""
+        )
+        os.environ["FINAGENT_WORKSPACE_RESERVE_CONSUMPTION"] = (
+            str(reserve_consumption) if reserve_consumption else ""
+        )
+        os.environ["FINAGENT_WORKSPACE_RESERVE_TERMINAL"] = (
+            str(reserve_terminal) if reserve_terminal else ""
+        )
         uvicorn.run(
-            "finagent.visualization.workspace_api:create_app_from_environment",
+            "finagent.visualization.workbench_api:create_app_from_environment",
             factory=True,
             host=args.host,
             port=args.port,
@@ -142,6 +161,7 @@ def main() -> int:
 
     app = create_workspace_app(
         report_paths=reports,
+        config_paths=configs,
         agent_audit_path=args.agent_audit,
         frontend_dir=frontend,
         git_sha=args.git_sha,
