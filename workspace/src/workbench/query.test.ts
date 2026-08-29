@@ -22,9 +22,11 @@ describe("WorkbenchQueryClient", () => {
     const first = client.fetchQuery({ key, queryFn, staleTime: 60_000 });
     const second = client.fetchQuery({ key, queryFn, staleTime: 60_000 });
     expect(second).toBe(first);
-    expect(calls).toBe(1);
 
-    release?.({ run_id: "run-a" });
+    await Promise.resolve();
+    expect(calls).toBe(1);
+    if (!release) throw new Error("query did not start after one microtask");
+    release({ run_id: "run-a" });
     await expect(first).resolves.toEqual({ run_id: "run-a" });
 
     await expect(
