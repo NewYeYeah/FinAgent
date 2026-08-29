@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
@@ -33,10 +33,17 @@ const controlStatus = {
     run_counts: {},
     terminal_states: ["failed", "rejected", "succeeded"],
   },
-  forbidden_authority: ["production_reserve", "broker_order", "arbitrary_shell"],
+  forbidden_authority: [
+    "production_reserve",
+    "broker_order",
+    "arbitrary_shell",
+  ],
 };
 
-const command = (command_id: string, overrides: Record<string, unknown> = {}) => ({
+const command = (
+  command_id: string,
+  overrides: Record<string, unknown> = {},
+) => ({
   schema_version: "finagent.workbench.command-spec.v1",
   command_id,
   title: command_id,
@@ -81,29 +88,33 @@ const controlCommands = {
 const configRegistry = {
   schema_version: "finagent.workbench.config-registry.v1",
   read_only: true,
-  descriptors: [{
-    schema_version: "finagent.workbench.config-descriptor.v1",
-    descriptor_id: "local_ashare",
-    title: "Local A-share certification",
-    section: "local_ashare",
-    default_domain: "runtime",
-    fields: [],
-    snapshot_ids: ["config-snapshot-1"],
-    read_only: true,
-  }],
-  snapshots: [{
-    schema_version: "finagent.workbench.config-snapshot.v1",
-    snapshot_id: "config-snapshot-1",
-    descriptor_id: "local_ashare",
-    section: "local_ashare",
-    source_uri: "config://root-0/local.toml",
-    source_sha256: "abc",
-    values: { root: "D:/Data/A-Share" },
-    domains: { root: "runtime" },
-    mutation_policies: { root: "restart_or_new_run" },
-    redacted_fields: [],
-    read_only: true,
-  }],
+  descriptors: [
+    {
+      schema_version: "finagent.workbench.config-descriptor.v1",
+      descriptor_id: "local_ashare",
+      title: "Local A-share certification",
+      section: "local_ashare",
+      default_domain: "runtime",
+      fields: [],
+      snapshot_ids: ["config-snapshot-1"],
+      read_only: true,
+    },
+  ],
+  snapshots: [
+    {
+      schema_version: "finagent.workbench.config-snapshot.v1",
+      snapshot_id: "config-snapshot-1",
+      descriptor_id: "local_ashare",
+      section: "local_ashare",
+      source_uri: "config://root-0/local.toml",
+      source_sha256: "abc",
+      values: { root: "D:/Data/A-Share" },
+      domains: { root: "runtime" },
+      mutation_policies: { root: "restart_or_new_run" },
+      redacted_fields: [],
+      read_only: true,
+    },
+  ],
   warnings: [],
 };
 
@@ -137,7 +148,9 @@ const succeededRun = {
     evidence_ids: ["a4-validation-1"],
     message: "human-review bundle exported",
   },
-  artifact_paths: [".finagent/workbench/exports/finagent-review-a4-validation-1.zip"],
+  artifact_paths: [
+    ".finagent/workbench/exports/finagent-review-a4-validation-1.zip",
+  ],
   outputs: {},
   events: [
     {
@@ -180,9 +193,13 @@ describe("V3-2 Command Palette", () => {
     fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       if (url.endsWith("/api/v3/control/status")) return response(controlStatus);
-      if (url.endsWith("/api/v3/control/commands")) return response(controlCommands);
+      if (url.endsWith("/api/v3/control/commands")) {
+        return response(controlCommands);
+      }
       if (url.endsWith("/api/v3/config")) return response(configRegistry);
-      if (url.includes("/api/v3/control/runs?limit=20")) return response({ schema_version: "list", items: [] });
+      if (url.includes("/api/v3/control/runs?limit=20")) {
+        return response({ schema_version: "list", items: [] });
+      }
       if (url.endsWith("/api/v3/control/runs") && init?.method === "POST") {
         return response(succeededRun, 200);
       }
@@ -208,23 +225,38 @@ describe("V3-2 Command Palette", () => {
 
   it("shows adapter-required research commands but keeps them non-executable", async () => {
     renderPalette();
-    expect(await screen.findByText("Local Control Plane connected")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: /Run A2.6 robust research/i }));
-    expect(screen.getByText(/reviewed application-service adapter is not ready/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Create governed CommandRun/i })).toBeDisabled();
+    expect(
+      await screen.findByText("Local Control Plane connected"),
+    ).toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: /Run A2.6 robust research/i }),
+    );
+    expect(
+      screen.getByText(/reviewed application-service adapter is not ready/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Create governed CommandRun/i }),
+    ).toBeDisabled();
   });
 
   it("creates a governed review-bundle run from WorkbenchContext only", async () => {
     renderPalette();
     await screen.findByText("Local Control Plane connected");
-    await userEvent.click(screen.getByRole("button", { name: /Export review bundle/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /Export review bundle/i }),
+    );
     expect(screen.getByText("a4-validation-1")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: /Create governed CommandRun/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /Create governed CommandRun/i }),
+    );
     expect(await screen.findByText("RUN_SUCCEEDED")).toBeInTheDocument();
-    expect(screen.getByText("human-review bundle exported")).toBeInTheDocument();
+    expect(
+      screen.getAllByText("human-review bundle exported").length,
+    ).toBeGreaterThanOrEqual(1);
 
     const postCall = fetchMock.mock.calls.find(
-      ([input, init]) => String(input).endsWith("/api/v3/control/runs") && init?.method === "POST",
+      ([input, init]) =>
+        String(input).endsWith("/api/v3/control/runs") && init?.method === "POST",
     );
     expect(postCall).toBeTruthy();
     const body = JSON.parse(String(postCall?.[1]?.body));
