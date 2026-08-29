@@ -176,17 +176,21 @@ test("V3-2 connects a local governed palette without changing Evidence authority
   });
 
   await page.goto("/widgets?surface=commands&portfolio=a4-browser");
-  await expect(page.getByText("Command Catalog")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Command Catalog" })).toBeVisible();
   await expect(page.getByText(/Evidence metadata remains read-only/i)).toBeVisible();
   await expect(page.getByText(/Local Control Plane connected/i)).toBeVisible();
 
   const commandsButton = page.getByRole("button", { name: "Commands" });
   await expect(commandsButton).toBeEnabled();
   await commandsButton.click();
-  await expect(page.getByRole("dialog", { name: "FinAgent Command Palette" })).toBeVisible();
+  await expect(
+    page.getByRole("dialog", { name: "FinAgent Command Palette" }),
+  ).toBeVisible();
 
   await page.getByRole("button", { name: /Run A2.6 robust research/i }).click();
-  await expect(page.getByText(/application-service adapter is not ready/i)).toBeVisible();
+  await expect(
+    page.getByText(/application-service adapter is not ready/i),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: /Create governed CommandRun/i }),
   ).toBeDisabled();
@@ -195,5 +199,7 @@ test("V3-2 connects a local governed palette without changing Evidence authority
   await expect(page.getByText("a4-browser")).toBeVisible();
   await page.getByRole("button", { name: /Create governed CommandRun/i }).click();
   await expect(page.getByText("RUN_SUCCEEDED")).toBeVisible();
-  await expect(page.getByText("human-review bundle exported").last()).toBeVisible();
+  await expect(
+    page.getByText("human-review bundle exported").last(),
+  ).toBeVisible();
 });
