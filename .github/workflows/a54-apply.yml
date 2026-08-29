@@ -24,18 +24,19 @@ jobs:
           from pathlib import Path
           import base64, gzip, hashlib
 
-          expected = {
-              'part00.txt': '2ba6636adface8b722f9ea4e4dedd820be8a843cca9f41c43d781cbf76467f54',
-              'part01.txt': '13f04b18588b9ad44ebca7d081400f55c5b03e5c2271c0e1ada2f284f17a2f4a',
-              'part02.txt': 'c9a31c25aba4f68072b043a2ce1cc6b72707b8ce0e312379546b757f524d13a2',
-              'part03.txt': '2f658afddfaac7e24dd649fbc3c0ddb2d4453a1df3703a881d6d157141eea454',
-              'part04.txt': 'd86d0f601e59c5359ba63ff5ed0adb282770234d3368d5974ed91e6056c6724d',
-              'part05.txt': '0f42c174d611743eed31f9a752be9c4fea54e6bac45cea2d3846137cf49c5110',
-              'part06.txt': '3bbfeac8515fb32fa5e15a6375b567fac159c2e57cc8c5dab7e4662e9e5a9c8d',
-              'part07.txt': '332ca4a70c8b818be3102657ba5be0533122c9cb79484871b733862d14a59604',
-          }
+          expected = [
+              ('part00.txt', '2ba6636adface8b722f9ea4e4dedd820be8a843cca9f41c43d781cbf76467f54'),
+              ('part01.txt', '13f04b18588b9ad44ebca7d081400f55c5b03e5c2271c0e1ada2f284f17a2f4a'),
+              ('part02.txt', 'c9a31c25aba4f68072b043a2ce1cc6b72707b8ce0e312379546b757f524d13a2'),
+              ('part03.txt', '2f658afddfaac7e24dd649fbc3c0ddb2d4453a1df3703a881d6d157141eea454'),
+              ('part04.txt', 'd86d0f601e59c5359ba63ff5ed0adb282770234d3368d5974ed91e6056c6724d'),
+              ('part05.txt', '0f42c174d611743eed31f9a752be9c4fea54e6bac45cea2d3846137cf49c5110'),
+              ('part06a.txt', '99e4577981845cdcbd0962b8cdfe63fe6a913bdbe1cc9879244b5db88545e654'),
+              ('part06b.txt', '2e9ea09bb094f8951340950f33208bd755bdd30fc154e39f3501f896341eaeaf'),
+              ('part07.txt', '332ca4a70c8b818be3102657ba5be0533122c9cb79484871b733862d14a59604'),
+          ]
           values = []
-          for name, digest_expected in expected.items():
+          for name, digest_expected in expected:
               raw = (Path('tools/a54_payload') / name).read_bytes()
               digest = hashlib.sha256(raw).hexdigest()
               print(name, len(raw), digest)
