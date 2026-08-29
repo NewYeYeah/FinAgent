@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { WorkbenchQueryClient, workbenchQueryKeys } from "./query";
+import {
+  WorkbenchQueryClient,
+  serializeQueryKey,
+  workbenchQueryKeys,
+} from "./query";
 
 describe("WorkbenchQueryClient", () => {
   it("deduplicates in-flight identity queries and reuses fresh cached data", async () => {
@@ -66,5 +70,23 @@ describe("WorkbenchQueryClient", () => {
 
     expect(callsA).toBe(2);
     expect(callsB).toBe(1);
+  });
+
+  it("records synchronous query failures in the same error state", async () => {
+    const client = new WorkbenchQueryClient();
+    const key = workbenchQueryKeys.agentProject("project-error");
+
+    await expect(
+      client.fetchQuery({
+        key,
+        queryFn: () => {
+          throw new Error("projection failed before Promise creation");
+        },
+      }),
+    ).rejects.toThrow("projection failed before Promise creation");
+
+    const snapshot = client.snapshot(serializeQueryKey(key));
+    expect(snapshot.status).toBe("error");
+    expect(snapshot.error).toBeInstanceOf(Error);
   });
 });
