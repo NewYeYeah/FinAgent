@@ -77,8 +77,9 @@ export function ReadOnlyBanner() {
     <div className="readonly-banner">
       <LockKeyhole size={16} />
       <span>
-        Read-only evidence workspace. No research rerun, Gate change, reserve access,
-        promotion or order-submission authority.
+        Evidence Plane is GET-only. The optional local Control Plane is separate and
+        limited to reviewed L0/L1 application services; no Gate, reserve, promotion,
+        PAPER, broker-order or live-capital authority.
       </span>
     </div>
   );
@@ -124,32 +125,13 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <nav>
-          <NavLink to="/" end>
-            <LayoutDashboard size={17} /> Cockpit
-          </NavLink>
-          <NavLink to="/research">
-            <ShieldCheck size={17} /> Research
-          </NavLink>
-          <NavLink to="/portfolio">
-            <Activity size={17} /> Portfolio
-          </NavLink>
-          <NavLink to="/governance">
-            <Network size={17} /> Governance
-          </NavLink>
-          <NavLink to="/reserve">
-            <LockKeyhole size={17} /> Reserve
-          </NavLink>
-          <NavLink to="/agent">
-            <Boxes size={17} /> Agent Runs
-          </NavLink>
-          <NavLink to="/widgets">
-            <Search size={17} /> Widget Catalog
-          </NavLink>
+          <NavLink to="/" end><LayoutDashboard size={17} /> Project</NavLink>
+          <NavLink to="/research"><Search size={17} /> Research</NavLink>
+          <NavLink to="/portfolio"><Activity size={17} /> Portfolio</NavLink>
+          <NavLink to="/agent"><Boxes size={17} /> Agent</NavLink>
+          <NavLink to="/widgets"><Network size={17} /> Widgets</NavLink>
         </nav>
-        <div className="sidebar-footer">
-          <GitBranch size={15} />
-          <span>A5-4 · reserve evidence</span>
-        </div>
+        <div className="sidebar-footer"><ShieldCheck size={15} /> Read-only evidence</div>
       </aside>
       <main>
         <ReadOnlyBanner />
@@ -159,14 +141,14 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function EvidenceTable<T extends object>({
+export function DataTable<T extends object>({
   data,
   columns,
-  onRowClick,
+  empty = "No rows",
 }: {
   data: T[];
   columns: ColumnDef<T, unknown>[];
-  onRowClick?: (row: T) => void;
+  empty?: string;
 }) {
   const stableColumns = useMemo(() => columns, [columns]);
   const table = useReactTable({
@@ -174,13 +156,14 @@ export function EvidenceTable<T extends object>({
     columns: stableColumns,
     getCoreRowModel: getCoreRowModel(),
   });
+  if (!data.length) return <div className="empty-table">{empty}</div>;
   return (
     <div className="table-wrap">
       <table>
         <thead>
-          {table.getHeaderGroups().map((group) => (
-            <tr key={group.id}>
-              {group.headers.map((header) => (
+          {table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
                 <th key={header.id}>
                   {header.isPlaceholder
                     ? null
@@ -192,15 +175,9 @@ export function EvidenceTable<T extends object>({
         </thead>
         <tbody>
           {table.getRowModel().rows.map((row) => (
-            <tr
-              key={row.id}
-              className={onRowClick ? "clickable" : ""}
-              onClick={() => onRowClick?.(row.original)}
-            >
+            <tr key={row.id}>
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
+                <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
               ))}
             </tr>
           ))}
@@ -210,25 +187,16 @@ export function EvidenceTable<T extends object>({
   );
 }
 
-export function PageHeader({
-  eyebrow,
-  title,
-  description,
-  children,
-}: {
-  eyebrow: string;
-  title: string;
-  description: string;
-  children?: React.ReactNode;
-}) {
+export function Breadcrumbs({ items }: { items: { label: string; to?: string }[] }) {
   return (
-    <header className="page-header">
-      <div>
-        <span className="eyebrow">{eyebrow}</span>
-        <h1>{title}</h1>
-        <p>{description}</p>
-      </div>
-      {children ? <div className="page-actions">{children}</div> : null}
-    </header>
+    <div className="breadcrumbs">
+      <GitBranch size={14} />
+      {items.map((item, index) => (
+        <span key={`${item.label}-${index}`}>
+          {index > 0 ? <span className="breadcrumb-separator">/</span> : null}
+          {item.to ? <NavLink to={item.to}>{item.label}</NavLink> : item.label}
+        </span>
+      ))}
+    </div>
   );
 }
