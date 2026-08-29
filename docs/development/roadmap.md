@@ -4,7 +4,9 @@ This roadmap is the canonical current implementation status. [`current-developme
 
 ## Current baseline
 
-The implementation baseline has now completed the **Visualization V3-4 stable product SSE foundation** on top of PIT data contracts, bounded Agent research, A2.6 robust ResearchPrograms, A3 execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2, A5-1～A5-4 reserve governance/evidence, V3-1 Agent indexing, the V3-2 governed Workbench/Control foundation and V3-3 typed deep links.
+The implementation baseline has now completed the **Visualization V3 Workbench Foundation through V3-5 acceptance** on top of PIT data contracts, bounded Agent research, A2.6 robust ResearchPrograms, A3 execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2 and A5-1～A5-4 reserve governance/evidence.
+
+The accepted V3 foundation includes Agent indexing, the governed Workbench/Control substrate, typed deep links and sanitized product SSE. The detailed completion matrix is recorded in [`changelog-v3-5.md`](changelog-v3-5.md).
 
 No production 2025+ reserve has been consumed by development or CI. Production reserve execution remains an independent human-authorized operation.
 
@@ -165,31 +167,40 @@ review.export_bundle
 - Workspace retains the configured read-only command-store path even before the Control Plane creates the SQLite file, allowing SSE to become available without an Evidence Plane restart;
 - all V3-4 stream endpoints remain GET-only and add no Control Plane authority.
 
-### Current — V3-5 Workbench Foundation Acceptance
+### Completed — V3-5 Workbench Foundation Acceptance
 
-- complete context/deep-link identity and refresh/back-forward acceptance coverage;
-- re-run Evidence Plane GET-only and Control Plane authority/adversarial tests as one foundation gate;
-- verify no L2/L3 generic execution path and no A5 reserve action can be reached through Workbench control surfaces;
-- exercise SSE reconnect, disconnect, source disappearance and CommandRun terminal-state behavior;
-- inspect browser-level fallback behavior with Evidence-only, Control-only-unavailable and both-plane configurations;
-- retain Windows/Ubuntu, ruff/mypy, TypeScript/Vitest/build/Playwright and repository-wide pytest acceptance;
-- produce the V3 Workbench Foundation completion record before V4 begins.
+- added a single cross-plane backend acceptance gate covering complete route inventories, Evidence GET-only enforcement and the exact bounded Control POST surface;
+- verified that reserve, promotion, PAPER, broker, live, shell and Python command identities fail closed and persist only rejected audit records;
+- verified a real durable `config.validate` CommandRun is observed through the separate Evidence Plane with the same ConfigSnapshot/WorkbenchContext identity and no Evidence-side SQLite mutation;
+- covered SSE `Last-Event-ID` suppression, disconnect, disappearing sources, sanitized terminal payloads and native EventSource terminal shutdown;
+- covered context-preserving module navigation plus browser back/forward/reload restoration;
+- covered Evidence-only and both-plane browser modes with no fallback execution path and no L2/L3/A5 controls;
+- retained Ubuntu/Windows Workspace API, repository Python 3.11/3.12/3.13 and Windows pytest, ruff/mypy, TypeScript/Vitest/build/Playwright, A2.6 and legacy Research UI gates;
+- recorded the final acceptance matrix in [`changelog-v3-5.md`](changelog-v3-5.md).
 
-## P1 — V4 Linked Quant Analytics
+## Current — V4 Linked Quant Analytics
 
-### V4-0 StrategyDecisionSeriesEvidence
+### Current — V4-0 StrategyDecisionSeriesEvidence
 
-Persist authoritative signal → target → order → fill → position → PnL/cost series, preferably as JSON manifest + Parquet data.
+Persist the authoritative signal → target → desired order → executable order → fill → realized position → PnL/cost series before implementing Strategy Decision Explorer charts.
 
-### V4-1 FactorSeriesEvidence
+Preferred storage remains:
 
-Persist missing authoritative IC/decay/quantile/long-short/turnover/coverage series.
+```text
+JSON manifest + Parquet long-form series
+```
 
-### V4-2 Strategy Decision Explorer
+The first V4 PR must freeze row schema, identity bindings, deterministic ordering, source-ledger/report digests and bounded date/asset projection requirements. React must not reconstruct authoritative strategy decisions from unrelated summary reports.
+
+### P1 — V4-1 FactorSeriesEvidence
+
+Persist missing authoritative IC/decay/quantile/long-short/turnover/coverage series. V4-1 may proceed in parallel only if its source contracts remain independent from V4-0.
+
+### P1 — V4-2 Strategy Decision Explorer
 
 Interactive price/candlestick + signal/order/fill markers + factor contribution + target/realized weights + gross-to-net PnL/cost explanation.
 
-### V4-3 Factor Tear Sheet
+### P1 — V4-3 Factor Tear Sheet
 
 - IC / rolling IC / decay;
 - fold/year heatmap;
@@ -200,11 +211,11 @@ Interactive price/candlestick + signal/order/fill markers + factor contribution 
 - factor correlation cluster;
 - Agent discovery evolution.
 
-### V4-4 Portfolio / Execution Interactive Pack
+### P1 — V4-4 Portfolio / Execution Interactive Pack
 
 Use existing V2 evidence plus new benchmark/series evidence for linked NAV/drawdown/rolling metrics/monthly returns/order lifecycle/constraint attribution/cost waterfall/target-realized views.
 
-### V4-5 Linked Analytics Acceptance
+### P1 — V4-5 Linked Analytics Acceptance
 
 Every chart must declare evidence requirements and authority class, and all asset/date/order interactions must flow through `WorkbenchContext`.
 
@@ -283,6 +294,9 @@ core/data correctness
 → explicit governed Control Plane
 → interactive presentation
 → deep links / SSE
+→ foundation acceptance
+→ authoritative linked-series evidence
+→ linked analytical charts
 → human-governed one-shot evidence
 → promotion/PAPER after explicit gates
 → realtime only after internal operational semantics stabilize
