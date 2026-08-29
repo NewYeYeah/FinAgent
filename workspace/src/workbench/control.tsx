@@ -19,10 +19,15 @@ import {
   ShieldAlert,
   X,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { controlApi, workspaceApi } from "../api";
 import { StatusBadge } from "../components";
-import { WORKBENCH_CONTEXT_KEYS, useWorkbenchContext } from "./context";
+import {
+  WORKBENCH_CONTEXT_KEYS,
+  useWorkbenchContext,
+  workbenchContextSearch,
+} from "./context";
 import type {
   CommandRecordV3,
   CommandRunStateV3,
@@ -122,12 +127,19 @@ function snapshotChoices(
 }
 
 function CommandRunInspector({ record }: { record: CommandRecordV3 }) {
+  const { context } = useWorkbenchContext();
+  const search = workbenchContextSearch(context);
   return (
     <section className="control-run-inspector" aria-label="Command Run Inspector">
       <header>
         <div>
           <span className="eyebrow">CommandRun</span>
-          <strong className="mono">{record.run.command_run_id}</strong>
+          <Link
+            className="mono"
+            to={`/ref/command_run/${encodeURIComponent(record.run.command_run_id)}${search}`}
+          >
+            {record.run.command_run_id}
+          </Link>
         </div>
         <StatusBadge value={record.run.state} />
       </header>
@@ -139,7 +151,15 @@ function CommandRunInspector({ record }: { record: CommandRecordV3 }) {
         <dt>Actor</dt>
         <dd>{record.intent.requested_by}</dd>
         <dt>Config</dt>
-        <dd className="mono">{record.intent.config_snapshot_id ?? "none"}</dd>
+        <dd className="mono">
+          {record.intent.config_snapshot_id ? (
+            <Link
+              to={`/ref/config_snapshot/${encodeURIComponent(record.intent.config_snapshot_id)}${search}`}
+            >
+              {record.intent.config_snapshot_id}
+            </Link>
+          ) : "none"}
+        </dd>
       </dl>
       <div className="control-event-list">
         {record.events.map((event) => (
@@ -162,7 +182,13 @@ function CommandRunInspector({ record }: { record: CommandRecordV3 }) {
             <div>
               <span>Evidence</span>
               {record.result.evidence_ids.map((item) => (
-                <code key={item}>{item}</code>
+                <Link
+                  className="mono"
+                  key={item}
+                  to={`/ref/evidence/${encodeURIComponent(item)}${search}`}
+                >
+                  {item}
+                </Link>
               ))}
             </div>
           ) : null}
