@@ -41,6 +41,7 @@ import {
   ProjectCockpitPage,
 } from "./v2";
 import { AgentWorkbenchPage, LegacyAgentRunRedirect } from "./workbench/agent";
+import { WorkbenchReferencePage } from "./workbench/reference";
 import { WorkbenchProviders, WorkbenchShell } from "./workbench/shell";
 import "./workbench/workbench.css";
 
@@ -465,6 +466,7 @@ export default function App() {
             <Route path="/factor/:digest" element={<FactorPage />} />
             <Route path="/agent" element={<AgentWorkbenchPage />} />
             <Route path="/agent/:runId" element={<LegacyAgentRunRedirect />} />
+            <Route path="/ref/:kind/:identity" element={<WorkbenchReferencePage />} />
             <Route path="/widgets" element={<WidgetCatalogPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>

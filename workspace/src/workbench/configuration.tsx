@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import { GitCompareArrows, KeyRound, LockKeyhole, ShieldAlert } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { workspaceApi } from "../api";
 import { ErrorState, LoadingState, StatusBadge } from "../components";
+import { useWorkbenchContext, workbenchContextSearch } from "./context";
 import { useWorkbenchQuery } from "./query";
 import type {
   CommandCatalogResponseV3,
@@ -126,6 +128,8 @@ function SnapshotFields({ snapshot }: { snapshot: ConfigSnapshotV3 }) {
 }
 
 function ConfigCatalog({ registry }: { registry: ConfigRegistryResponseV3 }) {
+  const { context } = useWorkbenchContext();
+  const contextSearch = workbenchContextSearch(context);
   const [descriptorId, setDescriptorId] = useState<string | undefined>(
     registry.descriptors[0]?.descriptor_id,
   );
@@ -237,7 +241,12 @@ function ConfigCatalog({ registry }: { registry: ConfigRegistryResponseV3 }) {
           ) : null}
         </div>
         <div className="config-snapshot-identity">
-          <span className="mono">{snapshot.snapshot_id}</span>
+          <Link
+            className="mono"
+            to={`/ref/config_snapshot/${encodeURIComponent(snapshot.snapshot_id)}${contextSearch}`}
+          >
+            {snapshot.snapshot_id}
+          </Link>
           <span className="mono subtle">
             sha256:{snapshot.source_sha256.slice(0, 16)}…
           </span>
@@ -253,6 +262,14 @@ function ConfigCatalog({ registry }: { registry: ConfigRegistryResponseV3 }) {
             <header>
               <GitCompareArrows size={16} />
               <strong>ConfigDiff</strong>
+              {diffQuery.data ? (
+                <Link
+                  className="mono subtle"
+                  to={`/ref/config_diff/${encodeURIComponent(diffQuery.data.diff_id)}${contextSearch}`}
+                >
+                  {diffQuery.data.diff_id}
+                </Link>
+              ) : null}
             </header>
             {diffQuery.isPending ? (
               <LoadingState label="Comparing snapshots" />
@@ -300,10 +317,10 @@ function CommandCatalog({ catalog }: { catalog: CommandCatalogResponseV3 }) {
       <div className="command-boundary">
         <LockKeyhole size={18} />
         <div>
-          <strong>Catalog only — Control Plane disabled</strong>
+          <strong>Evidence Plane command catalogue</strong>
           <p>
-            V3-2B freezes typed command metadata. No command execution endpoint
-            exists in this phase.
+            Command metadata is projected read-only here. Executable L0/L1 commands,
+            when available, remain on the separate local Control Plane.
           </p>
         </div>
       </div>
@@ -329,9 +346,9 @@ function CommandCatalog({ catalog }: { catalog: CommandCatalogResponseV3 }) {
             <button
               type="button"
               disabled
-              aria-label={`${command.title} execution disabled`}
+              aria-label={`${command.title} Evidence Plane catalog status`}
             >
-              <LockKeyhole size={13} /> Execution disabled · V3-2C
+              <LockKeyhole size={13} /> Evidence Plane is read-only
             </button>
           </article>
         ))}
@@ -383,14 +400,14 @@ export function ConfigurationCatalogSurface({
     <div className="configuration-workbench-page">
       <header className="configuration-page-header">
         <div>
-          <span className="eyebrow">V3-2B · product contract</span>
+          <span className="eyebrow">V3-3 · linked product contract</span>
           <h1>
             {surface === "configs" ? "Configuration Registry" : "Command Catalog"}
           </h1>
           <p>
             {surface === "configs"
-              ? "Public, redacted configuration snapshots with explicit authority domains and identity-change semantics."
-              : "Allowlisted future L0/L1 commands. Metadata is inspectable now; execution remains disabled until V3-2C."}
+              ? "Public, redacted configuration snapshots with typed deep links, explicit authority domains and identity-change semantics."
+              : "Allowlisted L0/L1 command metadata projected from the GET-only Evidence Plane."}
           </p>
         </div>
         <StatusBadge value="READ_ONLY" tone="neutral" />

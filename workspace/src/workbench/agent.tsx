@@ -4,7 +4,7 @@ import { Link, Navigate, useParams } from "react-router-dom";
 
 import { workspaceApi } from "../api";
 import { ErrorState, LoadingState, StatusBadge } from "../components";
-import { useWorkbenchContext } from "./context";
+import { useWorkbenchContext, workbenchContextSearch } from "./context";
 import { workbenchQueryKeys, useWorkbenchQuery } from "./query";
 import { WorkbenchInspectorSlot } from "./shell";
 import type {
@@ -18,6 +18,11 @@ import type {
 
 function shortIdentity(value: string, max = 34) {
   return value.length > max ? `${value.slice(0, max - 1)}…` : value;
+}
+
+function artifactReferencePath(artifact: AgentArtifactRefV3, search: string): string {
+  const kind = artifact.artifact_type === "factor" ? "factor" : "evidence";
+  return `/ref/${kind}/${encodeURIComponent(artifact.artifact_id)}${search}`;
 }
 
 function ProjectIndex({
@@ -112,6 +117,8 @@ function RunIndex({
 }
 
 function ActivityPane({ runDetail }: { runDetail?: AgentRunResponseV3 }) {
+  const { context } = useWorkbenchContext();
+  const search = workbenchContextSearch(context);
   const verified = useMemo(
     () => new Map((runDetail?.artifact_refs ?? []).map((ref) => [ref.artifact_id, ref])),
     [runDetail],
@@ -154,7 +161,11 @@ function ActivityPane({ runDetail }: { runDetail?: AgentRunResponseV3 }) {
                 {item.evidence_ids.map((evidenceId) => {
                   const ref = verified.get(evidenceId);
                   return ref ? (
-                    <Link className="agent-evidence-ref" key={evidenceId} to={ref.detail_url}>
+                    <Link
+                      className="agent-evidence-ref"
+                      key={evidenceId}
+                      to={artifactReferencePath(ref, search)}
+                    >
                       <Link2 size={11} /> {shortIdentity(evidenceId, 30)}
                     </Link>
                   ) : (
@@ -173,8 +184,12 @@ function ActivityPane({ runDetail }: { runDetail?: AgentRunResponseV3 }) {
 }
 
 function ArtifactLink({ artifact }: { artifact: AgentArtifactRefV3 }) {
+  const { context } = useWorkbenchContext();
   return (
-    <Link className="agent-artifact-link" to={artifact.detail_url}>
+    <Link
+      className="agent-artifact-link"
+      to={artifactReferencePath(artifact, workbenchContextSearch(context))}
+    >
       <span className="mono">{shortIdentity(artifact.artifact_id, 28)}</span>
       <span>{artifact.artifact_type} · {artifact.authority}</span>
     </Link>
@@ -182,6 +197,7 @@ function ArtifactLink({ artifact }: { artifact: AgentArtifactRefV3 }) {
 }
 
 function Inspector({ runDetail }: { runDetail?: AgentRunResponseV3 }) {
+  const { context } = useWorkbenchContext();
   if (!runDetail) {
     return (
       <WorkbenchInspectorSlot>
@@ -204,6 +220,13 @@ function Inspector({ runDetail }: { runDetail?: AgentRunResponseV3 }) {
           <div><dt>Project ID source</dt><dd>{summary.project_identity_source}</dd></div>
           <div><dt>Thread ID source</dt><dd>{summary.thread_identity_source}</dd></div>
         </dl>
+        <Link
+          className="agent-artifact-link"
+          to={`/ref/agent_run/${encodeURIComponent(summary.run_id)}${workbenchContextSearch(context)}`}
+        >
+          <span className="mono">Typed Run reference</span>
+          <span>V3-3 lineage</span>
+        </Link>
       </section>
       <section className="agent-inspector-block">
         <h3>Verified artifacts</h3>
@@ -302,9 +325,9 @@ export function AgentWorkbenchPage() {
     <div className="agent-workbench-page">
       <header className="agent-workbench-header">
         <div>
-          <span className="eyebrow">Agent · V3-2A Workbench</span>
+          <span className="eyebrow">Agent · V3-3 linked Workbench</span>
           <h1>Project → Thread → Run</h1>
-          <p>Canonical V3-1 audit navigation with deterministic linked context and verified evidence references.</p>
+          <p>Canonical Agent audit navigation with deterministic WorkbenchContext and fail-closed typed evidence/artifact links.</p>
         </div>
         <span className="agent-contract-pill">read-only · no hidden reasoning</span>
       </header>

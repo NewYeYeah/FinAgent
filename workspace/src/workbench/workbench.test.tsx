@@ -124,7 +124,7 @@ const run = {
   hidden_reasoning: "not_persisted_not_projected",
 };
 
-describe("V3-2A Agent Workbench", () => {
+describe("V3-3 Agent Workbench deep links", () => {
   beforeEach(() => {
     window.history.pushState({}, "", "/agent");
     vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL) => {
@@ -133,6 +133,9 @@ describe("V3-2A Agent Workbench", () => {
       if (url.endsWith("/api/v3/agent/projects/project-a")) return response(project);
       if (url.endsWith("/api/v3/agent/threads/thread-a")) return response(thread);
       if (url.endsWith("/api/v3/agent/runs/run-a")) return response(run);
+      if (url.includes("127.0.0.1:8766/api/v3/control/")) {
+        return Promise.reject(new TypeError("control unavailable"));
+      }
       throw new Error(`unexpected URL: ${url}`);
     }));
   });
@@ -142,7 +145,7 @@ describe("V3-2A Agent Workbench", () => {
     vi.unstubAllGlobals();
   });
 
-  it("navigates Project → Thread → Run through linked URL context", async () => {
+  it("navigates Project → Thread → Run and preserves context in typed references", async () => {
     render(<App />);
     expect(await screen.findByText("Project → Thread → Run")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: /A-share research/i }));
@@ -161,14 +164,21 @@ describe("V3-2A Agent Workbench", () => {
     const verifiedLinks = screen.getAllByRole("link", { name: /verified-evidence/i });
     expect(verifiedLinks.length).toBeGreaterThanOrEqual(2);
     for (const link of verifiedLinks) {
-      expect(link).toHaveAttribute("href", "/evidence/verified-evidence");
+      const href = link.getAttribute("href") ?? "";
+      expect(href).toContain("/ref/evidence/verified-evidence?");
+      expect(href).toContain("project=project-a");
+      expect(href).toContain("thread=thread-a");
+      expect(href).toContain("run=run-a");
     }
+    const typedRun = screen.getByRole("link", { name: /Typed Run reference/i });
+    expect(typedRun.getAttribute("href")).toContain("/ref/agent_run/run-a?");
+    expect(typedRun.getAttribute("href")).toContain("run=run-a");
     expect(screen.getByText(/unresolved:unknown-audit-id/i)).toBeInTheDocument();
     expect(screen.getByText(/not_persisted_not_projected/i)).toBeInTheDocument();
     expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("run-a");
   });
 
-  it("keeps control-plane affordances visibly disabled", async () => {
+  it("keeps control-plane authority conditional on the separate service", async () => {
     render(<App />);
     await screen.findByText("Project → Thread → Run");
     expect(screen.getByRole("button", { name: "Config" })).toBeDisabled();
