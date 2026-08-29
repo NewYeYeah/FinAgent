@@ -1,6 +1,6 @@
 # Development Roadmap
 
-This roadmap is intentionally short. The active detailed planning baseline is [`current-development-plan-v3.1.md`](current-development-plan-v3.1.md), with the supporting architecture in [`../architecture/workbench-v3.md`](../architecture/workbench-v3.md). Previous v3/v2 documents remain historical design and acceptance records.
+This roadmap is the canonical current implementation status. [`current-development-plan-v3.1.md`](current-development-plan-v3.1.md) is the frozen architectural planning baseline that established the V3 staging, with supporting architecture in [`../architecture/workbench-v3.md`](../architecture/workbench-v3.md). Previous v3/v2 documents remain historical design and acceptance records.
 
 ## Current baseline
 
