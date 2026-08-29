@@ -15,7 +15,7 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Run the read-only FinAgent Workbench over immutable evidence, canonical Agent "
-            "audit projections and the V3 config/command catalogs."
+            "audit projections and typed config/command catalogs."
         )
     )
     parser.add_argument(
@@ -118,7 +118,7 @@ def main() -> int:
         "reserve_eligibility": str(reserve_eligibility) if reserve_eligibility else None,
         "reserve_consumption": str(reserve_consumption) if reserve_consumption else None,
         "reserve_terminal": str(reserve_terminal) if reserve_terminal else None,
-        "workspace_version": "v3-2b",
+        "workspace_version": "v3-2c1",
         "read_only": True,
         "control_plane_enabled": False,
     }
