@@ -8,10 +8,15 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from finagent.application import (
+    APPLICATION_SERVICE_BINDINGS,
+    default_application_service_registry,
+)
+
 from .workbench_control_catalog import ConfigRegistry, default_command_catalog
 from .workspace_api import create_workspace_app as create_evidence_app
 
-WORKBENCH_API_VERSION = "finagent-workbench-api-v3.2b"
+WORKBENCH_API_VERSION = "finagent-workbench-api-v3.2c1"
 
 
 def _attach_frontend(app: FastAPI, frontend_dir: str | Path | None) -> None:
@@ -63,11 +68,12 @@ def create_workspace_app(
         "http://localhost:5173",
     ),
 ) -> FastAPI:
-    """Compose the frozen Evidence API with V3-2B read-only product catalogs.
+    """Compose the Evidence Plane with read-only V3 Workbench catalogs.
 
-    V3-2B deliberately has no mutation route. The command catalog describes future
-    allowlisted L0/L1 intents, but ``execution_enabled`` and ``control_plane_enabled``
-    remain false until V3-2C introduces a separately governed gateway.
+    V3-2C-1 adds in-process application-service implementations for selected L0
+    commands, but this Evidence Plane still exposes no command mutation route and
+    retains ``control_plane_enabled=false``. The service registry is instantiated
+    only to verify that catalog readiness metadata matches real registered services.
     """
 
     app = create_evidence_app(
@@ -83,8 +89,27 @@ def create_workspace_app(
     )
     config_registry = ConfigRegistry(config_paths)
     command_catalog = default_command_catalog()
+    service_registry = default_application_service_registry(config_registry)
+    catalog_ready_bindings = {
+        spec.command_id: spec.binding_ref
+        for spec in command_catalog.specs
+        if spec.gateway_readiness == "application_service_ready"
+    }
+    if catalog_ready_bindings != APPLICATION_SERVICE_BINDINGS:
+        raise RuntimeError(
+            "command catalog application-service bindings do not match "
+            "the application service registry contract"
+        )
+    catalog_ready_commands = tuple(sorted(catalog_ready_bindings))
+    if catalog_ready_commands != service_registry.command_ids():
+        raise RuntimeError(
+            "command catalog application_service_ready entries do not match "
+            "registered application services"
+        )
+
     app.state.config_registry = config_registry
     app.state.command_catalog = command_catalog
+    app.state.application_service_ready_commands = catalog_ready_commands
     app.state.control_plane_enabled = False
 
     @app.get("/api/v3/workbench/status")
@@ -101,6 +126,8 @@ def create_workspace_app(
             "config_snapshot_count": len(projection.snapshots),
             "config_warning_count": len(projection.warnings),
             "command_spec_count": len(command_catalog.specs),
+            "application_service_ready_command_count": len(catalog_ready_commands),
+            "application_service_ready_commands": list(catalog_ready_commands),
         }
 
     @app.get("/api/v3/config")

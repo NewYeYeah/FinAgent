@@ -2,6 +2,27 @@
 
 This file summarizes meaningful development milestones. Commit and pull-request history remains the detailed audit trail.
 
+## 2026-08-29 — Visualization V3-2C-1 Application Service Convergence
+
+- added the typed `finagent.application` boundary with `ApplicationCommandInvocation`, `ApplicationCommandExecution` and an allowlisted `ApplicationServiceRegistry`;
+- kept the service registry in-process and fail-closed with no arbitrary shell, subprocess or Python-text execution facility;
+- corrected the local A-share certification command to use the actual `[local_ashare]` configuration contract;
+- promoted only `config.validate`, `data.certify_local_ashare` and `review.export_bundle` to `application_service_ready`;
+- retained development research, A2.6 and A4 as `adapter_required` until their fat CLI orchestration is actually extracted;
+- refactored the local-data certification and review-bundle CLIs into thin adapters over shared application services;
+- added startup verification that Command Catalog readiness exactly matches the registered service identities;
+- kept the Evidence Plane GET-only with `control_plane_enabled=false` and added no command execution route.
+
+## 2026-08-29 — Visualization V3-2B Config Registry + Command Catalog
+
+- froze typed `ConfigDescriptor`, `ConfigSnapshot`, `ConfigFieldSpec`, `ConfigDiff`, `CommandSpec`, `CommandIntent`, `CommandRun` and `CommandResult` contracts;
+- added deterministic public-TOML projections with recursive secret redaction and secret-file exclusion;
+- classified presentation/runtime/research/execution/guardrail/secret-reference fields with explicit mutation policies;
+- added deterministic ConfigDiff identity semantics and protocol-fork requirements;
+- added the read-only L0/L1 Command Catalog and explicit forbidden L2/L3 authority surface;
+- exposed additive GET-only `/api/v3/config*`, `/api/v3/commands*` and Workbench status routes;
+- added Configuration Registry and Command Catalog Workbench surfaces while retaining disabled execution affordances.
+
 ## 2026-08-29 — Visualization V3-2A Workbench Shell + Context Bus
 
 - added the desktop-first FinAgent Workbench shell with registry-driven current/future modules while preserving existing V1/V2/A5 routes;
@@ -90,7 +111,7 @@ This file summarizes meaningful development milestones. Commit and pull-request 
 - added immutable T+1 total/sellable/unsettled inventory accounting;
 - separated broker commission, minimum commission, sell-side stamp duty, transfer fee and optional exchange/regulatory fees;
 - added deterministic exact-open fills, fee-aware cash scaling, local historical smoke, Windows/Ubuntu tests and an A3 guide;
-- kept A3 outside factor reserve, promotion, PAPER, realtime and live-capital claims.
+- kept A3 outside factor reserve, promotion, holdout, PAPER, realtime and live-capital claims.
 
 ## 2026-08-28 — A2.6 robust ResearchProgram
 
@@ -227,7 +248,6 @@ Stage-specific PHASE/DEVLOG/release notes were removed from the active `docs/` t
 - added append-only consumption audit linkage plus audit reconciliation for terminal-written/audit-missing crash windows;
 - added lifecycle replay verification and regression coverage for concurrency, persistence failure, store reopen and ledger tampering;
 - kept production 2025+ reserve unconsumed during development and CI; actual execution remains an explicit human-authorized operation over a reviewed production seal.
-
 
 ## 2026-08-29 — A5-4 Workspace reserve evidence integration
 
