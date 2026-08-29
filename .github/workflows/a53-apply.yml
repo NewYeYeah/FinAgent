@@ -24,13 +24,16 @@ jobs:
           from pathlib import Path
           import base64, gzip, hashlib
 
-          expected_parts = {
-              'part00.txt': '25c1a4097b910d3bfdc7253f990e3d47db80e826df56970ebe83b84823f4bfd6',
-              'part01.txt': '82b0d5a8c5016821f6c508026f167b610623e8fb1ddaaa632e706da9c9d755d4',
-              'part02.txt': 'c410978efaf31fe8aeeddf123d907772f397e9c31e96f24a93e115903dd12a83',
-          }
+          expected_parts = [
+              ('part00.txt', '25c1a4097b910d3bfdc7253f990e3d47db80e826df56970ebe83b84823f4bfd6'),
+              ('part01_0.txt', '5acf57bd71b69591f934a663fffb6e13e0246b9d6d1d2ea19cd6045d43c22787'),
+              ('part01_1.txt', '02d70abccacf0096f88baf036ced29e233f1972cb16cd3608cf0ae1e3187169c'),
+              ('part01_2.txt', 'f93a782f2753bc78d6332369bc0f4953d8a224d08e21d90fec484286dd4d0ca4'),
+              ('part01_3.txt', 'dbcffd2c83eeb75fe5221d6358b988139432ce8c448fcbd0c4cf549e27ee716e'),
+              ('part02.txt', 'c410978efaf31fe8aeeddf123d907772f397e9c31e96f24a93e115903dd12a83'),
+          ]
           parts = []
-          for name, expected in expected_parts.items():
+          for name, expected in expected_parts:
               path = Path('tools/a53_payload') / name
               data = path.read_bytes()
               digest = hashlib.sha256(data).hexdigest()
