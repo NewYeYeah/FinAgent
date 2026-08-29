@@ -4,6 +4,7 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - "src/finagent/backtest/__init__.py"
       - "src/finagent/backtest/strategy_decision_*.py"
       - "scripts/materialize_strategy_decision_series.py"
       - "tests/test_strategy_decision_series_v40.py"
@@ -11,6 +12,7 @@ on:
   push:
     branches: [main]
     paths:
+      - "src/finagent/backtest/__init__.py"
       - "src/finagent/backtest/strategy_decision_*.py"
       - "scripts/materialize_strategy_decision_series.py"
       - "tests/test_strategy_decision_series_v40.py"
@@ -31,6 +33,7 @@ jobs:
       - name: Lint
         run: |
           ruff check \
+            src/finagent/backtest/__init__.py \
             src/finagent/backtest/strategy_decision_series.py \
             src/finagent/backtest/strategy_decision_alpha.py \
             scripts/materialize_strategy_decision_series.py \
@@ -39,6 +42,7 @@ jobs:
       - name: Type check
         run: |
           mypy \
+            src/finagent/backtest/__init__.py \
             src/finagent/backtest/strategy_decision_series.py \
             src/finagent/backtest/strategy_decision_alpha.py \
             scripts/materialize_strategy_decision_series.py
