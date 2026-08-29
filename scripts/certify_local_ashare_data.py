@@ -4,14 +4,13 @@ from __future__ import annotations
 import argparse
 import json
 import tomllib
-from datetime import date
 from pathlib import Path
 
-from finagent.data import (
-    AshareBarFrequency,
-    LocalAshareDatasetInspector,
-    LocalAshareDatasetLayout,
+from finagent.application import (
+    ApplicationCommandInvocation,
+    LocalAshareCertificationApplicationService,
 )
+from finagent.data import AshareBarFrequency
 
 
 def _load(path: Path) -> dict[str, object]:
@@ -21,14 +20,6 @@ def _load(path: Path) -> dict[str, object]:
     if not isinstance(values, dict):
         raise TypeError("configuration must contain [local_ashare]")
     return values
-
-
-def _date(value: object | None) -> date | None:
-    if value in {None, ""}:
-        return None
-    if isinstance(value, date):
-        return value
-    return date.fromisoformat(str(value))
 
 
 def main() -> int:
@@ -42,33 +33,36 @@ def main() -> int:
     parser.add_argument("--root", type=Path, help="override local_ashare.root")
     parser.add_argument("--sample-symbol", help="override local_ashare.sample_symbol")
     parser.add_argument("--sample-date", help="YYYY-MM-DD override")
-    parser.add_argument("--frequency", choices=tuple(item.value for item in AshareBarFrequency))
+    parser.add_argument(
+        "--frequency",
+        choices=tuple(item.value for item in AshareBarFrequency),
+    )
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
 
-    values = _load(args.config)
-    root = args.root or Path(str(values["root"]))
-    layout = LocalAshareDatasetLayout(
-        root=root,
-        basic_filename=str(values.get("basic_filename", "stock_basic_data.parquet")),
-        daily_filename=str(values.get("daily_filename", "stock_daily.parquet")),
+    parameters: dict[str, object] = {}
+    if args.root is not None:
+        parameters["root"] = args.root
+    if args.sample_symbol is not None:
+        parameters["sample_symbol"] = args.sample_symbol
+    if args.sample_date is not None:
+        parameters["sample_date"] = args.sample_date
+    if args.frequency is not None:
+        parameters["frequency"] = args.frequency
+    if args.output is not None:
+        parameters["output"] = args.output
+
+    execution = LocalAshareCertificationApplicationService().execute(
+        ApplicationCommandInvocation(
+            command_id="data.certify_local_ashare",
+            config_values=_load(args.config),
+            parameters=parameters,
+            requested_by="cli",
+        )
     )
-    frequency = AshareBarFrequency(
-        str(args.frequency or values.get("sample_frequency", "1min"))
-    )
-    symbol = str(args.sample_symbol or values.get("sample_symbol", "")).strip() or None
-    selected_date = _date(args.sample_date or values.get("sample_date"))
-    report = LocalAshareDatasetInspector(layout).inspect(
-        intraday_symbol=symbol,
-        intraday_date=selected_date,
-        frequency=frequency,
-    )
-    output = args.output or Path(
-        str(values.get("report_path", "reports/local_ashare_certification.json"))
-    )
-    report.write_json(output)
-    print(json.dumps(report.to_dict(), ensure_ascii=False, indent=2, sort_keys=True))
-    return 0 if report.passed else 2
+    report = execution.outputs.get("report", {})
+    print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0 if execution.status == "succeeded" else 2
 
 
 if __name__ == "__main__":
