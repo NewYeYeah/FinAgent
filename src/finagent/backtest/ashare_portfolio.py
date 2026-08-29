@@ -38,6 +38,7 @@ from finagent.portfolio.mean_variance import MeanVarianceConfig, MeanVarianceOpt
 from finagent.research.ashare_robust_program import (
     AshareExpandingWalkForwardPlan,
     AshareRobustFactorSelection,
+    AshareWalkForwardFold,
 )
 from finagent.research.ashare_universe import AshareResearchUniverseProvider
 from finagent.research.panel_feature_materializer import (
@@ -1079,6 +1080,7 @@ class AshareExecutionAwarePortfolioValidator:
         fold,
         universe: tuple[AssetId, ...],
         primary_label: str,
+        test_sessions: tuple[date, ...] | None = None,
     ) -> tuple[AsharePortfolioFoldResult, list[dict[str, object]]]:
         required = tuple(
             dict.fromkeys(
@@ -1112,20 +1114,27 @@ class AshareExecutionAwarePortfolioValidator:
         )
         alpha_model.fit(train_request, split_name=fold.train_split)
 
-        calendar_request = DatasetRequest(
-            universe=universe,
-            features=("close",),
-            labels=(primary_label,),
-            splits={fold.test_split: fold.test},
-            dataset_id=f"a4-{fold.fold_id}-calendar",
-            metadata={"scope": "A4 inference calendar; no forward rows"},
-        )
-        calendar_panel = self.inference_adapter.build_dataset(calendar_request).get_split(
-            fold.test_split
-        )
-        sessions = tuple(timestamp.astimezone(UTC).date() for timestamp in calendar_panel.timestamps)
+        if test_sessions is None:
+            calendar_request = DatasetRequest(
+                universe=universe,
+                features=("close",),
+                labels=(primary_label,),
+                splits={fold.test_split: fold.test},
+                dataset_id=f"a4-{fold.fold_id}-calendar",
+                metadata={"scope": "A4 inference calendar; no forward rows"},
+            )
+            calendar_panel = self.inference_adapter.build_dataset(calendar_request).get_split(
+                fold.test_split
+            )
+            sessions = tuple(
+                timestamp.astimezone(UTC).date() for timestamp in calendar_panel.timestamps
+            )
+        else:
+            sessions = tuple(test_sessions)
         if not sessions:
             raise ValueError(f"A4 fold {fold.fold_id!r} has no test sessions")
+        if tuple(sorted(set(sessions))) != sessions:
+            raise ValueError(f"A4 fold {fold.fold_id!r} test sessions must be unique and ordered")
 
         initial_date = sessions[0] - timedelta(days=1)
         net_state = AshareAccountState(initial_date, self.config.initial_cash)
@@ -1432,12 +1441,19 @@ class AshareExecutionAwarePortfolioValidator:
             reason_counts=reasons,
         )
 
-    def _outcome(
+    def failed_policy_reason_codes(
         self,
         aggregate: AsharePortfolioAggregateResult,
-    ) -> AsharePortfolioValidationOutcome:
+    ) -> tuple[str, ...]:
+        """Return only failed frozen economic/execution policy reason codes.
+
+        A4 appends scope-specific reserve/promotion reason codes to its outcome. A5
+        reuses the exact frozen numeric policy but must emit its own terminal reserve
+        semantics, so this method exposes the shared deterministic checks without
+        smuggling A4 scope labels into A5 evidence.
+        """
+
         policy = self.config.policy
-        reasons: list[str] = []
         checks = (
             (
                 aggregate.net_metrics.annualized_return
@@ -1483,7 +1499,13 @@ class AshareExecutionAwarePortfolioValidator:
                 "CASH_FALLBACK_RATIO_ABOVE_THRESHOLD",
             ),
         )
-        reasons.extend(code for passed, code in checks if not passed)
+        return tuple(code for passed, code in checks if not passed)
+
+    def _outcome(
+        self,
+        aggregate: AsharePortfolioAggregateResult,
+    ) -> AsharePortfolioValidationOutcome:
+        reasons = list(self.failed_policy_reason_codes(aggregate))
         passed = not reasons
         reasons.extend(("RESERVE_UNTOUCHED", "PROMOTION_REQUIRES_ONE_SHOT_RESERVE"))
         return AsharePortfolioValidationOutcome(
@@ -1495,7 +1517,41 @@ class AshareExecutionAwarePortfolioValidator:
             execution_validation_passed=passed,
             promotion_eligible=False,
             reason_codes=tuple(reasons),
-            policy=policy,
+            policy=self.config.policy,
+        )
+
+    def run_terminal_fold(
+        self,
+        *,
+        fold: AshareWalkForwardFold,
+        universe: tuple[AssetId, ...],
+        primary_label: str,
+        test_sessions: tuple[date, ...] | None = None,
+    ) -> tuple[
+        AsharePortfolioFoldResult,
+        AsharePortfolioAggregateResult,
+        tuple[str, ...],
+        tuple[dict[str, object], ...],
+    ]:
+        """Evaluate one frozen terminal fold with the exact A4 mechanics.
+
+        The method does not assign reserve governance state. It exists so A5 can
+        reuse the audited A4 alpha/risk/optimizer/A3 execution path while owning
+        separate one-shot and terminal-evidence semantics.
+        """
+
+        fold_result, rows = self._fold(
+            fold=fold,
+            universe=universe,
+            primary_label=primary_label,
+            test_sessions=test_sessions,
+        )
+        aggregate = self._aggregate((fold_result,))
+        return (
+            fold_result,
+            aggregate,
+            self.failed_policy_reason_codes(aggregate),
+            tuple(rows),
         )
 
     def run(

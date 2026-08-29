@@ -184,3 +184,12 @@ Stage-specific PHASE/DEVLOG/release notes were removed from the active `docs/` t
 - added append-only SQLite eligibility persistence with one seal per reserve/program/A4 identity and deterministic seal IDs independent of audit timestamp;
 - added CLI tooling for explicit human review attestation and clean-Git eligibility sealing;
 - kept reserve state `untouched`; no reserve runner, terminal result or consumed-state mutation is introduced by A5-1.
+
+## 2026-08-29 — A5-2 one-shot runner and terminal evidence
+
+- added a deterministic A-share one-shot reserve runner that accepts only the exact persisted A5-1 eligibility seal, sealed A2.6/A4 reports and sealed Git identity;
+- reused the audited A4 frozen-factor calibration, risk, optimizer and A3 execution path for one terminal reserve fold with all pre-reserve history as final training;
+- avoided duplicate reserve-calendar materialization by passing the one materialized ordered session set into the terminal A4 fold;
+- added append-only terminal `RESERVE_PASS` / `RESERVE_FAIL` evidence binding reserve dataset, execution ledger, fold, aggregate, frozen policy and reason-code identities;
+- made execution-time exceptions legal terminal `RESERVE_FAIL` outcomes with automatic retry forbidden, while keeping PASS non-promotional;
+- kept real reserve execution blocked until A5-3 atomically persists `CONSUMED` before first reserve access and closes the crash/retry window.

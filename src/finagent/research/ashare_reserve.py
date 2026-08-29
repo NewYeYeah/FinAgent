@@ -338,6 +338,31 @@ class ExactReplayProof:
             payload["proof_id"] = self.proof_id
         return payload
 
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any]) -> "ExactReplayProof":
+        result = cls(
+            program_result_id=_string(raw.get("program_result_id"), "program_result_id"),
+            portfolio_validation_id=_string(
+                raw.get("portfolio_validation_id"), "portfolio_validation_id"
+            ),
+            a26_reference_sha256=_string(
+                raw.get("a26_reference_sha256"), "a26_reference_sha256"
+            ),
+            a26_replay_sha256=_string(raw.get("a26_replay_sha256"), "a26_replay_sha256"),
+            a4_reference_sha256=_string(
+                raw.get("a4_reference_sha256"), "a4_reference_sha256"
+            ),
+            a4_replay_sha256=_string(raw.get("a4_replay_sha256"), "a4_replay_sha256"),
+            ledger_digest=_string(raw.get("ledger_digest"), "ledger_digest"),
+            ledger_file_sha256=_string(
+                raw.get("ledger_file_sha256"), "ledger_file_sha256"
+            ),
+        )
+        provided = str(raw.get("proof_id", "")).strip()
+        if provided and provided != result.proof_id:
+            raise ValueError("exact replay proof identity does not match payload")
+        return result
+
 
 @dataclass(frozen=True, slots=True)
 class ReserveEligibilitySeal:
@@ -473,6 +498,87 @@ class ReserveEligibilitySeal:
             "seal_id": self.seal_id,
             "created_at": self.created_at.isoformat(),
         }
+
+    @classmethod
+    def from_dict(cls, raw: Mapping[str, Any]) -> "ReserveEligibilitySeal":
+        if raw.get("schema_version") != RESERVE_ELIGIBILITY_SCHEMA:
+            raise ValueError("unsupported reserve eligibility seal schema")
+        reserve = _mapping(raw.get("reserve"), "reserve")
+        if str(reserve.get("status")) != "untouched":
+            raise PermissionError("persisted reserve eligibility seal is not untouched")
+        proof = ExactReplayProof.from_dict(
+            _mapping(raw.get("exact_replay_proof"), "exact_replay_proof")
+        )
+        result = cls(
+            program_result_id=_string(raw.get("program_result_id"), "program_result_id"),
+            program_report_sha256=_string(
+                raw.get("program_report_sha256"), "program_report_sha256"
+            ),
+            program_spec_id=_string(raw.get("program_spec_id"), "program_spec_id"),
+            selection_id=_string(raw.get("selection_id"), "selection_id"),
+            portfolio_validation_id=_string(
+                raw.get("portfolio_validation_id"), "portfolio_validation_id"
+            ),
+            portfolio_report_sha256=_string(
+                raw.get("portfolio_report_sha256"), "portfolio_report_sha256"
+            ),
+            a4_spec_id=_string(raw.get("a4_spec_id"), "a4_spec_id"),
+            ledger_digest=_string(raw.get("ledger_digest"), "ledger_digest"),
+            ledger_file_sha256=_string(
+                raw.get("ledger_file_sha256"), "ledger_file_sha256"
+            ),
+            reserve_id=_string(reserve.get("reserve_id"), "reserve_id"),
+            reserve_start=_string(reserve.get("start"), "reserve_start"),
+            reserve_end=_string(reserve.get("end"), "reserve_end"),
+            data_version=_string(raw.get("data_version"), "data_version"),
+            selected_feature_digests=tuple(
+                _string(value, "selected_feature_digest")
+                for value in _sequence(
+                    raw.get("selected_feature_digests"), "selected_feature_digests"
+                )
+            ),
+            selected_weights=tuple(
+                _float_value(value, "selected_weight")
+                for value in _sequence(raw.get("selected_weights"), "selected_weights")
+            ),
+            selected_directions=tuple(
+                _int_value(value, "selected_direction")
+                for value in _sequence(raw.get("selected_directions"), "selected_directions")
+            ),
+            protocol_snapshot=_mapping(raw.get("protocol_snapshot"), "protocol_snapshot"),
+            protocol_digest=_string(raw.get("protocol_digest"), "protocol_digest"),
+            exact_replay_proof=proof,
+            v2_review_attestation_id=_string(
+                raw.get("v2_review_attestation_id"), "v2_review_attestation_id"
+            ),
+            v2_review_bundle_sha256=_string(
+                raw.get("v2_review_bundle_sha256"), "v2_review_bundle_sha256"
+            ),
+            workspace_commit_sha=_string(
+                raw.get("workspace_commit_sha"), "workspace_commit_sha"
+            ),
+            code_git_sha=_string(raw.get("code_git_sha"), "code_git_sha"),
+            authority_policy_id=_string(
+                raw.get("authority_policy_id"), "authority_policy_id"
+            ),
+            authority_policy_digest=_string(
+                raw.get("authority_policy_digest"), "authority_policy_digest"
+            ),
+            created_at=datetime.fromisoformat(_string(raw.get("created_at"), "created_at")),
+        )
+        provided = str(raw.get("seal_id", "")).strip()
+        if provided and provided != result.seal_id:
+            raise ValueError("reserve eligibility seal identity does not match payload")
+        if raw.get("eligibility_status") != "ELIGIBLE_SEALED":
+            raise PermissionError("reserve eligibility seal status is not ELIGIBLE_SEALED")
+        if raw.get("reserve_consumed") is not False:
+            raise PermissionError("A5-2 requires a pre-consumption eligibility seal")
+        return result
+
+    @classmethod
+    def read_json(cls, path: str | Path) -> "ReserveEligibilitySeal":
+        raw = json.loads(Path(path).read_text(encoding="utf-8"))
+        return cls.from_dict(_mapping(raw, "reserve eligibility seal"))
 
     def write_json(self, path: str | Path) -> Path:
         target = Path(path)

@@ -1,3 +1,4 @@
+from .ashare_reserve import AshareReservePortfolioEngine
 from .ashare_portfolio import (
     AshareExecutionAwarePortfolioValidator,
     AsharePortfolioAggregateResult,
@@ -47,6 +48,7 @@ __all__ = [
     "AsharePortfolioValidationPolicy",
     "AsharePortfolioValidationResult",
     "AsharePortfolioValidationSpec",
+    "AshareReservePortfolioEngine",
     "BacktestConfig",
     "BacktestPoint",
     "BacktestResult",

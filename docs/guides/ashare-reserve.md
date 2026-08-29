@@ -1,6 +1,6 @@
 # A-share One-shot Reserve Governance
 
-This guide covers the A5 reserve protocol. The current implementation milestone is **A5-1 ReserveEligibilitySeal**. A5-1 does **not** open, read, evaluate or consume the 2025+ reserve.
+This guide covers the A5 reserve protocol. **A5-1 eligibility sealing and A5-2 deterministic one-shot runner/terminal evidence are implemented.** No production 2025+ reserve has been consumed. A5-2 remains intentionally non-runnable as a production workflow until A5-3 adds a crash-safe durable pre-access `CONSUMED` claim.
 
 ## Authority boundary
 
@@ -13,14 +13,14 @@ A4 frozen execution-aware validation
         ↓
 V2 human evidence review
         ↓
-A5-1 ReserveEligibilitySeal      ← implemented
+A5-1 ReserveEligibilitySeal      ✓
         ↓
-A5-2 one-shot reserve runner     ← not implemented yet
+A5-2 runner + terminal evidence  ✓ code/CI only
         ↓
-A5-3 terminal consumed state
+A5-3 crash-safe CONSUMED state   ← production blocker
 ```
 
-`ReserveEligibilitySeal` is only a permission prerequisite for a later human-authorized one-shot runner. It has no API or method that can mark reserve data as consumed.
+`ReserveEligibilitySeal` remains the immutable permission prerequisite. A5-2 accepts only that persisted seal, the exact sealed A2.6/A4 reports and the sealed Git identity. It adds no Agent/UI execution route and does not mutate eligibility state. Because A5-2 deliberately does not own the durable pre-access consumption claim, **the real reserve must not be run until A5-3 is complete**.
 
 The frozen A5 authority policy rejects any configuration that enables:
 
@@ -142,4 +142,37 @@ A5-1 does not:
 - close/promote a strategy;
 - expose a Workspace write route.
 
-Those responsibilities belong to A5-2/A5-3 and require a separate bounded PR after a real production seal is reviewed.
+A5-2 now owns deterministic evaluation and terminal evidence; A5-3 still owns durable consumed-state mutation and crash-safe replay/audit.
+## A5-2 deterministic runner semantics
+
+A5-2 reuses the audited A4 alpha/risk/optimizer/A3 execution mechanics, but assigns separate terminal reserve semantics. The execution identity is deterministic over the A5-1 seal, reserve identity and fixed execution-protocol ID.
+
+Final training follows `all-pre-reserve-half-open-v1`:
+
+```text
+train = first A2.6 development start → reserve.start (exclusive)
+test  = reserve.start → reserve.end (exclusive)
+```
+
+Canonical forward labels already become `NaN` at the end of a split when their target session is outside the split, so fitting through the half-open pre-reserve boundary does not import a forward label from the reserve. The reserve calendar is materialized once and the resulting ordered sessions are passed into the terminal A4 fold, avoiding a second calendar materialization.
+
+The terminal policy is `reuse-frozen-a4-economic-policy-v1`: no threshold is re-estimated from reserve evidence. A completed run emits exactly one of:
+
+```text
+RESERVE_PASS
+RESERVE_FAIL
+```
+
+An operational exception after the one-shot execution starts is conservatively recorded as terminal `RESERVE_FAIL` with `EXECUTION_FAILURE` and `AUTOMATIC_RETRY_FORBIDDEN`; it is never treated as permission to retry. PASS never promotes automatically: terminal evidence always records `promotion_eligible=false` and leaves promotion to A6.
+
+A5-2 persists append-only terminal evidence and binds the reserve dataset digest, terminal execution-ledger digest/file SHA, fold evidence, aggregate evidence, frozen policy and failure reason codes. It is idempotent for an already persisted terminal result and will not re-enter the engine on re-inspection.
+
+### Why production execution is still blocked
+
+A5-2 cannot by itself close the crash window between the first reserve observation access and persistence of terminal evidence. The terminal payload therefore records:
+
+```text
+consumed_state_persistence = PENDING_A5_3
+```
+
+A5-3 must atomically claim the reserve as consumed **before** the first observation access, survive process failure, persist/recover the terminal ledger and reject every subsequent consumption attempt. Until that exists, A5-2 is a tested engine boundary, not authorization to run the real reserve.
