@@ -13,6 +13,7 @@ The current baseline supports:
 - A3 exact-session A-share execution semantics including T+1, board quantity rules, suspension/price limits and asymmetric fees;
 - A4 execution-aware internal portfolio validation with frozen-factor Alpha, risk, optimizer targets, gross/net ledgers and replay;
 - A5 eligibility sealing, one-shot evaluation, crash-safe `CONSUMED`, terminal/ledger persistence and replay/audit;
+- V4-0 authoritative `StrategyDecisionSeriesEvidence`: immutable signal/alpha → target → A3 order/fill → realized weight → gross/net PnL/cost rows persisted as manifest JSON + Parquet;
 - Alpaca SIP US reference ingestion and local A-share Parquet research;
 - V2/A5 evidence review and the accepted V3 Workbench foundation: Agent indexing, governed local Control, typed deep links, sanitized product SSE and cross-plane acceptance;
 - an explicit two-plane Workbench architecture: GET-only Evidence + local governed Control;
@@ -20,7 +21,7 @@ The current baseline supports:
 
 The market priority remains **A-share historical research first**. A-share live capital/realtime acceptance remains deferred until frozen research, execution-aware validation, reserve governance and repeated PAPER gates are complete.
 
-The V3 Workbench Foundation is complete through **V3-5 acceptance**. The current development milestone is **V4-0 — StrategyDecisionSeriesEvidence**: persist the authoritative signal → target → order → fill → position → PnL/cost series before building the Strategy Decision Explorer.
+The V3 Workbench Foundation is complete through **V3-5 acceptance**, and **V4-0 StrategyDecisionSeriesEvidence** is complete. The current development milestone is **V4-1 — FactorSeriesEvidence**: persist the missing authoritative IC/decay/quantile/long-short/turnover/coverage time series before building the linked Factor Tear Sheet.
 
 ## Quick start
 
@@ -69,6 +70,63 @@ RESERVE_FAIL → no promotion; same reserve never reused for modified-strategy v
 ```
 
 A completed A4 report remains `promotion_eligible=false`. No production 2025+ reserve is consumed by development or CI.
+
+## V4-0 StrategyDecisionSeriesEvidence
+
+V4-0 adds a separate deterministic evidence layer over immutable A2.6/A4 artifacts. It does **not** modify the existing A4 report or JSONL execution-ledger schema and does not rerun risk, optimizer or execution.
+
+The authoritative path is materialized per `(fold_id, session_date, asset)`:
+
+```text
+formation alpha score / rank
+        ↓
+portfolio target
+        ↓
+A3 desired quantity
+        ↓
+A3 executable quantity / constraint reasons
+        ↓
+fill quantity / reference price / execution price
+        ↓
+close realized weight
+        ↓
+gross PnL / fees / slippage / net PnL
+```
+
+The missing formation-time alpha vector is reconstructed by replaying only the exact frozen A4 AlphaModel. Every fold must rebuild to the same A4 `alpha_model_id`; prediction uses formation features/PIT eligibility only, and no forward label rows are requested. The combined score is recovered from the verified train-only calibration and ranked deterministically.
+
+Asset PnL follows the A4 wealth identity and is reconciled on every source session:
+
+```text
+asset_pnl
+= current_close_market_value
+- previous_close_market_value
+- signed_executed_notional
+- actual_fees
+
+sum(asset gross_pnl) == A4 gross NAV change
+sum(asset net_pnl)   == A4 net NAV change
+```
+
+Slippage is already embedded in net execution price and is also retained as explanatory cost evidence; it is not subtracted twice.
+
+Materialize from an existing A4 validation:
+
+```bash
+python scripts/materialize_strategy_decision_series.py \
+  configs/research/ashare_portfolio_validation.local.toml \
+  --a4-report reports/ashare_a4.json \
+  --ledger reports/ashare_a4_ledger.jsonl
+```
+
+Default outputs are siblings of the A4 report:
+
+```text
+<report-stem>.strategy-decisions.json
+<report-stem>.strategy-decisions.parquet
+```
+
+The manifest binds A4/A2.6/data/factor/AlphaModel/ledger/row identities plus physical SHA-256 values. `StrategyDecisionSeriesProjection` verifies those bindings and exposes bounded read-only asset/fold/date queries with at most 5,000 rows per request. Browser chart/API integration remains a later V4 product stage; React must consume authoritative series rather than reconstruct the decision path from summary reports.
 
 ## FinAgent Workbench V3.5
 
@@ -248,6 +306,8 @@ The Agent never owns positions, fills, risk limits, validation thresholds or bro
 19. SSE is a sanitized notification projection, never an alternate evidence/control authority.
 20. Product streams never expose hidden reasoning, raw provider/OTLP/Phoenix payloads or host paths.
 21. V3 foundation acceptance does not imply alpha persistence, reserve authorization, promotion or live readiness.
+22. V4 authoritative series bind immutable core identities and reconcile to source evidence before presentation code may consume them.
+23. V4-0 materialization never rewrites A4 evidence or grants reserve, promotion, PAPER, broker or live authority.
 
 ## Documentation
 
@@ -264,6 +324,7 @@ The Agent never owns positions, fills, risk limits, validation thresholds or bro
 - [Roadmap](docs/development/roadmap.md)
 - [V3-4 changelog](docs/development/changelog-v3-4.md)
 - [V3-5 acceptance](docs/development/changelog-v3-5.md)
+- [V4-0 StrategyDecisionSeries contract](docs/development/changelog-v4-0.md)
 - [Changelog](docs/development/changelog.md)
 
 ## Data note
