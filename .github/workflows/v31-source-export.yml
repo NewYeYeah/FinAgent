@@ -1,0 +1,29 @@
+name: v31-source-export
+
+on:
+  push:
+    branches:
+      - delivery/v31-source-export
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    if: ${{ contains(github.event.head_commit.message, 'stage V3-1 source export') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+      - name: Archive exact main source
+        run: |
+          git archive --format=zip --prefix=FinAgent/ HEAD -o FinAgent-V3-1-AgentIndex.zip
+          sha256sum FinAgent-V3-1-AgentIndex.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: finagent-v31-source
+          path: FinAgent-V3-1-AgentIndex.zip
+          if-no-files-found: error
+          retention-days: 1
