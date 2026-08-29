@@ -34,23 +34,20 @@ jobs:
         run: |
           ruff check \
             src/finagent/research/factor_series.py \
+            src/finagent/research/__init__.py \
             scripts/materialize_factor_series.py \
             tests/test_factor_series_v41.py \
             --select E4,E7,E9,F
-      - name: Type check core
+      - name: Type check
         run: |
-          # The manifest builder owns a canonical dict[str, object] JSON payload;
-          # runtime construction plus reconciliation validates the one list-valued
-          # decay_labels field. Keep this exception local to that module only.
           mypy \
-            --disable-error-code attr-defined \
-            src/finagent/research/factor_series.py
-      - name: Type check materializer
-        run: mypy scripts/materialize_factor_series.py
-      - name: Import contract
+            src/finagent/research/factor_series.py \
+            src/finagent/research/__init__.py \
+            scripts/materialize_factor_series.py
+      - name: Public import contract
         run: |
           python - <<'PY'
-          from finagent.research.factor_series import (
+          from finagent.research import (
               AshareFactorSeriesMaterializer,
               FactorSeriesManifest,
               FactorSeriesProjection,
