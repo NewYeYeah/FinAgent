@@ -6,6 +6,7 @@ import type {
   WorkbenchSseEventV3,
   WorkbenchSseStatus,
 } from "./streamTypes";
+import "./stream.css";
 
 export function useWorkbenchSse<TProjection>({
   path,
