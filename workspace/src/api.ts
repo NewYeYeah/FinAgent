@@ -20,9 +20,13 @@ import type {
   AgentProjectsResponseV3,
   AgentRunResponseV3,
   AgentThreadResponseV3,
+  ArtifactInspectionV3,
   CommandCatalogResponseV3,
+  CommandRunProjectionV3,
   ConfigDiffV3,
   ConfigRegistryResponseV3,
+  WorkbenchReferenceKindV3,
+  WorkbenchReferenceV3,
 } from "./workbench/types";
 import type {
   CommandRecordListV3,
@@ -108,6 +112,22 @@ export const workspaceApi = {
     getJson<AgentThreadResponseV3>(`/api/v3/agent/threads/${encodeURIComponent(threadId)}`),
   agentRunV3: (runId: string) =>
     getJson<AgentRunResponseV3>(`/api/v3/agent/runs/${encodeURIComponent(runId)}`),
+  referenceV3: (kind: WorkbenchReferenceKindV3, identity: string) =>
+    getJson<WorkbenchReferenceV3>(
+      `/api/v3/refs/${encodeURIComponent(kind)}/${encodeURIComponent(identity)}`,
+    ),
+  artifactV3: (artifactId: string) =>
+    getJson<ArtifactInspectionV3>(`/api/v3/artifacts/${encodeURIComponent(artifactId)}`),
+  commandRunsV3: (limit = 100) =>
+    getJson<{
+      schema_version: string;
+      read_only: true;
+      configured: boolean;
+      available: boolean;
+      items: CommandRunProjectionV3[];
+    }>(`/api/v3/command-runs?limit=${limit}`),
+  commandRunV3: (runId: string) =>
+    getJson<CommandRunProjectionV3>(`/api/v3/command-runs/${encodeURIComponent(runId)}`),
   configRegistryV3: () => getJson<ConfigRegistryResponseV3>("/api/v3/config"),
   configDiffV3: (left: string, right: string) =>
     getJson<ConfigDiffV3>(
