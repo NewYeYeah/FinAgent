@@ -1,6 +1,6 @@
 # A-share One-shot Reserve Governance
 
-This guide covers the A5 reserve protocol. **A5-1 eligibility sealing and A5-2 deterministic one-shot runner/terminal evidence are implemented.** No production 2025+ reserve has been consumed. A5-2 remains intentionally non-runnable as a production workflow until A5-3 adds a crash-safe durable pre-access `CONSUMED` claim.
+This guide covers the A5 reserve protocol. **A5-1 eligibility sealing, A5-2 deterministic one-shot execution, and A5-3 crash-safe consumed-state persistence/replay are implemented.** No production 2025+ reserve has been consumed by development or CI. Production execution now has the required state primitive, but it still requires an independently reviewed production seal and explicit human authorization.
 
 ## Authority boundary
 
@@ -15,12 +15,14 @@ V2 human evidence review
         ↓
 A5-1 ReserveEligibilitySeal      ✓
         ↓
-A5-2 runner + terminal evidence  ✓ code/CI only
+A5-2 runner + terminal evidence  ✓
         ↓
-A5-3 crash-safe CONSUMED state   ← production blocker
+A5-3 crash-safe CONSUMED state   ✓
+        ↓
+A5-4 Workspace reserve evidence  ← next engineering stage
 ```
 
-`ReserveEligibilitySeal` remains the immutable permission prerequisite. A5-2 accepts only that persisted seal, the exact sealed A2.6/A4 reports and the sealed Git identity. It adds no Agent/UI execution route and does not mutate eligibility state. Because A5-2 deliberately does not own the durable pre-access consumption claim, **the real reserve must not be run until A5-3 is complete**.
+`ReserveEligibilitySeal` remains the immutable permission prerequisite. The guarded runner accepts only that persisted seal, the exact sealed A2.6/A4 reports and the sealed Git identity. A5-3 adds a separate irreversible consumption authority; it does not grant Agent/UI execution rights. A production operator must still explicitly authorize the one-shot run.
 
 The frozen A5 authority policy rejects any configuration that enables:
 
@@ -142,7 +144,8 @@ A5-1 does not:
 - close/promote a strategy;
 - expose a Workspace write route.
 
-A5-2 now owns deterministic evaluation and terminal evidence; A5-3 still owns durable consumed-state mutation and crash-safe replay/audit.
+A5-2 owns deterministic evaluation and terminal evidence; A5-3 owns the durable state authority and replay/audit chain.
+
 ## A5-2 deterministic runner semantics
 
 A5-2 reuses the audited A4 alpha/risk/optimizer/A3 execution mechanics, but assigns separate terminal reserve semantics. The execution identity is deterministic over the A5-1 seal, reserve identity and fixed execution-protocol ID.
@@ -167,12 +170,32 @@ An operational exception after the one-shot execution starts is conservatively r
 
 A5-2 persists append-only terminal evidence and binds the reserve dataset digest, terminal execution-ledger digest/file SHA, fold evidence, aggregate evidence, frozen policy and failure reason codes. It is idempotent for an already persisted terminal result and will not re-enter the engine on re-inspection.
 
-### Why production execution is still blocked
+## A5-3 durable consumption and replay semantics
 
-A5-2 cannot by itself close the crash window between the first reserve observation access and persistence of terminal evidence. The terminal payload therefore records:
+A5-3 closes the crash/retry window before reserve access. The state authority persists a deterministic consumption claim with:
 
 ```text
-consumed_state_persistence = PENDING_A5_3
+state = CONSUMED
+pre_access_commit_required = true
+irreversible = true
+automatic_retry_allowed = false
+consumption_protocol_id = a5-pre-access-consumed-claim-v1
 ```
 
-A5-3 must atomically claim the reserve as consumed **before** the first observation access, survive process failure, persist/recover the terminal ledger and reject every subsequent consumption attempt. Until that exists, A5-2 is a tested engine boundary, not authorization to run the real reserve.
+`SQLiteReserveConsumptionStore.claim()` uses a SQLite `BEGIN IMMEDIATE` transaction, unique `execution_id` / `seal_id` / `reserve_id` constraints and `synchronous=FULL`. The only caller allowed to enter `engine.evaluate()` is the transaction that reports `acquired=true`. A concurrent or restarted process that sees an existing claim receives no reserve-access authority.
+
+A5-3 terminal evidence uses schema `finagent.ashare-reserve-terminal-evidence.v2` and binds `consumption_claim_id`, `consumed_at`, `consumed_state_persistence=DURABLE_PRE_ACCESS_V1`, and a reserve access state. Completed evaluations persist terminal evidence and canonical JSONL ledger bytes transactionally in the terminal store.
+
+Crash behavior is deliberately conservative:
+
+- `CONSUMED` claim + terminal present: re-open only persisted terminal/ledger; never re-enter the engine;
+- `CONSUMED` claim + terminal absent: normal execution fails closed with `ReserveAlreadyConsumedError`;
+- an operator may call explicit `recover_interrupted()` to create terminal `RESERVE_FAIL` with `RECOVERED_WITHOUT_RESERVE_REACCESS`;
+- terminal present + missing consumption audit: reconciliation may rebuild only the audit link, without reserve access;
+- persistence failure after the `CONSUMED` commit never rolls the reserve back to `untouched`.
+
+`audit_lifecycle()` replays the persisted seal → consumption claim → terminal payload → durable ledger → consumption audit chain and verifies terminal/ledger SHA-256 identities. This replay does not open the reserve dataset.
+
+### Production boundary
+
+A5-3 provides the crash-safe primitive required for a real one-shot run; it does not itself consume production reserve during CI. Before actual execution, independently review the production A5-1 seal, code/data identities, A5-3 acceptance results and human authorization. A5-4 will expose these records in the read-only Workspace.

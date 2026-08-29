@@ -65,14 +65,14 @@ Authoritative metrics continue to come from FinAgent core. Presentation-only der
 
 ### P1 — A5 one-shot reserve protocol
 
-**A5-1 and A5-2 implementation are complete; no production reserve has been consumed.** The repository now provides deterministic eligibility/review sealing plus the frozen one-shot evaluation engine and terminal `RESERVE_PASS` / `RESERVE_FAIL` evidence. A5-2 deliberately remains behind the A5-3 production gate because it does not yet own a crash-safe pre-access consumption claim.
+**A5-1, A5-2 and A5-3 implementation are complete; no production reserve has been consumed by development or CI.** The repository now provides deterministic eligibility/review sealing, the frozen one-shot evaluation engine, an irreversible pre-access `CONSUMED` claim, durable terminal/ledger persistence, explicit crash recovery without reserve re-access, and lifecycle replay/audit.
 
 Remaining sequence:
 
 1. issue and independently review the production `ReserveEligibilitySeal`;
-2. **A5-3:** atomically persist `CONSUMED` before first reserve access, block duplicate consumption, recover terminal artifacts and provide replay/audit tests;
-3. only after A5-3 acceptance, execute the exact sealed reserve once through the already frozen A5-2 runner;
-4. **A5-4:** integrate terminal reserve evidence into the read-only Workspace;
+2. independently verify the A5-3 state store/audit acceptance and archive the exact code/data identities;
+3. only then may a human operator execute the exact sealed reserve once through the A5-3 guarded one-shot runner;
+4. **A5-4:** integrate consumption/terminal/audit evidence into the read-only Workspace;
 5. never relabel the consumed reserve as development data.
 
 A reserve failure is a valid terminal outcome.
