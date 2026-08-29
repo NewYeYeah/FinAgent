@@ -21,7 +21,8 @@ import { NavLink, useLocation } from "react-router-dom";
 import { useState, type ReactNode } from "react";
 
 import { ReadOnlyBanner } from "../components";
-import { ConfigurationCatalogSurface, type ConfigurationSurface } from "./configuration";
+import { CommandCatalogSurface } from "./commandCatalog";
+import { ConfigurationCatalogSurface } from "./configuration";
 import { CommandPalette, ControlPlaneProvider, useControlPlane } from "./control";
 import {
   WORKBENCH_CONTEXT_KEYS,
@@ -69,8 +70,13 @@ const CONTEXT_LABELS: Record<WorkbenchContextKey, string> = {
   environment: "Environment",
 };
 
-function mergedSearch(context: WorkbenchContextState, fixed: Record<string, string> = {}): string {
-  const params = new URLSearchParams(workbenchContextSearch(context).replace(/^\?/, ""));
+function mergedSearch(
+  context: WorkbenchContextState,
+  fixed: Record<string, string> = {},
+): string {
+  const params = new URLSearchParams(
+    workbenchContextSearch(context).replace(/^\?/, ""),
+  );
   for (const [key, value] of Object.entries(fixed)) params.set(key, value);
   const output = params.toString();
   return output ? `?${output}` : "";
@@ -81,7 +87,10 @@ function NavigationItem({ panel }: { panel: WorkbenchPanelDescriptor }) {
   const { context } = useWorkbenchContext();
   if (panel.status === "reserved" || !panel.route) {
     return (
-      <span className="workbench-nav-item workbench-nav-reserved" aria-disabled="true">
+      <span
+        className="workbench-nav-item workbench-nav-reserved"
+        aria-disabled="true"
+      >
         {icon}
         <span>{panel.title}</span>
         <small>planned</small>
@@ -91,7 +100,10 @@ function NavigationItem({ panel }: { panel: WorkbenchPanelDescriptor }) {
   return (
     <NavLink
       className="workbench-nav-item"
-      to={{ pathname: panel.route, search: mergedSearch(context, panel.search_params) }}
+      to={{
+        pathname: panel.route,
+        search: mergedSearch(context, panel.search_params),
+      }}
       end={panel.route === "/"}
     >
       {icon}
@@ -136,7 +148,7 @@ export function ContextBar() {
             data-slot="config-drawer"
             type="button"
             disabled
-            title="Configuration remains read-only; governed protocol edits require a future explicit fork workflow"
+            title="Configuration remains read-only; protocol edits require a future governed fork workflow"
           >
             <Settings2 size={14} /> Config
           </button>
@@ -180,10 +192,11 @@ export function WorkbenchShell({ children }: { children: ReactNode }) {
   const panels = defaultPanelRegistry.list();
   const location = useLocation();
   const requestedSurface = new URLSearchParams(location.search).get("surface");
-  const catalogSurface: ConfigurationSurface | null =
-    location.pathname === "/widgets" && (requestedSurface === "configs" || requestedSurface === "commands")
-      ? requestedSurface
-      : null;
+  const configurationSurface =
+    location.pathname === "/widgets" && requestedSurface === "configs";
+  const commandSurface =
+    location.pathname === "/widgets" && requestedSurface === "commands";
+
   return (
     <div className="workbench-shell">
       <aside className="workbench-sidebar">
@@ -194,7 +207,10 @@ export function WorkbenchShell({ children }: { children: ReactNode }) {
             <span>Workbench Foundation</span>
           </div>
         </div>
-        <nav className="workbench-navigation" aria-label="FinAgent Workbench modules">
+        <nav
+          className="workbench-navigation"
+          aria-label="FinAgent Workbench modules"
+        >
           {panels.map((panel) => (
             <NavigationItem key={panel.panel_id} panel={panel} />
           ))}
@@ -205,7 +221,13 @@ export function WorkbenchShell({ children }: { children: ReactNode }) {
         <ReadOnlyBanner />
         <ContextBar />
         <div className="workbench-main-slot" data-slot="chart-workspace">
-          {catalogSurface ? <ConfigurationCatalogSurface surface={catalogSurface} /> : children}
+          {configurationSurface ? (
+            <ConfigurationCatalogSurface surface="configs" />
+          ) : commandSurface ? (
+            <CommandCatalogSurface />
+          ) : (
+            children
+          )}
         </div>
       </main>
     </div>
@@ -249,7 +271,14 @@ export function WorkbenchReservedSlot({
   title: string;
   detail: string;
 }) {
-  const icon = kind === "config" ? <SlidersHorizontal size={18} /> : kind === "command" ? <Command size={18} /> : <ChartCandlestick size={18} />;
+  const icon =
+    kind === "config" ? (
+      <SlidersHorizontal size={18} />
+    ) : kind === "command" ? (
+      <Command size={18} />
+    ) : (
+      <ChartCandlestick size={18} />
+    );
   return (
     <section className="workbench-reserved-slot" data-slot={kind}>
       {icon}
