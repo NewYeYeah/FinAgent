@@ -24,15 +24,29 @@ jobs:
           from pathlib import Path
           import base64, gzip, hashlib
 
-          parts = [
-              Path('tools/a54_payload') / f'part{i:02d}.txt'
-              for i in range(8)
-          ]
-          payload = ''.join(path.read_text(encoding='utf-8').strip() for path in parts)
+          expected = {
+              'part00.txt': '2ba6636adface8b722f9ea4e4dedd820be8a843cca9f41c43d781cbf76467f54',
+              'part01.txt': '13f04b18588b9ad44ebca7d081400f55c5b03e5c2271c0e1ada2f284f17a2f4a',
+              'part02.txt': 'c9a31c25aba4f68072b043a2ce1cc6b72707b8ce0e312379546b757f524d13a2',
+              'part03.txt': '2f658afddfaac7e24dd649fbc3c0ddb2d4453a1df3703a881d6d157141eea454',
+              'part04.txt': 'd86d0f601e59c5359ba63ff5ed0adb282770234d3368d5974ed91e6056c6724d',
+              'part05.txt': '0f42c174d611743eed31f9a752be9c4fea54e6bac45cea2d3846137cf49c5110',
+              'part06.txt': '3bbfeac8515fb32fa5e15a6375b567fac159c2e57cc8c5dab7e4662e9e5a9c8d',
+              'part07.txt': '332ca4a70c8b818be3102657ba5be0533122c9cb79484871b733862d14a59604',
+          }
+          values = []
+          for name, digest_expected in expected.items():
+              raw = (Path('tools/a54_payload') / name).read_bytes()
+              digest = hashlib.sha256(raw).hexdigest()
+              print(name, len(raw), digest)
+              if digest != digest_expected:
+                  raise SystemExit(f'{name} digest mismatch: {digest}')
+              values.append(raw.decode('utf-8').strip())
+          payload = ''.join(values)
           patch = gzip.decompress(base64.b64decode(payload))
           digest = hashlib.sha256(patch).hexdigest()
-          expected = '4dc4411c2821ea3db6067a3b58eea367b68940091578d8d9ce82f32a9107c5e0'
-          if digest != expected:
+          expected_patch = '4dc4411c2821ea3db6067a3b58eea367b68940091578d8d9ce82f32a9107c5e0'
+          if digest != expected_patch:
               raise SystemExit(f'A5-4 patch digest mismatch: {digest}')
           Path('/tmp/a54.patch').write_bytes(patch)
           print(f'patch_bytes={len(patch)} sha256={digest}')
