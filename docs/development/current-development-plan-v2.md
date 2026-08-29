@@ -23,6 +23,22 @@
 
 ---
 
+## 0.2 A5-1 implementation status addendum — 2026-08-29
+
+A5 已按 bounded-PR 原则进入第一步，但 **reserve 仍未消费**。当前代码实现 `ReserveEligibilitySeal`：
+
+- bind exact A2.6 frozen ResearchProgram / factor family；
+- bind exact A4 spec / execution assumptions / immutable ledger digest；
+- require A2.6 与 A4 exact replay proof；
+- require digest-matched V2 review bundle 与显式 human review attestation；
+- freeze code/data identity 与 no-Agent-feedback / no-interactive-tuning authority boundary；
+- append-only persistence one seal per reserve/program/A4 identity；
+- sealing 本身不读取 reserve 数据、不产生 PASS/FAIL、不写 `CONSUMED`。
+
+因此当前立即下一项收敛为 **A5-2 one-shot runner + terminal evidence**，但只有在真实生产 evidence 完成人工 review 并实际签发 A5-1 seal 后才允许执行。
+
+---
+
 ## 1. 规划目标
 
 FinAgent 当前已经从“研究原型”进入“可审计量化研究平台”的阶段。后续开发不再以简单增加 Agent 数量、数据源数量或图表数量为目标，而围绕以下主线推进：

@@ -59,9 +59,11 @@ A3 target-to-executable-order semantics
         ↓
 A4 internal gross/net portfolio validation
         ↓
-Unified acceptance and protocol freeze
+Visualization V2 acceptance + human review
         ↓
-Future one-shot reserve evaluation
+A5-1 ReserveEligibilitySeal
+        ↓
+Future A5-2 one-shot reserve evaluation
 ```
 
 Run A4 only from an immutable A2.6 report:
@@ -72,7 +74,7 @@ python scripts\run_ashare_portfolio_validation.py `
   --verify-content
 ```
 
-A completed A4 report remains `promotion_eligible=false` and leaves the 2025+ reserve untouched.
+A completed A4 report remains `promotion_eligible=false` and leaves the 2025+ reserve untouched. A5-1 can now seal the exact frozen A2.6/A4/replay/V2-review identity, but it does not access or consume reserve data; see [`docs/guides/ashare-reserve.md`](docs/guides/ashare-reserve.md).
 
 ## FinAgent Workspace V2
 

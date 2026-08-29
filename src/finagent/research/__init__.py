@@ -1,3 +1,15 @@
+from .ashare_reserve import (
+    AUTHORITY_POLICY_ID,
+    REQUIRED_V2_ACCEPTANCE_CHECKS,
+    ExactReplayProof,
+    ReserveAuthorityBoundary,
+    ReserveEligibilitySeal,
+    ReserveEligibilitySealer,
+    SQLiteReserveEligibilityStore,
+    V2ReserveReviewAttestation,
+    execution_ledger_digest,
+    verify_v2_review_bundle,
+)
 from .ashare_robust_program import (
     AshareExpandingWalkForwardPlan,
     AshareProgramReservationPlan,
@@ -195,6 +207,15 @@ from .validation import (
 )
 
 __all__ = [
+    "AUTHORITY_POLICY_ID",
+    "REQUIRED_V2_ACCEPTANCE_CHECKS",
+    "ExactReplayProof",
+    "ReserveAuthorityBoundary",
+    "ReserveEligibilitySeal",
+    "ReserveEligibilitySealer",
+    "SQLiteReserveEligibilityStore",
+    "V2ReserveReviewAttestation",
+
     "AgentAshareRobustDiscoveryLoop",
     "AgentAshareRobustDiscoveryResult",
     "AgentAshareRobustDiscoveryRound",
@@ -356,4 +377,6 @@ __all__ = [
     "validate_agent_market_results",
     "validate_experiment_family",
     "whites_reality_check",
+    "execution_ledger_digest",
+    "verify_v2_review_bundle",
 ]
