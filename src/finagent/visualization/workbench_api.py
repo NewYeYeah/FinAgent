@@ -16,7 +16,7 @@ from finagent.application import (
 from .workbench_control_catalog import ConfigRegistry, default_command_catalog
 from .workspace_api import create_workspace_app as create_evidence_app
 
-WORKBENCH_API_VERSION = "finagent-workbench-api-v3.2c1"
+WORKBENCH_API_VERSION = "finagent-workbench-api-v3.2"
 
 
 def _attach_frontend(app: FastAPI, frontend_dir: str | Path | None) -> None:
@@ -68,12 +68,13 @@ def create_workspace_app(
         "http://localhost:5173",
     ),
 ) -> FastAPI:
-    """Compose the Evidence Plane with read-only V3 Workbench catalogs.
+    """Compose the immutable Evidence Plane with V3 Workbench read models.
 
-    V3-2C-1 adds in-process application-service implementations for selected L0
-    commands, but this Evidence Plane still exposes no command mutation route and
-    retains ``control_plane_enabled=false``. The service registry is instantiated
-    only to verify that catalog readiness metadata matches real registered services.
+    V3-2 is complete as two authority planes. This application remains the default
+    GET-only Evidence Plane and deliberately contains no CommandRun mutation route.
+    The separately launched local Control Plane owns governed L0/L1 command
+    execution and durable command audit. A temporary service registry is created
+    here only to verify that read-only catalog readiness matches real code bindings.
     """
 
     app = create_evidence_app(
@@ -122,6 +123,7 @@ def create_workspace_app(
             "evidence_plane": True,
             "control_plane_enabled": False,
             "command_execution_enabled": False,
+            "control_plane_separate": True,
             "config_descriptor_count": len(projection.descriptors),
             "config_snapshot_count": len(projection.snapshots),
             "config_warning_count": len(projection.warnings),
@@ -149,7 +151,10 @@ def create_workspace_app(
         try:
             descriptor = config_registry.descriptor(descriptor_id)
         except KeyError as exc:
-            raise HTTPException(status_code=404, detail="config descriptor not found") from exc
+            raise HTTPException(
+                status_code=404,
+                detail="config descriptor not found",
+            ) from exc
         return descriptor.to_dict()
 
     @app.get("/api/v3/config/snapshots")
@@ -157,7 +162,10 @@ def create_workspace_app(
         try:
             snapshots = config_registry.snapshots(descriptor_id)
         except KeyError as exc:
-            raise HTTPException(status_code=404, detail="config descriptor not found") from exc
+            raise HTTPException(
+                status_code=404,
+                detail="config descriptor not found",
+            ) from exc
         return {
             "schema_version": "finagent.workbench.config-snapshots.v1",
             "read_only": True,
@@ -169,14 +177,20 @@ def create_workspace_app(
         try:
             return config_registry.snapshot(snapshot_id).to_dict()
         except KeyError as exc:
-            raise HTTPException(status_code=404, detail="config snapshot not found") from exc
+            raise HTTPException(
+                status_code=404,
+                detail="config snapshot not found",
+            ) from exc
 
     @app.get("/api/v3/config/diff")
     def get_v3_config_diff(left: str, right: str) -> dict[str, object]:
         try:
             return config_registry.diff(left, right).to_dict()
         except KeyError as exc:
-            raise HTTPException(status_code=404, detail="config snapshot not found") from exc
+            raise HTTPException(
+                status_code=404,
+                detail="config snapshot not found",
+            ) from exc
         except ValueError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
 
@@ -204,8 +218,12 @@ def create_app_from_environment() -> FastAPI:
     frontend = os.environ.get("FINAGENT_WORKSPACE_FRONTEND", "workspace/dist") or None
     git_sha = os.environ.get("FINAGENT_WORKSPACE_GIT_SHA", "")
     catalog_db = os.environ.get("FINAGENT_WORKSPACE_CATALOG_DB") or None
-    reserve_eligibility = os.environ.get("FINAGENT_WORKSPACE_RESERVE_ELIGIBILITY") or None
-    reserve_consumption = os.environ.get("FINAGENT_WORKSPACE_RESERVE_CONSUMPTION") or None
+    reserve_eligibility = os.environ.get(
+        "FINAGENT_WORKSPACE_RESERVE_ELIGIBILITY"
+    ) or None
+    reserve_consumption = os.environ.get(
+        "FINAGENT_WORKSPACE_RESERVE_CONSUMPTION"
+    ) or None
     reserve_terminal = os.environ.get("FINAGENT_WORKSPACE_RESERVE_TERMINAL") or None
     return create_workspace_app(
         report_paths=report_paths,
