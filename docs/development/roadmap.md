@@ -6,7 +6,7 @@ This roadmap is intentionally short. The active detailed planning baseline is [`
 
 Planning v3.1 anchor: `main @ 2909a65aa89f11e80c434414f7fe070d3aa72a0a`.
 
-Completed core/product capabilities include PIT data contracts, bounded Agent-generated research, A2.6 robust ResearchPrograms, A3 exact-session execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2, A5-1～A5-4 reserve governance/evidence, **Visualization V3-1 Agent Project → Thread → Run index**, and **Visualization V3-2A Workbench Shell + Context Bus**.
+Completed core/product capabilities include PIT data contracts, bounded Agent-generated research, A2.6 robust ResearchPrograms, A3 exact-session execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2, A5-1～A5-4 reserve governance/evidence, **Visualization V3-1 Agent Project → Thread → Run index**, **Visualization V3-2A Workbench Shell + Context Bus**, and **Visualization V3-2B Config Registry + Command Catalog**.
 
 No production 2025+ reserve has been consumed by development or CI. Production reserve execution remains an independent human-authorized operation.
 
@@ -35,7 +35,7 @@ Evidence Plane  → default / GET-only / read-only
 Control Plane   → future explicit opt-in / typed governed commands
 ```
 
-V3-1 remains unchanged and supplies the Agent navigation substrate. V3-2A supplies the shared product shell/context substrate for later Config, Command and linked quant modules.
+V3-1 remains unchanged and supplies the Agent navigation substrate. V3-2A supplies the shared shell/context substrate. V3-2B freezes the configuration and command metadata contracts consumed by the future explicit Control Plane.
 
 ## Current priority order
 
@@ -63,24 +63,29 @@ Delivered on `feature/v3-workbench-shell-context`:
 - existing V1/V2/A5 pages remain available;
 - **no write API or Control Plane authority added**.
 
-### Current — V3-2B Config Registry + Command Catalog
+### Completed — V3-2B Config Registry + Command Catalog
 
-Freeze additive contracts:
+Delivered on `feature/v3-config-command-catalog`:
 
-```text
-ConfigDescriptor / ConfigSnapshot / ConfigFieldSpec / ConfigDiff
-CommandSpec / CommandIntent / CommandRun / CommandResult
-```
+- froze public contracts for `ConfigDescriptor`, `ConfigSnapshot`, `ConfigFieldSpec`, `ConfigDiff`, `CommandSpec`, `CommandIntent`, `CommandRun` and `CommandResult`;
+- added a read-only allowlisted TOML registry over supported FinAgent public configuration sections;
+- classified fields into presentation, runtime, research protocol, execution protocol, operational guardrail and secret-reference domains with explicit mutation policies;
+- protocol changes are labelled `new_identity_required`; operational guardrail changes require governed change rather than historical mutation;
+- excluded secret/credential-like files before parsing and redacted credential-looking fields fail-closed while retaining symbolic `secret_id`/environment references;
+- added deterministic ConfigSnapshot identities and read-only ConfigDiff projection;
+- added an allowlisted L0/L1 Command Catalog for config validation, local-data certification, development research, A2.6, A4 and review-bundle export;
+- existing CLI-orchestration commands are explicitly `adapter_required` until application-service adapters are built; the catalog does not call shell/Python;
+- exposed GET-only `/api/v3/config*`, `/api/v3/commands*` and Workbench status endpoints through the V3 Workbench composition layer;
+- added Configuration Registry / Command Catalog Workbench surfaces while keeping Config drawer and Command palette execution affordances disabled;
+- **`execution_enabled=false` and `control_plane_enabled=false`; no write endpoint added**.
 
-Configuration fields must distinguish presentation/runtime settings from research protocol, execution protocol, operational guardrails and secret references. Protocol edits create new identity/forks rather than mutating historical evidence.
-
-This phase remains catalog/read-only: no general execution endpoint.
-
-### P1 — V3-2C Safe Research Control Gateway
+### Current — V3-2C Safe Research Control Gateway
 
 Add a **separate, explicit opt-in Control Plane** for allowlisted L0/L1 commands only, such as config validation, data certification, development research, A2.6, A4 and review-bundle export.
 
-The Control Plane must call registered application services and persist `CommandRun` audit evidence. It must not expose arbitrary shell/Python execution, L2 operational mutations, production reserve, broker or live-capital authority.
+Before a catalogued CLI-orchestration command can become executable, extract or wrap it behind a typed application-service adapter. The gateway must never execute arbitrary command strings, shell or Python supplied by the browser.
+
+The Control Plane must persist `CommandIntent`, `CommandRun` and `CommandResult` audit evidence and must enforce confirmation/authority policy from `CommandSpec`. It must not expose L2 operational mutations, production reserve, strategy promotion, PAPER mutation, broker/order or live-capital authority.
 
 ### P1 — V3-3 Evidence / Artifact / Config Deep Link
 
@@ -105,7 +110,7 @@ No raw OTLP/provider callbacks or hidden reasoning stream.
 ### P1 — V3-5 Workbench Foundation Acceptance
 
 - context/deep-link identity tests;
-- Evidence Plane still GET-only;
+- Evidence Plane remains GET-only;
 - L0/L1 Control Plane authority/adversarial tests;
 - no L2/L3 generic execution path;
 - Windows/Ubuntu, ruff/mypy, TypeScript/Vitest/build/Playwright and repository-wide pytest.
@@ -149,7 +154,7 @@ Every chart must declare evidence requirements and authority class, and all asse
 - **React Flow** remains the lineage/DAG renderer.
 - **TanStack Table** remains the structured-table foundation.
 - V3-2A establishes the shared **identity-keyed query-provider contract** required by Workbench server state. The current implementation is an equivalent typed cache/de-duplication layer isolated behind that boundary; TanStack Query remains the preferred external substitution if/when dependency adoption is justified before V3 foundation acceptance.
-- **RJSF or equivalent JSON-Schema forms** may be introduced in V3-2B after typed config descriptors exist.
+- V3-2B intentionally uses read-only typed configuration metadata rather than introducing an editable JSON-Schema form. **RJSF or equivalent JSON-Schema forms** may be reconsidered only after V3-2C defines explicit mutation authority.
 - **TradingView Lightweight Charts** is introduced in V4-2 for candlestick/volume/order-marker views only.
 - **FINOS Perspective** is deferred until A6/QMT profiling demonstrates a need for large/streaming tables.
 - Alphalens/QuantStats are visual/regression references only, not alternate authoritative calculation paths.

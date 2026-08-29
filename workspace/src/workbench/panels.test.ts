@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { PanelRegistry, defaultPanelRegistry } from "./panels";
 
 describe("PanelRegistry", () => {
-  it("exposes current modules and reserved future extension surfaces", () => {
+  it("exposes current modules, V3-2B catalogs and reserved future extension surfaces", () => {
     expect(defaultPanelRegistry.get("agent")).toMatchObject({
       status: "available",
       route: "/agent",
@@ -14,8 +14,16 @@ describe("PanelRegistry", () => {
       slot: "chart",
     });
     expect(defaultPanelRegistry.get("configuration")).toMatchObject({
-      status: "reserved",
+      status: "available",
+      route: "/widgets",
+      search_params: { surface: "configs" },
       slot: "config",
+    });
+    expect(defaultPanelRegistry.get("command-catalog")).toMatchObject({
+      status: "available",
+      route: "/widgets",
+      search_params: { surface: "commands" },
+      slot: "command",
     });
   });
 

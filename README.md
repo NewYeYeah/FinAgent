@@ -18,12 +18,12 @@ The current development baseline supports:
 - supervised paper/shadow operations and sealed-holdout/promotion primitives;
 - US market ingestion through Alpaca SIP and best-effort AKShare validation;
 - local A-share Parquet research through DuckDB-backed adapters;
-- a read-only FastAPI + React/TypeScript Workbench with V2/A5-4 research/governance evidence, V3-1 deterministic Agent Project → Thread → Run indexing, and the V3-2A shared Workbench shell/context foundation;
+- a read-only FastAPI + React/TypeScript Workbench with V2/A5-4 evidence, V3-1 Agent Project → Thread → Run indexing, V3-2A shell/context infrastructure, and V3-2B typed Config/Command catalogs;
 - legacy Streamlit/Plotly and optional Phoenix low-level diagnostics retained.
 
 The current market priority is **A-share historical research first**, with **Alpaca SIP as the US reference/regression path**. A-share live-capital or realtime acceptance is intentionally deferred until frozen research, execution-aware internal validation, one-shot reserve and repeated PAPER gates are complete.
 
-The next product-development milestone is **Visualization V3-2B — Config Registry + Command Catalog**. V3-2A establishes the shared shell, context, panel registry and read-only Agent workbench substrate; V3-2B will add typed configuration and command catalog contracts without enabling a general execution endpoint. Production reserve execution remains a separate explicit human-authorized operation and is never triggered by development or CI.
+The next product-development milestone is **Visualization V3-2C — Safe Research Control Gateway**. V3-2B freezes the typed configuration/command metadata required by that gateway but deliberately leaves `control_plane_enabled=false` and `execution_enabled=false`. Existing CLI-orchestration entries must be adapted behind typed application services before they become eligible for governed L0/L1 execution. Production reserve, promotion, PAPER mutation, broker/order and live-capital authority remain outside the generic gateway.
 
 ## Quick start
 
@@ -91,7 +91,7 @@ A completed A4 report remains `promotion_eligible=false`. A5-1 seals the exact f
 
 ## FinAgent Workspace / Workbench direction
 
-The current product surface remains a **read-only Evidence Plane** presented through the FinAgent Workbench shell. V2 provides governed A2.6/A4/ledger review projections; A5-4 adds reserve lifecycle inspection; V3-1 adds deterministic Agent Project/Thread/Run indexing; V3-2A adds the shared Workbench shell, URL-backed context bus, panel registry and Agent activity/inspector integration. Authoritative calculations and state transitions remain owned by FinAgent core.
+The current product surface remains a **read-only Evidence Plane** presented through the FinAgent Workbench shell. V2 provides governed A2.6/A4/ledger review projections; A5-4 adds reserve lifecycle inspection; V3-1 adds deterministic Agent Project/Thread/Run indexing; V3-2A adds the shared Workbench shell, URL-backed context bus and panel/query foundation; V3-2B adds read-only typed configuration and command catalogs. Authoritative calculations and state transitions remain owned by FinAgent core.
 
 Install and build:
 
@@ -108,6 +108,7 @@ Launch:
 ```bash
 python scripts/run_workspace.py \
   --reports reports \
+  --configs configs \
   --agent-audit .finagent/agent_audit.sqlite \
   --open-browser
 ```
@@ -129,12 +130,17 @@ Current Workbench capabilities include:
 - context-preserving module navigation and explicit linked-selection events that remain presentation state rather than evidence authority;
 - V3-1 Agent Project → Thread → Run navigation, canonical persisted activity review and a Run Inspector with Workspace-verified artifact links;
 - a shared identity-keyed typed server-state query provider with cache, request de-duplication, refetch and invalidation boundaries;
-- disabled Config drawer and Command palette extension slots reserved for V3-2B/V3-2C;
+- V3-2B `ConfigDescriptor` / `ConfigSnapshot` / `ConfigFieldSpec` / `ConfigDiff` contracts and a read-only Configuration Registry;
+- explicit configuration authority domains: presentation, runtime, research protocol, execution protocol, operational guardrail and secret reference;
+- secret-like TOML files excluded before parsing and credential-looking fields recursively redacted from the Workbench projection;
+- V3-2B `CommandSpec` / `CommandIntent` / `CommandRun` / `CommandResult` contracts and an L0/L1 Command Catalog;
+- catalogued CLI-orchestration entries visibly marked `adapter_required` until typed application-service adapters exist;
+- disabled Config drawer and Command palette execution slots, with `control_plane_enabled=false` and no V3 command mutation endpoint;
 - the `FinWidgetSpec` catalog.
 
 It currently provides no endpoint or control for research reruns, prompt edits, Gate changes, reserve execution/recovery, promotion, PAPER mutation or order submission.
 
-The active v3.1 plan preserves the GET-only **Evidence Plane** and introduces a future explicit opt-in **Control Plane**. V3-2B first adds read-only typed Config/Command catalogs; V3-2C then adds only allowlisted L0/L1 research control. The Control Plane will call FinAgent application services and will not expose arbitrary shell/Python execution. Research/execution protocol edits create new identities/forks rather than mutating historical evidence.
+The active v3.1 plan preserves the GET-only **Evidence Plane** and introduces a future explicit opt-in **Control Plane**. V3-2C may execute only allowlisted L0/L1 commands through registered application services and persisted command audit evidence. It will not expose arbitrary shell/Python execution. Research/execution protocol edits create new identities/forks rather than mutating historical evidence; operational guardrail changes require governed change handling.
 
 The same Workbench shell is planned to host linked quant charts. Large/authoritative financial series such as strategy decision paths and factor tear-sheet time series will be persisted by core before their interactive charts are implemented.
 
@@ -192,7 +198,7 @@ Internal portfolio validation / reserve governance
 Human-approved paper/shadow operations
 ```
 
-The Agent never owns positions, fills, risk limits, validation thresholds or broker state. The Evidence Plane never owns prompts, candidate generation, numerical evidence or lifecycle transitions. Future Workbench control actions must use typed command/config contracts and the existing governed application services rather than bypassing them.
+The Agent never owns positions, fills, risk limits, validation thresholds or broker state. The Evidence Plane never owns prompts, candidate generation, numerical evidence or lifecycle transitions. Future Workbench control actions must use typed command/config contracts and governed application services rather than bypassing them.
 
 ## Research invariants
 
@@ -210,6 +216,7 @@ The Agent never owns positions, fills, risk limits, validation thresholds or bro
 12. A durable `CONSUMED` reserve is never made clean again by rename, restart or model mutation.
 13. A Workbench protocol edit creates a new identity/fork; it never rewrites the protocol behind existing evidence.
 14. Generic Workbench commands never receive production reserve or unrestricted broker/live-capital authority.
+15. Workbench configuration projection never exposes credential values; secret binding remains a host-boundary responsibility.
 
 ## Data note
 

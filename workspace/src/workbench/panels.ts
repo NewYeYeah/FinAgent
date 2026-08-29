@@ -21,6 +21,7 @@ export interface WorkbenchPanelDescriptor {
   module: WorkbenchModule;
   title: string;
   route?: string;
+  search_params?: Record<string, string>;
   status: WorkbenchPanelStatus;
   context_keys: WorkbenchContextKey[];
   slot: "main" | "chart" | "inspector" | "config" | "command";
@@ -39,6 +40,7 @@ export class PanelRegistry {
     }
     this.panels.set(panel.panel_id, {
       ...panel,
+      search_params: panel.search_params ? { ...panel.search_params } : undefined,
       context_keys: [...panel.context_keys],
     });
   }
@@ -64,6 +66,7 @@ export const defaultPanelRegistry = new PanelRegistry([
   { panel_id: "evidence", module: "evidence", title: "Evidence", route: "/catalog", status: "available", context_keys: ["program_id", "factor_id", "portfolio_validation_id", "reserve_id"], slot: "main" },
   { panel_id: "governance", module: "governance", title: "Governance", route: "/governance", status: "available", context_keys: ["program_id", "portfolio_validation_id", "reserve_id"], slot: "main" },
   { panel_id: "reserve", module: "governance", title: "Reserve", route: "/reserve", status: "available", context_keys: ["reserve_id", "program_id", "portfolio_validation_id"], slot: "main" },
-  { panel_id: "configuration", module: "configuration", title: "Configuration", status: "reserved", context_keys: ["program_id", "strategy_id", "environment"], slot: "config" },
+  { panel_id: "configuration", module: "configuration", title: "Configuration", route: "/widgets", search_params: { surface: "configs" }, status: "available", context_keys: ["program_id", "strategy_id", "environment"], slot: "config" },
+  { panel_id: "command-catalog", module: "configuration", title: "Command Catalog", route: "/widgets", search_params: { surface: "commands" }, status: "available", context_keys: ["project_id", "program_id", "strategy_id", "environment"], slot: "command" },
   { panel_id: "live", module: "live", title: "Live", status: "reserved", context_keys: ["strategy_id", "asset_id", "environment"], slot: "chart" },
 ]);

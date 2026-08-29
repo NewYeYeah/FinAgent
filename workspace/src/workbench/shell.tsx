@@ -17,16 +17,18 @@ import {
   SlidersHorizontal,
   Workflow,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import type { ReactNode } from "react";
 
 import { ReadOnlyBanner } from "../components";
+import { ConfigurationCatalogSurface, type ConfigurationSurface } from "./configuration";
 import {
   WORKBENCH_CONTEXT_KEYS,
   WorkbenchContextProvider,
   useWorkbenchContext,
   workbenchContextSearch,
   type WorkbenchContextKey,
+  type WorkbenchContextState,
 } from "./context";
 import {
   defaultPanelRegistry,
@@ -66,6 +68,13 @@ const CONTEXT_LABELS: Record<WorkbenchContextKey, string> = {
   environment: "Environment",
 };
 
+function mergedSearch(context: WorkbenchContextState, fixed: Record<string, string> = {}): string {
+  const params = new URLSearchParams(workbenchContextSearch(context).replace(/^\?/, ""));
+  for (const [key, value] of Object.entries(fixed)) params.set(key, value);
+  const output = params.toString();
+  return output ? `?${output}` : "";
+}
+
 function NavigationItem({ panel }: { panel: WorkbenchPanelDescriptor }) {
   const icon = ICONS[panel.module];
   const { context } = useWorkbenchContext();
@@ -81,7 +90,7 @@ function NavigationItem({ panel }: { panel: WorkbenchPanelDescriptor }) {
   return (
     <NavLink
       className="workbench-nav-item"
-      to={{ pathname: panel.route, search: workbenchContextSearch(context) }}
+      to={{ pathname: panel.route, search: mergedSearch(context, panel.search_params) }}
       end={panel.route === "/"}
     >
       {icon}
@@ -123,7 +132,7 @@ export function ContextBar() {
           data-slot="config-drawer"
           type="button"
           disabled
-          title="V3-2B configuration registry"
+          title="V3-2B registry is inspectable under Configuration; editing remains disabled"
         >
           <Settings2 size={14} /> Config
         </button>
@@ -132,7 +141,7 @@ export function ContextBar() {
           data-slot="command-palette"
           type="button"
           disabled
-          title="V3-2B/V3-2C command catalog and gateway"
+          title="V3-2B catalog only; command gateway remains V3-2C"
         >
           <Command size={14} /> Commands
         </button>
@@ -143,6 +152,12 @@ export function ContextBar() {
 
 export function WorkbenchShell({ children }: { children: ReactNode }) {
   const panels = defaultPanelRegistry.list();
+  const location = useLocation();
+  const requestedSurface = new URLSearchParams(location.search).get("surface");
+  const catalogSurface: ConfigurationSurface | null =
+    location.pathname === "/widgets" && (requestedSurface === "configs" || requestedSurface === "commands")
+      ? requestedSurface
+      : null;
   return (
     <div className="workbench-shell">
       <aside className="workbench-sidebar">
@@ -170,7 +185,7 @@ export function WorkbenchShell({ children }: { children: ReactNode }) {
         <ReadOnlyBanner />
         <ContextBar />
         <div className="workbench-main-slot" data-slot="chart-workspace">
-          {children}
+          {catalogSurface ? <ConfigurationCatalogSurface surface={catalogSurface} /> : children}
         </div>
       </main>
     </div>
