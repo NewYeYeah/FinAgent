@@ -57,11 +57,17 @@ jobs:
           if normalized_digest != expected_normalized:
               raise SystemExit(f'normalized A5-4 patch digest mismatch: {normalized_digest}')
           Path('/tmp/a54.patch').write_bytes(normalized)
-          print(f'patch_bytes={len(normalized)} sha256={normalized_digest}')
           PY
 
       - name: Apply A5-4 product delivery
         run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('workspace/e2e/workspace.spec.ts')
+          raw = path.read_bytes()
+          if raw and not raw.endswith(b'\n'):
+              path.write_bytes(raw + b'\n')
+          PY
           git apply --check /tmp/a54.patch
           git apply /tmp/a54.patch
           git rm -rf tools/a54_payload tools/a54_rel_payload
