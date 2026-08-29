@@ -24,11 +24,21 @@ jobs:
           from pathlib import Path
           import base64, gzip, hashlib
 
-          payload = ''.join(
-              path.read_text(encoding='utf-8').strip()
-              for path in sorted(Path('tools/a53_payload').glob('part*.txt'))
-          )
-          patch = gzip.decompress(base64.b64decode(payload))
+          expected_parts = {
+              'part00.txt': '25c1a4097b910d3bfdc7253f990e3d47db80e826df56970ebe83b84823f4bfd6',
+              'part01.txt': '82b0d5a8c5016821f6c508026f167b610623e8fb1ddaaa632e706da9c9d755d4',
+              'part02.txt': 'c410978efaf31fe8aeeddf123d907772f397e9c31e96f24a93e115903dd12a83',
+          }
+          parts = []
+          for name, expected in expected_parts.items():
+              path = Path('tools/a53_payload') / name
+              data = path.read_bytes()
+              digest = hashlib.sha256(data).hexdigest()
+              print(name, len(data), digest)
+              if digest != expected:
+                  raise SystemExit(f'{name} digest mismatch: {digest}')
+              parts.append(data.decode('utf-8').strip())
+          patch = gzip.decompress(base64.b64decode(''.join(parts)))
           digest = hashlib.sha256(patch).hexdigest()
           expected = 'ac90b55308a7b90d54cf763b9c85575c1c91188e6946a7aab5619eef7e2b463a'
           if digest != expected:
