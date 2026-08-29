@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from types import MappingProxyType
 from typing import Any, Mapping, Sequence
 
 from finagent.domain._validation import require_aware_datetime, require_non_empty
