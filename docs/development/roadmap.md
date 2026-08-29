@@ -4,9 +4,9 @@ This roadmap is the canonical current implementation status. [`current-developme
 
 ## Current baseline
 
-The implementation baseline has now completed the **Visualization V3 Workbench Foundation through V3-5 acceptance** and the first V4 linked-analytics evidence layer, **V4-0 StrategyDecisionSeriesEvidence**, on top of PIT data contracts, bounded Agent research, A2.6 robust ResearchPrograms, A3 execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2 and A5-1～A5-4 reserve governance/evidence.
+The implementation baseline has now completed the **Visualization V3 Workbench Foundation through V3-5 acceptance** and the first two V4 linked-analytics evidence layers, **V4-0 StrategyDecisionSeriesEvidence** and **V4-1 FactorSeriesEvidence**, on top of PIT data contracts, bounded Agent research, A2.6 robust ResearchPrograms, A3 execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2 and A5-1～A5-4 reserve governance/evidence.
 
-The accepted V3 foundation includes Agent indexing, the governed Workbench/Control substrate, typed deep links and sanitized product SSE. V4-0 adds immutable authoritative per-asset strategy-decision series without changing A4 report/ledger identity. Detailed records are in [`changelog-v3-5.md`](changelog-v3-5.md) and [`changelog-v4-0.md`](changelog-v4-0.md).
+The accepted V3 foundation includes Agent indexing, the governed Workbench/Control substrate, typed deep links and sanitized product SSE. V4-0 adds immutable authoritative per-asset strategy-decision series without changing A4 report/ledger identity. V4-1 adds immutable factor-period IC/quantile/long-short/turnover/coverage evidence while keeping the frozen A2.6 report unchanged and explicitly labeling rolling IC/NAV transforms as derived. Detailed records are in [`changelog-v3-5.md`](changelog-v3-5.md), [`changelog-v4-0.md`](changelog-v4-0.md) and [`changelog-v4-1.md`](changelog-v4-1.md).
 
 No production 2025+ reserve has been consumed by development or CI. Production reserve execution remains an independent human-authorized operation.
 
@@ -193,32 +193,43 @@ review.export_bundle
 - added a dedicated `v4-series` Ruff/mypy/dependency + Ubuntu/Windows focused gate and end-to-end acceptance through the existing synthetic A4 workflow;
 - recorded the evidence/alpha/PnL/storage contract in [`changelog-v4-0.md`](changelog-v4-0.md).
 
-### Current — V4-1 FactorSeriesEvidence
+### Completed — V4-1 FactorSeriesEvidence
 
-Persist the missing authoritative factor time series required by the linked Factor Tear Sheet:
+- added immutable long-form `FactorSeriesRow` evidence over the complete frozen A2.6 candidate denominator and internal walk-forward test folds;
+- persisted primary/decay-horizon raw and train-direction-oriented Pearson IC/RankIC, primary-label quantile returns, oriented long-short returns, one-way turnover and factor coverage as authoritative period evidence;
+- persisted rolling IC and cumulative quantile/long-short NAV as explicit deterministic `derived` rows instead of relabeling them as raw evidence;
+- rebuilt candidate universe, universe-policy identity, generated-feature artifact identity and FactorQuant settings from the frozen A2.6 report rather than mutable current research settings;
+- reused the frozen training-only `train_direction` for each factor/fold; test data never chooses or flips factor sign;
+- added mandatory reconciliation back to frozen A2.6 fold and candidate diagnostics before any manifest/Parquet write, including RankIC/ICIR, long-short Sharpe, coverage, monotonicity, turnover, direction and horizon-sign checks;
+- writes `finagent.factor-series.manifest.v1` plus ZSTD Parquet with deterministic long-form ordering and content-addressed row/series identity;
+- binds the manifest to A2.6 program/spec/walk-forward/gate/selection/plan/data/universe-policy/candidate-denominator identities, frozen quant settings, row digest, source-report content digest and physical source/data SHA-256 values;
+- added fail-closed `FactorSeriesProjection` verification and bounded factor/fold/date/kind/metric/horizon/quantile queries (`limit <= 5000`);
+- added dedicated `v4-factor-series` Ruff/mypy/import/dependency + Ubuntu/Windows focused acceptance while retaining the existing A2.6 and repository-wide gates;
+- recorded the evidence/reconciliation/storage contract in [`changelog-v4-1.md`](changelog-v4-1.md).
 
-```text
-horizon IC / RankIC
-rolling IC
-Q1–Q5 return / NAV
-long-short return / NAV
-daily turnover
-daily coverage
-```
+### Current — V4-2 Strategy Decision Explorer
 
-V4-1 must bind exact A2.6/factor/data identities, preserve deterministic ordering, expose bounded read projections and avoid browser-side reconstruction of missing research series. It remains independent from StrategyDecisionSeries except where later WorkbenchContext linking explicitly joins their identities.
+Build the first linked interactive quantitative surface over **V4-0 authoritative StrategyDecisionSeriesEvidence**:
 
-### P1 — V4-2 Strategy Decision Explorer
+- price/candlestick + signal/order/fill markers;
+- factor contribution / alpha context without recomputing financial facts in React;
+- target vs realized weights;
+- gross-to-net PnL and explicit fee/slippage explanation;
+- asset/date/session/fold selection through `WorkbenchContext`;
+- bounded Evidence Plane projection APIs rather than raw Parquet/host-path access;
+- every rendered value must declare authoritative/derived/diagnostic semantics.
 
-Interactive price/candlestick + signal/order/fill markers + factor contribution + target/realized weights + gross-to-net PnL/cost explanation. This UI must consume V4-0 authoritative rows rather than rebuild the decision path from A4 summary reports.
+V4-2 must not wait for the Factor Tear Sheet and must not reconstruct the strategy decision path from A4 summary reports. V4-1 FactorSeries remains available for later cross-linking, while the full Factor Tear Sheet remains V4-3.
 
 ### P1 — V4-3 Factor Tear Sheet
+
+Consume V4-1 FactorSeriesEvidence for:
 
 - IC / rolling IC / decay;
 - fold/year heatmap;
 - Q1–Q5 / long-short;
 - turnover / coverage;
-- HAC/bootstrap forest;
+- HAC/bootstrap forest from frozen A2.6 summary evidence;
 - Holm/BH matrix;
 - factor correlation cluster;
 - Agent discovery evolution.
