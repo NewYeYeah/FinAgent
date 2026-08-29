@@ -9,7 +9,7 @@ from collections.abc import AsyncIterator, Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from types import MappingProxyType
-from typing import Literal
+from typing import Literal, TypeVar
 
 from fastapi import Request
 from fastapi.responses import Response, StreamingResponse
@@ -23,6 +23,7 @@ COMMAND_RUN_STREAM_SCHEMA = "finagent.workbench.command-run-stream.v1"
 WORKBENCH_SSE_EVENT_SCHEMA = "finagent.workbench.sse-event.v1"
 
 StreamEventType = Literal["agent_run_snapshot", "command_run_snapshot"]
+TProjection = TypeVar("TProjection")
 
 
 def _canonical_json(value: object) -> str:
@@ -45,6 +46,12 @@ def _mapping(value: object) -> Mapping[str, object]:
     if not isinstance(value, Mapping):
         return {}
     return {str(key): child for key, child in value.items()}
+
+
+def _sequence(value: object) -> Sequence[object]:
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return value
+    return ()
 
 
 def _text(value: object) -> str:
@@ -271,7 +278,9 @@ class WorkbenchStreamProjection:
             trigger_type=summary.trigger_type,
             status=summary.status,
             started_at=summary.started_at.isoformat(),
-            finished_at=(summary.finished_at.isoformat() if summary.finished_at else None),
+            finished_at=(
+                summary.finished_at.isoformat() if summary.finished_at else None
+            ),
             updated_at=updated.isoformat(),
             item_count=summary.item_count,
             artifact_count=len(summary.artifact_refs),
@@ -280,7 +289,10 @@ class WorkbenchStreamProjection:
             terminal=summary.finished_at is not None,
         )
 
-    def _latest_command_event(self, command_run_id: str) -> Mapping[str, object] | None:
+    def _latest_command_event(
+        self,
+        command_run_id: str,
+    ) -> Mapping[str, object] | None:
         if self.command_store_path is None:
             return None
         with _read_only_connection(self.command_store_path) as connection:
@@ -309,12 +321,10 @@ class WorkbenchStreamProjection:
         payload = self.command_runs.get(command_run_id)
         result = _mapping(payload.get("result"))
         evidence_ids = tuple(
-            _text(value)
-            for value in result.get("evidence_ids", ())
-            if _text(value)
-        ) if isinstance(result.get("evidence_ids", ()), Sequence) and not isinstance(
-            result.get("evidence_ids", ()), (str, bytes, bytearray)
-        ) else ()
+            text
+            for value in _sequence(result.get("evidence_ids"))
+            if (text := _text(value))
+        )
         context = {
             str(key): str(value)
             for key, value in _mapping(payload.get("context")).items()
@@ -325,9 +335,7 @@ class WorkbenchStreamProjection:
             command_run_id=command_run_id,
             command_id=_text(payload.get("command_id")),
             state=state,
-            config_snapshot_id=(
-                _text(payload.get("config_snapshot_id")) or None
-            ),
+            config_snapshot_id=_text(payload.get("config_snapshot_id")) or None,
             context=context,
             requested_by=_text(payload.get("requested_by")),
             started_at=_text(payload.get("started_at")) or None,
@@ -359,7 +367,9 @@ class WorkbenchStreamProjection:
         )
 
     @staticmethod
-    def event_for_command(projection: CommandRunStreamProjection) -> WorkbenchSseEvent:
+    def event_for_command(
+        projection: CommandRunStreamProjection,
+    ) -> WorkbenchSseEvent:
         payload = projection.to_dict()
         return WorkbenchSseEvent(
             event_id=_digest(
@@ -393,10 +403,6 @@ class WorkbenchStreamProjection:
         }
 
 
-ProjectionLoader = Callable[[], Mapping[str, object]]
-EventBuilder = Callable[[Mapping[str, object]], WorkbenchSseEvent]
-
-
 def sse_headers() -> dict[str, str]:
     return {
         "Cache-Control": "no-cache, no-transform",
@@ -408,9 +414,9 @@ def sse_headers() -> dict[str, str]:
 async def _stream_events(
     request: Request,
     *,
-    initial: Mapping[str, object],
-    loader: ProjectionLoader,
-    event_builder: EventBuilder,
+    initial: TProjection,
+    loader: Callable[[], TProjection],
+    event_builder: Callable[[TProjection], WorkbenchSseEvent],
     poll_seconds: float = 0.75,
     heartbeat_seconds: float = 15.0,
 ) -> AsyncIterator[str]:
@@ -438,9 +444,9 @@ async def _stream_events(
 def sse_response(
     request: Request,
     *,
-    initial: Mapping[str, object],
-    loader: ProjectionLoader,
-    event_builder: EventBuilder,
+    initial: TProjection,
+    loader: Callable[[], TProjection],
+    event_builder: Callable[[TProjection], WorkbenchSseEvent],
     once: bool,
 ) -> Response:
     if once:
