@@ -735,10 +735,37 @@ Acceptance:
 - automatic retry after terminal evidence is forbidden/idempotently short-circuited;
 - terminal evidence binds dataset, ledger, fold, aggregate, policy, code and eligibility identities;
 - `promotion_eligible=false` for both PASS and FAIL;
-- A5-2 claims no durable consumed-state guarantee and reports `PENDING_A5_3`;
-- production reserve access remains prohibited until A5-3 acceptance.
+- the legacy A5-2 terminal schema remains replayable and cannot counterfeit A5-3 durability;
+- the A5-3 guarded runner is tested separately before any production reserve execution.
 
 CI runs the A5 contract on Windows and Ubuntu. Full project tests remain required before merge.
+
+### T-A11 — A5-3 consumed-state / crash recovery / replay acceptance
+
+Run after any consumption-state, terminal persistence, crash-recovery or reserve-audit change. All tests use synthetic reserve engines; CI must not access production reserve observations.
+
+```bash
+python -m pytest -q tests/test_ashare_reserve_eligibility_a5.py tests/test_ashare_reserve_runner_a5.py tests/test_ashare_reserve_lifecycle_a5.py
+python -m py_compile src/finagent/research/ashare_reserve.py src/finagent/research/ashare_reserve_lifecycle.py src/finagent/research/ashare_reserve_runner.py src/finagent/backtest/ashare_reserve.py src/finagent/backtest/ashare_portfolio.py
+```
+
+Acceptance:
+
+- a durable `CONSUMED` claim is committed before `engine.evaluate()` is reachable;
+- concurrent claim attempts produce exactly one `acquired=true`;
+- runtime/report/preflight failure before claim leaves reserve unconsumed;
+- claim persistence failure prevents reserve evaluation;
+- terminal persistence failure leaves the claim `CONSUMED` and blocks every automatic retry;
+- a pre-existing claim without terminal evidence fails closed and requires explicit recovery;
+- crash recovery emits terminal `RESERVE_FAIL` without reserve re-access;
+- completed terminal evidence persists and replays its canonical ledger artifact;
+- terminal-without-audit is reconciled without another engine evaluation;
+- ledger tampering is detected by replay audit;
+- reopening all SQLite stores preserves exact claim/terminal/audit identities;
+- terminal v2 binds the durable claim and reports `DURABLE_PRE_ACCESS_V1`;
+- PASS and FAIL remain non-promotional and automatic retry remains forbidden.
+
+A5-3 acceptance makes the one-shot state primitive production-capable, but CI still must not execute the real reserve. Actual reserve consumption requires the reviewed production seal and human authorization.
 
 ## 4. Interpretation boundary
 

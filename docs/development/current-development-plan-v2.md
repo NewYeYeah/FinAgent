@@ -53,6 +53,34 @@ A5-2 不负责 crash-safe pre-access consumed claim，因此 terminal evidence �
 
 ---
 
+## 0.3 A5-2 implementation status addendum — 2026-08-29
+
+A5-2 已完成 deterministic one-shot runner 与 terminal evidence，但没有读取真实生产 reserve。实现冻结：
+
+- exact A5-1 seal / A2.6 / A4 / Git identity preflight；
+- all-pre-reserve half-open final training；
+- exact reserve interval terminal fold；
+- frozen A4 economic policy reuse；
+- terminal `RESERVE_PASS` / `RESERVE_FAIL`；
+- append-only terminal evidence。
+
+## 0.4 A5-3 implementation status addendum — 2026-08-29
+
+A5-3 已完成 crash-safe consumed-state persistence 与 replay/audit，**开发和 CI 仍不读取真实 2025+ reserve**：
+
+- `BEGIN IMMEDIATE` + SQLite uniqueness 原子争抢，只有首次成功插入的执行者获得 reserve access authority；
+- `CONSUMED` 在任何 reserve observation 之前提交，`PRAGMA synchronous=FULL`，状态不可逆且禁止自动重试；
+- terminal v2 evidence 显式绑定 consumption claim / consumed timestamp / reserve access state；
+- completed terminal 与 canonical JSONL ledger 在同一 terminal-store transaction 中持久化；
+- crash 后若存在 `CONSUMED` claim 但没有 terminal，普通 runner 严格拒绝重读，必须显式 `recover_interrupted()` 以无 reserve re-access 的 `RESERVE_FAIL` 收口；
+- terminal 已落盘但 audit 未落盘时允许只读 reconciliation，不重新进入 engine；
+- lifecycle replay audit 校验 seal → claim → terminal → ledger → audit 的 identity/digest 链；
+- 并发 claim、持久化失败、重开数据库、ledger tamper、crash recovery 均有测试覆盖。
+
+因此下一项为 **A5-4 Workspace reserve evidence integration**；真实 reserve 执行是独立的人类授权操作，不是开发/CI acceptance 的副作用。
+
+---
+
 ## 1. 规划目标
 
 FinAgent 当前已经从“研究原型”进入“可审计量化研究平台”的阶段。后续开发不再以简单增加 Agent 数量、数据源数量或图表数量为目标，而围绕以下主线推进：

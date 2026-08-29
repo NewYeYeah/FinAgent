@@ -193,3 +193,14 @@ Stage-specific PHASE/DEVLOG/release notes were removed from the active `docs/` t
 - added append-only terminal `RESERVE_PASS` / `RESERVE_FAIL` evidence binding reserve dataset, execution ledger, fold, aggregate, frozen policy and reason-code identities;
 - made execution-time exceptions legal terminal `RESERVE_FAIL` outcomes with automatic retry forbidden, while keeping PASS non-promotional;
 - kept real reserve execution blocked until A5-3 atomically persists `CONSUMED` before first reserve access and closes the crash/retry window.
+
+## 2026-08-29 — A5-3 crash-safe consumed state and replay audit
+
+- added an irreversible A5 reserve consumption claim persisted with SQLite `BEGIN IMMEDIATE`, unique reserve/execution identities and `synchronous=FULL` before any reserve observation access;
+- made concurrent contenders converge on one deterministic claim while only the first transaction receives execution authority;
+- added terminal-evidence v2 binding the durable claim, consumption timestamp and reserve-access state without mutating the frozen A5-1 seal schema;
+- persisted completed terminal evidence and canonical reserve JSONL ledger bytes transactionally, with SHA/digest verification on replay;
+- added explicit interrupted-run recovery that closes a consumed-without-terminal claim as `RESERVE_FAIL` without reserve re-access, while normal retry remains forbidden;
+- added append-only consumption audit linkage plus audit reconciliation for terminal-written/audit-missing crash windows;
+- added lifecycle replay verification and regression coverage for concurrency, persistence failure, store reopen and ledger tampering;
+- kept production 2025+ reserve unconsumed during development and CI; actual execution remains an explicit human-authorized operation over a reviewed production seal.

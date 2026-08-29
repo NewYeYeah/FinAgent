@@ -12,11 +12,13 @@ import pytest
 
 from finagent.backtest.ashare_reserve import AshareReservePortfolioEngine
 from finagent.research.ashare_reserve import SQLiteReserveEligibilityStore
+from finagent.research.ashare_reserve_lifecycle import SQLiteReserveConsumptionStore
 from finagent.research.ashare_reserve_runner import (
     FINAL_TRAINING_RULE_ID,
     RESERVE_EXECUTION_PROTOCOL_ID,
     TERMINAL_POLICY_RULE_ID,
     AshareReserveOneShotRunner,
+    ReserveAccessState,
     ReservePortfolioEvaluation,
     ReserveTerminalStatus,
     SQLiteReserveTerminalEvidenceStore,
@@ -88,9 +90,11 @@ def _runner(tmp_path: Path, engine: FakeEngine):
     seal = _seal(tmp_path, code_git_sha="a5-runtime-sha")
     eligibility = SQLiteReserveEligibilityStore(tmp_path / "eligibility.sqlite")
     eligibility.register(seal)
+    consumption = SQLiteReserveConsumptionStore(tmp_path / "consumption.sqlite")
     terminal = SQLiteReserveTerminalEvidenceStore(tmp_path / "terminal.sqlite")
     runner = AshareReserveOneShotRunner(
         eligibility_store=eligibility,
+        consumption_store=consumption,
         terminal_store=terminal,
         engine=engine,
         clock=StepClock(),
@@ -111,8 +115,11 @@ def test_a5p2_pass_is_terminal_and_does_not_auto_promote(tmp_path: Path) -> None
     terminal = result.terminal
     assert terminal.status is ReserveTerminalStatus.PASS
     assert terminal.to_dict()["promotion_eligible"] is False
-    assert terminal.to_dict()["reserve_accessed"] is True
-    assert terminal.to_dict()["consumed_state_persistence"] == "PENDING_A5_3"
+    assert terminal.to_dict()["reserve_access_state"] == "ACCESSED"
+    assert terminal.to_dict()["consumed_state_persistence"] == "DURABLE_PRE_ACCESS_V1"
+    assert terminal.reserve_access_state is ReserveAccessState.ACCESSED
+    claim = runner.consumption_store.get_claim_for_reserve(seal.reserve_id)
+    assert claim.claim_id == terminal.consumption_claim_id
     assert "RESERVE_PASS_TERMINAL" in terminal.reason_codes
     assert result.ledger_bytes is not None
     assert terminal_store.get_for_reserve(seal.reserve_id).terminal_evidence_id == terminal.terminal_evidence_id
@@ -149,10 +156,17 @@ def test_a5p2_terminal_payload_cannot_fake_a5p3_consumed_state(tmp_path: Path) -
         runtime_code_git_sha="a5-runtime-sha",
         actor="human-operator",
     ).terminal
-    payload = terminal.to_dict()
-    payload["consumed_state_persistence"] = "CONSUMED"
+    from dataclasses import replace as dc_replace
     from finagent.research.ashare_reserve_runner import ReserveTerminalEvidence
 
+    legacy = dc_replace(
+        terminal,
+        consumption_claim_id="",
+        consumed_at=None,
+        reserve_access_state=ReserveAccessState.LEGACY_ACCESSED,
+    )
+    payload = legacy.to_dict()
+    payload["consumed_state_persistence"] = "CONSUMED"
     with pytest.raises(ValueError, match="cannot claim durable consumed-state"):
         ReserveTerminalEvidence.from_dict(payload)
 
@@ -170,6 +184,8 @@ def test_a5p2_runtime_code_or_report_drift_fails_before_reserve_access(tmp_path:
         )
     assert engine.preflight_calls == 0
     assert engine.evaluate_calls == 0
+    with pytest.raises(KeyError):
+        runner.consumption_store.get_claim_for_seal(seal.seal_id)
 
     changed = dict(a26)
     changed["program_status"] = "changed"
@@ -202,7 +218,7 @@ def test_a5p2_existing_terminal_is_idempotent_without_reaccess(tmp_path: Path) -
         actor="second-operator",
     )
     assert second.terminal.terminal_evidence_id == first.terminal.terminal_evidence_id
-    assert second.ledger_bytes is None
+    assert second.ledger_bytes == first.ledger_bytes
     assert engine.evaluate_calls == 1
 
 
@@ -218,7 +234,7 @@ def test_a5p2_operational_error_is_terminal_and_automatic_retry_is_blocked(tmp_p
     )
     assert first.terminal.status is ReserveTerminalStatus.FAIL
     assert first.terminal.error_type == "RuntimeError"
-    assert "EXECUTION_FAILURE" in first.terminal.reason_codes
+    assert "EXECUTION_FAILURE_AFTER_DURABLE_CONSUMPTION" in first.terminal.reason_codes
     assert "AUTOMATIC_RETRY_FORBIDDEN" in first.terminal.reason_codes
     second = runner.run(
         seal=seal,
