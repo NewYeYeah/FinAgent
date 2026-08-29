@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from datetime import UTC, datetime
 from typing import Any, Mapping, Sequence
 
@@ -43,6 +44,15 @@ class AshareReservePortfolioEngine:
         if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
             raise TypeError(f"{name} must be a JSON array")
         return value
+
+    @staticmethod
+    def _float_value(value: object, name: str) -> float:
+        if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+            raise TypeError(f"{name} must be a numeric JSON value")
+        result = float(value)
+        if not math.isfinite(result):
+            raise ValueError(f"{name} must be finite")
+        return result
 
     @staticmethod
     def _plain_json(value: object) -> object:
@@ -99,7 +109,7 @@ class AshareReservePortfolioEngine:
 
         net = self._mapping(a4_spec.get("net_execution_config"), "net_execution_config")
         compiler = self.validator.net_session.compiler
-        if float(net.get("slippage_bps", -1.0)) != compiler.config.slippage_bps:
+        if self._float_value(net.get("slippage_bps", -1.0), "net slippage_bps") != compiler.config.slippage_bps:
             raise ValueError("A5 net slippage differs from frozen A4")
         if bool(net.get("require_price_limits")) != compiler.config.require_price_limits:
             raise ValueError("A5 price-limit policy differs from frozen A4")
@@ -113,7 +123,11 @@ class AshareReservePortfolioEngine:
         if gross.config.slippage_bps != 0.0:
             raise ValueError("A5 gross comparator must retain zero slippage")
         gross_fees = gross.fee_schedule.to_dict(include_id=False)
-        if any(float(value) != 0.0 for key, value in gross_fees.items() if not key.startswith("pass_")):
+        if any(
+            self._float_value(value, f"gross fee {key}") != 0.0
+            for key, value in gross_fees.items()
+            if not key.startswith("pass_")
+        ):
             raise ValueError("A5 gross comparator must retain zero fees")
         if any(bool(value) for key, value in gross_fees.items() if key.startswith("pass_")):
             raise ValueError("A5 gross comparator cannot enable pass-through fees")
