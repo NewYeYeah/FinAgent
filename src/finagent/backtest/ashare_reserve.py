@@ -8,9 +8,7 @@ from finagent.domain.assets import AssetId
 from finagent.domain.research import DatasetRequest, TimeRange
 from finagent.research.ashare_reserve import ReserveEligibilitySeal
 from finagent.research.ashare_reserve_runner import (
-    FINAL_TRAINING_RULE_ID,
     RESERVE_EXECUTION_PROTOCOL_ID,
-    TERMINAL_POLICY_RULE_ID,
     ReservePortfolioEvaluation,
 )
 from finagent.research.ashare_robust_program import AshareWalkForwardFold

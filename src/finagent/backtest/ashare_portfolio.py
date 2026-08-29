@@ -38,6 +38,7 @@ from finagent.portfolio.mean_variance import MeanVarianceConfig, MeanVarianceOpt
 from finagent.research.ashare_robust_program import (
     AshareExpandingWalkForwardPlan,
     AshareRobustFactorSelection,
+    AshareWalkForwardFold,
 )
 from finagent.research.ashare_universe import AshareResearchUniverseProvider
 from finagent.research.panel_feature_materializer import (
