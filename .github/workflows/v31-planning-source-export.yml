@@ -1,0 +1,37 @@
+name: v31-planning-source-export
+
+on:
+  push:
+    branches:
+      - delivery/v31-planning-source-export
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: d08d28243e519dcdd79ae33ed1312097972d5e5a
+          fetch-depth: 0
+      - name: Archive exact main source
+        run: |
+          git archive --format=zip --prefix=FinAgent/ -o FinAgent-Planning-v3.1.zip d08d28243e519dcdd79ae33ed1312097972d5e5a
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, zipfile
+          path = Path('FinAgent-Planning-v3.1.zip')
+          with zipfile.ZipFile(path, 'r') as zf:
+              bad = zf.testzip()
+              if bad is not None:
+                  raise SystemExit(f'bad zip member: {bad}')
+              print('files=', sum(1 for x in zf.infolist() if not x.is_dir()))
+          print('sha256=', hashlib.sha256(path.read_bytes()).hexdigest())
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: finagent-planning-v31-source
+          path: FinAgent-Planning-v3.1.zip
+          retention-days: 1
