@@ -20,6 +20,18 @@ from .market_study import (
     MarketStudyResult,
     run_nested_market_study,
 )
+from .strategy_decision_alpha import (
+    AshareStrategyDecisionAlphaReplay,
+    StrategyDecisionAlphaFoldSpec,
+)
+from .strategy_decision_series import (
+    StrategyDecisionRow,
+    StrategyDecisionSeriesManifest,
+    StrategyDecisionSeriesProjection,
+    canonical_execution_ledger_digest,
+    materialize_strategy_decision_rows,
+    write_strategy_decision_series,
+)
 from .timed import (
     TimedBacktestConfig,
     TimedBacktestPoint,
@@ -49,6 +61,7 @@ __all__ = [
     "AsharePortfolioValidationResult",
     "AsharePortfolioValidationSpec",
     "AshareReservePortfolioEngine",
+    "AshareStrategyDecisionAlphaReplay",
     "BacktestConfig",
     "BacktestPoint",
     "BacktestResult",
@@ -62,13 +75,20 @@ __all__ = [
     "NestedWalkForwardFold",
     "PurgedWalkForwardSplitter",
     "SQLiteAsharePortfolioValidationSpecStore",
+    "StrategyDecisionAlphaFoldSpec",
+    "StrategyDecisionRow",
+    "StrategyDecisionSeriesManifest",
+    "StrategyDecisionSeriesProjection",
     "TimedBacktestConfig",
     "TimedBacktestPoint",
     "TimedBacktestResult",
     "TimedEventDrivenBacktestEngine",
     "WalkForwardConfig",
     "WalkForwardFold",
+    "canonical_execution_ledger_digest",
+    "materialize_strategy_decision_rows",
     "minimum_purge_bars",
     "no_robust_factor_result",
     "run_nested_market_study",
+    "write_strategy_decision_series",
 ]
