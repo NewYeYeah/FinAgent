@@ -15,8 +15,8 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Run the GET-only FinAgent Evidence Plane over immutable evidence, "
-            "canonical Agent audit projections, typed config/command catalogs and "
-            "V3-3 deep links. Governed command execution runs separately."
+            "canonical Agent audit projections, typed deep links and V3-4 SSE. "
+            "Governed command execution runs separately."
         )
     )
     parser.add_argument(
@@ -48,8 +48,8 @@ def _parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path(".finagent/workbench/commands.sqlite"),
         help=(
-            "Optional durable Control Plane CommandRun SQLite opened read-only by "
-            "the Evidence Plane when present."
+            "Durable Control Plane CommandRun SQLite path observed read-only by the "
+            "Evidence Plane. The file may be created after Workspace starts."
         ),
     )
     parser.add_argument(
@@ -108,7 +108,9 @@ def main() -> int:
     configs = tuple(args.configs or ["configs"])
     frontend = None if args.api_only else args.frontend_dir
     catalog_db = None if args.no_catalog_db else args.catalog_db
-    command_store = args.command_store if args.command_store.is_file() else None
+    # Keep the configured path even before the Control Plane creates the SQLite
+    # file. Evidence/stream readers still open it with SQLite mode=ro only.
+    command_store = args.command_store
     reserve_eligibility = (
         args.reserve_eligibility if args.reserve_eligibility.is_file() else None
     )
@@ -128,7 +130,8 @@ def main() -> int:
         "reports": list(reports),
         "configs": list(configs),
         "agent_audit": str(args.agent_audit) if args.agent_audit else None,
-        "command_store": str(command_store) if command_store else None,
+        "command_store": str(command_store),
+        "command_store_available": command_store.is_file(),
         "frontend_dir": str(frontend) if frontend else None,
         "host": args.host,
         "port": args.port,
@@ -141,12 +144,13 @@ def main() -> int:
             str(reserve_consumption) if reserve_consumption else None
         ),
         "reserve_terminal": str(reserve_terminal) if reserve_terminal else None,
-        "workspace_version": "v3-3",
+        "workspace_version": "v3-4",
         "read_only": True,
         "evidence_plane": True,
         "control_plane_enabled": False,
         "control_plane_separate": True,
         "deep_links": True,
+        "sse": True,
     }
     if args.print_config:
         import json
@@ -164,9 +168,7 @@ def main() -> int:
         os.environ["FINAGENT_WORKSPACE_AGENT_AUDIT"] = (
             str(args.agent_audit) if args.agent_audit else ""
         )
-        os.environ["FINAGENT_WORKSPACE_COMMAND_STORE"] = (
-            str(command_store) if command_store else ""
-        )
+        os.environ["FINAGENT_WORKSPACE_COMMAND_STORE"] = str(command_store)
         os.environ["FINAGENT_WORKSPACE_FRONTEND"] = (
             str(frontend) if frontend else ""
         )

@@ -41,6 +41,10 @@ const CONTROL_API_BASE = (
   import.meta.env.VITE_CONTROL_API_BASE ?? "http://127.0.0.1:8766"
 ).replace(/\/$/, "");
 
+export function workspaceEventSourceUrl(path: string): string {
+  return `${API_BASE}${path}`;
+}
+
 async function responseError(response: Response): Promise<Error> {
   let detail = `${response.status} ${response.statusText}`;
   try {

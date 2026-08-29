@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import asyncio
 import os
 import sqlite3
 from collections.abc import Sequence
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from finagent.application import (
@@ -17,9 +18,10 @@ from finagent.application import (
 from .semantic import EvidenceContractError
 from .workbench_control_catalog import ConfigRegistry, default_command_catalog
 from .workbench_links import WorkbenchLinkProjection
+from .workbench_streams import WorkbenchStreamProjection, sse_response
 from .workspace_api import create_workspace_app as create_evidence_app
 
-WORKBENCH_API_VERSION = "finagent-workbench-api-v3.3"
+WORKBENCH_API_VERSION = "finagent-workbench-api-v3.4"
 
 
 def _attach_frontend(app: FastAPI, frontend_dir: str | Path | None) -> None:
@@ -74,10 +76,10 @@ def create_workspace_app(
 ) -> FastAPI:
     """Compose the immutable Evidence Plane with V3 Workbench read models.
 
-    V3-3 adds typed, fail-closed deep links across Agent, evidence, factors,
-    ResearchPrograms, A4/A5, public ConfigSnapshots/ConfigDiffs and durable
-    CommandRuns. The Evidence Plane remains GET-only. It opens the optional command
-    store with SQLite read-only mode and never instantiates the mutable command store.
+    V3-4 adds SSE over stable Agent/CommandRun product projections. The transport
+    reads canonical audit/durable command state only. It never streams prompts,
+    provider callbacks, hidden reasoning, raw OTLP/Phoenix spans, arbitrary command
+    outputs or host artifact paths. All Evidence Plane routes remain GET-only.
     """
 
     app = create_evidence_app(
@@ -120,11 +122,17 @@ def create_workspace_app(
         agent_audit_path=agent_audit_path,
         command_store_path=command_store_path,
     )
+    streams = WorkbenchStreamProjection(
+        bundles=app.state.catalog.bundles(),
+        agent_audit_path=agent_audit_path,
+        command_store_path=command_store_path,
+    )
 
     app.state.config_registry = config_registry
     app.state.command_catalog = command_catalog
     app.state.application_service_ready_commands = catalog_ready_commands
     app.state.workbench_links = links
+    app.state.workbench_streams = streams
     app.state.command_store_path = (
         Path(command_store_path).expanduser() if command_store_path else None
     )
@@ -142,6 +150,7 @@ def create_workspace_app(
             "command_execution_enabled": False,
             "control_plane_separate": True,
             "deep_links": links.status(),
+            "streams": streams.status(),
             "config_descriptor_count": len(projection.descriptors),
             "config_snapshot_count": len(projection.snapshots),
             "config_warning_count": len(projection.warnings),
@@ -153,6 +162,65 @@ def create_workspace_app(
     @app.get("/api/v3/deep-links/status")
     def get_v3_deep_link_status() -> dict[str, object]:
         return links.status()
+
+    @app.get("/api/v3/streams/status")
+    def get_v3_stream_status() -> dict[str, object]:
+        return streams.status()
+
+    @app.get("/api/v3/streams/agent/runs/{run_id}")
+    async def stream_v3_agent_run(
+        run_id: str,
+        request: Request,
+        once: bool = Query(default=False),
+    ) -> Response:
+        if not streams.agent_configured:
+            raise HTTPException(status_code=404, detail="agent audit is not configured")
+        try:
+            initial = await asyncio.to_thread(streams.agent_snapshot, run_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="agent run not found") from exc
+        except FileNotFoundError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except sqlite3.Error as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except EvidenceContractError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        return sse_response(
+            request,
+            initial=initial,
+            loader=lambda: streams.agent_snapshot(run_id),
+            event_builder=streams.event_for_agent,
+            once=once,
+        )
+
+    @app.get("/api/v3/streams/command-runs/{command_run_id}")
+    async def stream_v3_command_run(
+        command_run_id: str,
+        request: Request,
+        once: bool = Query(default=False),
+    ) -> Response:
+        if not streams.command_configured:
+            raise HTTPException(status_code=404, detail="command store is not configured")
+        if not streams.command_runs.available:
+            raise HTTPException(status_code=503, detail="command store is unavailable")
+        try:
+            initial = await asyncio.to_thread(
+                streams.command_snapshot,
+                command_run_id,
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="command run not found") from exc
+        except FileNotFoundError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except sqlite3.Error as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        return sse_response(
+            request,
+            initial=initial,
+            loader=lambda: streams.command_snapshot(command_run_id),
+            event_builder=streams.event_for_command,
+            once=once,
+        )
 
     @app.get("/api/v3/refs/{kind}/{identity}")
     def get_v3_reference(kind: str, identity: str) -> dict[str, object]:
