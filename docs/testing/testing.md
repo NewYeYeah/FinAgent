@@ -688,6 +688,32 @@ python -m pip check
 
 Launch with the exact frozen A2.6/A4 report roots and canonical Agent audit database. Verify one A4 report against its digest-matched ledger: lifecycle IDs, Gate evidence, NAV, fold boundaries, fees, slippage, decisions, fills, reason attribution, target-realized drift, protocol diff and review bundle identities must agree with source artifacts. The 2025+ reserve must still be `untouched` before A5.
 
+### T-A9 — A5-1 ReserveEligibilitySeal acceptance
+
+Run after any reserve-eligibility contract, replay-proof, review-attestation or A5 authority-boundary change. This stage must not access reserve data.
+
+```bash
+python -m pytest -q tests/test_ashare_reserve_eligibility_a5.py
+python -m compileall -q src/finagent/research/ashare_reserve.py scripts/attest_v2_reserve_review.py scripts/seal_ashare_reserve_eligibility.py
+```
+
+Acceptance:
+
+- exact A2.6 frozen identity is bound and `program_status=frozen`;
+- A4 source digest/spec/factor family exactly bind the A2.6 reference;
+- A2.6 and A4 replay reports match reference evidence modulo `mode`;
+- immutable JSONL ledger recomputes to the A4 `ledger_digest`;
+- V2 review bundle contains the same A2.6/A4/ledger artifacts;
+- every required V2 automated/read-only check is explicitly attested as PASS;
+- protocol/ledger/reserve/no-mutation/no-Agent-feedback human confirmations are present;
+- authority policy cannot enable feedback, tuning or Agent/UI reserve authority;
+- same frozen inputs produce the same `seal_id`;
+- append-only store blocks a different seal for the same reserve/program/A4 identity;
+- source evidence remains unchanged and seal output says `reserve_consumed=false`;
+- no A5-2 runner or reserve data access is reachable from A5-1.
+
+CI should run this test on Windows and Ubuntu. Full project tests remain required before merge.
+
 ## 4. Interpretation boundary
 
 The A-share evidence layers have different meanings:

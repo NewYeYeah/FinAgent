@@ -175,3 +175,12 @@ This file summarizes meaningful development milestones. Commit and pull-request 
 ## Documentation policy
 
 Stage-specific PHASE/DEVLOG/release notes were removed from the active `docs/` tree in favor of this condensed changelog, the current roadmap and architecture decision summary. Historical documents remain recoverable through Git history.
+
+## 2026-08-29 — A5-1 reserve eligibility sealing
+
+- added an immutable A-share `ReserveEligibilitySeal` contract binding the exact frozen A2.6/A4 protocol, factor family, execution ledger, reserve interval, code/data identity and fail-closed authority policy;
+- added exact A2.6/A4 replay proof validation and canonical A4 JSONL ledger-digest verification before any reserve access;
+- added explicit V2 human-review attestation bound to the immutable V2 review bundle and required cross-platform/frontend/read-only acceptance checks;
+- added append-only SQLite eligibility persistence with one seal per reserve/program/A4 identity and deterministic seal IDs independent of audit timestamp;
+- added CLI tooling for explicit human review attestation and clean-Git eligibility sealing;
+- kept reserve state `untouched`; no reserve runner, terminal result or consumed-state mutation is introduced by A5-1.
