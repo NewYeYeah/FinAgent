@@ -1,91 +1,69 @@
-# FinAgent Workspace
+# FinAgent Workspace / Workbench
 
-The FinAgent Workspace is the primary read-only product surface for immutable research, portfolio, execution and Agent-audit evidence. It does not own numerical calculations or lifecycle transitions.
+FinAgent Workbench is the primary product surface for immutable research, portfolio, execution, reserve-governance and Agent-audit evidence. V3-2 adds a separately launched governed command plane without moving numerical authority into the browser.
 
-## 1. Scope
+## 1. Frozen authority model
 
-V2/A5-4 supports:
+V3-2 runs as two independent local processes:
+
+```text
+Evidence Plane  http://127.0.0.1:8765
+  → default
+  → GET-only product APIs
+  → immutable evidence/config/command projections
+
+Control Plane   http://127.0.0.1:8766
+  → explicit opt-in launcher
+  → local-loopback only
+  → allowlisted application_service_ready L0/L1 commands
+  → durable CommandIntent / CommandRun / CommandResult audit
+```
+
+The Evidence Plane never calls the Control Plane on the server and never gains a command mutation endpoint. The React client may connect to both processes, but execution is available only while the user explicitly runs the local Control Plane.
+
+Generic Control Plane authority excludes:
+
+```text
+production reserve
+strategy promotion
+PAPER mutation
+broker order
+live capital
+arbitrary shell
+arbitrary Python
+```
+
+## 2. Current evidence scope
+
+The Workbench projects:
 
 ```text
 A2 / A2.5 factor-acceptance reports
 A2.6 robust ResearchProgram reports
 A4 execution-aware portfolio-validation reports
 digest-matched A4 execution-ledger JSONL
-A5 ReserveEligibilitySeal SQLite
-A5 durable CONSUMED / consumption-audit SQLite
-A5 terminal-evidence / immutable reserve-ledger SQLite
+A5 ReserveEligibilitySeal / CONSUMED / terminal / ledger stores
 canonical Agent audit SQLite
+public ConfigSnapshot / ConfigDiff metadata
+CommandSpec metadata
+persisted Control Plane CommandRun lifecycle
 ```
 
-It provides:
-
-- a rebuildable derived SQLite Evidence Catalog in addition to the V1 in-memory catalog;
-- governed Project lifecycle and immutable protocol comparison;
-- A2.6 Gate Matrix, statistical forest and fold-evidence views;
-- A4 gross/net NAV, portfolio/economic evidence and explicitly derived rolling review series;
-- digest-matched desired → compiled/adjusted → executable → filled execution realization;
-- T+1, lot, suspension, limit, cash, session/data and detailed fee attribution;
-- target-versus-realized close weights and implementation-shortfall review;
-- immutable lineage navigation plus an explicitly derived A3 protocol binding when no standalone A3 evidence identity exists;
-- raw evidence inspection and downloadable human-review bundles;
-- A5 Reserve Cockpit with eligibility, durable CONSUMED claim, terminal PASS/FAIL, ledger integrity and replay audit;
-- canonical Agent run timelines and the `FinWidgetSpec` product-question catalog.
-
-It does not provide:
-
-```text
-LLM calls
-prompt or feature-code editing
-research reruns
-Gate/threshold mutation
-reserve execution / recovery / retry
-promotion
-PAPER control
-order submission
-```
-
-## 2. Architecture
-
-```text
-Immutable A2/A2.6/A4 JSON
-A4 execution ledger JSONL
-Canonical Agent audit SQLite
-A5 lifecycle SQLite stores
-             │
-             ▼
-Visualization Semantic Contract
-             │
-             ▼
-Read-only FastAPI /api/v1 + /api/v2
-             │
-             ▼
-React + TypeScript Workspace
-```
-
-Phoenix remains an optional, separate low-level inspector for LLM/provider/repair/sandbox traces. The Workspace consumes the canonical Agent audit projection, not Phoenix spans.
+Existing V2/A5 functionality remains read-only: research/economic review, A2.6 gates/statistics/folds, A4 gross/net and execution realization, A5 lifecycle evidence, raw evidence inspection, review bundles, Agent Project → Thread → Run navigation and lineage.
 
 ## 3. Prerequisites
 
-- Python 3.11 or later;
+- Python 3.11+;
 - Node.js compatible with the committed Vite toolchain;
-- npm;
-- at least one supported report JSON for meaningful research pages.
+- npm.
 
-Install the API surface:
-
-```bash
-python -m pip install -e ".[workspace]"
-```
-
-For development and tests:
+Install:
 
 ```bash
 python -m pip install -e ".[dev,workspace]"
 ```
 
-## 4. Build the frontend
-
-Ubuntu/macOS shell:
+Build the frontend:
 
 ```bash
 cd workspace
@@ -96,34 +74,15 @@ npm run build
 cd ..
 ```
 
-Windows PowerShell:
+## 4. Launch the Evidence Plane
 
-```powershell
-Set-Location workspace
-npm ci
-npm run typecheck
-npm run test
-npm run build
-Set-Location ..
-```
-
-The production bundle is written to:
-
-```text
-workspace/dist/
-```
-
-`node_modules/`, `dist/`, Playwright reports and test outputs are ignored by Git.
-
-## 5. Launch
-
-### Basic report catalog
-
-Ubuntu:
+Ubuntu/macOS:
 
 ```bash
 python scripts/run_workspace.py \
   --reports reports \
+  --configs configs \
+  --agent-audit .finagent/agent_audit.sqlite \
   --open-browser
 ```
 
@@ -132,327 +91,228 @@ Windows PowerShell:
 ```powershell
 python scripts\run_workspace.py `
   --reports reports `
+  --configs configs `
+  --agent-audit .finagent\agent_audit.sqlite `
   --open-browser
 ```
 
-Open:
+Open `http://127.0.0.1:8765`.
 
-```text
-http://127.0.0.1:8765
-```
+This process remains GET-only. A5 SQLite stores, when present, are opened read-only. The V2 Evidence Catalog is disposable and rebuildable; report/ledger artifacts remain authoritative.
 
-By default V2 also rebuilds a disposable review index at `.finagent/visualization/evidence_catalog.sqlite`. Use `--no-catalog-db` to keep the derived index in memory only, or `--catalog-db <path>` to select another disposable index location. The authoritative report/ledger artifacts are never modified.
+## 5. Explicitly enable the local Control Plane
 
-A5-4 auto-discovers these files when they exist:
+The Control Plane is **not** started by `run_workspace.py`.
 
-```text
-.finagent/a5/reserve_eligibility.sqlite
-.finagent/a5/reserve_consumption.sqlite
-.finagent/a5/reserve_terminal.sqlite
-```
-
-Override them with `--reserve-eligibility`, `--reserve-consumption` and `--reserve-terminal`. All three are opened by the Workspace with SQLite `mode=ro` / `PRAGMA query_only=ON`; the UI cannot create a claim, recover an interrupted run or execute the reserve.
-
-### Multiple report roots
-
-Repeat `--reports`:
-
-```powershell
-python scripts\run_workspace.py `
-  --reports reports `
-  --reports D:\FinAgentEvidence\approved
-```
-
-Only `.json` files under configured roots are scanned. JSONL execution ledgers are represented through the A4 report's immutable ledger identity; V1 does not expose arbitrary filesystem paths.
-
-### Agent audit
-
-```powershell
-python scripts\run_workspace.py `
-  --reports reports `
-  --agent-audit .finagent\agent_audit.sqlite
-```
-
-The SQLite database is opened with:
-
-```text
-mode=ro
-PRAGMA query_only=ON
-```
-
-The Workspace cannot create or modify Agent audit rows.
-
-### API-only mode
+Ubuntu/macOS:
 
 ```bash
-python scripts/run_workspace.py --reports reports --api-only
+python scripts/run_workbench_control.py \
+  --configs configs \
+  --reports reports
 ```
 
-FastAPI documentation is available at:
+Windows PowerShell:
+
+```powershell
+python scripts\run_workbench_control.py `
+  --configs configs `
+  --reports reports
+```
+
+Defaults:
 
 ```text
-http://127.0.0.1:8765/docs
+host        127.0.0.1
+port        8766
+store       .finagent/workbench/commands.sqlite
+export dir  .finagent/workbench/exports
+workers     2
 ```
 
-### Development mode
+`run_workbench_control.py` refuses non-loopback `--host` values. It is intentionally a local workstation control surface, not a remotely deployable broker/control service.
 
-Terminal A:
+When the process is absent, the Workbench Commands button remains disabled and there is no fallback execution path.
+
+## 6. V3-2 command semantics
+
+The read-only Command Catalog currently contains:
+
+```text
+config.validate
+data.certify_local_ashare
+research.run_development
+research.run_a2p6
+portfolio.run_a4
+review.export_bundle
+```
+
+Only code-backed `application_service_ready` entries may execute. At V3-2 completion those are:
+
+```text
+config.validate
+data.certify_local_ashare
+review.export_bundle
+```
+
+The following remain deliberately non-executable:
+
+```text
+research.run_development  adapter_required
+research.run_a2p6         adapter_required
+portfolio.run_a4           adapter_required
+```
+
+Their existing CLIs are still fat orchestration surfaces. V3-2 does **not** call them with `subprocess`, shell commands or browser-supplied Python. Each command must be separately extracted behind a reviewed typed application service before its readiness can change.
+
+## 7. Durable command lifecycle
+
+The Control Plane persists the lifecycle before execution:
+
+```text
+CommandIntent(validated/rejected)
+        ↓
+CommandRun(planned)
+        ↓
+CommandRun(running)
+        ↓
+CommandResult(succeeded/rejected/failed)
+        └── ordered CommandEvent audit
+```
+
+The SQLite store uses transactional writes, WAL and `synchronous=FULL`.
+
+Properties:
+
+- client `request_id` is the idempotency key;
+- replaying the same immutable request returns the same CommandRun;
+- reusing the key with different command/config/context fails closed;
+- exact `command_id`, `config_snapshot_id`, `WorkbenchContext` and actor are retained;
+- evidence IDs, artifact paths and typed outputs are persisted as result metadata;
+- an interrupted `planned`/`running` run becomes explicit `failed` on Control Plane restart;
+- restart recovery never automatically retries the command.
+
+V3-4 will replace UI polling with stable CommandRun SSE; the persistence model does not depend on SSE.
+
+## 8. Command Palette / Run Inspector
+
+The top-bar **Commands** button activates only after `GET :8766/api/v3/control/status` and the Control command projection are available.
+
+The Palette shows:
+
+- CommandSpec L0/L1 authority;
+- `application_service_ready` versus `adapter_required`;
+- ConfigSnapshot binding where required;
+- current WorkbenchContext;
+- explicit confirmation for commands that require it;
+- produced evidence/artifact types;
+- persisted CommandRun state and event history.
+
+The browser does not send report-root or output filesystem paths for review export. The server injects configured report roots and writes bundles under the configured Control export directory.
+
+Configuration itself remains read-only. V3-2 command execution does not provide in-place protocol editing; future protocol changes must use a governed identity/fork workflow.
+
+## 9. API overview
+
+### Evidence Plane — GET-only
+
+Representative endpoints:
+
+```text
+GET /api/v1/catalog
+GET /api/v1/evidence/{evidence_id}
+GET /api/v2/projects
+GET /api/v2/programs/{program_id}/cockpit
+GET /api/v2/a4/{validation_id}/cockpit
+GET /api/v2/a4/{validation_id}/execution
+GET /api/v2/reserves/{reserve_id}
+GET /api/v3/agent/projects
+GET /api/v3/agent/threads/{thread_id}
+GET /api/v3/agent/runs/{run_id}
+GET /api/v3/config
+GET /api/v3/config/diff
+GET /api/v3/commands
+```
+
+`POST`, `PUT`, `PATCH` and `DELETE` remain outside the Evidence product contract.
+
+### Control Plane — local and bounded
+
+```text
+GET  /api/v3/control/status
+GET  /api/v3/control/commands
+GET  /api/v3/control/runs
+GET  /api/v3/control/runs/{command_run_id}
+POST /api/v3/control/runs
+```
+
+The POST model uses `extra=forbid`. There is no generic `args`, `shell`, `python`, `executable`, `cwd`, arbitrary path or arbitrary environment field.
+
+Unknown command IDs and catalogued `adapter_required` commands do not execute. When their request schema is otherwise valid, they are persisted as rejected audit records.
+
+## 10. Development mode
+
+Terminal A — Evidence API:
 
 ```bash
-python scripts/run_workspace.py --reports reports --api-only --reload
+python scripts/run_workspace.py --reports reports --configs configs --api-only --reload
 ```
 
-Terminal B:
+Terminal B — explicit Control API when needed:
+
+```bash
+python scripts/run_workbench_control.py --configs configs --reports reports --reload
+```
+
+Terminal C — frontend:
 
 ```bash
 cd workspace
 npm run dev
 ```
 
-Open `http://127.0.0.1:5173`. Vite proxies `/api` to `127.0.0.1:8765`.
+The frontend defaults Control discovery to `http://127.0.0.1:8766`. Override only for local development with `VITE_CONTROL_API_BASE`; the production launcher itself remains loopback-only.
 
-## 6. Pages
+## 11. Reserve / production boundary
 
-### Project Cockpit
-
-Shows all supported evidence roots with separate:
-
-```text
-system status
-research/economic outcome
-reserve status
-promotion eligibility
-```
-
-Unsupported or malformed files appear as catalog warnings and are not silently rendered.
-
-### Research
-
-Shows A2/A2.5 and A2.6 artifacts. A2.6 factor rows retain the full candidate denominator, Gate status, selection, weights, directions, fold evidence and statistical metrics projected by FinAgent core.
-
-### Portfolio
-
-Shows A4 evidence:
-
-```text
-gross/net NAV
-net/gross return
-Sharpe
-drawdown
-cost drag
-order realization
-cash fallback
-participation
-reason-code attribution
-```
-
-The NAV series and A4 metrics are authoritative. Drawdown series drawn by the browser are labelled `DERIVED PRESENTATION SERIES`; they do not replace A4's authoritative maximum-drawdown metric.
-
-### Agent Runs
-
-Shows the canonical Action / Tool / Guardrail / Approval / Result / Error projection. Hidden reasoning is not persisted or displayed. Evidence identities in tool results can link back to research pages.
-
-### Agent Index (V3-1)
-
-V3-1 adds a derived, read-only Project → Thread → Run index over the same canonical Agent audit SQLite. It does not add Project or Thread tables to the canonical store. Missing grouping metadata is resolved with deterministic fallback identities derived from existing audit identities only.
-
-```text
-Canonical Agent audit SQLite
-        ↓
-AgentRunProjection
-        ↓
-AgentProjectProjection
-  └─ AgentThreadProjection
-       └─ AgentRunSummary
-```
-
-Rules:
-
-- explicit `project_id` / `thread_id` remain authoritative grouping hints from `AgentRunContext.metadata`;
-- missing IDs use deterministic derived identities and never write back to SQLite;
-- one thread resolving to conflicting projects fails closed;
-- project/thread/run ordering is deterministic;
-- artifact refs are emitted only when the ID is verified against Workspace evidence/factor identities; unknown audit strings remain unresolved rather than becoming product links;
-- Phoenix/OTLP is not used to construct Project or Thread identity.
-
-V3-1 is an index contract only. The Codex-style three-column Workbench UI is V3-2.
-
-### Widget Catalog
-
-Displays the frozen `FinWidgetSpec` definitions, including the question, data endpoint, renderer, authority and shared deep-link keys.
-
-## 6.1 V2 review pages
-
-The primary V2 navigation is:
-
-```text
-Research Governance Cockpit
-A2.6 ResearchProgram Cockpit
-A4 Portfolio Cockpit
-Execution Realization Cockpit
-Governance / Protocol Review
-Raw Evidence Inspector
-Review Bundle Export
-```
-
-The A3 lifecycle stage is shown as a `derived` protocol binding to A4 because the current core does not persist a standalone authoritative A3 certification evidence identity. V2 does not fabricate that identity in lineage.
-
-## 7. API overview
-
-All product endpoints are GET-only:
-
-```text
-GET /api/v1/health
-GET /api/v1/catalog
-GET /api/v1/evidence/{evidence_id}
-GET /api/v1/programs
-GET /api/v1/programs/{program_id}
-GET /api/v1/portfolio-validations
-GET /api/v1/portfolio-validations/{validation_id}
-GET /api/v1/factors/{feature_digest}
-GET /api/v1/lineage/{evidence_id}
-GET /api/v1/widgets
-GET /api/v1/agent/runs
-GET /api/v1/agent/runs/{run_id}
-```
-
-V3-1 Agent Index endpoints are:
-
-```text
-GET /api/v3/agent/projects
-GET /api/v3/agent/projects/{project_id}
-GET /api/v3/agent/threads/{thread_id}
-GET /api/v3/agent/runs/{run_id}
-```
-
-There are no write endpoints. `POST`, `PUT`, `PATCH` and `DELETE` are not part of the V1/V2/V3-1 product contract.
-
-V2 review endpoints are:
-
-```text
-GET /api/v2/catalog
-GET /api/v2/projects
-GET /api/v2/programs/{program_id}/cockpit
-GET /api/v2/programs/{program_id}/gates
-GET /api/v2/programs/{program_id}/statistics
-GET /api/v2/a4/{validation_id}/cockpit
-GET /api/v2/a4/{validation_id}/execution
-GET /api/v2/governance/{evidence_id}
-GET /api/v2/protocol-diff?left=...&right=...
-GET /api/v2/evidence/{evidence_id}/raw
-GET /api/v2/a4/{validation_id}/review-bundle
-```
-
-The CLI equivalent of the review-bundle download is:
-
-```bash
-python scripts/export_workspace_review_bundle.py <validation_id> --reports reports
-```
-
-## 8. Catalog behavior
-
-The catalog is a disposable, in-memory read model rebuilt at service start.
-
-- A2/A2.6/A4 evidence plus local-data certification, local system-smoke and A3
-  execution-smoke reports are parsed through `finagent.visualization.semantic`;
-- unsupported/malformed files become warnings;
-- equivalent replay copies with the same identity are deduplicated and exposed as
-  informational notices rather than warnings;
-- conflicting payloads sharing one evidence identity are omitted until resolved;
-- adding a report requires a Workspace restart in V1.
-
-Report JSON and canonical SQLite stores remain authoritative.
-
-## 9. Tests
-
-Python API tests:
-
-```bash
-python -m pytest -q tests/test_workspace_api_v1.py
-```
-
-Frontend tests:
-
-```bash
-cd workspace
-npm ci
-npm run typecheck
-npm run test
-npm run build
-npx playwright install chromium
-npm run e2e
-```
-
-Full test instructions and acceptance criteria are in `docs/testing/testing.md`.
-
-## 10. Troubleshooting
-
-### Frontend absent
-
-```text
-Workspace frontend is absent at workspace/dist
-```
-
-Run:
-
-```bash
-cd workspace
-npm ci
-npm run build
-```
-
-or start with `--api-only`.
-
-### Empty catalog
-
-Confirm that `--reports` points to a directory containing supported FinAgent evidence or
-diagnostic `.json` reports. Check `/api/v1/catalog` separately for `warnings` (action
-required) and `notices` (for example an equivalent replay that was safely deduplicated).
-
-### Pytest crashes while importing Phoenix
-
-If a local observability environment contains an old Phoenix pytest plugin, pytest may
-fail before FinAgent tests are collected. FinAgent's `pytest.ini` blocks the `phoenix`
-plugin because the project test suite does not depend on it. `python -m pytest ...` from
-the repository root should therefore work directly. For a fully isolated diagnostic run:
-
-```powershell
-$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD = "1"
-python -m pytest -q tests/test_workspace_api_v1.py
-```
-
-### Agent page empty
-
-Pass the canonical `SQLiteAgentAuditStore` path using `--agent-audit`. Phoenix trace databases are not valid Agent audit inputs.
-
-### Identity conflict warning
-
-Two non-equivalent files claim the same root evidence identity. Do not select one manually in the UI. Remove or archive the conflicting file after checking the upstream exact-replay and identity logic.
-
-### Browser route returns the app shell
-
-This is expected for frontend routes such as `/evidence/...`. Paths under `/api/v1` remain API-only and do not fall back to the SPA.
-
-## 11. Governance
-
-1. UI code does not calculate authoritative IC, Sharpe, Gate, reserve or execution decisions.
-2. Presentation-only derivatives are labelled derived.
-3. No page mutates ResearchProgram, A4, Agent audit or broker state.
-4. Every product result remains lineage-addressable.
-5. Reserve and `promotion_eligible=false` remain visible.
-6. Viewing evidence does not create a new clean validation window.
-
-
-### Reserve (A5-4)
-
-The Reserve page separates historical A4 report-time status from current one-shot lifecycle state and shows:
+A5 reserve lifecycle remains evidence-only in the Workbench. There is no generic Control command for reserve execution, recovery or retry.
 
 ```text
 ReserveEligibilitySeal
   → durable CONSUMED claim
   → RESERVE_PASS / RESERVE_FAIL terminal
-  → immutable reserve ledger (when completed)
+  → immutable reserve ledger
   → replay / consumption audit
 ```
 
-A consumed claim without terminal evidence is displayed as `CONSUMED_INTERRUPTED`. Workspace intentionally exposes no retry or recovery button; recovery remains an explicit core governance operation that must not re-open reserve observations.
+A consumed claim without terminal evidence is shown as interrupted evidence. The Control Plane cannot reopen it.
+
+## 12. Tests
+
+Backend control/evidence tests are part of repository pytest. Frontend acceptance includes typecheck, Vitest, production build and Playwright.
+
+Useful focused commands:
+
+```bash
+python -m pytest -q \
+  tests/test_command_store_v32c2.py \
+  tests/test_workbench_control_api_v32c.py \
+  tests/test_workbench_config_command_v32b.py
+
+cd workspace
+npm run typecheck
+npm run test
+npm run build
+npm run e2e
+```
+
+## 13. Governance invariants
+
+1. UI code never recalculates authoritative IC, Sharpe, Gate, reserve or execution decisions.
+2. Evidence Plane remains GET-only even when Control is running.
+3. Control resolves exact allowlisted application services only.
+4. No generic L2/L3 execution path exists.
+5. Protocol/config edits do not mutate historical evidence identities.
+6. Secret values remain host-bound; Workbench config projection never exposes credentials.
+7. A software/Control command success is not evidence of alpha or live-capital readiness.
+8. Production reserve and broker authority require their own later governance path.
