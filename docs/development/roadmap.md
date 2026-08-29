@@ -4,9 +4,9 @@ This roadmap is the canonical current implementation status. [`current-developme
 
 ## Current baseline
 
-The implementation baseline has now completed the **Visualization V3 Workbench Foundation through V3-5 acceptance** on top of PIT data contracts, bounded Agent research, A2.6 robust ResearchPrograms, A3 execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2 and A5-1～A5-4 reserve governance/evidence.
+The implementation baseline has now completed the **Visualization V3 Workbench Foundation through V3-5 acceptance** and the first V4 linked-analytics evidence layer, **V4-0 StrategyDecisionSeriesEvidence**, on top of PIT data contracts, bounded Agent research, A2.6 robust ResearchPrograms, A3 execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2 and A5-1～A5-4 reserve governance/evidence.
 
-The accepted V3 foundation includes Agent indexing, the governed Workbench/Control substrate, typed deep links and sanitized product SSE. The detailed completion matrix is recorded in [`changelog-v3-5.md`](changelog-v3-5.md).
+The accepted V3 foundation includes Agent indexing, the governed Workbench/Control substrate, typed deep links and sanitized product SSE. V4-0 adds immutable authoritative per-asset strategy-decision series without changing A4 report/ledger identity. Detailed records are in [`changelog-v3-5.md`](changelog-v3-5.md) and [`changelog-v4-0.md`](changelog-v4-0.md).
 
 No production 2025+ reserve has been consumed by development or CI. Production reserve execution remains an independent human-authorized operation.
 
@@ -180,25 +180,37 @@ review.export_bundle
 
 ## Current — V4 Linked Quant Analytics
 
-### Current — V4-0 StrategyDecisionSeriesEvidence
+### Completed — V4-0 StrategyDecisionSeriesEvidence
 
-Persist the authoritative signal → target → desired order → executable order → fill → realized position → PnL/cost series before implementing Strategy Decision Explorer charts.
+- added immutable per-asset `StrategyDecisionRow` evidence for the full historical path `signal → target → desired order → executable order → fill → realized close weight → gross/net PnL/cost`;
+- kept the existing A4 report and JSONL execution-ledger contracts unchanged; V4-0 materializes a separate evidence layer and verifies the source A4 ledger against its frozen `ledger_digest`;
+- replays only the exact frozen A4 AlphaModel at the original formation timestamp, rebuilding train-only calibration per fold and requiring the rebuilt artifact digest to equal the A4 `alpha_model_id`;
+- reconstructs deterministic weighted/directed alpha score and rank without requesting forward labels at prediction time, and leaves historical cash/model-error fallback sessions without invented alpha evidence;
+- reconciles asset-level gross/net wealth contributions to the authoritative A4 gross/net NAV change for every source session;
+- writes `finagent.strategy-decision-series.manifest.v1` plus ZSTD Parquet long-form data with deterministic row ordering and content-addressed row/series identity;
+- binds the manifest to A4 validation/spec, A2.6 program/spec/source-report/selection, selected factor digests, fold alpha-model IDs, data version, execution-ledger digest, row digest and physical source/data SHA-256 values;
+- added a fail-closed `StrategyDecisionSeriesProjection` with verified immutable source bindings and bounded asset/fold/date queries (`limit <= 5000`);
+- added a dedicated `v4-series` Ruff/mypy/dependency + Ubuntu/Windows focused gate and end-to-end acceptance through the existing synthetic A4 workflow;
+- recorded the evidence/alpha/PnL/storage contract in [`changelog-v4-0.md`](changelog-v4-0.md).
 
-Preferred storage remains:
+### Current — V4-1 FactorSeriesEvidence
+
+Persist the missing authoritative factor time series required by the linked Factor Tear Sheet:
 
 ```text
-JSON manifest + Parquet long-form series
+horizon IC / RankIC
+rolling IC
+Q1–Q5 return / NAV
+long-short return / NAV
+daily turnover
+daily coverage
 ```
 
-The first V4 PR must freeze row schema, identity bindings, deterministic ordering, source-ledger/report digests and bounded date/asset projection requirements. React must not reconstruct authoritative strategy decisions from unrelated summary reports.
-
-### P1 — V4-1 FactorSeriesEvidence
-
-Persist missing authoritative IC/decay/quantile/long-short/turnover/coverage series. V4-1 may proceed in parallel only if its source contracts remain independent from V4-0.
+V4-1 must bind exact A2.6/factor/data identities, preserve deterministic ordering, expose bounded read projections and avoid browser-side reconstruction of missing research series. It remains independent from StrategyDecisionSeries except where later WorkbenchContext linking explicitly joins their identities.
 
 ### P1 — V4-2 Strategy Decision Explorer
 
-Interactive price/candlestick + signal/order/fill markers + factor contribution + target/realized weights + gross-to-net PnL/cost explanation.
+Interactive price/candlestick + signal/order/fill markers + factor contribution + target/realized weights + gross-to-net PnL/cost explanation. This UI must consume V4-0 authoritative rows rather than rebuild the decision path from A4 summary reports.
 
 ### P1 — V4-3 Factor Tear Sheet
 
