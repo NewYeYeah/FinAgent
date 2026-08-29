@@ -66,6 +66,31 @@ hithink = "also-must-not-leak"
     )
 
 
+def test_config_registry_projects_local_ashare_certification_contract(
+    tmp_path: Path,
+) -> None:
+    _write(
+        tmp_path / "local.toml",
+        """
+[local_ashare]
+root = "D:/Data/A-Share"
+basic_filename = "stock_basic_data.parquet"
+daily_filename = "stock_daily.parquet"
+sample_frequency = "1min"
+sample_symbol = "000001.SZ"
+sample_date = 2009-01-05
+report_path = "reports/local_ashare_certification.json"
+""".strip(),
+    )
+    registry = ConfigRegistry((tmp_path,))
+    descriptor = registry.descriptor("local_ashare")
+    snapshot = registry.snapshots("local_ashare")[0]
+    assert descriptor.default_domain == "runtime"
+    assert snapshot.values["sample_symbol"] == "000001.SZ"
+    assert snapshot.domains["sample_frequency"] == "runtime"
+    assert snapshot.mutation_policies["sample_frequency"] == "restart_or_new_run"
+
+
 def test_config_descriptor_required_is_derived_across_unique_snapshots(
     tmp_path: Path,
 ) -> None:
@@ -141,9 +166,15 @@ def test_command_catalog_is_l0_l1_catalog_only() -> None:
     assert all(item.catalog_only for item in catalog.specs)
     assert all(not item.execution_enabled for item in catalog.specs)
     assert catalog.get("research.run_a2p6").gateway_readiness == "adapter_required"
+    certification = catalog.get("data.certify_local_ashare")
+    assert certification.gateway_readiness == "application_service_ready"
+    assert certification.config_descriptor_ids == ("local_ashare",)
+    review = catalog.get("review.export_bundle")
+    assert review.gateway_readiness == "application_service_ready"
+    assert review.binding_kind == "application_service"
     assert (
-        catalog.get("review.export_bundle").binding_ref
-        == "scripts/export_workspace_review_bundle.py"
+        review.binding_ref
+        == "finagent.application.control_services.ReviewBundleExportApplicationService"
     )
     assert "production_reserve" in payload["forbidden_authority"]
     assert "broker_order" in payload["forbidden_authority"]
