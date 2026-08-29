@@ -7,14 +7,15 @@ from pathlib import Path
 
 import pytest
 
+import finagent.application.control_services as control_services
 from finagent.application import (
+    APPLICATION_SERVICE_BINDINGS,
     ApplicationCommandInvocation,
     ApplicationServiceRegistry,
     LocalAshareCertificationApplicationService,
     ReviewBundleExportApplicationService,
     default_application_service_registry,
 )
-from finagent.application import control_services
 from finagent.visualization.workbench_control_catalog import (
     ConfigRegistry,
     default_command_catalog,
@@ -42,15 +43,14 @@ report_path = "reports/local_ashare_certification.json"
     config_registry = ConfigRegistry((tmp_path,))
     services = default_application_service_registry(config_registry)
     catalog = default_command_catalog()
-    ready = tuple(
-        sorted(
-            spec.command_id
-            for spec in catalog.specs
-            if spec.gateway_readiness == "application_service_ready"
-        )
-    )
-    assert services.command_ids() == ready
-    assert ready == (
+    ready_bindings = {
+        spec.command_id: spec.binding_ref
+        for spec in catalog.specs
+        if spec.gateway_readiness == "application_service_ready"
+    }
+    assert ready_bindings == APPLICATION_SERVICE_BINDINGS
+    assert services.command_ids() == tuple(sorted(ready_bindings))
+    assert tuple(sorted(ready_bindings)) == (
         "config.validate",
         "data.certify_local_ashare",
         "review.export_bundle",
