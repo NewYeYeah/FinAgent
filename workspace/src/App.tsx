@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowLeft, ExternalLink, FileWarning, Link2, Search } from "lucide-react";
+import { ArrowLeft, ExternalLink, FileWarning, Search } from "lucide-react";
 import {
   BrowserRouter,
   Link,
@@ -30,7 +30,6 @@ import {
   PageHeader,
   Panel,
   StatusBadge,
-  WorkspaceShell,
 } from "./components";
 import { ReserveDetailPage, ReserveIndexPage } from "./reserve";
 import {
@@ -41,10 +40,11 @@ import {
   ProgramCockpitPage,
   ProjectCockpitPage,
 } from "./v2";
+import { AgentWorkbenchPage, LegacyAgentRunRedirect } from "./workbench/agent";
+import { WorkbenchProviders, WorkbenchShell } from "./workbench/shell";
+import "./workbench/workbench.css";
 
 import type {
-  AgentRunProjection,
-  AgentRunSummary,
   CatalogItem,
   CatalogResponse,
   EvidenceBundle,
@@ -74,7 +74,8 @@ function useAsync<T>(loader: () => Promise<T>, dependencies: unknown[]) {
     return () => {
       active = false;
     };
-    // The caller controls the stable dependency list.
+    // The V0-V2 compatibility pages keep their frozen loader behavior. New V3
+    // Workbench resources use the shared query layer under workbench/query.tsx.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, dependencies);
   return { data, error, loading };
@@ -418,71 +419,6 @@ function FactorPage() {
   );
 }
 
-function AgentListPage() {
-  const navigate = useNavigate();
-  const { data, error, loading } = useAsync(workspaceApi.agentRuns, []);
-  if (loading) return <LoadingState />;
-  if (error) return <ErrorState error={error} />;
-  const runs = data?.items ?? [];
-  const columns = [
-    { header: "Status", accessorKey: "status", cell: ({ row }: { row: { original: AgentRunSummary } }) => <StatusBadge value={row.original.status} /> },
-    { header: "Objective", accessorKey: "objective" },
-    { header: "Actor", accessorKey: "actor" },
-    { header: "Project", accessorKey: "project_id" },
-    { header: "Started", accessorKey: "started_at" },
-  ] as ColumnDef<AgentRunSummary, unknown>[];
-  return (
-    <div className="page">
-      <PageHeader eyebrow="Agent operations" title="Agent runs" description="Canonical audit projection; Phoenix remains the low-level trace inspector." />
-      <Panel title="Runs" subtitle={data?.configured ? "SQLite audit opened read-only." : "No Agent audit database configured."}>
-        {runs.length ? <EvidenceTable data={runs} columns={columns} onRowClick={(run) => navigate(`/agent/${encodeURIComponent(run.run_id)}`)} /> : <EmptyState title="No Agent runs" detail="Pass --agent-audit to the Workspace launcher to enable this surface." />}
-      </Panel>
-    </div>
-  );
-}
-
-function AgentRunPage() {
-  const { runId = "" } = useParams();
-  const decoded = decodeURIComponent(runId);
-  const { data, error, loading } = useAsync(() => workspaceApi.agentRun(decoded), [decoded]);
-  if (loading) return <LoadingState />;
-  if (error) return <ErrorState error={error} />;
-  const run = data as AgentRunProjection;
-  return (
-    <div className="page">
-      <PageHeader eyebrow="Agent run" title={run.objective} description={run.run_id}>
-        <Link className="button secondary" to="/agent"><ArrowLeft size={15} /> Runs</Link>
-      </PageHeader>
-      <div className="metric-grid four">
-        <MetricCard label="Status" value={run.status} />
-        <MetricCard label="Actor" value={run.actor} />
-        <MetricCard label="Latency" value={`${(run.latency_ms / 1000).toFixed(2)}s`} />
-        <MetricCard label="Artifacts" value={String(run.artifact_ids.length)} />
-      </div>
-      <Panel title="Activity" subtitle="Action / guardrail / evidence / result semantics; hidden reasoning is not projected.">
-        <ol className="timeline">
-          {run.items.map((item) => (
-            <li key={item.item_id}>
-              <span className={`timeline-dot timeline-${item.item_type}`} />
-              <div>
-                <div className="timeline-title"><strong>{item.title}</strong><StatusBadge value={item.status} /></div>
-                <time>{item.occurred_at}</time>
-                {item.summary ? <p>{item.summary}</p> : null}
-                {item.evidence_ids.length ? (
-                  <div className="evidence-links">
-                    {item.evidence_ids.map((id) => <Link key={id} to={`/evidence/${encodeURIComponent(id)}`}><Link2 size={13} />{id}</Link>)}
-                  </div>
-                ) : null}
-              </div>
-            </li>
-          ))}
-        </ol>
-      </Panel>
-      <Panel title="Governance"><pre className="json-view">{JSON.stringify(run.governance, null, 2)}</pre></Panel>
-    </div>
-  );
-}
-
 function WidgetCatalogPage() {
   const { data, error, loading } = useAsync(workspaceApi.widgets, []);
   if (loading) return <LoadingState />;
@@ -511,27 +447,29 @@ function NotFoundPage() {
 export default function App() {
   return (
     <BrowserRouter>
-      <WorkspaceShell>
-        <Routes>
-          <Route path="/" element={<ProjectCockpitPage />} />
-          <Route path="/catalog" element={<CatalogView title="Evidence catalog" description="V1-compatible immutable evidence index and deep links." />} />
-          <Route path="/research" element={<CatalogView title="Research programs" description="A2/A2.5 and A2.6 factor evidence, robust gates and frozen selections." predicate={(item) => !item.has_portfolio} />} />
-          <Route path="/program/:programId" element={<ProgramCockpitPage />} />
-          <Route path="/portfolio" element={<CatalogView title="Portfolio validations" description="A4 gross/net portfolio, execution and economic evidence." predicate={(item) => item.has_portfolio} />} />
-          <Route path="/portfolio/:validationId" element={<PortfolioCockpitPage />} />
-          <Route path="/execution/:validationId" element={<ExecutionCockpitPage />} />
-          <Route path="/governance" element={<GovernanceIndexPage />} />
-          <Route path="/governance/:evidenceId" element={<GovernancePage />} />
-          <Route path="/reserve" element={<ReserveIndexPage />} />
-          <Route path="/reserve/:reserveId" element={<ReserveDetailPage />} />
-          <Route path="/evidence/:evidenceId" element={<EvidencePage />} />
-          <Route path="/factor/:digest" element={<FactorPage />} />
-          <Route path="/agent" element={<AgentListPage />} />
-          <Route path="/agent/:runId" element={<AgentRunPage />} />
-          <Route path="/widgets" element={<WidgetCatalogPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </WorkspaceShell>
+      <WorkbenchProviders>
+        <WorkbenchShell>
+          <Routes>
+            <Route path="/" element={<ProjectCockpitPage />} />
+            <Route path="/catalog" element={<CatalogView title="Evidence catalog" description="V1-compatible immutable evidence index and deep links." />} />
+            <Route path="/research" element={<CatalogView title="Research programs" description="A2/A2.5 and A2.6 factor evidence, robust gates and frozen selections." predicate={(item) => !item.has_portfolio} />} />
+            <Route path="/program/:programId" element={<ProgramCockpitPage />} />
+            <Route path="/portfolio" element={<CatalogView title="Portfolio validations" description="A4 gross/net portfolio, execution and economic evidence." predicate={(item) => item.has_portfolio} />} />
+            <Route path="/portfolio/:validationId" element={<PortfolioCockpitPage />} />
+            <Route path="/execution/:validationId" element={<ExecutionCockpitPage />} />
+            <Route path="/governance" element={<GovernanceIndexPage />} />
+            <Route path="/governance/:evidenceId" element={<GovernancePage />} />
+            <Route path="/reserve" element={<ReserveIndexPage />} />
+            <Route path="/reserve/:reserveId" element={<ReserveDetailPage />} />
+            <Route path="/evidence/:evidenceId" element={<EvidencePage />} />
+            <Route path="/factor/:digest" element={<FactorPage />} />
+            <Route path="/agent" element={<AgentWorkbenchPage />} />
+            <Route path="/agent/:runId" element={<LegacyAgentRunRedirect />} />
+            <Route path="/widgets" element={<WidgetCatalogPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </WorkbenchShell>
+      </WorkbenchProviders>
     </BrowserRouter>
   );
 }
