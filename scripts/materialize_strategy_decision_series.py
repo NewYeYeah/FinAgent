@@ -83,7 +83,9 @@ def _time_range(raw: object, name: str) -> TimeRange:
     )
 
 
-def _plan(source: Mapping[str, object]) -> tuple[AshareExpandingWalkForwardPlan, dict[str, Mapping[str, object]]]:
+def _plan(
+    source: Mapping[str, object],
+) -> tuple[AshareExpandingWalkForwardPlan, dict[str, Mapping[str, object]]]:
     program = _mapping(source.get("program_spec"), "program_spec")
     raw_plan = _mapping(program.get("walk_forward_plan"), "walk_forward_plan")
     folds: list[AshareWalkForwardFold] = []
@@ -140,6 +142,16 @@ def _ledger_rows(path: Path) -> tuple[Mapping[str, object], ...]:
     return tuple(output)
 
 
+def _target_reason(row: Mapping[str, object]) -> str:
+    target = row.get("target")
+    if not isinstance(target, Mapping):
+        return ""
+    metadata = target.get("metadata")
+    if not isinstance(metadata, Mapping):
+        return ""
+    return str(metadata.get("reason", "")).strip()
+
+
 def _validate_lineage(
     a4: Mapping[str, object],
     source: Mapping[str, object],
@@ -176,7 +188,9 @@ def _validate_lineage(
     source_directions = tuple(int(value.get("direction", 0)) for value in components)
     if source_digests != tuple(
         str(value)
-        for value in _sequence(spec.get("selected_feature_digests"), "selected_feature_digests")
+        for value in _sequence(
+            spec.get("selected_feature_digests"), "selected_feature_digests"
+        )
     ):
         raise ValueError("A4 selected factor digests differ from frozen A2.6 selection")
     if source_weights != tuple(
@@ -252,7 +266,8 @@ def main() -> int:
     by_code = {record.ts_code: record.asset for record in master.records}
     candidate = _mapping(source.get("candidate_universe"), "candidate_universe")
     codes = tuple(
-        str(value) for value in _sequence(candidate.get("ts_codes"), "candidate ts_codes")
+        str(value)
+        for value in _sequence(candidate.get("ts_codes"), "candidate ts_codes")
     )
     missing_codes = set(codes) - set(by_code)
     if missing_codes:
@@ -304,7 +319,9 @@ def main() -> int:
 
     selected_digests = tuple(
         str(value)
-        for value in _sequence(spec.get("selected_feature_digests"), "selected_feature_digests")
+        for value in _sequence(
+            spec.get("selected_feature_digests"), "selected_feature_digests"
+        )
     )
     selected_weights = tuple(
         float(value)
@@ -358,12 +375,7 @@ def main() -> int:
                 ),
             )
             for row in ledger_rows
-            if str(
-                _mapping(
-                    _mapping(row.get("target"), "ledger target").get("metadata"),
-                    "target metadata",
-                ).get("reason", "")
-            ).startswith("MODEL_ERROR:")
+            if _target_reason(row).startswith("MODEL_ERROR:")
         }
 
         def provide_alpha(fold_id: str, signal_asof: datetime):
