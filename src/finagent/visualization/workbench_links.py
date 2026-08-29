@@ -4,18 +4,18 @@ import hashlib
 import json
 import sqlite3
 from collections.abc import Mapping, Sequence
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, Literal
+from typing import Literal
 from urllib.parse import quote
 
 from .agent_index import load_agent_index
+from .reserve_projection import ReserveWorkspaceProjection
 from .semantic import EvidenceBundle, EvidenceContractError, EvidenceRef, EvidenceStage
-from .workbench_control_catalog import ConfigRegistry
+from .workbench_control_catalog import ConfigDiff, ConfigRegistry
 from .workspace_api import WorkspaceEvidenceCatalog
 from .workspace_v2 import WorkspaceV2Projection
-from .reserve_projection import ReserveWorkspaceProjection
 
 WORKBENCH_REFERENCE_SCHEMA = "finagent.workbench.reference.v1"
 WORKBENCH_ARTIFACT_SCHEMA = "finagent.workbench.artifact-inspection.v1"
@@ -69,6 +69,18 @@ def _text(value: object) -> str:
     return "" if value is None else str(value).strip()
 
 
+def _mapping(value: object) -> Mapping[str, object]:
+    if not isinstance(value, Mapping):
+        return {}
+    return {str(key): child for key, child in value.items()}
+
+
+def _sequence(value: object) -> Sequence[object]:
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return value
+    return ()
+
+
 def _json_object(value: object) -> dict[str, object]:
     if value is None:
         return {}
@@ -109,9 +121,18 @@ class WorkbenchReferenceSummary:
     context: Mapping[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        for name in ("kind", "identity", "label", "authority", "verification", "detail_url"):
+        for name in (
+            "kind",
+            "identity",
+            "label",
+            "authority",
+            "verification",
+            "detail_url",
+        ):
             if not _text(getattr(self, name)):
-                raise EvidenceContractError(f"WorkbenchReferenceSummary.{name} must be non-empty")
+                raise EvidenceContractError(
+                    f"WorkbenchReferenceSummary.{name} must be non-empty"
+                )
         object.__setattr__(self, "context", MappingProxyType(dict(self.context)))
 
     def to_dict(self) -> dict[str, object]:
@@ -201,7 +222,9 @@ class WorkspaceArtifactCatalog:
         max_preview_bytes: int = 256 * 1024,
     ) -> None:
         self._bundles = tuple(bundles)
-        self._roots = tuple(Path(value).expanduser().resolve() for value in report_paths)
+        self._roots = tuple(
+            Path(value).expanduser().resolve() for value in report_paths
+        )
         self._max_preview_bytes = max(4096, int(max_preview_bytes))
         self._items: dict[str, ArtifactDescriptor] = {}
         self._build()
@@ -237,7 +260,9 @@ class WorkspaceArtifactCatalog:
             authority=existing.authority,
             verification=existing.verification,
             source_uri=existing.source_uri,
-            evidence_ids=tuple(dict.fromkeys((*existing.evidence_ids, *item.evidence_ids))),
+            evidence_ids=tuple(
+                dict.fromkeys((*existing.evidence_ids, *item.evidence_ids))
+            ),
             target_url=existing.target_url,
             metadata={**dict(existing.metadata), **dict(item.metadata)},
         )
@@ -339,7 +364,9 @@ class WorkspaceArtifactCatalog:
         if source is None or not source.is_file():
             payload["preview"] = {
                 "kind": "unavailable",
-                "reason": "registered source is unavailable or outside configured report roots",
+                "reason": (
+                    "registered source is unavailable or outside configured report roots"
+                ),
                 "truncated": False,
             }
             return payload
@@ -410,12 +437,20 @@ class ReadOnlyCommandRunProjection:
             "command_id": str(row["command_id"]),
             "state": str(row["state"]),
             "config_snapshot_id": (
-                str(row["config_snapshot_id"]) if row["config_snapshot_id"] is not None else None
+                str(row["config_snapshot_id"])
+                if row["config_snapshot_id"] is not None
+                else None
             ),
             "context": {str(key): str(value) for key, value in context.items()},
             "requested_by": str(row["requested_by"]),
-            "started_at": str(row["started_at"]) if row["started_at"] is not None else None,
-            "finished_at": str(row["finished_at"]) if row["finished_at"] is not None else None,
+            "started_at": (
+                str(row["started_at"]) if row["started_at"] is not None else None
+            ),
+            "finished_at": (
+                str(row["finished_at"])
+                if row["finished_at"] is not None
+                else None
+            ),
             "updated_at": str(row["updated_at"]),
             "result": (
                 {
@@ -471,7 +506,10 @@ class ReadOnlyCommandRunProjection:
             ).fetchall()
         return tuple(self._row_payload(row) for row in rows)
 
-    def for_config_snapshot(self, snapshot_id: str) -> tuple[dict[str, object], ...]:
+    def for_config_snapshot(
+        self,
+        snapshot_id: str,
+    ) -> tuple[dict[str, object], ...]:
         with self._connect() as connection:
             rows = connection.execute(
                 self._base_query()
@@ -500,13 +538,18 @@ class WorkbenchLinkProjection:
         self.v2 = v2
         self.config_registry = config_registry
         self.reserve_projection = reserve_projection
-        self.agent_audit_path = Path(agent_audit_path).expanduser() if agent_audit_path else None
+        self.agent_audit_path = (
+            Path(agent_audit_path).expanduser() if agent_audit_path else None
+        )
         self.command_runs = ReadOnlyCommandRunProjection(command_store_path)
         self.artifacts = WorkspaceArtifactCatalog(
             catalog.bundles(),
             report_paths=report_paths,
         )
-        self._evidence_occurrences: dict[str, tuple[tuple[EvidenceBundle, EvidenceRef], ...]] = {}
+        self._evidence_occurrences: dict[
+            str,
+            tuple[tuple[EvidenceBundle, EvidenceRef], ...],
+        ] = {}
         self._index_evidence()
         self._config_diffs = self._index_config_diffs()
 
@@ -519,8 +562,8 @@ class WorkbenchLinkProjection:
             key: tuple(values) for key, values in mutable.items()
         }
 
-    def _index_config_diffs(self) -> Mapping[str, object]:
-        output: dict[str, object] = {}
+    def _index_config_diffs(self) -> Mapping[str, ConfigDiff]:
+        output: dict[str, ConfigDiff] = {}
         for descriptor in self.config_registry.projection.descriptors:
             ids = tuple(descriptor.snapshot_ids)
             for left_index, left in enumerate(ids):
@@ -585,15 +628,22 @@ class WorkbenchLinkProjection:
             related=self._dedupe_related(tuple(related)),
         )
 
-    def _canonical_evidence_occurrence(self, evidence_id: str) -> tuple[EvidenceBundle, EvidenceRef]:
+    def _canonical_evidence_occurrence(
+        self,
+        evidence_id: str,
+    ) -> tuple[EvidenceBundle, EvidenceRef]:
         occurrences = self._evidence_occurrences.get(evidence_id, ())
         if not occurrences:
             raise KeyError(evidence_id)
-        roots = tuple(value for value in occurrences if value[0].root.evidence_id == evidence_id)
+        roots = tuple(
+            value for value in occurrences if value[0].root.evidence_id == evidence_id
+        )
         if len(roots) == 1:
             return roots[0]
         if len(roots) > 1:
-            raise EvidenceContractError(f"multiple canonical roots share evidence_id {evidence_id!r}")
+            raise EvidenceContractError(
+                f"multiple canonical roots share evidence_id {evidence_id!r}"
+            )
         signatures = {
             (
                 ref.evidence_type,
@@ -611,6 +661,60 @@ class WorkbenchLinkProjection:
                 f"ambiguous non-root evidence identity {evidence_id!r}"
             )
         return occurrences[0]
+
+    def _projects(self) -> tuple[Mapping[str, object], ...]:
+        payload = self.v2.projects()
+        return tuple(
+            project
+            for raw in _sequence(payload.get("items"))
+            if (project := _mapping(raw))
+        )
+
+    def _reserve_summary_for_program(
+        self,
+        program_result_id: str,
+        *,
+        program_id: str = "",
+    ) -> WorkbenchReferenceSummary | None:
+        lifecycle = self.reserve_projection.find_for_program(program_result_id)
+        if lifecycle is None:
+            return None
+        reserve_id = _text(lifecycle.get("reserve_id"))
+        if not reserve_id:
+            return None
+        context = {"reserve_id": reserve_id}
+        if program_id:
+            context["program_id"] = program_id
+        return self._summary(
+            kind="reserve",
+            identity=reserve_id,
+            label="A5 reserve lifecycle",
+            authority="authoritative",
+            target_url=f"/reserve/{quote(reserve_id, safe='')}",
+            context=context,
+        )
+
+    def _reserve_summary_for_a4(
+        self,
+        validation_id: str,
+    ) -> WorkbenchReferenceSummary | None:
+        lifecycle = self.reserve_projection.find_for_a4(validation_id)
+        if lifecycle is None:
+            return None
+        reserve_id = _text(lifecycle.get("reserve_id"))
+        if not reserve_id:
+            return None
+        return self._summary(
+            kind="reserve",
+            identity=reserve_id,
+            label="A5 reserve lifecycle",
+            authority="authoritative",
+            target_url=f"/reserve/{quote(reserve_id, safe='')}",
+            context={
+                "portfolio_validation_id": validation_id,
+                "reserve_id": reserve_id,
+            },
+        )
 
     def _evidence(self, evidence_id: str) -> WorkbenchReference:
         bundle, ref = self._canonical_evidence_occurrence(evidence_id)
@@ -643,7 +747,11 @@ class WorkbenchLinkProjection:
                         authority=ref.authority.value,
                         target_url=f"/factor/{quote(factor.feature_digest, safe='')}",
                         context={
-                            **({"program_id": ref.program_id} if ref.program_id else {}),
+                            **(
+                                {"program_id": ref.program_id}
+                                if ref.program_id
+                                else {}
+                            ),
                             "factor_id": factor.feature_digest,
                         },
                     )
@@ -659,8 +767,8 @@ class WorkbenchLinkProjection:
                 )
             )
             if ref.stage is EvidenceStage.A2P6_ROBUST_RESEARCH:
-                for project in self.v2.projects().get("items", []):
-                    if not isinstance(project, Mapping) or project.get("program_evidence_id") != evidence_id:
+                for project in self._projects():
+                    if project.get("program_evidence_id") != evidence_id:
                         continue
                     validation_id = _text(project.get("a4_validation_id"))
                     if validation_id:
@@ -670,27 +778,24 @@ class WorkbenchLinkProjection:
                                 identity=validation_id,
                                 label="A4 portfolio validation",
                                 authority="authoritative",
-                                target_url=f"/portfolio/{quote(validation_id, safe='')}",
-                                context={"portfolio_validation_id": validation_id},
+                                target_url=(
+                                    f"/portfolio/{quote(validation_id, safe='')}"
+                                ),
+                                context={
+                                    "program_id": ref.program_id,
+                                    "portfolio_validation_id": validation_id,
+                                },
                             )
                         )
-                    reserve = project.get("reserve")
-                    if isinstance(reserve, Mapping):
-                        reserve_id = _text(reserve.get("reserve_id"))
-                        if reserve_id:
-                            related.append(
-                                self._summary(
-                                    kind="reserve",
-                                    identity=reserve_id,
-                                    label="A5 reserve lifecycle",
-                                    authority="authoritative",
-                                    target_url=f"/reserve/{quote(reserve_id, safe='')}",
-                                    context={"reserve_id": reserve_id},
-                                )
-                            )
+                reserve = self._reserve_summary_for_program(
+                    evidence_id,
+                    program_id=ref.program_id,
+                )
+                if reserve is not None:
+                    related.append(reserve)
             if ref.stage is EvidenceStage.A4_PORTFOLIO_VALIDATION:
-                for project in self.v2.projects().get("items", []):
-                    if not isinstance(project, Mapping) or project.get("a4_validation_id") != evidence_id:
+                for project in self._projects():
+                    if project.get("a4_validation_id") != evidence_id:
                         continue
                     program_id = _text(project.get("program_id"))
                     if program_id:
@@ -704,26 +809,17 @@ class WorkbenchLinkProjection:
                                 context={"program_id": program_id},
                             )
                         )
-                    reserve = project.get("reserve")
-                    if isinstance(reserve, Mapping):
-                        reserve_id = _text(reserve.get("reserve_id"))
-                        if reserve_id:
-                            related.append(
-                                self._summary(
-                                    kind="reserve",
-                                    identity=reserve_id,
-                                    label="A5 reserve lifecycle",
-                                    authority="authoritative",
-                                    target_url=f"/reserve/{quote(reserve_id, safe='')}",
-                                    context={"reserve_id": reserve_id},
-                                )
-                            )
+                reserve = self._reserve_summary_for_a4(evidence_id)
+                if reserve is not None:
+                    related.append(reserve)
         summary = self._summary(
             kind="evidence",
             identity=evidence_id,
             label=_text(ref.metadata.get("label")) or ref.evidence_type,
             authority=ref.authority.value,
-            verification="workspace_catalog_root" if is_root else "workspace_catalog_ref",
+            verification=(
+                "workspace_catalog_root" if is_root else "workspace_catalog_ref"
+            ),
             target_url=f"/evidence/{quote(target_root, safe='')}",
             context=context,
         )
@@ -742,14 +838,14 @@ class WorkbenchLinkProjection:
         if not occurrences:
             raise KeyError(digest)
         first = occurrences[0]
-        factor = first["factor"]
-        if not isinstance(factor, Mapping):
+        factor = _mapping(first.get("factor"))
+        if not factor:
             raise EvidenceContractError("factor occurrence payload is malformed")
         program_ids = tuple(
             dict.fromkeys(
-                _text(item.get("program_id"))
+                program_id
                 for item in occurrences
-                if _text(item.get("program_id"))
+                if (program_id := _text(item.get("program_id")))
             )
         )
         context = {"factor_id": digest}
@@ -827,11 +923,14 @@ class WorkbenchLinkProjection:
                     label=factor.feature_id,
                     authority=bundle.root.authority.value,
                     target_url=f"/factor/{quote(factor.feature_digest, safe='')}",
-                    context={"program_id": program_id, "factor_id": factor.feature_digest},
+                    context={
+                        "program_id": program_id,
+                        "factor_id": factor.feature_digest,
+                    },
                 )
             )
-        for project in self.v2.projects().get("items", []):
-            if not isinstance(project, Mapping) or project.get("program_id") != program_id:
+        for project in self._projects():
+            if project.get("program_id") != program_id:
                 continue
             validation_id = _text(project.get("a4_validation_id"))
             if validation_id:
@@ -842,23 +941,18 @@ class WorkbenchLinkProjection:
                         label="A4 portfolio validation",
                         authority="authoritative",
                         target_url=f"/portfolio/{quote(validation_id, safe='')}",
-                        context={"program_id": program_id, "portfolio_validation_id": validation_id},
+                        context={
+                            "program_id": program_id,
+                            "portfolio_validation_id": validation_id,
+                        },
                     )
                 )
-            reserve = project.get("reserve")
-            if isinstance(reserve, Mapping):
-                reserve_id = _text(reserve.get("reserve_id"))
-                if reserve_id:
-                    related.append(
-                        self._summary(
-                            kind="reserve",
-                            identity=reserve_id,
-                            label="A5 reserve lifecycle",
-                            authority="authoritative",
-                            target_url=f"/reserve/{quote(reserve_id, safe='')}",
-                            context={"program_id": program_id, "reserve_id": reserve_id},
-                        )
-                    )
+        reserve = self._reserve_summary_for_program(
+            bundle.root.evidence_id,
+            program_id=program_id,
+        )
+        if reserve is not None:
+            related.append(reserve)
         summary = self._summary(
             kind="research_program",
             identity=program_id,
@@ -895,9 +989,8 @@ class WorkbenchLinkProjection:
             )
         ]
         program_id = ""
-        reserve_id = ""
-        for project in self.v2.projects().get("items", []):
-            if not isinstance(project, Mapping) or project.get("a4_validation_id") != validation_id:
+        for project in self._projects():
+            if project.get("a4_validation_id") != validation_id:
                 continue
             program_id = _text(project.get("program_id"))
             if program_id:
@@ -911,25 +1004,14 @@ class WorkbenchLinkProjection:
                         context={"program_id": program_id},
                     )
                 )
-            reserve = project.get("reserve")
-            if isinstance(reserve, Mapping):
-                reserve_id = _text(reserve.get("reserve_id"))
-                if reserve_id:
-                    related.append(
-                        self._summary(
-                            kind="reserve",
-                            identity=reserve_id,
-                            label="A5 reserve lifecycle",
-                            authority="authoritative",
-                            target_url=f"/reserve/{quote(reserve_id, safe='')}",
-                            context={"reserve_id": reserve_id},
-                        )
-                    )
+        reserve = self._reserve_summary_for_a4(validation_id)
+        if reserve is not None:
+            related.append(reserve)
         context = {"portfolio_validation_id": validation_id}
         if program_id:
             context["program_id"] = program_id
-        if reserve_id:
-            context["reserve_id"] = reserve_id
+        if reserve is not None:
+            context.update(reserve.context)
         summary = self._summary(
             kind="portfolio_validation",
             identity=validation_id,
@@ -1008,6 +1090,7 @@ class WorkbenchLinkProjection:
         except KeyError as exc:
             raise KeyError(run_id) from exc
         related: list[WorkbenchReferenceSummary] = []
+        resolved_ids: set[str] = set()
         for artifact_id in run.artifact_ids:
             if artifact_id in self._evidence_occurrences:
                 related.append(
@@ -1018,6 +1101,7 @@ class WorkbenchLinkProjection:
                         authority="authoritative",
                     )
                 )
+                resolved_ids.add(artifact_id)
             if self.catalog.factor_occurrences(artifact_id):
                 related.append(
                     self._summary(
@@ -1028,6 +1112,7 @@ class WorkbenchLinkProjection:
                         target_url=f"/factor/{quote(artifact_id, safe='')}",
                     )
                 )
+                resolved_ids.add(artifact_id)
             try:
                 self.config_registry.snapshot(artifact_id)
             except KeyError:
@@ -1041,6 +1126,7 @@ class WorkbenchLinkProjection:
                         authority="derived",
                     )
                 )
+                resolved_ids.add(artifact_id)
             if artifact_id in self._config_diffs:
                 related.append(
                     self._summary(
@@ -1050,6 +1136,21 @@ class WorkbenchLinkProjection:
                         authority="derived",
                     )
                 )
+                resolved_ids.add(artifact_id)
+            try:
+                self.artifacts.descriptor(artifact_id)
+            except KeyError:
+                pass
+            else:
+                related.append(
+                    self._summary(
+                        kind="artifact",
+                        identity=artifact_id,
+                        label="Agent-linked artifact",
+                        authority="authoritative",
+                    )
+                )
+                resolved_ids.add(artifact_id)
         summary_ref = self._summary(
             kind="agent_run",
             identity=run_id,
@@ -1071,9 +1172,13 @@ class WorkbenchLinkProjection:
                 "trigger_type": summary.trigger_type,
                 "status": summary.status,
                 "started_at": summary.started_at.isoformat(),
-                "finished_at": summary.finished_at.isoformat() if summary.finished_at else None,
+                "finished_at": (
+                    summary.finished_at.isoformat() if summary.finished_at else None
+                ),
                 "item_count": summary.item_count,
-                "unresolved_artifact_count": summary.unresolved_artifact_count,
+                "unresolved_artifact_count": len(
+                    set(run.artifact_ids) - resolved_ids
+                ),
                 "hidden_reasoning": "not_persisted_not_projected",
             },
             related=related,
@@ -1083,20 +1188,16 @@ class WorkbenchLinkProjection:
         snapshot = self.config_registry.snapshot(snapshot_id)
         related: list[WorkbenchReferenceSummary] = []
         for diff in self._config_diffs.values():
-            left = _text(getattr(diff, "left_snapshot_id", ""))
-            right = _text(getattr(diff, "right_snapshot_id", ""))
-            if snapshot_id not in {left, right}:
+            if snapshot_id not in {diff.left_snapshot_id, diff.right_snapshot_id}:
                 continue
-            diff_id = _text(getattr(diff, "diff_id", ""))
-            if diff_id:
-                related.append(
-                    self._summary(
-                        kind="config_diff",
-                        identity=diff_id,
-                        label="ConfigDiff",
-                        authority="derived",
-                    )
+            related.append(
+                self._summary(
+                    kind="config_diff",
+                    identity=diff.diff_id,
+                    label="ConfigDiff",
+                    authority="derived",
                 )
+            )
         if self.command_runs.available:
             for command in self.command_runs.for_config_snapshot(snapshot_id):
                 command_run_id = _text(command.get("command_run_id"))
@@ -1105,7 +1206,10 @@ class WorkbenchLinkProjection:
                         self._summary(
                             kind="command_run",
                             identity=command_run_id,
-                            label=f"CommandRun · {_text(command.get('command_id'))}",
+                            label=(
+                                "CommandRun · "
+                                f"{_text(command.get('command_id'))}"
+                            ),
                             authority="authoritative",
                         )
                     )
@@ -1128,8 +1232,6 @@ class WorkbenchLinkProjection:
             diff = self._config_diffs[diff_id]
         except KeyError as exc:
             raise KeyError(diff_id) from exc
-        left = _text(getattr(diff, "left_snapshot_id", ""))
-        right = _text(getattr(diff, "right_snapshot_id", ""))
         related = [
             self._summary(
                 kind="config_snapshot",
@@ -1138,7 +1240,7 @@ class WorkbenchLinkProjection:
                 authority="derived",
                 target_url="/widgets?surface=configs",
             )
-            for value in (left, right)
+            for value in (diff.left_snapshot_id, diff.right_snapshot_id)
             if value
         ]
         summary = self._summary(
@@ -1151,7 +1253,7 @@ class WorkbenchLinkProjection:
         )
         return self._reference(
             summary=summary,
-            metadata=getattr(diff, "to_dict")(),
+            metadata=diff.to_dict(),
             related=related,
         )
 
@@ -1160,6 +1262,7 @@ class WorkbenchLinkProjection:
         related: list[WorkbenchReferenceSummary] = []
         snapshot_id = _text(payload.get("config_snapshot_id"))
         if snapshot_id:
+            self.config_registry.snapshot(snapshot_id)
             related.append(
                 self._summary(
                     kind="config_snapshot",
@@ -1169,37 +1272,40 @@ class WorkbenchLinkProjection:
                     target_url="/widgets?surface=configs",
                 )
             )
-        result = payload.get("result")
-        if isinstance(result, Mapping):
-            for evidence_id in result.get("evidence_ids", []):
-                text = _text(evidence_id)
-                if not text:
-                    continue
-                try:
-                    self._canonical_evidence_occurrence(text)
-                except (KeyError, EvidenceContractError):
-                    related.append(
-                        self._summary(
-                            kind="evidence",
-                            identity=text,
-                            label="Produced evidence · unresolved in current catalog",
-                            authority="diagnostic",
-                            verification="command_result_unresolved",
-                        )
+        result = _mapping(payload.get("result"))
+        for raw_evidence_id in _sequence(result.get("evidence_ids")):
+            evidence_id = _text(raw_evidence_id)
+            if not evidence_id:
+                continue
+            try:
+                self._canonical_evidence_occurrence(evidence_id)
+            except KeyError:
+                related.append(
+                    self._summary(
+                        kind="evidence",
+                        identity=evidence_id,
+                        label="Produced evidence · unresolved in current catalog",
+                        authority="diagnostic",
+                        verification="command_result_unresolved",
                     )
-                else:
-                    related.append(
-                        self._summary(
-                            kind="evidence",
-                            identity=text,
-                            label="Produced evidence",
-                            authority="authoritative",
-                        )
+                )
+            else:
+                related.append(
+                    self._summary(
+                        kind="evidence",
+                        identity=evidence_id,
+                        label="Produced evidence",
+                        authority="authoritative",
                     )
-        context = payload.get("context")
-        if isinstance(context, Mapping):
-            program_id = _text(context.get("program_id"))
-            if program_id:
+                )
+        context = _mapping(payload.get("context"))
+        program_id = _text(context.get("program_id"))
+        if program_id:
+            try:
+                self.catalog.program(program_id)
+            except KeyError:
+                pass
+            else:
                 related.append(
                     self._summary(
                         kind="research_program",
@@ -1210,18 +1316,28 @@ class WorkbenchLinkProjection:
                         context={"program_id": program_id},
                     )
                 )
-            validation_id = _text(context.get("portfolio_validation_id"))
-            if validation_id:
-                related.append(
-                    self._summary(
-                        kind="portfolio_validation",
-                        identity=validation_id,
-                        label="Command context A4 validation",
-                        authority="derived",
-                        target_url=f"/portfolio/{quote(validation_id, safe='')}",
-                        context={"portfolio_validation_id": validation_id},
+        validation_id = _text(context.get("portfolio_validation_id"))
+        if validation_id:
+            try:
+                validation = self.catalog.bundle(validation_id)
+            except KeyError:
+                pass
+            else:
+                if validation.root.stage is EvidenceStage.A4_PORTFOLIO_VALIDATION:
+                    related.append(
+                        self._summary(
+                            kind="portfolio_validation",
+                            identity=validation_id,
+                            label="Command context A4 validation",
+                            authority="derived",
+                            target_url=(
+                                f"/portfolio/{quote(validation_id, safe='')}"
+                            ),
+                            context={
+                                "portfolio_validation_id": validation_id,
+                            },
+                        )
                     )
-                )
         summary = self._summary(
             kind="command_run",
             identity=command_run_id,
@@ -1229,7 +1345,11 @@ class WorkbenchLinkProjection:
             authority="authoritative",
             verification="durable_command_store_read_only",
         )
-        return self._reference(summary=summary, metadata=payload, related=related)
+        return self._reference(
+            summary=summary,
+            metadata=payload,
+            related=related,
+        )
 
     def _artifact(self, artifact_id: str) -> WorkbenchReference:
         item = self.artifacts.descriptor(artifact_id)
