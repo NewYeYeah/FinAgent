@@ -39,25 +39,32 @@ jobs:
           for name, digest_expected in expected:
               raw = (Path('tools/a54_payload') / name).read_bytes()
               digest = hashlib.sha256(raw).hexdigest()
-              print(name, len(raw), digest)
               if digest != digest_expected:
                   raise SystemExit(f'{name} digest mismatch: {digest}')
               values.append(raw.decode('utf-8').strip())
-          payload = ''.join(values)
-          patch = gzip.decompress(base64.b64decode(payload))
+          patch = gzip.decompress(base64.b64decode(''.join(values)))
           digest = hashlib.sha256(patch).hexdigest()
           expected_patch = '4dc4411c2821ea3db6067a3b58eea367b68940091578d8d9ce82f32a9107c5e0'
           if digest != expected_patch:
               raise SystemExit(f'A5-4 patch digest mismatch: {digest}')
-          Path('/tmp/a54.patch').write_bytes(patch)
-          print(f'patch_bytes={len(patch)} sha256={digest}')
+
+          text = patch.decode('utf-8')
+          text = text.replace('/mnt/data/finagent_a53/FinAgent/', 'a/')
+          text = text.replace('/mnt/data/finagent_a54/FinAgent/', 'b/')
+          normalized = text.encode('utf-8')
+          normalized_digest = hashlib.sha256(normalized).hexdigest()
+          expected_normalized = '1b17a3629c02700a9dffce1bd7adeb1a8c467899eb5b608304a4694478720ffb'
+          if normalized_digest != expected_normalized:
+              raise SystemExit(f'normalized A5-4 patch digest mismatch: {normalized_digest}')
+          Path('/tmp/a54.patch').write_bytes(normalized)
+          print(f'patch_bytes={len(normalized)} sha256={normalized_digest}')
           PY
 
       - name: Apply A5-4 product delivery
         run: |
           git apply --check /tmp/a54.patch
           git apply /tmp/a54.patch
-          git rm -rf tools/a54_payload
+          git rm -rf tools/a54_payload tools/a54_rel_payload
           git diff --check
 
       - name: Commit product changes
