@@ -1,0 +1,46 @@
+name: a5p2-lint-fix
+
+on:
+  push:
+    branches:
+      - feature/a5-one-shot-runner
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ github.actor != 'github-actions[bot]' && contains(github.event.head_commit.message, 'stage A5-2 lint fix') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/a5-one-shot-runner
+          fetch-depth: 0
+      - name: Apply static fixes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          portfolio = Path('src/finagent/backtest/ashare_portfolio.py')
+          text = portfolio.read_text(encoding='utf-8')
+          old = '''    AshareExpandingWalkForwardPlan,\n    AshareRobustFactorSelection,\n)'''
+          new = '''    AshareExpandingWalkForwardPlan,\n    AshareRobustFactorSelection,\n    AshareWalkForwardFold,\n)'''
+          if old not in text:
+              raise SystemExit('ashare_portfolio import anchor not found')
+          portfolio.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          reserve = Path('src/finagent/backtest/ashare_reserve.py')
+          text = reserve.read_text(encoding='utf-8')
+          text = text.replace('    FINAL_TRAINING_RULE_ID,\n', '', 1)
+          text = text.replace('    TERMINAL_POLICY_RULE_ID,\n', '', 1)
+          reserve.write_text(text, encoding='utf-8')
+          PY
+          git diff --check
+      - name: Commit product fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/finagent/backtest/ashare_portfolio.py src/finagent/backtest/ashare_reserve.py
+          git commit -m "fix: close A5-2 static type imports"
+          git push origin HEAD:feature/a5-one-shot-runner
