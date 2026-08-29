@@ -15,6 +15,12 @@ import type {
   ReserveLifecycleResponse,
   ReserveListResponse,
 } from "./types";
+import type {
+  AgentProjectResponseV3,
+  AgentProjectsResponseV3,
+  AgentRunResponseV3,
+  AgentThreadResponseV3,
+} from "./workbench/types";
 
 const API_BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
 
@@ -55,6 +61,13 @@ export const workspaceApi = {
   },
   agentRun: (runId: string) =>
     getJson<AgentRunProjection>(`/api/v1/agent/runs/${encodeURIComponent(runId)}`),
+  agentProjectsV3: () => getJson<AgentProjectsResponseV3>("/api/v3/agent/projects"),
+  agentProjectV3: (projectId: string) =>
+    getJson<AgentProjectResponseV3>(`/api/v3/agent/projects/${encodeURIComponent(projectId)}`),
+  agentThreadV3: (threadId: string) =>
+    getJson<AgentThreadResponseV3>(`/api/v3/agent/threads/${encodeURIComponent(threadId)}`),
+  agentRunV3: (runId: string) =>
+    getJson<AgentRunResponseV3>(`/api/v3/agent/runs/${encodeURIComponent(runId)}`),
   projectsV2: () => getJson<ProjectsResponse>("/api/v2/projects"),
   programCockpitV2: (programId: string) =>
     getJson<ProgramCockpitResponse>(`/api/v2/programs/${encodeURIComponent(programId)}/cockpit`),
