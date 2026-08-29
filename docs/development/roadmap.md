@@ -1,18 +1,16 @@
 # Development Roadmap
 
-This roadmap is intentionally short. The active detailed planning baseline is [`current-development-plan-v3.1.md`](current-development-plan-v3.1.md), with the supporting architecture in [`../architecture/workbench-v3.md`](../architecture/workbench-v3.md). The previous v3 and v2 documents remain historical design/acceptance records.
+This roadmap is intentionally short. The active detailed planning baseline is [`current-development-plan-v3.1.md`](current-development-plan-v3.1.md), with the supporting architecture in [`../architecture/workbench-v3.md`](../architecture/workbench-v3.md). Previous v3/v2 documents remain historical design and acceptance records.
 
 ## Current baseline
 
-Planning v3.1 implementation anchor: `main @ 2ddad3fb279bc5c4a1379cfe1405d9f565473351` before the V3-2C incremental control work.
-
-Completed core/product capabilities include PIT data contracts, bounded Agent-generated research, A2.6 robust ResearchPrograms, A3 exact-session execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2, A5-1～A5-4 reserve governance/evidence, **Visualization V3-1 Agent Project → Thread → Run index**, **V3-2A Workbench Shell + Context Bus**, **V3-2B Config Registry + Command Catalog**, and **V3-2C-1 Application Service Convergence**.
+The implementation baseline has now completed the **Visualization V3-2 governed command foundation** on top of PIT data contracts, bounded Agent research, A2.6 robust ResearchPrograms, A3 execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2, A5-1～A5-4 reserve governance/evidence, V3-1 Agent indexing and V3-2A/B Workbench/config-command infrastructure.
 
 No production 2025+ reserve has been consumed by development or CI. Production reserve execution remains an independent human-authorized operation.
 
 ## Product direction
 
-The product target is **FinAgent Workbench**, not an Agent-only viewer:
+The product target is **FinAgent Workbench**:
 
 ```text
 Command Center
@@ -28,14 +26,14 @@ Configuration
 Live (future)
 ```
 
-Two authority planes remain frozen:
+Two authority planes are now implemented as separate processes:
 
 ```text
-Evidence Plane  → default / GET-only / read-only
-Control Plane   → future explicit opt-in / typed governed commands
+Evidence Plane  :8765  → default / GET-only / immutable evidence projection
+Control Plane   :8766  → explicit local opt-in / typed governed L0/L1 commands
 ```
 
-The Agent navigation substrate, Workbench context substrate and typed configuration/command vocabulary are now in place. V3-2C incrementally builds the governed execution substrate without weakening the Evidence Plane.
+The Control Plane does not weaken or add mutation routes to the Evidence Plane. Generic control authority explicitly excludes production reserve, strategy promotion, PAPER mutation, broker orders, live capital, arbitrary shell and arbitrary Python execution.
 
 ## Current priority order
 
@@ -50,46 +48,36 @@ The Agent navigation substrate, Workbench context substrate and typed configurat
 
 ### Completed — V3-2A Workbench Shell + Context Bus
 
-- desktop-first registry-driven FinAgent navigation shell covering current and future Workbench modules;
-- typed `WorkbenchContextProvider` for Project/Thread/Run, Program/Factor/Portfolio/Strategy/Reserve, Asset/Date/Session/Fold and Environment identities;
+- desktop-first registry-driven Workbench shell;
+- URL-backed `WorkbenchContextProvider` for Agent/research/portfolio/strategy/reserve/asset/date/session/fold/environment identities;
 - deterministic URL round-trip and context-preserving cross-module navigation;
-- declared linked-selection event vocabulary kept separate from deep-link identity;
-- `PanelRegistry`, Inspector slot, chart-workspace slot plus disabled Config drawer/Command palette extension slots;
-- V3-1 Agent Project → Thread → Run navigation, persisted Activity and verified-artifact Inspector inside the new shell;
-- identity-keyed shared typed server-state query provider with cache, in-flight de-duplication, stale handling, refetch and invalidation boundaries;
-- legacy `/agent/:runId` links deterministically redirect into the V3 Workbench context URL;
-- existing V1/V2/A5 pages remain available;
-- **no write API or Control Plane authority added**.
+- linked-selection events remain presentation state rather than evidence identity;
+- registry-driven panels, Inspector and chart-workspace extension slots;
+- shared identity-keyed typed server-state cache/de-duplication boundary;
+- existing V1/V2/A5 pages remain available.
 
 ### Completed — V3-2B Config Registry + Command Catalog
 
-- froze public contracts for `ConfigDescriptor`, `ConfigSnapshot`, `ConfigFieldSpec`, `ConfigDiff`, `CommandSpec`, `CommandIntent`, `CommandRun` and `CommandResult`;
-- added a read-only allowlisted TOML registry over supported FinAgent public configuration sections;
-- classified fields into presentation, runtime, research protocol, execution protocol, operational guardrail and secret-reference domains with explicit mutation policies;
-- protocol changes are labelled `new_identity_required`; operational guardrail changes require governed change rather than historical mutation;
-- excluded secret/credential-like files before parsing and redacted credential-looking fields fail-closed while retaining symbolic secret references;
-- added deterministic ConfigSnapshot identities and read-only ConfigDiff projection;
-- added an allowlisted L0/L1 Command Catalog for config validation, local-data certification, development research, A2.6, A4 and review-bundle export;
-- exposed GET-only `/api/v3/config*`, `/api/v3/commands*` and Workbench status endpoints;
-- added Configuration Registry / Command Catalog Workbench surfaces;
-- **`execution_enabled=false` and `control_plane_enabled=false`; no write endpoint added**.
+- froze `ConfigDescriptor`, `ConfigSnapshot`, `ConfigFieldSpec`, `ConfigDiff`, `CommandSpec`, `CommandIntent`, `CommandRun` and `CommandResult` vocabulary;
+- added read-only allowlisted TOML projection with presentation/runtime/research/execution/guardrail/secret-reference domains;
+- protocol changes require new identities; operational guardrail changes require governed change;
+- excluded secret-like files before parsing and recursively redacted credential-looking values;
+- added deterministic ConfigSnapshot identity and ConfigDiff projection;
+- added the allowlisted L0/L1 command catalog and GET-only `/api/v3/config*` / `/api/v3/commands*` surfaces.
 
 ### Completed — V3-2C-1 Application Service Convergence
 
-This increment establishes the execution seam without exposing execution:
+- added `finagent.application` with typed `ApplicationCommandInvocation`, `ApplicationCommandExecution` and fail-closed `ApplicationServiceRegistry`;
+- no arbitrary shell/Python/subprocess fallback exists;
+- corrected local A-share certification to its real `[local_ashare]` config contract;
+- promoted exactly `config.validate`, `data.certify_local_ashare` and `review.export_bundle` to `application_service_ready`;
+- refactored certification/review-export CLIs into adapters over shared in-process services;
+- Evidence startup verifies catalog readiness against real service bindings;
+- A2/A2.5, A2.6 and A4 deliberately remain `adapter_required` until their fat orchestration is separately extracted.
 
-- added `finagent.application` with typed `ApplicationCommandInvocation`, `ApplicationCommandExecution` and an allowlisted `ApplicationServiceRegistry`;
-- the registry has no arbitrary shell/Python/subprocess escape hatch and unknown `command_id` values fail closed;
-- corrected `data.certify_local_ashare` to bind the real `[local_ashare]` configuration contract rather than the unrelated research-smoke descriptor;
-- promoted exactly three L0 commands to `application_service_ready`: `config.validate`, `data.certify_local_ashare`, and `review.export_bundle`;
-- refactored `certify_local_ashare_data.py` and `export_workspace_review_bundle.py` into CLI adapters over the shared in-process services;
-- Workbench startup verifies that `application_service_ready` catalog identities exactly match registered service identities;
-- A2/A2.5, A2.6 and A4 remain `adapter_required` because their fat CLI orchestration has not yet been safely extracted;
-- **the Evidence Plane remains GET-only and does not retain or expose the service registry for execution**.
+### Completed — V3-2C-2 Durable Command Store
 
-### Current — V3-2C-2 Durable Command Store
-
-Persist the already-frozen command contracts before any HTTP execution is enabled:
+Implemented `SQLiteCommandStore` as the canonical command lifecycle store:
 
 ```text
 CommandIntent
@@ -97,57 +85,67 @@ CommandIntent
 CommandRun
     ↓
 CommandResult
-    └─ CommandEvent / audit transitions
+    └── ordered CommandEvent audit
 ```
 
-Required properties:
+Properties:
 
-- SQLite transactional persistence with deterministic/explicit identities;
-- strict state-transition validation and idempotent replay/read semantics;
-- command/config/context identity retained exactly;
-- crash-visible `planned/running/failed/rejected/succeeded` states;
-- produced artifact/evidence references persisted without changing core evidence authority;
-- no arbitrary executable text stored as an execution instruction;
-- no Control API yet required for this persistence increment.
+- transactional SQLite persistence using `BEGIN IMMEDIATE`, WAL and `synchronous=FULL`;
+- idempotent request-key replay with conflicting reuse rejected;
+- strict `planned → running → succeeded/rejected/failed` transition validation;
+- exact command/config/context/requester identity retained;
+- persisted evidence/artifact/output references without changing core evidence authority;
+- process restart converts incomplete `planned/running` work to visible terminal `failed` and never automatically retries it;
+- command lifecycle contracts are application-owned; `finagent.visualization` re-exports them only for compatibility;
+- no executable text is persisted as an instruction.
 
-### Next — V3-2C-3 Explicit Control API
+### Completed — V3-2C-3 Explicit Local Control API
 
-Add a **separate, opt-in Control Plane** for only `application_service_ready` L0/L1 commands.
-
-Recommended deployment remains:
+Added an independently launched **local-only** Control Plane:
 
 ```text
-Evidence API : 8765
-Control API  : 8766
+python scripts/run_workbench_control.py
+# 127.0.0.1:8766
 ```
 
-The gateway must:
+The launcher refuses non-loopback hosts. The API:
 
-- resolve exact `CommandSpec` and exact registered application service;
-- bind an approved `ConfigSnapshot` where required;
-- persist `CommandIntent` / `CommandRun` before executing;
-- enforce `requires_confirmation` and authority level;
-- never accept arbitrary shell command, executable text or Python source from the browser;
-- never expose production reserve, strategy promotion, PAPER mutation, broker order or live-capital authority.
+- exposes GET status/catalog/run inspection plus POST CommandRun creation;
+- uses `extra=forbid` typed request models and an exact WorkbenchContext allowlist;
+- resolves exact `CommandSpec` + exact `application_service_ready` service binding;
+- persists intent/run before background service execution;
+- applies confirmation/config-descriptor checks;
+- server-binds review-export report/output paths rather than accepting browser filesystem paths;
+- records unknown catalog IDs and `adapter_required` requests as rejected audit records rather than attempting execution;
+- has no L2/L3, A5 reserve, promotion, PAPER, broker or live-capital path.
 
-Before `research.run_development`, `research.run_a2p6` or `portfolio.run_a4` can become executable, their orchestration must be extracted behind typed application services and their catalog readiness changed in the same reviewed change.
+Current executable generic commands are intentionally only:
 
-### Next — V3-2C-4 Command Palette / Run Inspector
+```text
+config.validate
+data.certify_local_ashare
+review.export_bundle
+```
 
-Only after the Control API and durable command audit exist:
+`research.run_development`, `research.run_a2p6` and `portfolio.run_a4` remain visible catalog entries but **not executable** until each receives a reviewed typed application-service extraction. V3-2 completion therefore means the governed control substrate is complete, not that unfinished research orchestration has been granted remote authority.
 
-- enable the reserved Command Palette for commands actually permitted by the connected Control Plane;
-- bind ConfigSnapshot and WorkbenchContext explicitly;
-- show confirmation/authority/produced-evidence semantics before launch;
-- project persisted CommandRun status rather than browser-local loading state;
-- keep Config editing/fork workflows separate from command execution.
+### Completed — V3-2C-4 Command Palette / Run Inspector
 
-### P1 — V3-3 Evidence / Artifact / Config Deep Link
+- the top-bar Commands slot activates only when the separate local Control Plane is reachable;
+- there is no fallback execution path when Control is unavailable;
+- the Palette shows complete catalog readiness, ConfigSnapshot binding, WorkbenchContext, confirmation semantics and produced evidence types;
+- `adapter_required` commands remain visible but disabled;
+- CommandRun state is read from durable Control Plane persistence and polled until V3-4 replaces polling with product SSE;
+- Run Inspector shows ordered lifecycle events, result, evidence IDs and artifact paths;
+- configuration editing remains separate/read-only; V3-2 command execution does not imply in-place protocol editing.
+
+### Current — V3-3 Evidence / Artifact / Config Deep Link
 
 - Agent ↔ Factor ↔ ResearchProgram ↔ A4 ↔ A5 navigation;
 - Run ↔ ConfigSnapshot/ConfigDiff;
 - CommandRun ↔ produced evidence;
 - generated-feature/source artifact inspector;
+- consider a common typed ref vocabulary across Artifact/Evidence/Config/CommandRun projections;
 - Phoenix remains low-level diagnostic only.
 
 ### P1 — V3-4 Agent + CommandRun SSE
@@ -166,7 +164,7 @@ No raw OTLP/provider callbacks or hidden reasoning stream.
 
 - context/deep-link identity tests;
 - Evidence Plane remains GET-only;
-- L0/L1 Control Plane authority/adversarial tests;
+- Control Plane authority/adversarial tests;
 - no L2/L3 generic execution path;
 - Windows/Ubuntu, ruff/mypy, TypeScript/Vitest/build/Playwright and repository-wide pytest.
 
@@ -205,18 +203,18 @@ Every chart must declare evidence requirements and authority class, and all asse
 
 ## Open-source implementation choices
 
-- **Apache ECharts** remains the main analytical chart engine; add a shared context-aware wrapper.
+- **Apache ECharts** remains the main analytical chart engine.
 - **React Flow** remains the lineage/DAG renderer.
 - **TanStack Table** remains the structured-table foundation.
-- V3-2A establishes the shared identity-keyed query-provider contract; the current implementation remains an equivalent typed cache/de-duplication layer behind that boundary.
-- Editable JSON-Schema forms remain deferred until explicit Config mutation/fork authority is implemented; V3-2C control execution does not imply in-place protocol editing.
-- **TradingView Lightweight Charts** is introduced in V4-2 for candlestick/volume/order-marker views only.
-- **FINOS Perspective** is deferred until A6/QMT profiling demonstrates a need for large/streaming tables.
-- Alphalens/QuantStats are visual/regression references only, not alternate authoritative calculation paths.
+- the current typed query-provider abstraction remains the server-state boundary; TanStack Query can replace the internal implementation later without changing consumers.
+- editable JSON-Schema forms remain deferred until explicit Config fork/mutation authority exists.
+- **TradingView Lightweight Charts** is planned for V4-2 candlestick/volume/order-marker views.
+- **FINOS Perspective** remains deferred until A6/QMT profiling proves a large/streaming-table need.
+- Alphalens/QuantStats remain visual/regression references, never alternate authoritative calculation paths.
 
 ## OPS — Production Reserve Execution
 
-Still not a feature PR or CI task. The reviewed A5 one-shot checklist and irreversible `CONSUMED` semantics remain unchanged.
+Still not a feature PR or CI task. A5 one-shot semantics remain unchanged:
 
 ```text
 RESERVE_PASS → A6 may begin
@@ -235,7 +233,7 @@ A6-4 reconciliation/recovery/kill switch/incident ledger
 A6-5 operational acceptance
 ```
 
-Only during A6 may Workbench integrate L2 governed operations, and those controls must call the existing approval/PAPER/safety/reconciliation services instead of reimplementing them.
+Only during A6 may Workbench integrate L2 governed operations. Those controls must call existing approval/PAPER/safety/reconciliation services rather than reimplementing authority.
 
 ## P1 — Data hardening before sustained PAPER / advanced risk charts
 
@@ -264,7 +262,7 @@ R3 should register Market/Strategy/Portfolio/Execution/System Health panels into
 
 ## Parallel / performance rule
 
-Continue CPU/RAM-aware automatic worker budgeting for independent deterministic backend work. Large visualization series should use columnar storage and bounded date/asset APIs; worker count, caching or rendering downsampling must never alter evidence identity or authoritative aggregates.
+Continue CPU/RAM-aware worker budgeting for independent deterministic backend work. Large visualization series should use columnar storage and bounded date/asset APIs; worker count, caching or rendering downsampling must never alter evidence identity or authoritative aggregates.
 
 ## Development rule
 
@@ -277,6 +275,7 @@ core/data correctness
 → durable command audit
 → explicit governed Control Plane
 → interactive presentation
+→ deep links / SSE
 → human-governed one-shot evidence
 → promotion/PAPER after explicit gates
 → realtime only after internal operational semantics stabilize
