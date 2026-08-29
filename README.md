@@ -14,13 +14,13 @@ The current baseline supports:
 - A4 execution-aware internal portfolio validation with frozen-factor Alpha, risk, optimizer targets, gross/net ledgers and replay;
 - A5 eligibility sealing, one-shot evaluation, crash-safe `CONSUMED`, terminal/ledger persistence and replay/audit;
 - Alpaca SIP US reference ingestion and local A-share Parquet research;
-- V2/A5 evidence review, V3 Agent Project → Thread → Run navigation and the V3-2 Workbench foundation;
+- V2/A5 evidence review, V3 Agent Project → Thread → Run navigation, the V3-2 governed Workbench/Control foundation, V3-3 typed deep links and V3-4 stable product SSE;
 - an explicit two-plane Workbench architecture: GET-only Evidence + local governed Control;
 - legacy Streamlit/Plotly and optional Phoenix diagnostics retained.
 
 The market priority remains **A-share historical research first**. A-share live capital/realtime acceptance remains deferred until frozen research, execution-aware validation, reserve governance and repeated PAPER gates are complete.
 
-The next Workbench milestone is **V3-3 — Evidence / Artifact / Config Deep Link**. V3-2 is now complete as a governed command substrate; it does not promote unfinished research CLIs into remote execution authority.
+The next Workbench milestone is **V3-5 — Workbench Foundation Acceptance**. V3-4 is complete when its PR is merged: Agent and CommandRun lifecycle changes are delivered as sanitized Evidence Plane SSE while canonical Agent audit / durable Control records remain the authorities.
 
 ## Quick start
 
@@ -70,13 +70,15 @@ RESERVE_FAIL → no promotion; same reserve never reused for modified-strategy v
 
 A completed A4 report remains `promotion_eligible=false`. No production 2025+ reserve is consumed by development or CI.
 
-## FinAgent Workbench V3-2
+## FinAgent Workbench V3.4
 
-V3-2 implements two independent authority planes:
+The V3 Workbench keeps two independent authority planes established in V3-2 and adds typed navigation plus notification streaming without merging their authority:
 
 ```text
 Evidence Plane  127.0.0.1:8765
   GET-only / read-only projections
+  V3-3 typed refs + bounded Artifact Inspector
+  V3-4 Agent / CommandRun SSE notifications
 
 Control Plane   127.0.0.1:8766
   explicit local opt-in
@@ -84,7 +86,7 @@ Control Plane   127.0.0.1:8766
   durable CommandIntent → CommandRun → CommandResult audit
 ```
 
-The Evidence Plane never acquires a command mutation route. Starting Control is a separate user action.
+The Evidence Plane never acquires a command mutation route. Starting Control is a separate user action. SSE is notification-only: complete CommandRun details still come from the durable Control record.
 
 ### Build the frontend
 
@@ -103,10 +105,13 @@ python scripts/run_workspace.py \
   --reports reports \
   --configs configs \
   --agent-audit .finagent/agent_audit.sqlite \
+  --command-store .finagent/workbench/commands.sqlite \
   --open-browser
 ```
 
 Open `http://127.0.0.1:8765`.
+
+The command-store path may be configured before the Control process creates the SQLite file. Evidence readers use SQLite read-only mode; once the store appears, CommandRun deep links/SSE become available without restarting Workspace.
 
 ### Explicitly start the local Control Plane
 
@@ -144,9 +149,9 @@ research.run_a2p6            L1  adapter_required
 portfolio.run_a4             L1  adapter_required
 ```
 
-A2/A2.6/A4 remain `adapter_required` because their current scripts still own substantial orchestration. V3-2 does **not** use `subprocess`, arbitrary shell or browser-supplied Python to make them appear ready. Their readiness can change only in a reviewed change that extracts the real typed application service.
+A2/A2.6/A4 remain `adapter_required` because their current scripts still own substantial orchestration. V3 does **not** use `subprocess`, arbitrary shell or browser-supplied Python to make them appear ready. Their readiness can change only in a reviewed change that extracts the real typed application service.
 
-### Durable command semantics
+### Durable command and SSE semantics
 
 `SQLiteCommandStore` persists intent/run/result/event state before and during execution. Request IDs are idempotency keys; conflicting reuse fails closed. On process restart, incomplete `planned`/`running` work becomes explicit terminal `failed` and is never automatically retried.
 
@@ -156,6 +161,10 @@ The Command Palette binds only typed inputs:
 - approved ConfigSnapshot when required;
 - allowlisted `WorkbenchContext`;
 - explicit confirmation where required.
+
+V3-4 replaces the former 600 ms active-CommandRun lifecycle polling with Evidence Plane SSE. A normalized SSE snapshot only signals state change; the browser then refreshes the complete Control record. If SSE is unavailable, there is no hidden timed-poll fallback; the Run Inspector exposes an explicit manual refresh.
+
+SSE deliberately excludes prompts/hidden reasoning, raw provider callbacks, raw OTLP/Phoenix spans, CommandRun parameters/outputs/artifact paths/free-form messages and host filesystem paths.
 
 The browser cannot submit generic executable arguments, output filesystem paths, shell commands or Python code. Review-bundle report/output paths are injected server-side.
 
@@ -179,9 +188,12 @@ arbitrary Python
 - A5 eligibility/consumption/terminal/ledger/audit inspection;
 - Agent Project → Thread → Run navigation and verified artifact links;
 - typed URL-backed `WorkbenchContext` across research/portfolio/Agent selections;
+- V3-3 `WorkbenchReference` navigation across Agent / Factor / ResearchProgram / A4 / A5 / Config / CommandRun identities;
+- bounded, verified source-report/generated-feature Artifact Inspector;
 - public Config Registry with secret-file exclusion and recursive credential redaction;
 - read-only Command Catalog with real readiness metadata;
 - separate local Command Palette and persisted Run Inspector;
+- V3-4 normalized Agent + CommandRun SSE with deterministic event IDs and explicit no-hidden-reasoning boundary;
 - context-preserving navigation and typed server-state cache/de-duplication boundary.
 
 Configuration editing remains read-only. Protocol changes must become new governed identities/forks rather than rewriting historical evidence.
@@ -229,6 +241,9 @@ The Agent never owns positions, fills, risk limits, validation thresholds or bro
 15. Workbench config projection never exposes credential values.
 16. `application_service_ready` must match a real registered in-process service binding.
 17. Command restart recovery never silently retries incomplete execution.
+18. Workbench deep links resolve verified canonical identities and fail closed on ambiguity.
+19. SSE is a sanitized notification projection, never an alternate evidence/control authority.
+20. Product streams never expose hidden reasoning, raw provider/OTLP/Phoenix payloads or host paths.
 
 ## Documentation
 
@@ -243,6 +258,7 @@ The Agent never owns positions, fills, risk limits, validation thresholds or bro
 - [Architecture overview](docs/architecture/overview.md)
 - [Workbench architecture v3.1](docs/architecture/workbench-v3.md)
 - [Roadmap](docs/development/roadmap.md)
+- [V3-4 changelog](docs/development/changelog-v3-4.md)
 - [Changelog](docs/development/changelog.md)
 
 ## Data note
