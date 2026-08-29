@@ -7,6 +7,8 @@ import { ErrorState, LoadingState, StatusBadge } from "../components";
 import { useWorkbenchContext, workbenchContextSearch } from "./context";
 import { workbenchQueryKeys, useWorkbenchQuery } from "./query";
 import { WorkbenchInspectorSlot } from "./shell";
+import { useWorkbenchSse } from "./stream";
+import type { AgentActiveRunProjectionV3 } from "./streamTypes";
 import type {
   AgentArtifactRefV3,
   AgentProjectResponseV3,
@@ -271,6 +273,20 @@ export function AgentWorkbenchPage() {
     queryFn: () => workspaceApi.agentRunV3(context.run_id ?? ""),
     enabled: Boolean(context.run_id),
   });
+  const streamEnabled = Boolean(
+    context.run_id && !runQuery.data?.summary.finished_at,
+  );
+  const agentStream = useWorkbenchSse<AgentActiveRunProjectionV3>({
+    path: context.run_id
+      ? `/api/v3/streams/agent/runs/${encodeURIComponent(context.run_id)}`
+      : "",
+    eventType: "agent_run_snapshot",
+    identity: context.run_id ?? "",
+    enabled: streamEnabled,
+    onProjection: (projection) => {
+      if (projection.run_id === context.run_id) void runQuery.refetch();
+    },
+  });
 
   const effectiveProjectId = context.project_id ?? runQuery.data?.summary.project_id;
   const effectiveThreadId = context.thread_id ?? runQuery.data?.summary.thread_id;
@@ -320,16 +336,22 @@ export function AgentWorkbenchPage() {
   const projectError = projectQuery.error;
   const threadError = threadQuery.error;
   const runError = runQuery.error;
+  const streamLabel = runQuery.data?.summary.finished_at
+    ? "SSE terminal"
+    : `SSE ${agentStream.status}`;
 
   return (
     <div className="agent-workbench-page">
       <header className="agent-workbench-header">
         <div>
-          <span className="eyebrow">Agent · V3-3 linked Workbench</span>
+          <span className="eyebrow">Agent · V3-4 live projection</span>
           <h1>Project → Thread → Run</h1>
-          <p>Canonical Agent audit navigation with deterministic WorkbenchContext and fail-closed typed evidence/artifact links.</p>
+          <p>Canonical Agent audit navigation with deterministic WorkbenchContext, typed evidence links and normalized product SSE.</p>
         </div>
-        <span className="agent-contract-pill">read-only · no hidden reasoning</span>
+        <div className="agent-header-contracts">
+          <span className="agent-contract-pill">{streamLabel}</span>
+          <span className="agent-contract-pill">read-only · no hidden reasoning</span>
+        </div>
       </header>
       {projectError || threadError || runError ? (
         <ErrorState error={projectError ?? threadError ?? runError} />
