@@ -10,7 +10,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 
 STRATEGY_DECISION_ROW_SCHEMA = "finagent.strategy-decision-row.v1"
@@ -102,10 +102,16 @@ def _sequence(value: object) -> Sequence[Any]:
 def _number(value: object, default: float = 0.0) -> float:
     if value is None:
         return default
-    result = float(value)
+    result = float(cast(Any, value))
     if not math.isfinite(result):
         raise ValueError("strategy-decision numeric values must be finite")
     return result
+
+
+def _integer(value: object, default: int = 0) -> int:
+    if value is None:
+        return default
+    return int(cast(Any, value))
 
 
 def _optional_number(value: object) -> float | None:
@@ -127,7 +133,7 @@ def _safe_sibling(name: str, field: str) -> str:
 
 def _duckdb():
     try:
-        import duckdb  # type: ignore[import-not-found]
+        import duckdb
     except ImportError as exc:  # pragma: no cover - dependency guidance
         raise RuntimeError(
             "StrategyDecisionSeries Parquet support requires the local-parquet extra"
@@ -145,8 +151,7 @@ def _state_quantity(state: Mapping[str, Any], asset: str) -> float:
 
 
 def _state_mark(state: Mapping[str, Any], asset: str) -> float | None:
-    value = _mapping(state.get("marks")).get(asset)
-    return _optional_number(value)
+    return _optional_number(_mapping(state.get("marks")).get(asset))
 
 
 def _state_weight(state: Mapping[str, Any], asset: str) -> float:
@@ -167,9 +172,8 @@ def _fill_quantity(fill: Mapping[str, Any]) -> float:
 
 
 def _fill_notional(fill: Mapping[str, Any]) -> float:
-    value = fill.get("notional")
-    if value is not None:
-        return _number(value)
+    if fill.get("notional") is not None:
+        return _number(fill.get("notional"))
     return _fill_quantity(fill) * _number(fill.get("execution_price"))
 
 
@@ -202,8 +206,8 @@ def _asset_pnl(
     for fill in fills:
         if _fill_asset(fill) != asset:
             continue
-        notional = _fill_notional(fill)
         side = _text(fill.get("side")).lower()
+        notional = _fill_notional(fill)
         if side == "buy":
             signed_trade_outflow += notional
         elif side == "sell":
@@ -229,8 +233,7 @@ def _weighted_fill_price(
 
 def _group_fills(cycle: Mapping[str, Any]) -> dict[str, list[Mapping[str, Any]]]:
     output: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
-    execution = _mapping(cycle.get("execution"))
-    for raw in _sequence(execution.get("fills")):
+    for raw in _sequence(_mapping(cycle.get("execution")).get("fills")):
         fill = _mapping(raw)
         asset = _fill_asset(fill)
         if asset:
@@ -240,11 +243,9 @@ def _group_fills(cycle: Mapping[str, Any]) -> dict[str, list[Mapping[str, Any]]]
 
 def _decision_map(cycle: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
     output: dict[str, Mapping[str, Any]] = {}
-    compilation = _mapping(cycle.get("compilation"))
-    for raw in _sequence(compilation.get("decisions")):
+    for raw in _sequence(_mapping(cycle.get("compilation")).get("decisions")):
         decision = _mapping(raw)
-        desired = _mapping(decision.get("desired"))
-        asset = _text(desired.get("asset"))
+        asset = _text(_mapping(decision.get("desired")).get("asset"))
         if not asset:
             continue
         if asset in output:
@@ -290,7 +291,7 @@ class StrategyDecisionRow:
             raise ValueError("signal_asof must be timezone-aware")
         if not self.fold_id.strip() or not self.asset.strip():
             raise ValueError("fold_id and asset are required")
-        for value in (
+        optional_values = (
             self.alpha_score,
             self.alpha_expected_return,
             self.alpha_uncertainty,
@@ -299,19 +300,19 @@ class StrategyDecisionRow:
             self.reference_price,
             self.fill_price,
             self.close_price,
-        ):
-            if value is not None and not math.isfinite(float(value)):
-                raise ValueError("optional strategy-decision values must be finite")
-        for value in (
+        )
+        if any(value is not None and not math.isfinite(value) for value in optional_values):
+            raise ValueError("optional strategy-decision values must be finite")
+        required_values = (
             self.realized_weight,
             self.desired_quantity,
             self.fees,
             self.slippage,
             self.gross_pnl,
             self.net_pnl,
-        ):
-            if not math.isfinite(float(value)):
-                raise ValueError("strategy-decision values must be finite")
+        )
+        if any(not math.isfinite(value) for value in required_values):
+            raise ValueError("strategy-decision values must be finite")
         if self.alpha_rank is not None and self.alpha_rank < 1:
             raise ValueError("alpha_rank must be >= 1")
         if self.executable_quantity < 0 or self.filled_quantity < 0:
@@ -376,8 +377,8 @@ def materialize_strategy_decision_rows(
     initial_cash: float,
     alpha_provider: AlphaProvider | None = None,
 ) -> tuple[StrategyDecisionRow, ...]:
-    rows = tuple(ledger_rows)
-    if canonical_execution_ledger_digest(rows) != expected_ledger_digest:
+    source_rows = tuple(ledger_rows)
+    if canonical_execution_ledger_digest(source_rows) != expected_ledger_digest:
         raise ValueError("A4 execution ledger differs from the bound ledger_digest")
     if not math.isfinite(initial_cash) or initial_cash <= 0.0:
         raise ValueError("initial_cash must be positive")
@@ -388,11 +389,17 @@ def materialize_strategy_decision_rows(
     previous_gross_nav: dict[str, float] = {}
     output: list[StrategyDecisionRow] = []
     seen_sessions: set[tuple[str, date]] = set()
+    initial_state: Mapping[str, Any] = {
+        "nav": initial_cash,
+        "cash": initial_cash,
+        "positions": {},
+        "marks": {},
+    }
 
-    for raw_row in rows:
-        row = _mapping(raw_row)
-        fold_id = _text(row.get("fold_id"))
-        point = _mapping(row.get("point"))
+    for raw_row in source_rows:
+        ledger_row = _mapping(raw_row)
+        fold_id = _text(ledger_row.get("fold_id"))
+        point = _mapping(ledger_row.get("point"))
         if not fold_id:
             raise ValueError("A4 ledger row is missing fold_id")
         session_date = date.fromisoformat(_text(point.get("session_date")))
@@ -404,28 +411,21 @@ def materialize_strategy_decision_rows(
             raise ValueError(f"duplicate A4 ledger session {session_key!r}")
         seen_sessions.add(session_key)
 
-        target = _mapping(row.get("target"))
-        net_cycle = _mapping(row.get("net_cycle"))
-        gross_cycle = _mapping(row.get("gross_cycle"))
-        current_net = _mapping(row.get("net_close_state"))
-        current_gross = _mapping(row.get("gross_close_state"))
-        close_snapshot = _mapping(row.get("ex_post_close_snapshot"))
+        target = _mapping(ledger_row.get("target"))
+        net_cycle = _mapping(ledger_row.get("net_cycle"))
+        gross_cycle = _mapping(ledger_row.get("gross_cycle"))
+        current_net = _mapping(ledger_row.get("net_close_state"))
+        current_gross = _mapping(ledger_row.get("gross_close_state"))
+        close_snapshot = _mapping(ledger_row.get("ex_post_close_snapshot"))
         current_net_nav = _number(current_net.get("nav"))
         current_gross_nav = _number(current_gross.get("nav"))
         if current_net_nav <= 0.0 or current_gross_nav <= 0.0:
             raise ValueError("A4 close-state NAV must remain positive")
 
-        prior_net = previous_net.get(
-            fold_id,
-            {"nav": initial_cash, "cash": initial_cash, "positions": {}, "marks": {}},
-        )
-        prior_gross = previous_gross.get(
-            fold_id,
-            {"nav": initial_cash, "cash": initial_cash, "positions": {}, "marks": {}},
-        )
+        prior_net = previous_net.get(fold_id, initial_state)
+        prior_gross = previous_gross.get(fold_id, initial_state)
         prior_net_nav = previous_net_nav.get(fold_id, initial_cash)
         prior_gross_nav = previous_gross_nav.get(fold_id, initial_cash)
-
         decisions = _decision_map(net_cycle)
         net_fills = _group_fills(net_cycle)
         gross_fills = _group_fills(gross_cycle)
@@ -443,16 +443,16 @@ def materialize_strategy_decision_rows(
 
         assets: set[str] = set(alpha)
         assets.update(target_weights)
-        assets.update(str(key) for key in _mapping(prior_net.get("positions")))
-        assets.update(str(key) for key in _mapping(current_net.get("positions")))
-        assets.update(str(key) for key in _mapping(prior_gross.get("positions")))
-        assets.update(str(key) for key in _mapping(current_gross.get("positions")))
+        for state in (prior_net, current_net, prior_gross, current_gross):
+            assets.update(str(key) for key in _mapping(state.get("positions")))
         assets.update(decisions)
         assets.update(net_fills)
         assets.update(gross_fills)
 
         session_rows: list[StrategyDecisionRow] = []
-        execution_rejections = _mapping(_mapping(net_cycle.get("execution")).get("rejections"))
+        execution_rejections = _mapping(
+            _mapping(net_cycle.get("execution")).get("rejections")
+        )
         close_marks = _mapping(close_snapshot.get("marks"))
         for asset in sorted(assets):
             decision = decisions.get(asset, {})
@@ -464,6 +464,9 @@ def materialize_strategy_decision_rows(
             if client_order_id and client_order_id in execution_rejections:
                 constraints.append(str(execution_rejections[client_order_id]))
             alpha_value = _mapping(alpha.get(asset))
+            reference_price = _optional_number(desired.get("reference_price"))
+            if reference_price is None:
+                reference_price = _weighted_fill_price(asset_net_fills, "reference_price")
             session_rows.append(
                 StrategyDecisionRow(
                     fold_id=fold_id,
@@ -475,7 +478,7 @@ def materialize_strategy_decision_rows(
                     target_id=_text(point.get("target_id")),
                     alpha_score=_optional_number(alpha_value.get("score")),
                     alpha_rank=(
-                        int(alpha_value["rank"])
+                        _integer(alpha_value.get("rank"))
                         if alpha_value.get("rank") is not None
                         else None
                     ),
@@ -486,23 +489,19 @@ def materialize_strategy_decision_rows(
                     pre_trade_weight=(
                         _state_weight(pretrade_state, asset) if pretrade_state else None
                     ),
-                    target_weight=(
-                        target_weights.get(asset, 0.0) if target else None
-                    ),
+                    target_weight=(target_weights.get(asset, 0.0) if target else None),
                     realized_weight=_state_weight(current_net, asset),
                     desired_side=_text(desired.get("side")) or None,
                     desired_quantity=_number(desired.get("requested_quantity"), 0.0),
-                    executable_quantity=int(_number(decision.get("executable_quantity"), 0.0)),
+                    executable_quantity=_integer(
+                        decision.get("executable_quantity"), 0
+                    ),
                     filled_quantity=int(
                         math.fsum(_fill_quantity(fill) for fill in asset_net_fills)
                     ),
-                    reference_price=_weighted_fill_price(
-                        asset_net_fills,
-                        "reference_price",
-                    ),
+                    reference_price=reference_price,
                     fill_price=_weighted_fill_price(
-                        asset_net_fills,
-                        "execution_price",
+                        asset_net_fills, "execution_price"
                     ),
                     close_price=_optional_number(close_marks.get(asset)),
                     fees=math.fsum(_fill_fees(fill) for fill in asset_net_fills),
@@ -559,6 +558,35 @@ def materialize_strategy_decision_rows(
     return ordered
 
 
+def _series_identity_payload(
+    *,
+    portfolio_validation_id: str,
+    a4_spec_id: str,
+    source_program_result_id: str,
+    source_program_report_digest: str,
+    source_selection_id: str,
+    data_version: str,
+    execution_ledger_digest: str,
+    selected_feature_digests: Sequence[str],
+    alpha_model_ids: Sequence[str],
+    rows_digest: str,
+) -> dict[str, object]:
+    return {
+        "schema_version": STRATEGY_DECISION_MANIFEST_SCHEMA,
+        "row_schema_version": STRATEGY_DECISION_ROW_SCHEMA,
+        "portfolio_validation_id": portfolio_validation_id,
+        "a4_spec_id": a4_spec_id,
+        "source_program_result_id": source_program_result_id,
+        "source_program_report_digest": source_program_report_digest,
+        "source_selection_id": source_selection_id,
+        "data_version": data_version,
+        "execution_ledger_digest": execution_ledger_digest,
+        "selected_feature_digests": list(selected_feature_digests),
+        "alpha_model_ids": list(alpha_model_ids),
+        "rows_digest": rows_digest,
+    }
+
+
 @dataclass(frozen=True, slots=True)
 class StrategyDecisionSeriesManifest:
     series_id: str
@@ -566,9 +594,12 @@ class StrategyDecisionSeriesManifest:
     a4_spec_id: str
     source_program_result_id: str
     source_program_spec_id: str
+    source_program_report_digest: str
     source_selection_id: str
     data_version: str
     execution_ledger_digest: str
+    selected_feature_digests: tuple[str, ...]
+    alpha_model_ids: tuple[str, ...]
     rows_digest: str
     source_report_file: str
     source_report_sha256: str
@@ -587,6 +618,54 @@ class StrategyDecisionSeriesManifest:
     authority: str = "authoritative"
     schema_version: str = STRATEGY_DECISION_MANIFEST_SCHEMA
 
+    def __post_init__(self) -> None:
+        required = (
+            self.series_id,
+            self.portfolio_validation_id,
+            self.a4_spec_id,
+            self.source_program_result_id,
+            self.source_program_spec_id,
+            self.source_program_report_digest,
+            self.source_selection_id,
+            self.data_version,
+            self.execution_ledger_digest,
+            self.rows_digest,
+            self.source_report_sha256,
+            self.source_ledger_sha256,
+            self.data_sha256,
+        )
+        if any(not value.strip() for value in required):
+            raise ValueError("StrategyDecisionSeries manifest identities are required")
+        if self.authority != "authoritative":
+            raise ValueError("StrategyDecisionSeries manifest must be authoritative")
+        if min(
+            self.row_count,
+            self.source_session_count,
+            self.row_session_count,
+            self.asset_count,
+        ) < 0:
+            raise ValueError("StrategyDecisionSeries manifest counts cannot be negative")
+        if self.columns != _PARQUET_COLUMNS:
+            raise ValueError("StrategyDecisionSeries manifest columns are not canonical")
+        expected_series_id = _digest(
+            "strategy-decision-series",
+            _series_identity_payload(
+                portfolio_validation_id=self.portfolio_validation_id,
+                a4_spec_id=self.a4_spec_id,
+                source_program_result_id=self.source_program_result_id,
+                source_program_report_digest=self.source_program_report_digest,
+                source_selection_id=self.source_selection_id,
+                data_version=self.data_version,
+                execution_ledger_digest=self.execution_ledger_digest,
+                selected_feature_digests=self.selected_feature_digests,
+                alpha_model_ids=self.alpha_model_ids,
+                rows_digest=self.rows_digest,
+            ),
+            40,
+        )
+        if self.series_id != expected_series_id:
+            raise ValueError("StrategyDecisionSeries series_id differs from manifest content")
+
     def to_dict(self) -> dict[str, object]:
         return {
             "schema_version": self.schema_version,
@@ -596,9 +675,12 @@ class StrategyDecisionSeriesManifest:
             "a4_spec_id": self.a4_spec_id,
             "source_program_result_id": self.source_program_result_id,
             "source_program_spec_id": self.source_program_spec_id,
+            "source_program_report_digest": self.source_program_report_digest,
             "source_selection_id": self.source_selection_id,
             "data_version": self.data_version,
             "execution_ledger_digest": self.execution_ledger_digest,
+            "selected_feature_digests": list(self.selected_feature_digests),
+            "alpha_model_ids": list(self.alpha_model_ids),
             "rows_digest": self.rows_digest,
             "source_report_file": self.source_report_file,
             "source_report_sha256": self.source_report_sha256,
@@ -623,7 +705,9 @@ class StrategyDecisionSeriesManifest:
                 "value - signed executed notional - actual fees; slippage is embedded "
                 "in net execution price and also persisted separately"
             ),
-            "ordering": "session_date, fold_id, asset; sequence is deterministic 0-based order",
+            "ordering": (
+                "session_date, fold_id, asset; sequence is deterministic 0-based order"
+            ),
             "scope": (
                 "historical A4 strategy-decision evidence only; no reserve, promotion, "
                 "PAPER, realtime or live-capital authority"
@@ -634,17 +718,22 @@ class StrategyDecisionSeriesManifest:
     def from_dict(cls, raw: Mapping[str, object]) -> StrategyDecisionSeriesManifest:
         if raw.get("schema_version") != STRATEGY_DECISION_MANIFEST_SCHEMA:
             raise ValueError("unsupported StrategyDecisionSeries manifest schema")
-        if raw.get("authority") != "authoritative":
-            raise ValueError("StrategyDecisionSeries manifest must be authoritative")
         return cls(
             series_id=_text(raw.get("series_id")),
             portfolio_validation_id=_text(raw.get("portfolio_validation_id")),
             a4_spec_id=_text(raw.get("a4_spec_id")),
             source_program_result_id=_text(raw.get("source_program_result_id")),
             source_program_spec_id=_text(raw.get("source_program_spec_id")),
+            source_program_report_digest=_text(raw.get("source_program_report_digest")),
             source_selection_id=_text(raw.get("source_selection_id")),
             data_version=_text(raw.get("data_version")),
             execution_ledger_digest=_text(raw.get("execution_ledger_digest")),
+            selected_feature_digests=tuple(
+                str(value) for value in _sequence(raw.get("selected_feature_digests"))
+            ),
+            alpha_model_ids=tuple(
+                str(value) for value in _sequence(raw.get("alpha_model_ids"))
+            ),
             rows_digest=_text(raw.get("rows_digest")),
             source_report_file=_safe_sibling(
                 _text(raw.get("source_report_file")), "source_report_file"
@@ -656,16 +745,17 @@ class StrategyDecisionSeriesManifest:
             source_ledger_sha256=_text(raw.get("source_ledger_sha256")),
             data_file=_safe_sibling(_text(raw.get("data_file")), "data_file"),
             data_sha256=_text(raw.get("data_sha256")),
-            row_count=int(raw.get("row_count", 0)),
-            source_session_count=int(raw.get("source_session_count", 0)),
-            row_session_count=int(raw.get("row_session_count", 0)),
-            asset_count=int(raw.get("asset_count", 0)),
+            row_count=_integer(raw.get("row_count")),
+            source_session_count=_integer(raw.get("source_session_count")),
+            row_session_count=_integer(raw.get("row_session_count")),
+            asset_count=_integer(raw.get("asset_count")),
             start_date=_text(raw.get("start_date")) or None,
             end_date=_text(raw.get("end_date")) or None,
             columns=tuple(str(value) for value in _sequence(raw.get("columns"))),
             nullable_columns=tuple(
                 str(value) for value in _sequence(raw.get("nullable_columns"))
             ),
+            authority=_text(raw.get("authority")),
         )
 
     @classmethod
@@ -694,7 +784,7 @@ def _create_parquet(path: Path, rows: Sequence[StrategyDecisionRow]) -> None:
                 row_id VARCHAR NOT NULL,
                 fold_id VARCHAR NOT NULL,
                 session_date DATE NOT NULL,
-                signal_asof TIMESTAMPTZ NOT NULL,
+                signal_asof VARCHAR NOT NULL,
                 asset VARCHAR NOT NULL,
                 rebalanced BOOLEAN NOT NULL,
                 cash_fallback BOOLEAN NOT NULL,
@@ -723,45 +813,46 @@ def _create_parquet(path: Path, rows: Sequence[StrategyDecisionRow]) -> None:
             )
             """
         )
-        values = []
-        for index, row in enumerate(rows):
-            values.append(
-                (
-                    index,
-                    row.row_id,
-                    row.fold_id,
-                    row.session_date,
-                    row.signal_asof,
-                    row.asset,
-                    row.rebalanced,
-                    row.cash_fallback,
-                    row.target_id,
-                    row.alpha_score,
-                    row.alpha_rank,
-                    row.alpha_expected_return,
-                    row.alpha_uncertainty,
-                    row.pre_trade_weight,
-                    row.target_weight,
-                    row.realized_weight,
-                    row.desired_side,
-                    row.desired_quantity,
-                    row.executable_quantity,
-                    row.filled_quantity,
-                    row.reference_price,
-                    row.fill_price,
-                    row.close_price,
-                    row.fees,
-                    row.slippage,
-                    row.gross_pnl,
-                    row.net_pnl,
-                    row.decision_status,
-                    row.client_order_id,
-                    _canonical_json(list(row.constraint_codes)),
-                )
+        values = [
+            (
+                index,
+                row.row_id,
+                row.fold_id,
+                row.session_date,
+                row.signal_asof.isoformat(),
+                row.asset,
+                row.rebalanced,
+                row.cash_fallback,
+                row.target_id,
+                row.alpha_score,
+                row.alpha_rank,
+                row.alpha_expected_return,
+                row.alpha_uncertainty,
+                row.pre_trade_weight,
+                row.target_weight,
+                row.realized_weight,
+                row.desired_side,
+                row.desired_quantity,
+                row.executable_quantity,
+                row.filled_quantity,
+                row.reference_price,
+                row.fill_price,
+                row.close_price,
+                row.fees,
+                row.slippage,
+                row.gross_pnl,
+                row.net_pnl,
+                row.decision_status,
+                row.client_order_id,
+                _canonical_json(list(row.constraint_codes)),
             )
+            for index, row in enumerate(rows)
+        ]
         if values:
             placeholders = ",".join("?" for _ in _PARQUET_COLUMNS)
-            connection.executemany(f"INSERT INTO decisions VALUES ({placeholders})", values)
+            connection.executemany(
+                f"INSERT INTO decisions VALUES ({placeholders})", values
+            )
         target = str(temp).replace("'", "''")
         connection.execute(
             f"COPY decisions TO '{target}' (FORMAT PARQUET, COMPRESSION ZSTD)"
@@ -769,6 +860,19 @@ def _create_parquet(path: Path, rows: Sequence[StrategyDecisionRow]) -> None:
     finally:
         connection.close()
     temp.replace(path)
+
+
+def _read_jsonl(path: Path) -> tuple[Mapping[str, object], ...]:
+    output: list[Mapping[str, object]] = []
+    with path.open("r", encoding="utf-8") as handle:
+        for line_number, raw in enumerate(handle, 1):
+            if not raw.strip():
+                continue
+            value = json.loads(raw)
+            if not isinstance(value, Mapping):
+                raise ValueError(f"{path}:{line_number}: JSONL row must be an object")
+            output.append(value)
+    return tuple(output)
 
 
 def write_strategy_decision_series(
@@ -784,7 +888,14 @@ def write_strategy_decision_series(
     source_ledger = Path(source_ledger_path).resolve()
     manifest_target = Path(manifest_path).resolve()
     data_target = Path(data_path).resolve()
-    if len({source_report.parent, source_ledger.parent, manifest_target.parent, data_target.parent}) != 1:
+    if len(
+        {
+            source_report.parent,
+            source_ledger.parent,
+            manifest_target.parent,
+            data_target.parent,
+        }
+    ) != 1:
         raise ValueError(
             "V4-0 source report, source ledger, manifest and Parquet must be sibling files"
         )
@@ -792,9 +903,14 @@ def write_strategy_decision_series(
         raise FileNotFoundError("V4-0 requires the immutable A4 report and ledger files")
     if a4_report.get("schema_version") != "finagent.ashare-portfolio-validation.v1":
         raise ValueError("StrategyDecisionSeries requires an A4 validation report")
+    physical_report = json.loads(source_report.read_text(encoding="utf-8"))
+    if _canonical_json(physical_report) != _canonical_json(a4_report):
+        raise ValueError("provided A4 report mapping differs from source report file")
 
     spec = _mapping(a4_report.get("validation_spec"))
     validation = _mapping(spec.get("validation_config"))
+    if _number(validation.get("initial_cash"), 0.0) <= 0.0:
+        raise ValueError("A4 report validation_config.initial_cash is invalid")
     portfolio_validation_id = _text(a4_report.get("portfolio_validation_id"))
     ledger_digest = _text(a4_report.get("ledger_digest"))
     if not portfolio_validation_id or not ledger_digest:
@@ -811,19 +927,31 @@ def write_strategy_decision_series(
         [value.to_dict() for value in ordered],
         64,
     )
-    series_id = _digest(
-        "strategy-decision-series",
-        {
-            "portfolio_validation_id": portfolio_validation_id,
-            "a4_spec_id": _text(spec.get("spec_id")),
-            "source_program_result_id": _text(spec.get("source_program_result_id")),
-            "source_selection_id": _text(spec.get("source_selection_id")),
-            "data_version": _text(spec.get("data_version")),
-            "execution_ledger_digest": ledger_digest,
-            "rows_digest": rows_digest,
-        },
-        40,
+    selected_feature_digests = tuple(
+        str(value) for value in _sequence(spec.get("selected_feature_digests"))
     )
+    alpha_model_ids = tuple(
+        sorted(
+            {
+                _text(_mapping(value).get("alpha_model_id"))
+                for value in _sequence(a4_report.get("folds"))
+                if _text(_mapping(value).get("alpha_model_id"))
+            }
+        )
+    )
+    identity_payload = _series_identity_payload(
+        portfolio_validation_id=portfolio_validation_id,
+        a4_spec_id=_text(spec.get("spec_id")),
+        source_program_result_id=_text(spec.get("source_program_result_id")),
+        source_program_report_digest=_text(spec.get("source_report_digest")),
+        source_selection_id=_text(spec.get("source_selection_id")),
+        data_version=_text(spec.get("data_version")),
+        execution_ledger_digest=ledger_digest,
+        selected_feature_digests=selected_feature_digests,
+        alpha_model_ids=alpha_model_ids,
+        rows_digest=rows_digest,
+    )
+    series_id = _digest("strategy-decision-series", identity_payload, 40)
     _create_parquet(data_target, ordered)
     dates = [value.session_date for value in ordered]
     source_sessions = {
@@ -836,9 +964,12 @@ def write_strategy_decision_series(
         a4_spec_id=_text(spec.get("spec_id")),
         source_program_result_id=_text(spec.get("source_program_result_id")),
         source_program_spec_id=_text(spec.get("source_program_spec_id")),
+        source_program_report_digest=_text(spec.get("source_report_digest")),
         source_selection_id=_text(spec.get("source_selection_id")),
         data_version=_text(spec.get("data_version")),
         execution_ledger_digest=ledger_digest,
+        selected_feature_digests=selected_feature_digests,
+        alpha_model_ids=alpha_model_ids,
         rows_digest=rows_digest,
         source_report_file=source_report.name,
         source_report_sha256=_sha256(source_report),
@@ -853,26 +984,12 @@ def write_strategy_decision_series(
         start_date=min(dates).isoformat() if dates else None,
         end_date=max(dates).isoformat() if dates else None,
     )
-    if _number(validation.get("initial_cash"), 0.0) <= 0.0:
-        raise ValueError("A4 report validation_config.initial_cash is invalid")
     manifest_target.write_text(
-        json.dumps(manifest.to_dict(), indent=2, sort_keys=True, ensure_ascii=False) + "\n",
+        json.dumps(manifest.to_dict(), indent=2, sort_keys=True, ensure_ascii=False)
+        + "\n",
         encoding="utf-8",
     )
     return manifest
-
-
-def _read_jsonl(path: Path) -> tuple[Mapping[str, object], ...]:
-    output: list[Mapping[str, object]] = []
-    with path.open("r", encoding="utf-8") as handle:
-        for line_number, raw in enumerate(handle, 1):
-            if not raw.strip():
-                continue
-            value = json.loads(raw)
-            if not isinstance(value, Mapping):
-                raise ValueError(f"{path}:{line_number}: JSONL row must be an object")
-            output.append(value)
-    return tuple(output)
 
 
 class StrategyDecisionSeriesProjection:
@@ -896,6 +1013,7 @@ class StrategyDecisionSeriesProjection:
             raise ValueError("V4-0 source A4 ledger SHA-256 mismatch")
         if _sha256(self.data_path) != self.manifest.data_sha256:
             raise ValueError("V4-0 Parquet SHA-256 mismatch")
+
         report = json.loads(self.report_path.read_text(encoding="utf-8"))
         if not isinstance(report, Mapping):
             raise ValueError("V4-0 source A4 report root must be an object")
@@ -905,6 +1023,7 @@ class StrategyDecisionSeriesProjection:
             "a4_spec_id": spec.get("spec_id"),
             "source_program_result_id": spec.get("source_program_result_id"),
             "source_program_spec_id": spec.get("source_program_spec_id"),
+            "source_program_report_digest": spec.get("source_report_digest"),
             "source_selection_id": spec.get("source_selection_id"),
             "data_version": spec.get("data_version"),
             "execution_ledger_digest": report.get("ledger_digest"),
@@ -912,8 +1031,27 @@ class StrategyDecisionSeriesProjection:
         for field, actual in checks.items():
             if _text(actual) != _text(getattr(self.manifest, field)):
                 raise ValueError(f"V4-0 manifest binding mismatch: {field}")
+        selected = tuple(
+            str(value) for value in _sequence(spec.get("selected_feature_digests"))
+        )
+        if selected != self.manifest.selected_feature_digests:
+            raise ValueError("V4-0 selected factor identity mismatch")
+        alpha_model_ids = tuple(
+            sorted(
+                {
+                    _text(_mapping(value).get("alpha_model_id"))
+                    for value in _sequence(report.get("folds"))
+                    if _text(_mapping(value).get("alpha_model_id"))
+                }
+            )
+        )
+        if alpha_model_ids != self.manifest.alpha_model_ids:
+            raise ValueError("V4-0 alpha-model identity mismatch")
         source_rows = _read_jsonl(self.ledger_path)
-        if canonical_execution_ledger_digest(source_rows) != self.manifest.execution_ledger_digest:
+        if (
+            canonical_execution_ledger_digest(source_rows)
+            != self.manifest.execution_ledger_digest
+        ):
             raise ValueError("V4-0 source ledger canonical digest mismatch")
         self._validate_parquet()
 
@@ -932,14 +1070,23 @@ class StrategyDecisionSeriesProjection:
                 raise ValueError(
                     f"V4-0 Parquet columns differ: {columns!r} != {self.manifest.columns!r}"
                 )
-            count = int(
-                connection.execute(
-                    "SELECT count(*) FROM read_parquet(?)",
-                    (str(self.data_path),),
-                ).fetchone()[0]
-            )
+            summary = connection.execute(
+                """
+                SELECT count(*), count(DISTINCT sequence), count(DISTINCT row_id),
+                       min(sequence), max(sequence)
+                FROM read_parquet(?)
+                """,
+                (str(self.data_path),),
+            ).fetchone()
+            count = _integer(summary[0])
             if count != self.manifest.row_count:
                 raise ValueError("V4-0 Parquet row count differs from manifest")
+            if _integer(summary[1]) != count or _integer(summary[2]) != count:
+                raise ValueError("V4-0 Parquet sequence/row identity is not unique")
+            if count and (
+                _integer(summary[3]) != 0 or _integer(summary[4]) != count - 1
+            ):
+                raise ValueError("V4-0 Parquet sequence is not contiguous")
         finally:
             connection.close()
 
@@ -977,23 +1124,22 @@ class StrategyDecisionSeriesProjection:
         duckdb = _duckdb()
         connection = duckdb.connect()
         try:
-            total = int(
-                connection.execute(
-                    f"SELECT count(*) FROM read_parquet(?) {predicate}",
-                    parameters,
-                ).fetchone()[0]
-            )
+            total_row = connection.execute(
+                f"SELECT count(*) FROM read_parquet(?) {predicate}",
+                parameters,
+            ).fetchone()
+            total = _integer(total_row[0])
             values = connection.execute(
                 f"SELECT * FROM read_parquet(?) {predicate} "
                 "ORDER BY sequence LIMIT ? OFFSET ?",
                 [*parameters, limit, offset],
             )
             names = [str(value[0]) for value in values.description]
-            items = []
+            items: list[dict[str, object]] = []
             for raw in values.fetchall():
                 row = dict(zip(names, raw, strict=True))
-                row["session_date"] = row["session_date"].isoformat()
-                row["signal_asof"] = row["signal_asof"].isoformat()
+                row["session_date"] = cast(date, row["session_date"]).isoformat()
+                row["signal_asof"] = str(row["signal_asof"])
                 row["constraint_codes"] = json.loads(
                     str(row.pop("constraint_codes_json"))
                 )
