@@ -67,5 +67,6 @@ export const defaultPanelRegistry = new PanelRegistry([
   { panel_id: "governance", module: "governance", title: "Governance", route: "/governance", status: "available", context_keys: ["program_id", "portfolio_validation_id", "reserve_id"], slot: "main" },
   { panel_id: "reserve", module: "governance", title: "Reserve", route: "/reserve", status: "available", context_keys: ["reserve_id", "program_id", "portfolio_validation_id"], slot: "main" },
   { panel_id: "configuration", module: "configuration", title: "Configuration", route: "/widgets", search_params: { surface: "configs" }, status: "available", context_keys: ["program_id", "strategy_id", "environment"], slot: "config" },
+  { panel_id: "command-catalog", module: "configuration", title: "Command Catalog", route: "/widgets", search_params: { surface: "commands" }, status: "available", context_keys: ["project_id", "program_id", "strategy_id", "environment"], slot: "command" },
   { panel_id: "live", module: "live", title: "Live", status: "reserved", context_keys: ["strategy_id", "asset_id", "environment"], slot: "chart" },
 ]);
