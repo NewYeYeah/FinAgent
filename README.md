@@ -18,12 +18,12 @@ The current development baseline supports:
 - supervised paper/shadow operations and sealed-holdout/promotion primitives;
 - US market ingestion through Alpaca SIP and best-effort AKShare validation;
 - local A-share Parquet research through DuckDB-backed adapters;
-- a read-only FastAPI + React/TypeScript Workspace with V2/A5-4 research/governance evidence and V3-1 deterministic Agent Project → Thread → Run indexing;
+- a read-only FastAPI + React/TypeScript Workbench with V2/A5-4 research/governance evidence, V3-1 deterministic Agent Project → Thread → Run indexing, and the V3-2A shared Workbench shell/context foundation;
 - legacy Streamlit/Plotly and optional Phoenix low-level diagnostics retained.
 
 The current market priority is **A-share historical research first**, with **Alpaca SIP as the US reference/regression path**. A-share live-capital or realtime acceptance is intentionally deferred until frozen research, execution-aware internal validation, one-shot reserve and repeated PAPER gates are complete.
 
-The next product-development milestone is **Visualization V3-2A — FinAgent Workbench Shell + Context Bus**. The long-term Workbench is planned as a quantitative research workstation spanning Agent, Strategy, Factors, Portfolio, Execution, Risk, Operations, Evidence/Governance and Configuration. Production reserve execution remains a separate explicit human-authorized operation and is never triggered by development or CI.
+The next product-development milestone is **Visualization V3-2B — Config Registry + Command Catalog**. V3-2A establishes the shared shell, context, panel registry and read-only Agent workbench substrate; V3-2B will add typed configuration and command catalog contracts without enabling a general execution endpoint. Production reserve execution remains a separate explicit human-authorized operation and is never triggered by development or CI.
 
 ## Quick start
 
@@ -91,7 +91,7 @@ A completed A4 report remains `promotion_eligible=false`. A5-1 seals the exact f
 
 ## FinAgent Workspace / Workbench direction
 
-The current deployed product surface remains a **read-only Evidence Workspace**. V2 provides governed A2.6/A4/ledger review projections; A5-4 adds reserve lifecycle inspection; V3-1 adds deterministic Agent Project/Thread/Run indexing. Authoritative calculations and state transitions remain owned by FinAgent core.
+The current product surface remains a **read-only Evidence Plane** presented through the FinAgent Workbench shell. V2 provides governed A2.6/A4/ledger review projections; A5-4 adds reserve lifecycle inspection; V3-1 adds deterministic Agent Project/Thread/Run indexing; V3-2A adds the shared Workbench shell, URL-backed context bus, panel registry and Agent activity/inspector integration. Authoritative calculations and state transitions remain owned by FinAgent core.
 
 Install and build:
 
@@ -114,7 +114,7 @@ python scripts/run_workspace.py \
 
 Windows PowerShell uses the same command with backticks. Open `http://127.0.0.1:8765`.
 
-Current Workspace capabilities include:
+Current Workbench capabilities include:
 
 - a rebuildable derived SQLite Evidence Catalog and deterministic frozen-protocol comparison;
 - ResearchProgram lifecycle, Gate matrix, statistical forest and fold evidence;
@@ -124,12 +124,17 @@ Current Workspace capabilities include:
 - combined immutable A2.6 → A4 lineage, with A3 binding explicitly marked `derived` where no standalone A3 identity exists;
 - downloadable human-review evidence bundles;
 - authoritative A5 eligibility/consumption/terminal/ledger/audit inspection;
-- canonical Agent audit timelines and V3-1 Project → Thread → Run navigation APIs;
+- a registry-driven Workbench shell with stable extension positions for Strategy, Factors, Portfolio, Execution, Risk, Operations, Evidence/Governance, Configuration and future Live surfaces;
+- a typed `WorkbenchContext` with deterministic URL identity for Project/Thread/Run, Program/Factor/Portfolio/Strategy/Reserve, Asset/Date/Session/Fold and Environment selections;
+- context-preserving module navigation and explicit linked-selection events that remain presentation state rather than evidence authority;
+- V3-1 Agent Project → Thread → Run navigation, canonical persisted activity review and a Run Inspector with Workspace-verified artifact links;
+- a shared identity-keyed typed server-state query provider with cache, request de-duplication, refetch and invalidation boundaries;
+- disabled Config drawer and Command palette extension slots reserved for V3-2B/V3-2C;
 - the `FinWidgetSpec` catalog.
 
-It currently provides no endpoint or control for research reruns, prompt edits, Gate changes, reserve execution/recovery, promotion or order submission.
+It currently provides no endpoint or control for research reruns, prompt edits, Gate changes, reserve execution/recovery, promotion, PAPER mutation or order submission.
 
-The active v3.1 plan preserves that GET-only **Evidence Plane** and introduces a future explicit opt-in **Control Plane**. The Control Plane will accept only typed, allowlisted, governed commands and will call FinAgent application services; it will not expose arbitrary shell/Python execution. Research/execution protocol edits will create new identities/forks rather than mutating historical evidence.
+The active v3.1 plan preserves the GET-only **Evidence Plane** and introduces a future explicit opt-in **Control Plane**. V3-2B first adds read-only typed Config/Command catalogs; V3-2C then adds only allowlisted L0/L1 research control. The Control Plane will call FinAgent application services and will not expose arbitrary shell/Python execution. Research/execution protocol edits create new identities/forks rather than mutating historical evidence.
 
 The same Workbench shell is planned to host linked quant charts. Large/authoritative financial series such as strategy decision paths and factor tear-sheet time series will be persisted by core before their interactive charts are implemented.
 

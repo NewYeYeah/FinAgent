@@ -6,7 +6,7 @@ This roadmap is intentionally short. The active detailed planning baseline is [`
 
 Planning v3.1 anchor: `main @ 2909a65aa89f11e80c434414f7fe070d3aa72a0a`.
 
-Completed core/product capabilities include PIT data contracts, bounded Agent-generated research, A2.6 robust ResearchPrograms, A3 exact-session execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2, A5-1～A5-4 reserve governance/evidence, and **Visualization V3-1 Agent Project → Thread → Run index**.
+Completed core/product capabilities include PIT data contracts, bounded Agent-generated research, A2.6 robust ResearchPrograms, A3 exact-session execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2, A5-1～A5-4 reserve governance/evidence, **Visualization V3-1 Agent Project → Thread → Run index**, and **Visualization V3-2A Workbench Shell + Context Bus**.
 
 No production 2025+ reserve has been consumed by development or CI. Production reserve execution remains an independent human-authorized operation.
 
@@ -35,7 +35,7 @@ Evidence Plane  → default / GET-only / read-only
 Control Plane   → future explicit opt-in / typed governed commands
 ```
 
-V3-1 remains unchanged and supplies the Agent navigation substrate.
+V3-1 remains unchanged and supplies the Agent navigation substrate. V3-2A supplies the shared product shell/context substrate for later Config, Command and linked quant modules.
 
 ## Current priority order
 
@@ -48,21 +48,22 @@ V3-1 remains unchanged and supplies the Agent navigation substrate.
 - bulk read-only Agent projection through one SQLite connection;
 - GET-only `/api/v3/agent/*` navigation API.
 
-### Current — V3-2A Workbench Shell + Context Bus
+### Completed — V3-2A Workbench Shell + Context Bus
 
-Suggested branch: `feature/v3-workbench-shell-context`.
+Delivered on `feature/v3-workbench-shell-context`:
 
-Deliver:
+- desktop-first registry-driven FinAgent navigation shell covering current and future Workbench modules;
+- typed `WorkbenchContextProvider` for Project/Thread/Run, Program/Factor/Portfolio/Strategy/Reserve, Asset/Date/Session/Fold and Environment identities;
+- deterministic URL round-trip and context-preserving cross-module navigation;
+- declared linked-selection event vocabulary kept separate from deep-link identity;
+- `PanelRegistry`, Inspector slot, chart-workspace slot plus disabled Config drawer/Command palette extension slots;
+- V3-1 Agent Project → Thread → Run navigation, persisted Activity and verified-artifact Inspector inside the new shell;
+- identity-keyed shared typed server-state query provider with cache, in-flight de-duplication, stale handling, refetch and invalidation boundaries;
+- legacy `/agent/:runId` links deterministically redirect into the V3 Workbench context URL;
+- existing V1/V2/A5 pages remain available;
+- **no write API or Control Plane authority added**.
 
-- desktop-first FinAgent navigation shell;
-- `WorkbenchContextProvider` with Project/Run/Program/Factor/Strategy/Asset/Date identities;
-- context bar and deterministic linked-selection events;
-- `PanelRegistry`, Inspector slot, chart-workspace slot, Config drawer slot and Command palette slot;
-- V3-1 Agent navigation/activity inside the new shell;
-- TanStack Query (or equivalent) server-state foundation;
-- **no write API yet**.
-
-### P1 — V3-2B Config Registry + Command Catalog
+### Current — V3-2B Config Registry + Command Catalog
 
 Freeze additive contracts:
 
@@ -147,7 +148,7 @@ Every chart must declare evidence requirements and authority class, and all asse
 - **Apache ECharts** remains the main analytical chart engine; add a shared context-aware wrapper.
 - **React Flow** remains the lineage/DAG renderer.
 - **TanStack Table** remains the structured-table foundation.
-- **TanStack Query** is introduced in V3-2A for server state.
+- V3-2A establishes the shared **identity-keyed query-provider contract** required by Workbench server state. The current implementation is an equivalent typed cache/de-duplication layer isolated behind that boundary; TanStack Query remains the preferred external substitution if/when dependency adoption is justified before V3 foundation acceptance.
 - **RJSF or equivalent JSON-Schema forms** may be introduced in V3-2B after typed config descriptors exist.
 - **TradingView Lightweight Charts** is introduced in V4-2 for candlestick/volume/order-marker views only.
 - **FINOS Perspective** is deferred until A6/QMT profiling demonstrates a need for large/streaming tables.

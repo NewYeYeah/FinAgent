@@ -2,6 +2,18 @@
 
 This file summarizes meaningful development milestones. Commit and pull-request history remains the detailed audit trail.
 
+## 2026-08-29 — Visualization V3-2A Workbench Shell + Context Bus
+
+- added the desktop-first FinAgent Workbench shell with registry-driven current/future modules while preserving existing V1/V2/A5 routes;
+- added a typed URL-backed `WorkbenchContext` covering Agent, research, portfolio, strategy, reserve, asset/date/session/fold and environment identities;
+- kept interaction events separate from deep-link identity and preserved linked context across top-level Workbench module navigation;
+- added a `PanelRegistry`, chart-workspace/Inspector slots and explicitly disabled Config drawer/Command palette extension points for V3-2B/V3-2C;
+- integrated the V3-1 Project → Thread → Run APIs into the primary Agent Workbench with persisted Activity and a Run Inspector;
+- linked only Workspace-verified Agent artifact refs while leaving unknown audit strings unresolved and preserving the no-hidden-reasoning boundary;
+- added an identity-keyed shared typed server-state query provider with cache, in-flight de-duplication, stale handling, refetch and invalidation support;
+- retained legacy `/agent/:runId` compatibility through deterministic redirect into the new Workbench context URL;
+- added Workbench context, React interaction and Playwright coverage while retaining GET-only Evidence Plane authority.
+
 ## 2026-08-29 — Visualization V3-1 Agent Index Contract
 
 - added derived `AgentProjectProjection`, `AgentThreadProjection`, `AgentRunSummary` and verified `AgentArtifactRef` contracts over canonical Agent audit SQLite;
