@@ -94,6 +94,10 @@ _GUARDRAIL_PREFIXES = (
     "kill_switch",
 )
 _SUPPORTED_SECTIONS: dict[str, tuple[str, ConfigDomain]] = {
+    "local_ashare": (
+        "Local A-share dataset certification",
+        "runtime",
+    ),
     "local_ashare_robust_research": (
         "A2.6 robust A-share research",
         "research_protocol",
@@ -215,7 +219,7 @@ def _domain_for(
         return "secret_reference"
     if leaf in _RUNTIME_KEYS or leaf.endswith("_path") or leaf.endswith("_dir"):
         return "runtime"
-    if section in {"llm", "market_data"}:
+    if section in {"local_ashare", "llm", "market_data"}:
         return "runtime"
     if section in {"ashare_execution_smoke", "ashare_portfolio_validation"} and (
         leaf.startswith(_EXECUTION_PREFIXES)
@@ -384,12 +388,7 @@ class ConfigRegistryProjection:
 
 
 class ConfigRegistry:
-    """Read-only projection of allowlisted public FinAgent TOML configuration.
-
-    Secret-like files are excluded before parsing. Credential-looking values are
-    recursively redacted even inside arrays/tables. The registry is a product read
-    model only; it never mutates application configuration.
-    """
+    """Read-only projection of allowlisted public FinAgent TOML configuration."""
 
     def __init__(self, roots: Sequence[str | Path]) -> None:
         self._roots = tuple(Path(root).expanduser() for root in roots)
@@ -490,7 +489,10 @@ class ConfigRegistry:
     def _build(self) -> ConfigRegistryProjection:
         warnings: list[str] = []
         snapshot_by_id: dict[str, ConfigSnapshot] = {}
-        fields_by_descriptor: dict[str, dict[str, tuple[ConfigDomain, ConfigMutationPolicy]]] = {}
+        fields_by_descriptor: dict[
+            str,
+            dict[str, tuple[ConfigDomain, ConfigMutationPolicy]],
+        ] = {}
         field_types: dict[tuple[str, str], set[str]] = {}
         field_redacted: dict[tuple[str, str], bool] = {}
         field_presence: dict[tuple[str, str], int] = {}
@@ -521,7 +523,6 @@ class ConfigRegistry:
                 raw_section = payload.get(section)
                 if not isinstance(raw_section, dict):
                     continue
-                descriptor_id = section
                 flattened = _flatten(raw_section)
                 sanitized: dict[str, JsonValue] = {}
                 domains: dict[str, ConfigDomain] = {}
@@ -540,20 +541,18 @@ class ConfigRegistry:
                 snapshot_id = _digest(
                     "config-snapshot",
                     {
-                        "descriptor_id": descriptor_id,
+                        "descriptor_id": section,
                         "source_sha256": source_sha256,
                         "values": sanitized,
                     },
                 )
                 if snapshot_id in snapshot_by_id:
-                    warnings.append(
-                        f"duplicate config snapshot ignored: {source_uri}"
-                    )
+                    warnings.append(f"duplicate config snapshot ignored: {source_uri}")
                     continue
 
                 snapshot = ConfigSnapshot(
                     snapshot_id=snapshot_id,
-                    descriptor_id=descriptor_id,
+                    descriptor_id=section,
                     section=section,
                     source_uri=source_uri,
                     source_sha256=source_sha256,
@@ -563,19 +562,18 @@ class ConfigRegistry:
                     redacted_fields=tuple(sorted(set(all_redacted_paths))),
                 )
                 snapshot_by_id[snapshot_id] = snapshot
-                snapshot_ids_by_descriptor.setdefault(descriptor_id, []).append(
-                    snapshot_id
-                )
-                descriptor_fields = fields_by_descriptor.setdefault(descriptor_id, {})
+                snapshot_ids_by_descriptor.setdefault(section, []).append(snapshot_id)
+                descriptor_fields = fields_by_descriptor.setdefault(section, {})
                 for field_path, value in sanitized.items():
                     descriptor_fields[field_path] = (
                         domains[field_path],
                         policies[field_path],
                     )
-                    field_key = (descriptor_id, field_path)
+                    field_key = (section, field_path)
                     field_types.setdefault(field_key, set()).add(_value_type(value))
                     field_redacted[field_key] = field_redacted.get(
-                        field_key, False
+                        field_key,
+                        False,
                     ) or _field_was_redacted(field_path, all_redacted_paths)
                     field_presence[field_key] = field_presence.get(field_key, 0) + 1
 
@@ -594,8 +592,10 @@ class ConfigRegistry:
                         value_type=next(iter(types)) if len(types) == 1 else "mixed",
                         domain=domain,
                         mutation_policy=policy,
-                        required=field_presence[(descriptor_id, field_path)]
-                        == len(snapshot_ids),
+                        required=(
+                            field_presence[(descriptor_id, field_path)]
+                            == len(snapshot_ids)
+                        ),
                         secret_redacted=field_redacted[(descriptor_id, field_path)],
                     )
                 )
@@ -644,10 +644,10 @@ class CommandSpec:
     def __post_init__(self) -> None:
         if self.level not in {"L0", "L1"}:
             raise ValueError(
-                "V3-2B generic command catalog may contain only L0/L1 commands"
+                "generic Workbench command catalog may contain only L0/L1 commands"
             )
         if self.execution_enabled:
-            raise ValueError("V3-2B command execution must remain disabled")
+            raise ValueError("command execution remains disabled until V3-2C gateway")
 
     def to_dict(self) -> dict[str, object]:
         payload = asdict(self)
@@ -708,9 +708,9 @@ _DEFAULT_COMMAND_SPECS = (
         ),
         level="L0",
         config_descriptor_ids=tuple(sorted(_SUPPORTED_SECTIONS)),
-        binding_kind="registry",
+        binding_kind="application_service",
         binding_ref=(
-            "finagent.visualization.workbench_control_catalog.ConfigRegistry"
+            "finagent.application.control_services.ConfigValidationApplicationService"
         ),
         gateway_readiness="application_service_ready",
         produces=("ConfigValidationEvidence",),
@@ -724,10 +724,13 @@ _DEFAULT_COMMAND_SPECS = (
             "trading authority."
         ),
         level="L0",
-        config_descriptor_ids=("local_ashare_research_smoke",),
-        binding_kind="cli_orchestration",
-        binding_ref="scripts/certify_local_ashare_data.py",
-        gateway_readiness="adapter_required",
+        config_descriptor_ids=("local_ashare",),
+        binding_kind="application_service",
+        binding_ref=(
+            "finagent.application.control_services."
+            "LocalAshareCertificationApplicationService"
+        ),
+        gateway_readiness="application_service_ready",
         produces=("LocalAshareDataCertification",),
         requires_confirmation=False,
     ),
@@ -779,14 +782,16 @@ _DEFAULT_COMMAND_SPECS = (
         command_id="review.export_bundle",
         title="Export review bundle",
         description=(
-            "Future L0 command for deterministic read-only human-review bundle "
-            "export."
+            "Deterministic L0 human-review bundle export through an in-process "
+            "application service."
         ),
         level="L0",
         config_descriptor_ids=(),
-        binding_kind="cli_orchestration",
-        binding_ref="scripts/export_workspace_review_bundle.py",
-        gateway_readiness="adapter_required",
+        binding_kind="application_service",
+        binding_ref=(
+            "finagent.application.control_services.ReviewBundleExportApplicationService"
+        ),
+        gateway_readiness="application_service_ready",
         produces=("HumanReviewBundle",),
         requires_confirmation=False,
     ),
