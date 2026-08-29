@@ -4,7 +4,7 @@ This roadmap is intentionally short. The active detailed planning baseline is [`
 
 ## Current baseline
 
-The implementation baseline has now completed the **Visualization V3-3 typed deep-link foundation** on top of PIT data contracts, bounded Agent research, A2.6 robust ResearchPrograms, A3 execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2, A5-1～A5-4 reserve governance/evidence, V3-1 Agent indexing and the V3-2 governed Workbench/Control foundation.
+The implementation baseline has now completed the **Visualization V3-4 stable product SSE foundation** on top of PIT data contracts, bounded Agent research, A2.6 robust ResearchPrograms, A3 execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2, A5-1～A5-4 reserve governance/evidence, V3-1 Agent indexing, the V3-2 governed Workbench/Control foundation and V3-3 typed deep links.
 
 No production 2025+ reserve has been consumed by development or CI. Production reserve execution remains an independent human-authorized operation.
 
@@ -135,7 +135,7 @@ review.export_bundle
 - there is no fallback execution path when Control is unavailable;
 - the Palette shows complete catalog readiness, ConfigSnapshot binding, WorkbenchContext, confirmation semantics and produced evidence types;
 - `adapter_required` commands remain visible but disabled;
-- CommandRun state is read from durable Control Plane persistence and polled until V3-4 replaces polling with product SSE;
+- V3-4 replaces the initial active-CommandRun lifecycle polling with Evidence Plane SSE while retaining the full durable Control record as the detail authority;
 - Run Inspector shows ordered lifecycle events, result, evidence IDs and artifact paths;
 - configuration editing remains separate/read-only; V3-2 command execution does not imply in-place protocol editing.
 
@@ -152,25 +152,28 @@ review.export_bundle
 - all V3-3 Evidence Plane endpoints remain GET-only;
 - Phoenix/OTLP remains low-level diagnostic only and hidden reasoning is not persisted or projected.
 
-### Current — V3-4 Agent + CommandRun SSE
+### Completed — V3-4 Agent + CommandRun SSE
 
-Stable product projections only:
+- added normalized `AgentActiveRunProjection` and `CommandRunStreamProjection` contracts over canonical Agent audit and durable CommandRun state;
+- SSE event IDs are deterministic digests of normalized product projections; unchanged state retains one event identity and reconnect can suppress it with `Last-Event-ID`;
+- Agent Workbench uses SSE as a change signal and refreshes the canonical V3 Agent run projection rather than treating the transport as a second evidence authority;
+- Command Palette no longer performs 600 ms active-CommandRun polling; SSE change notifications trigger explicit full Control API record refresh;
+- if SSE is unavailable, there is no hidden timed-poll fallback and the user retains an explicit `Refresh run` action;
+- streams exclude prompt/provider payloads, token/reasoning data, raw OTLP/Phoenix spans, CommandRun parameters/outputs/artifact paths/free-form messages and host filesystem paths;
+- heartbeat comments keep idle HTTP connections alive without fabricating product events;
+- blocking audit/SQLite reads run outside the async event loop;
+- Workspace retains the configured read-only command-store path even before the Control Plane creates the SQLite file, allowing SSE to become available without an Evidence Plane restart;
+- all V3-4 stream endpoints remain GET-only and add no Control Plane authority.
 
-```text
-AgentActiveRunProjection / CommandRunProjection
-→ SSE
-→ Workbench
-```
+### Current — V3-5 Workbench Foundation Acceptance
 
-V3-4 will stream only normalized product snapshots/events derived from canonical Agent audit and durable CommandRun state. It will not expose raw provider callbacks, raw OTLP/Phoenix spans, prompt payloads or hidden reasoning.
-
-### P1 — V3-5 Workbench Foundation Acceptance
-
-- context/deep-link identity tests;
-- Evidence Plane remains GET-only;
-- Control Plane authority/adversarial tests;
-- no L2/L3 generic execution path;
-- Windows/Ubuntu, ruff/mypy, TypeScript/Vitest/build/Playwright and repository-wide pytest.
+- complete context/deep-link identity and refresh/back-forward acceptance coverage;
+- re-run Evidence Plane GET-only and Control Plane authority/adversarial tests as one foundation gate;
+- verify no L2/L3 generic execution path and no A5 reserve action can be reached through Workbench control surfaces;
+- exercise SSE reconnect, disconnect, source disappearance and CommandRun terminal-state behavior;
+- inspect browser-level fallback behavior with Evidence-only, Control-only-unavailable and both-plane configurations;
+- retain Windows/Ubuntu, ruff/mypy, TypeScript/Vitest/build/Playwright and repository-wide pytest acceptance;
+- produce the V3 Workbench Foundation completion record before V4 begins.
 
 ## P1 — V4 Linked Quant Analytics
 
