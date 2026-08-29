@@ -50,25 +50,45 @@ def _run_v41(
     )
 
 
-def test_v41_materializes_reconciled_factor_series_and_bounded_projection(
-    tmp_path: Path,
-) -> None:
-    _prepare_a26(tmp_path)
-    report = tmp_path / "robust.json"
-    config = tmp_path / "a2p6.toml"
+@pytest.fixture(scope="module")
+def v41_evidence(tmp_path_factory: pytest.TempPathFactory) -> dict[str, object]:
+    root = tmp_path_factory.mktemp("v41-evidence")
+    _prepare_a26(root)
+    report = root / "robust.json"
+    config = root / "a2p6.toml"
     report_before = report.read_bytes()
     source = json.loads(report.read_text(encoding="utf-8"))
-
-    manifest_path = tmp_path / "robust.factor-series.json"
-    data_path = tmp_path / "robust.factor-series.parquet"
-    first = _run_v41(
+    manifest_path = root / "robust.factor-series.json"
+    data_path = root / "robust.factor-series.parquet"
+    result = _run_v41(
         config=config,
         report=report,
         manifest=manifest_path,
         data=data_path,
     )
-    assert first.returncode == 0, first.stderr + first.stdout
+    assert result.returncode == 0, result.stderr + result.stdout
     assert report.read_bytes() == report_before
+    return {
+        "root": root,
+        "report": report,
+        "config": config,
+        "report_before": report_before,
+        "source": source,
+        "manifest": manifest_path,
+        "data": data_path,
+    }
+
+
+def test_v41_materializes_reconciled_factor_series_and_bounded_projection(
+    v41_evidence: dict[str, object],
+) -> None:
+    root = Path(v41_evidence["root"])
+    report = Path(v41_evidence["report"])
+    config = Path(v41_evidence["config"])
+    report_before = bytes(v41_evidence["report_before"])
+    source = v41_evidence["source"]
+    assert isinstance(source, dict)
+    manifest_path = Path(v41_evidence["manifest"])
 
     manifest = FactorSeriesManifest.read_json(manifest_path)
     assert manifest.schema_version == FACTOR_SERIES_MANIFEST_SCHEMA
@@ -170,8 +190,8 @@ def test_v41_materializes_reconciled_factor_series_and_bounded_projection(
     with pytest.raises(ValueError, match="series_kind"):
         projection.query(series_kind="unknown")
 
-    replay_manifest_path = tmp_path / "robust.factor-series-replay.json"
-    replay_data_path = tmp_path / "robust.factor-series-replay.parquet"
+    replay_manifest_path = root / "robust.factor-series-replay.json"
+    replay_data_path = root / "robust.factor-series-replay.parquet"
     second = _run_v41(
         config=config,
         report=report,
@@ -186,14 +206,13 @@ def test_v41_materializes_reconciled_factor_series_and_bounded_projection(
     assert report.read_bytes() == report_before
 
 
-def test_v41_projection_fails_closed_on_source_or_parquet_tamper(tmp_path: Path) -> None:
-    _prepare_a26(tmp_path)
-    report = tmp_path / "robust.json"
-    config = tmp_path / "a2p6.toml"
-    manifest = tmp_path / "robust.factor-series.json"
-    data = tmp_path / "robust.factor-series.parquet"
-    result = _run_v41(config=config, report=report, manifest=manifest, data=data)
-    assert result.returncode == 0, result.stderr + result.stdout
+def test_v41_projection_fails_closed_on_source_or_parquet_tamper(
+    v41_evidence: dict[str, object],
+    tmp_path: Path,
+) -> None:
+    report = Path(v41_evidence["report"])
+    manifest = Path(v41_evidence["manifest"])
+    data = Path(v41_evidence["data"])
 
     tamper_root = tmp_path / "tamper"
     tamper_root.mkdir()
