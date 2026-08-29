@@ -206,7 +206,7 @@ def test_v41_materializes_reconciled_factor_series_and_bounded_projection(
     assert report.read_bytes() == report_before
 
 
-def test_v41_projection_fails_closed_on_source_or_parquet_tamper(
+def test_v41_projection_fails_closed_on_source_parquet_or_manifest_tamper(
     v41_evidence: dict[str, object],
     tmp_path: Path,
 ) -> None:
@@ -234,4 +234,14 @@ def test_v41_projection_fails_closed_on_source_or_parquet_tamper(
     with data_copy.open("ab") as handle:
         handle.write(b"tamper")
     with pytest.raises(ValueError, match="Parquet SHA-256"):
+        FactorSeriesProjection(manifest_copy)
+
+    shutil.copy2(data, data_copy)
+    manifest_payload = json.loads(manifest_copy.read_text(encoding="utf-8"))
+    manifest_payload["primary_label"] = "tampered_forward_label"
+    manifest_copy.write_text(
+        json.dumps(manifest_payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="manifest quant metadata drift: primary_label"):
         FactorSeriesProjection(manifest_copy)
