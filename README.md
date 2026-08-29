@@ -14,13 +14,13 @@ The current baseline supports:
 - A4 execution-aware internal portfolio validation with frozen-factor Alpha, risk, optimizer targets, gross/net ledgers and replay;
 - A5 eligibility sealing, one-shot evaluation, crash-safe `CONSUMED`, terminal/ledger persistence and replay/audit;
 - Alpaca SIP US reference ingestion and local A-share Parquet research;
-- V2/A5 evidence review, V3 Agent Project → Thread → Run navigation, the V3-2 governed Workbench/Control foundation, V3-3 typed deep links and V3-4 stable product SSE;
+- V2/A5 evidence review and the accepted V3 Workbench foundation: Agent indexing, governed local Control, typed deep links, sanitized product SSE and cross-plane acceptance;
 - an explicit two-plane Workbench architecture: GET-only Evidence + local governed Control;
 - legacy Streamlit/Plotly and optional Phoenix diagnostics retained.
 
 The market priority remains **A-share historical research first**. A-share live capital/realtime acceptance remains deferred until frozen research, execution-aware validation, reserve governance and repeated PAPER gates are complete.
 
-The next Workbench milestone is **V3-5 — Workbench Foundation Acceptance**. V3-4 is complete when its PR is merged: Agent and CommandRun lifecycle changes are delivered as sanitized Evidence Plane SSE while canonical Agent audit / durable Control records remain the authorities.
+The V3 Workbench Foundation is complete through **V3-5 acceptance**. The current development milestone is **V4-0 — StrategyDecisionSeriesEvidence**: persist the authoritative signal → target → order → fill → position → PnL/cost series before building the Strategy Decision Explorer.
 
 ## Quick start
 
@@ -70,9 +70,9 @@ RESERVE_FAIL → no promotion; same reserve never reused for modified-strategy v
 
 A completed A4 report remains `promotion_eligible=false`. No production 2025+ reserve is consumed by development or CI.
 
-## FinAgent Workbench V3.4
+## FinAgent Workbench V3.5
 
-The V3 Workbench keeps two independent authority planes established in V3-2 and adds typed navigation plus notification streaming without merging their authority:
+The accepted V3 Workbench keeps two independent authority planes and combines deterministic context, typed navigation and notification streaming without merging authority:
 
 ```text
 Evidence Plane  127.0.0.1:8765
@@ -86,7 +86,9 @@ Control Plane   127.0.0.1:8766
   durable CommandIntent → CommandRun → CommandResult audit
 ```
 
-The Evidence Plane never acquires a command mutation route. Starting Control is a separate user action. SSE is notification-only: complete CommandRun details still come from the durable Control record.
+The Evidence Plane never acquires a command mutation route. Starting Control is a separate user action. SSE is notification-only: complete Agent and CommandRun details still come from their canonical audit/durable records.
+
+V3-5 verifies the foundation as a whole: complete API route inventories, Evidence GET-only behavior, exact bounded Control authority, rejected L2/L3/A5-like commands, durable cross-plane command identity, context restoration through browser history/reload, sanitized SSE reconnect/disconnect/terminal behavior and Ubuntu/Windows/frontend regression.
 
 ### Build the frontend
 
@@ -133,7 +135,7 @@ The Control launcher refuses non-loopback hosts. When it is absent, the Workbenc
 
 ### Current command readiness
 
-Executable through the generic V3-2 Control Plane:
+Executable through the generic V3 Control Plane:
 
 ```text
 config.validate              L0  application_service_ready
@@ -194,6 +196,7 @@ arbitrary Python
 - read-only Command Catalog with real readiness metadata;
 - separate local Command Palette and persisted Run Inspector;
 - V3-4 normalized Agent + CommandRun SSE with deterministic event IDs and explicit no-hidden-reasoning boundary;
+- V3-5 cross-plane, authority, context-history, SSE lifecycle and browser-mode acceptance coverage;
 - context-preserving navigation and typed server-state cache/de-duplication boundary.
 
 Configuration editing remains read-only. Protocol changes must become new governed identities/forks rather than rewriting historical evidence.
@@ -244,6 +247,7 @@ The Agent never owns positions, fills, risk limits, validation thresholds or bro
 18. Workbench deep links resolve verified canonical identities and fail closed on ambiguity.
 19. SSE is a sanitized notification projection, never an alternate evidence/control authority.
 20. Product streams never expose hidden reasoning, raw provider/OTLP/Phoenix payloads or host paths.
+21. V3 foundation acceptance does not imply alpha persistence, reserve authorization, promotion or live readiness.
 
 ## Documentation
 
@@ -259,6 +263,7 @@ The Agent never owns positions, fills, risk limits, validation thresholds or bro
 - [Workbench architecture v3.1](docs/architecture/workbench-v3.md)
 - [Roadmap](docs/development/roadmap.md)
 - [V3-4 changelog](docs/development/changelog-v3-4.md)
+- [V3-5 acceptance](docs/development/changelog-v3-5.md)
 - [Changelog](docs/development/changelog.md)
 
 ## Data note
