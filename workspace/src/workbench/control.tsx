@@ -35,6 +35,8 @@ import type {
   ControlCommandSpecV3,
   ControlStatusV3,
 } from "./controlTypes";
+import { useWorkbenchSse } from "./stream";
+import type { CommandRunStreamProjectionV3 } from "./streamTypes";
 import type { ConfigRegistryResponseV3, ConfigSnapshotV3 } from "./types";
 import "./control.css";
 
@@ -203,7 +205,7 @@ function CommandRunInspector({ record }: { record: CommandRecordV3 }) {
         </div>
       ) : (
         <div className="control-running-box">
-          <Clock3 size={14} /> Persisted run is active; status is polled from the Control Plane.
+          <Clock3 size={14} /> Persisted run is active; lifecycle updates arrive from Evidence Plane SSE.
         </div>
       )}
     </section>
@@ -238,6 +240,32 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
       confirmationReady &&
       (!needsPortfolioContext || portfolioContextReady),
   );
+  const activeRunId = activeRun?.run.command_run_id ?? "";
+  const activeRunStreaming = Boolean(
+    open && activeRun && !TERMINAL.has(activeRun.run.state),
+  );
+
+  const commandStream = useWorkbenchSse<CommandRunStreamProjectionV3>({
+    path: activeRunId
+      ? `/api/v3/streams/command-runs/${encodeURIComponent(activeRunId)}`
+      : "",
+    eventType: "command_run_snapshot",
+    identity: activeRunId,
+    enabled: activeRunStreaming,
+    onProjection: (projection) => {
+      void controlApi
+        .run(projection.command_run_id)
+        .then((next) => {
+          setActiveRun(next);
+          if (TERMINAL.has(next.run.state)) {
+            void controlApi.runs(20).then((data) => setRecentRuns(data.items));
+          }
+        })
+        .catch((reason) => {
+          setSubmitError(reason instanceof Error ? reason : new Error(String(reason)));
+        });
+    },
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -261,23 +289,21 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
     setSubmitError(null);
   }, [selected?.command_id]);
 
-  useEffect(() => {
-    if (!activeRun || TERMINAL.has(activeRun.run.state)) return;
-    const timer = window.setInterval(() => {
-      void controlApi
-        .run(activeRun.run.command_run_id)
-        .then((next) => {
-          setActiveRun(next);
-          if (TERMINAL.has(next.run.state)) {
-            void controlApi.runs(20).then((data) => setRecentRuns(data.items));
-          }
-        })
-        .catch((reason) => setSubmitError(reason instanceof Error ? reason : new Error(String(reason))));
-    }, 600);
-    return () => window.clearInterval(timer);
-  }, [activeRun]);
-
   if (!open) return null;
+
+  async function refreshActiveRun() {
+    if (!activeRunId) return;
+    try {
+      const next = await controlApi.run(activeRunId);
+      setActiveRun(next);
+      if (TERMINAL.has(next.run.state)) {
+        const latest = await controlApi.runs(20);
+        setRecentRuns(latest.items);
+      }
+    } catch (reason) {
+      setSubmitError(reason instanceof Error ? reason : new Error(String(reason)));
+    }
+  }
 
   async function execute() {
     if (!selected || !executable) return;
@@ -319,7 +345,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
       >
         <header className="control-palette-header">
           <div>
-            <span className="eyebrow">V3-2 · governed local Control Plane</span>
+            <span className="eyebrow">V3-4 · governed Control + Evidence SSE</span>
             <h2>Command Palette</h2>
           </div>
           <button type="button" onClick={onClose} aria-label="Close Command Palette">
@@ -448,7 +474,15 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
         <section className="control-run-area">
           <div className="control-active-run">
             {activeRun ? (
-              <CommandRunInspector record={activeRun} />
+              <>
+                <div className="control-stream-toolbar">
+                  <span className="mono">CommandRun SSE: {TERMINAL.has(activeRun.run.state) ? "terminal" : commandStream.status}</span>
+                  <button type="button" onClick={() => void refreshActiveRun()}>
+                    <RefreshCw size={13} /> Refresh run
+                  </button>
+                </div>
+                <CommandRunInspector record={activeRun} />
+              </>
             ) : (
               <div className="control-run-empty">
                 <History size={18} /> Select or create a persisted CommandRun to inspect its lifecycle.
@@ -478,7 +512,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
         <footer className="control-palette-footer">
           <ShieldAlert size={14} />
           <span>
-            Forbidden: production reserve · strategy promotion · PAPER mutation · broker order · live capital · arbitrary shell/Python.
+            SSE is notification-only. Forbidden: production reserve · strategy promotion · PAPER mutation · broker order · live capital · arbitrary shell/Python.
           </span>
         </footer>
       </aside>
