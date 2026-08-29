@@ -140,7 +140,6 @@ class CommandRunStreamProjection:
     updated_at: str
     result_status: str | None
     evidence_ids: tuple[str, ...]
-    result_message: str
     latest_event: Mapping[str, object] | None
     terminal: bool
     read_only: bool = True
@@ -170,7 +169,6 @@ class CommandRunStreamProjection:
             "updated_at": self.updated_at,
             "result_status": self.result_status,
             "evidence_ids": list(self.evidence_ids),
-            "result_message": self.result_message,
             "latest_event": dict(self.latest_event) if self.latest_event else None,
             "terminal": self.terminal,
         }
@@ -215,7 +213,8 @@ class WorkbenchStreamProjection:
 
     The stream layer reads canonical Agent audit and durable CommandRun state. It
     deliberately excludes prompts, provider callbacks, token/reasoning payloads,
-    arbitrary command outputs, host artifact paths and raw OTLP/Phoenix spans.
+    arbitrary command outputs, free-form command messages, host artifact paths and
+    raw OTLP/Phoenix spans.
     """
 
     def __init__(
@@ -298,7 +297,7 @@ class WorkbenchStreamProjection:
         with _read_only_connection(self.command_store_path) as connection:
             row = connection.execute(
                 """
-                SELECT event_id, sequence, event_type, state, occurred_at, message
+                SELECT event_id, sequence, event_type, state, occurred_at
                 FROM command_events
                 WHERE command_run_id = ?
                 ORDER BY sequence DESC
@@ -314,7 +313,6 @@ class WorkbenchStreamProjection:
             "event_type": str(row["event_type"]),
             "state": str(row["state"]),
             "occurred_at": str(row["occurred_at"]),
-            "message": str(row["message"] or ""),
         }
 
     def command_snapshot(self, command_run_id: str) -> CommandRunStreamProjection:
@@ -343,7 +341,6 @@ class WorkbenchStreamProjection:
             updated_at=_text(payload.get("updated_at")),
             result_status=_text(result.get("status")) or None,
             evidence_ids=evidence_ids,
-            result_message=_text(result.get("message")),
             latest_event=self._latest_command_event(command_run_id),
             terminal=state in {"succeeded", "failed", "rejected"},
         )
@@ -399,6 +396,7 @@ class WorkbenchStreamProjection:
             "raw_provider_callbacks": False,
             "raw_otlp_phoenix": False,
             "arbitrary_command_outputs": False,
+            "free_form_command_messages": False,
             "host_artifact_paths": False,
         }
 
