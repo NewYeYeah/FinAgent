@@ -5,7 +5,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
-from typing import Literal, Protocol
+from typing import Any, Literal, Protocol
 
 from finagent.data import (
     AshareBarFrequency,
@@ -30,11 +30,7 @@ APPLICATION_SERVICE_BINDINGS: dict[str, str] = {
 
 @dataclass(frozen=True, slots=True)
 class ApplicationCommandInvocation:
-    """Typed in-process command input consumed by registered application services.
-
-    This is deliberately not an executable-text contract. ``command_id`` is resolved
-    through an allowlisted registry and parameters are data only.
-    """
+    """Typed data input consumed only by an allowlisted application service."""
 
     command_id: str
     config_snapshot_id: str | None = None
@@ -82,16 +78,23 @@ class ApplicationCommandExecution:
 class ApplicationCommandService(Protocol):
     command_id: str
 
-    def execute(self, invocation: ApplicationCommandInvocation) -> ApplicationCommandExecution:
+    def execute(
+        self,
+        invocation: ApplicationCommandInvocation,
+    ) -> ApplicationCommandExecution:
+        ...
+
+
+class ConfigRegistryLike(Protocol):
+    def snapshot(self, snapshot_id: str) -> Any:
+        ...
+
+    def descriptor(self, descriptor_id: str) -> Any:
         ...
 
 
 class ApplicationServiceRegistry:
-    """Allowlisted in-process application-service registry.
-
-    The registry owns no subprocess/shell facility. Unknown command identities fail
-    closed instead of being interpreted as executable text.
-    """
+    """Allowlisted in-process service registry with no shell/process escape hatch."""
 
     def __init__(self, services: Sequence[ApplicationCommandService] = ()) -> None:
         self._services: dict[str, ApplicationCommandService] = {}
@@ -115,17 +118,23 @@ class ApplicationServiceRegistry:
     def command_ids(self) -> tuple[str, ...]:
         return tuple(sorted(self._services))
 
-    def execute(self, invocation: ApplicationCommandInvocation) -> ApplicationCommandExecution:
+    def execute(
+        self,
+        invocation: ApplicationCommandInvocation,
+    ) -> ApplicationCommandExecution:
         return self.get(invocation.command_id).execute(invocation)
 
 
 class ConfigValidationApplicationService:
     command_id = "config.validate"
 
-    def __init__(self, config_registry: object) -> None:
+    def __init__(self, config_registry: ConfigRegistryLike) -> None:
         self._registry = config_registry
 
-    def execute(self, invocation: ApplicationCommandInvocation) -> ApplicationCommandExecution:
+    def execute(
+        self,
+        invocation: ApplicationCommandInvocation,
+    ) -> ApplicationCommandExecution:
         _assert_command(invocation, self.command_id)
         if invocation.config_snapshot_id is None:
             return ApplicationCommandExecution(
@@ -155,7 +164,8 @@ class ConfigValidationApplicationService:
             actual_type = _value_type(snapshot.values[field_path])
             if field.value_type not in {"mixed", actual_type}:
                 issues.append(
-                    f"value type mismatch: {field_path}: {actual_type} != {field.value_type}"
+                    f"value type mismatch: {field_path}: "
+                    f"{actual_type} != {field.value_type}"
                 )
 
         valid = not issues
@@ -168,18 +178,25 @@ class ConfigValidationApplicationService:
                 "valid": valid,
                 "issues": tuple(issues),
             },
-            message="configuration snapshot is valid" if valid else "configuration snapshot is invalid",
+            message=(
+                "configuration snapshot is valid"
+                if valid
+                else "configuration snapshot is invalid"
+            ),
         )
 
 
 class LocalAshareCertificationApplicationService:
     command_id = "data.certify_local_ashare"
 
-    def execute(self, invocation: ApplicationCommandInvocation) -> ApplicationCommandExecution:
+    def execute(
+        self,
+        invocation: ApplicationCommandInvocation,
+    ) -> ApplicationCommandExecution:
         _assert_command(invocation, self.command_id)
         values = invocation.config_values
         root_raw = invocation.parameters.get("root", values.get("root"))
-        if root_raw in {None, ""}:
+        if root_raw is None or root_raw == "":
             raise ValueError("local_ashare.root is required")
         root = Path(str(root_raw)).expanduser()
         layout = LocalAshareDatasetLayout(
@@ -234,7 +251,10 @@ class LocalAshareCertificationApplicationService:
 class ReviewBundleExportApplicationService:
     command_id = "review.export_bundle"
 
-    def execute(self, invocation: ApplicationCommandInvocation) -> ApplicationCommandExecution:
+    def execute(
+        self,
+        invocation: ApplicationCommandInvocation,
+    ) -> ApplicationCommandExecution:
         _assert_command(invocation, self.command_id)
         validation_id = str(invocation.parameters.get("validation_id", "")).strip()
         if not validation_id:
@@ -243,8 +263,6 @@ class ReviewBundleExportApplicationService:
         reports = _path_sequence(raw_reports)
         git_sha = str(invocation.parameters.get("git_sha", "")).strip()
 
-        # Imported lazily so the application registry itself stays independent from
-        # the Workbench presentation stack until this L0 export service is invoked.
         from finagent.visualization.workspace_api import WorkspaceEvidenceCatalog
         from finagent.visualization.workspace_v2 import WorkspaceV2Projection
 
@@ -278,7 +296,9 @@ class ReviewBundleExportApplicationService:
         )
 
 
-def default_application_service_registry(config_registry: object) -> ApplicationServiceRegistry:
+def default_application_service_registry(
+    config_registry: ConfigRegistryLike,
+) -> ApplicationServiceRegistry:
     return ApplicationServiceRegistry(
         (
             ConfigValidationApplicationService(config_registry),
@@ -291,12 +311,13 @@ def default_application_service_registry(config_registry: object) -> Application
 def _assert_command(invocation: ApplicationCommandInvocation, expected: str) -> None:
     if invocation.command_id != expected:
         raise ValueError(
-            f"application service {expected!r} cannot execute command {invocation.command_id!r}"
+            f"application service {expected!r} cannot execute "
+            f"command {invocation.command_id!r}"
         )
 
 
 def _date_value(value: object | None) -> date | None:
-    if value in {None, ""}:
+    if value is None or value == "":
         return None
     if isinstance(value, date):
         return value
