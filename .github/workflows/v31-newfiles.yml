@@ -27,7 +27,8 @@ jobs:
           expected = [
               ('part00.txt', '374c7a33c7467eb35627868b30e0add4f3aa0c3ca1fe444961291f2697204a9e'),
               ('part01.txt', 'b4ee318dd1af08c51c65b68034b00791a56916ee7c68787d8cba65e0b001ec8d'),
-              ('part02.txt', 'a60d9bf649ae39ce3d8dfe9a29866ed66f97fe2f35906bc6e7286cf4ac230f80'),
+              ('part02a.txt', '0f4bdb08c8ea523e0eac961d2431e5c7416cd3f4ce34e60720116a13c0339851'),
+              ('part02b.txt', 'edc32c5a634a59f8abd7888765f66aef5c0263e3647f1a6f375ad91ca8967ba0'),
           ]
           values = []
           for name, expected_digest in expected:
