@@ -195,3 +195,80 @@ export interface CommandCatalogResponseV3 {
   items: CommandSpecV3[];
   forbidden_authority: string[];
 }
+
+export type WorkbenchReferenceKindV3 =
+  | "evidence"
+  | "artifact"
+  | "factor"
+  | "research_program"
+  | "portfolio_validation"
+  | "reserve"
+  | "agent_run"
+  | "config_snapshot"
+  | "config_diff"
+  | "command_run";
+
+export interface WorkbenchReferenceSummaryV3 {
+  kind: WorkbenchReferenceKindV3;
+  identity: string;
+  label: string;
+  authority: string;
+  verification: string;
+  detail_url: string;
+  target_url: string;
+  context: Record<string, string>;
+}
+
+export interface WorkbenchReferenceV3 extends WorkbenchReferenceSummaryV3 {
+  schema_version: string;
+  read_only: true;
+  metadata: Record<string, unknown>;
+  related: WorkbenchReferenceSummaryV3[];
+}
+
+export interface ArtifactInspectionV3 {
+  schema_version: string;
+  read_only: true;
+  artifact_id: string;
+  artifact_type: string;
+  label: string;
+  authority: string;
+  verification: string;
+  evidence_ids: string[];
+  target_url: string;
+  metadata: Record<string, unknown>;
+  source: {
+    registered: boolean;
+    display_uri: string;
+    host_path_accepted_from_browser: false;
+  };
+  preview:
+    | null
+    | {
+        kind: string;
+        content?: unknown;
+        reason?: string;
+        size_bytes?: number;
+        truncated: boolean;
+      };
+}
+
+export interface CommandRunProjectionV3 {
+  schema_version: string;
+  read_only: true;
+  command_run_id: string;
+  intent_id: string;
+  command_id: string;
+  state: string;
+  config_snapshot_id: string | null;
+  context: Record<string, string>;
+  requested_by: string;
+  started_at: string | null;
+  finished_at: string | null;
+  updated_at: string;
+  result: null | {
+    status: string;
+    evidence_ids: string[];
+    message: string;
+  };
+}
