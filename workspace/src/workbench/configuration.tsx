@@ -56,7 +56,9 @@ function ConfigDescriptorList({
           >
             <strong>{descriptor.title}</strong>
             <span className="mono">{descriptor.descriptor_id}</span>
-            <small>{descriptor.fields.length} fields · {descriptor.snapshot_ids.length} snapshots</small>
+            <small>
+              {descriptor.fields.length} fields · {descriptor.snapshot_ids.length} snapshots
+            </small>
           </button>
         ))}
       </div>
@@ -85,19 +87,38 @@ function DomainSummary({ descriptor }: { descriptor: ConfigDescriptorV3 }) {
 function SnapshotFields({ snapshot }: { snapshot: ConfigSnapshotV3 }) {
   const rows = Object.keys(snapshot.values).sort();
   return (
-    <div className="config-field-table" role="table" aria-label="Configuration snapshot fields">
+    <div
+      className="config-field-table"
+      role="table"
+      aria-label="Configuration snapshot fields"
+    >
       <div className="config-field-row config-field-head" role="row">
-        <span>Field</span><span>Value</span><span>Domain</span><span>Change policy</span>
+        <span>Field</span>
+        <span>Value</span>
+        <span>Domain</span>
+        <span>Change policy</span>
       </div>
       {rows.map((fieldPath) => (
         <div className="config-field-row" role="row" key={fieldPath}>
           <span className="mono" title={fieldPath}>{fieldPath}</span>
-          <span className="config-value" title={valueText(snapshot.values[fieldPath])}>
-            {snapshot.redacted_fields.includes(fieldPath) ? <KeyRound size={12} /> : null}
+          <span
+            className="config-value"
+            title={valueText(snapshot.values[fieldPath])}
+          >
+            {snapshot.redacted_fields.some(
+              (value) =>
+                value === fieldPath ||
+                value.startsWith(`${fieldPath}.`) ||
+                value.startsWith(`${fieldPath}[`),
+            ) ? <KeyRound size={12} /> : null}
             {valueText(snapshot.values[fieldPath])}
           </span>
-          <span><StatusBadge value={snapshot.domains[fieldPath]} tone="neutral" /></span>
-          <span className="mono subtle">{snapshot.mutation_policies[fieldPath]}</span>
+          <span>
+            <StatusBadge value={snapshot.domains[fieldPath]} tone="neutral" />
+          </span>
+          <span className="mono subtle">
+            {snapshot.mutation_policies[fieldPath]}
+          </span>
         </div>
       ))}
     </div>
@@ -105,22 +126,58 @@ function SnapshotFields({ snapshot }: { snapshot: ConfigSnapshotV3 }) {
 }
 
 function ConfigCatalog({ registry }: { registry: ConfigRegistryResponseV3 }) {
-  const [descriptorId, setDescriptorId] = useState<string | undefined>(registry.descriptors[0]?.descriptor_id);
-  const descriptor = registry.descriptors.find((item) => item.descriptor_id === descriptorId) ?? registry.descriptors[0];
-  const snapshots = registry.snapshots.filter((item) => item.descriptor_id === descriptor?.descriptor_id);
-  const [snapshotChoice, setSnapshotChoice] = useState<string>("");
-  const snapshot = snapshots.find((item) => item.snapshot_id === snapshotChoice) ?? snapshots[0];
-  const [compareChoice, setCompareChoice] = useState<string>("");
-  const compareSnapshot = snapshots.find((item) => item.snapshot_id === compareChoice);
+  const [descriptorId, setDescriptorId] = useState<string | undefined>(
+    registry.descriptors[0]?.descriptor_id,
+  );
+  const descriptor =
+    registry.descriptors.find((item) => item.descriptor_id === descriptorId) ??
+    registry.descriptors[0];
+  const snapshots = registry.snapshots.filter(
+    (item) => item.descriptor_id === descriptor?.descriptor_id,
+  );
+  const [snapshotChoice, setSnapshotChoice] = useState("");
+  const snapshot =
+    snapshots.find((item) => item.snapshot_id === snapshotChoice) ?? snapshots[0];
+  const [compareChoice, setCompareChoice] = useState("");
+  const compareSnapshot = snapshots.find(
+    (item) => item.snapshot_id === compareChoice,
+  );
   const diffQuery = useWorkbenchQuery({
-    key: ["config-diff", snapshot?.snapshot_id ?? "", compareSnapshot?.snapshot_id ?? ""],
-    queryFn: () => workspaceApi.configDiffV3(snapshot?.snapshot_id ?? "", compareSnapshot?.snapshot_id ?? ""),
-    enabled: Boolean(snapshot && compareSnapshot && snapshot.snapshot_id !== compareSnapshot.snapshot_id),
+    key: [
+      "config-diff",
+      snapshot?.snapshot_id ?? "",
+      compareSnapshot?.snapshot_id ?? "",
+    ],
+    queryFn: () =>
+      workspaceApi.configDiffV3(
+        snapshot?.snapshot_id ?? "",
+        compareSnapshot?.snapshot_id ?? "",
+      ),
+    enabled: Boolean(
+      snapshot &&
+      compareSnapshot &&
+      snapshot.snapshot_id !== compareSnapshot.snapshot_id,
+    ),
   });
 
   if (!descriptor || !snapshot) {
-    return <div className="config-empty">No supported public configuration snapshots were discovered.</div>;
+    return (
+      <div className="config-empty">
+        No supported public configuration snapshots were discovered.
+      </div>
+    );
   }
+
+  const hasGovernedGuardrailChange = Boolean(
+    diffQuery.data?.changes.some(
+      (item) => item.mutation_policy === "governed_change_required",
+    ),
+  );
+  const diffVerdict = diffQuery.data?.requires_new_identity
+    ? "Research/execution protocol change detected — a new governed identity is required."
+    : hasGovernedGuardrailChange
+      ? "Operational guardrail change detected — governed change approval is required."
+      : "Only runtime/presentation/secret-reference changes detected by this comparison.";
 
   return (
     <div className="config-catalog-grid">
@@ -146,49 +203,87 @@ function ConfigCatalog({ registry }: { registry: ConfigRegistryResponseV3 }) {
         <div className="config-snapshot-toolbar">
           <label>
             Snapshot
-            <select value={snapshot.snapshot_id} onChange={(event) => { setSnapshotChoice(event.target.value); setCompareChoice(""); }}>
-              {snapshots.map((item) => <option key={item.snapshot_id} value={item.snapshot_id}>{item.source_uri}</option>)}
+            <select
+              value={snapshot.snapshot_id}
+              onChange={(event) => {
+                setSnapshotChoice(event.target.value);
+                setCompareChoice("");
+              }}
+            >
+              {snapshots.map((item) => (
+                <option key={item.snapshot_id} value={item.snapshot_id}>
+                  {item.source_uri}
+                </option>
+              ))}
             </select>
           </label>
           {snapshots.length > 1 ? (
             <label>
               Compare with
-              <select value={compareChoice} onChange={(event) => setCompareChoice(event.target.value)}>
+              <select
+                value={compareChoice}
+                onChange={(event) => setCompareChoice(event.target.value)}
+              >
                 <option value="">No comparison</option>
-                {snapshots.filter((item) => item.snapshot_id !== snapshot.snapshot_id).map((item) => (
-                  <option key={item.snapshot_id} value={item.snapshot_id}>{item.source_uri}</option>
-                ))}
+                {snapshots
+                  .filter((item) => item.snapshot_id !== snapshot.snapshot_id)
+                  .map((item) => (
+                    <option key={item.snapshot_id} value={item.snapshot_id}>
+                      {item.source_uri}
+                    </option>
+                  ))}
               </select>
             </label>
           ) : null}
         </div>
         <div className="config-snapshot-identity">
           <span className="mono">{snapshot.snapshot_id}</span>
-          <span className="mono subtle">sha256:{snapshot.source_sha256.slice(0, 16)}…</span>
-          {snapshot.redacted_fields.length ? <span><KeyRound size={12} /> {snapshot.redacted_fields.length} protected reference(s)</span> : null}
+          <span className="mono subtle">
+            sha256:{snapshot.source_sha256.slice(0, 16)}…
+          </span>
+          {snapshot.redacted_fields.length ? (
+            <span>
+              <KeyRound size={12} /> {snapshot.redacted_fields.length} protected reference(s)
+            </span>
+          ) : null}
         </div>
         <SnapshotFields snapshot={snapshot} />
         {compareSnapshot ? (
           <section className="config-diff-panel">
-            <header><GitCompareArrows size={16} /><strong>ConfigDiff</strong></header>
-            {diffQuery.isPending ? <LoadingState label="Comparing snapshots" /> : null}
+            <header>
+              <GitCompareArrows size={16} />
+              <strong>ConfigDiff</strong>
+            </header>
+            {diffQuery.isPending ? (
+              <LoadingState label="Comparing snapshots" />
+            ) : null}
             {diffQuery.error ? <ErrorState error={diffQuery.error} /> : null}
             {diffQuery.data ? (
               <>
-                <div className={`config-diff-verdict ${diffQuery.data.requires_new_identity ? "identity-change" : "runtime-change"}`}>
-                  {diffQuery.data.requires_new_identity
-                    ? "Protocol/guardrail change detected — a new governed identity is required."
-                    : "Only runtime/presentation/reference changes detected by this comparison."}
+                <div
+                  className={`config-diff-verdict ${
+                    diffQuery.data.requires_new_identity || hasGovernedGuardrailChange
+                      ? "identity-change"
+                      : "runtime-change"
+                  }`}
+                >
+                  {diffVerdict}
                 </div>
                 <div className="config-diff-list">
                   {diffQuery.data.changes.map((item) => (
                     <div key={item.field_path}>
                       <strong className="mono">{item.field_path}</strong>
-                      <span>{valueText(item.before)} → {valueText(item.after)}</span>
-                      <span>{item.domain} · {item.mutation_policy}</span>
+                      <span>
+                        {valueText(item.before)} → {valueText(item.after)}
+                      </span>
+                      <span>
+                        {item.domain} · {item.mutation_policy}
+                      </span>
                     </div>
                   ))}
-                  {!diffQuery.data.changes.length ? <p>No semantic field changes.</p> : null}
+                  {!diffQuery.data.changes.length ? (
+                    <p>No semantic field changes.</p>
+                  ) : null}
                 </div>
               </>
             ) : null}
@@ -206,7 +301,10 @@ function CommandCatalog({ catalog }: { catalog: CommandCatalogResponseV3 }) {
         <LockKeyhole size={18} />
         <div>
           <strong>Catalog only — Control Plane disabled</strong>
-          <p>V3-2B freezes typed command metadata. No command execution endpoint exists in this phase.</p>
+          <p>
+            V3-2B freezes typed command metadata. No command execution endpoint
+            exists in this phase.
+          </p>
         </div>
       </div>
       <div className="command-card-grid">
@@ -219,12 +317,20 @@ function CommandCatalog({ catalog }: { catalog: CommandCatalogResponseV3 }) {
             <h3>{command.title}</h3>
             <p>{command.description}</p>
             <dl>
-              <dt>Command ID</dt><dd className="mono">{command.command_id}</dd>
-              <dt>Binding</dt><dd className="mono">{command.binding_ref}</dd>
-              <dt>Config</dt><dd>{command.config_descriptor_ids.join(", ") || "none"}</dd>
-              <dt>Produces</dt><dd>{command.produces.join(", ") || "none"}</dd>
+              <dt>Command ID</dt>
+              <dd className="mono">{command.command_id}</dd>
+              <dt>Binding</dt>
+              <dd className="mono">{command.binding_ref}</dd>
+              <dt>Config</dt>
+              <dd>{command.config_descriptor_ids.join(", ") || "none"}</dd>
+              <dt>Produces</dt>
+              <dd>{command.produces.join(", ") || "none"}</dd>
             </dl>
-            <button type="button" disabled aria-label={`${command.title} execution disabled`}>
+            <button
+              type="button"
+              disabled
+              aria-label={`${command.title} execution disabled`}
+            >
               <LockKeyhole size={13} /> Execution disabled · V3-2C
             </button>
           </article>
@@ -241,7 +347,11 @@ function CommandCatalog({ catalog }: { catalog: CommandCatalogResponseV3 }) {
   );
 }
 
-export function ConfigurationCatalogSurface({ surface }: { surface: ConfigurationSurface }) {
+export function ConfigurationCatalogSurface({
+  surface,
+}: {
+  surface: ConfigurationSurface;
+}) {
   const registryQuery = useWorkbenchQuery({
     key: ["config-registry"],
     queryFn: workspaceApi.configRegistryV3,
@@ -253,9 +363,20 @@ export function ConfigurationCatalogSurface({ surface }: { surface: Configuratio
     enabled: surface === "commands",
   });
 
-  const loading = surface === "configs" ? registryQuery.isPending : commandsQuery.isPending;
+  const loading =
+    surface === "configs" ? registryQuery.isPending : commandsQuery.isPending;
   const error = surface === "configs" ? registryQuery.error : commandsQuery.error;
-  if (loading) return <LoadingState label={surface === "configs" ? "Loading Config Registry" : "Loading Command Catalog"} />;
+  if (loading) {
+    return (
+      <LoadingState
+        label={
+          surface === "configs"
+            ? "Loading Config Registry"
+            : "Loading Command Catalog"
+        }
+      />
+    );
+  }
   if (error) return <ErrorState error={error} />;
 
   return (
@@ -263,22 +384,30 @@ export function ConfigurationCatalogSurface({ surface }: { surface: Configuratio
       <header className="configuration-page-header">
         <div>
           <span className="eyebrow">V3-2B · product contract</span>
-          <h1>{surface === "configs" ? "Configuration Registry" : "Command Catalog"}</h1>
-          <p>{surface === "configs"
-            ? "Public, redacted configuration snapshots with explicit authority domains and identity-change semantics."
-            : "Allowlisted future L0/L1 commands. Metadata is inspectable now; execution remains disabled until V3-2C."}</p>
+          <h1>
+            {surface === "configs" ? "Configuration Registry" : "Command Catalog"}
+          </h1>
+          <p>
+            {surface === "configs"
+              ? "Public, redacted configuration snapshots with explicit authority domains and identity-change semantics."
+              : "Allowlisted future L0/L1 commands. Metadata is inspectable now; execution remains disabled until V3-2C."}
+          </p>
         </div>
         <StatusBadge value="READ_ONLY" tone="neutral" />
       </header>
       {surface === "configs" && registryQuery.data ? (
         <>
           {registryQuery.data.warnings.length ? (
-            <div className="config-warning-box">{registryQuery.data.warnings.join(" · ")}</div>
+            <div className="config-warning-box">
+              {registryQuery.data.warnings.join(" · ")}
+            </div>
           ) : null}
           <ConfigCatalog registry={registryQuery.data} />
         </>
       ) : null}
-      {surface === "commands" && commandsQuery.data ? <CommandCatalog catalog={commandsQuery.data} /> : null}
+      {surface === "commands" && commandsQuery.data ? (
+        <CommandCatalog catalog={commandsQuery.data} />
+      ) : null}
     </div>
   );
 }
