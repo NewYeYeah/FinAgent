@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useState,
   type ReactNode,
 } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -87,6 +88,12 @@ export function serializeWorkbenchContext(
   return next;
 }
 
+export function workbenchContextSearch(context: WorkbenchContextState): string {
+  const params = serializeWorkbenchContext(new URLSearchParams(), context);
+  const value = params.toString();
+  return value ? `?${value}` : "";
+}
+
 export function patchWorkbenchContext(
   current: WorkbenchContextState,
   patch: Partial<Record<WorkbenchContextKey, string | null | undefined>>,
@@ -116,19 +123,17 @@ const WorkbenchContext = createContext<WorkbenchContextValue | null>(null);
 
 export function WorkbenchContextProvider({ children }: { children: ReactNode }) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [lastEvent, setLastEvent] = useState<WorkbenchInteractionEvent | null>(null);
   const context = useMemo(
     () => parseWorkbenchContext(searchParams),
     [searchParams],
   );
-  const lastEvent = normalized(searchParams.get("ctx_event")) as
-    | WorkbenchInteractionEvent
-    | undefined;
 
   const select = useCallback<WorkbenchContextValue["select"]>(
     (patch, event, options) => {
       const nextContext = patchWorkbenchContext(context, patch);
       const next = serializeWorkbenchContext(searchParams, nextContext);
-      next.set("ctx_event", event);
+      setLastEvent(event);
       setSearchParams(next, { replace: options?.replace ?? false });
     },
     [context, searchParams, setSearchParams],
@@ -137,14 +142,14 @@ export function WorkbenchContextProvider({ children }: { children: ReactNode }) 
   const clear = useCallback<WorkbenchContextValue["clear"]>(
     (options) => {
       const next = serializeWorkbenchContext(searchParams, {});
-      next.delete("ctx_event");
+      setLastEvent(null);
       setSearchParams(next, { replace: options?.replace ?? false });
     },
     [searchParams, setSearchParams],
   );
 
   const value = useMemo<WorkbenchContextValue>(
-    () => ({ context, lastEvent: lastEvent ?? null, select, clear }),
+    () => ({ context, lastEvent, select, clear }),
     [clear, context, lastEvent, select],
   );
 
