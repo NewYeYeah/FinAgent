@@ -6,7 +6,7 @@ from collections.abc import Mapping, Sequence
 from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,8 +14,8 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from finagent.application import (
-    ApplicationCommandInvocation,
     APPLICATION_SERVICE_BINDINGS,
+    ApplicationCommandInvocation,
     default_application_service_registry,
 )
 from finagent.application.command_store import SQLiteCommandStore
@@ -38,18 +38,30 @@ _CONTROL_CONTEXT_KEYS = {
     "fold_id",
     "environment",
 }
-_SAFE_ID = re.compile(r"^[A-Za-z0-9._:-]+$")
+_SAFE_ID_PATTERN = r"^[A-Za-z0-9._:-]+$"
+_SAFE_ID = re.compile(_SAFE_ID_PATTERN)
 
 
 class ControlRunRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    request_id: Annotated[str, Field(min_length=8, max_length=128)]
-    command_id: Annotated[str, Field(min_length=1, max_length=128)]
+    request_id: Annotated[
+        str,
+        Field(min_length=8, max_length=128, pattern=_SAFE_ID_PATTERN),
+    ]
+    command_id: Annotated[
+        str,
+        Field(min_length=1, max_length=128, pattern=_SAFE_ID_PATTERN),
+    ]
     config_snapshot_id: Annotated[str, Field(min_length=1, max_length=160)] | None = None
-    context: dict[str, Annotated[str, Field(max_length=512)]] = Field(default_factory=dict)
+    context: dict[str, Annotated[str, Field(max_length=512)]] = Field(
+        default_factory=dict
+    )
     confirmed: bool = False
-    validation_id: Annotated[str, Field(min_length=1, max_length=160)] | None = None
+    validation_id: Annotated[
+        str,
+        Field(min_length=1, max_length=160, pattern=_SAFE_ID_PATTERN),
+    ] | None = None
 
 
 class ControlCommandRunner:
@@ -68,7 +80,9 @@ class ControlCommandRunner:
         self._configs = config_registry
         self._catalog = default_command_catalog()
         self._services = default_application_service_registry(config_registry)
-        self._report_paths = tuple(str(Path(value).expanduser()) for value in report_paths)
+        self._report_paths = tuple(
+            str(Path(value).expanduser()) for value in report_paths
+        )
         self._export_dir = Path(export_dir).expanduser()
         self._export_dir.mkdir(parents=True, exist_ok=True)
         self._executor = ThreadPoolExecutor(
@@ -114,7 +128,9 @@ class ControlCommandRunner:
                 parameters = {
                     "validation_id": validation_id,
                     "reports": self._report_paths,
-                    "output": str(self._export_dir / f"finagent-review-{validation_id}.zip"),
+                    "output": str(
+                        self._export_dir / f"finagent-review-{validation_id}.zip"
+                    ),
                 }
             invocation = ApplicationCommandInvocation(
                 command_id=record.run.command_id,
@@ -129,12 +145,11 @@ class ControlCommandRunner:
                 self._store.mark_succeeded(command_run_id, execution)
             else:
                 self._store.mark_rejected(command_run_id, execution)
-        except Exception as exc:  # noqa: BLE001 - failures must become durable terminal audit
+        except Exception as exc:  # noqa: BLE001 - failure must become durable audit
             message = f"{type(exc).__name__}: {exc}"
             try:
                 self._store.mark_failed(command_run_id, message)
             except (KeyError, ValueError):
-                # The run may already have become terminal through a concurrent failure path.
                 return
 
 
@@ -145,9 +160,8 @@ def _normalize_context(context: Mapping[str, str]) -> dict[str, str]:
     output: dict[str, str] = {}
     for raw_key, raw_value in sorted(context.items()):
         value = raw_value.strip()
-        if not value:
-            continue
-        output[raw_key] = value
+        if value:
+            output[raw_key] = value
     return output
 
 
@@ -173,25 +187,73 @@ def _validate_request(
     try:
         spec = catalog.get(command_id)
     except KeyError:
-        return False, "command_id is not in the allowlisted catalog", parameters, snapshot_id, context
+        return (
+            False,
+            "command_id is not in the allowlisted catalog",
+            parameters,
+            snapshot_id,
+            context,
+        )
     if spec.level not in {"L0", "L1"}:
-        return False, "generic Control Plane permits only L0/L1 commands", parameters, snapshot_id, context
+        return (
+            False,
+            "generic Control Plane permits only L0/L1 commands",
+            parameters,
+            snapshot_id,
+            context,
+        )
     if spec.gateway_readiness != "application_service_ready":
-        return False, "command has no reviewed application-service binding", parameters, snapshot_id, context
+        return (
+            False,
+            "command has no reviewed application-service binding",
+            parameters,
+            snapshot_id,
+            context,
+        )
     if command_id not in services.command_ids():
-        return False, "application service is not registered", parameters, snapshot_id, context
+        return (
+            False,
+            "application service is not registered",
+            parameters,
+            snapshot_id,
+            context,
+        )
     if APPLICATION_SERVICE_BINDINGS.get(command_id) != spec.binding_ref:
-        return False, "catalog/application service binding mismatch", parameters, snapshot_id, context
+        return (
+            False,
+            "catalog/application service binding mismatch",
+            parameters,
+            snapshot_id,
+            context,
+        )
     if spec.requires_confirmation and not request.confirmed:
-        return False, "command requires explicit confirmation", parameters, snapshot_id, context
+        return (
+            False,
+            "command requires explicit confirmation",
+            parameters,
+            snapshot_id,
+            context,
+        )
 
     if spec.config_descriptor_ids:
         if snapshot_id is None:
-            return False, "command requires config_snapshot_id", parameters, snapshot_id, context
+            return (
+                False,
+                "command requires config_snapshot_id",
+                parameters,
+                snapshot_id,
+                context,
+            )
         try:
             snapshot = config_registry.snapshot(snapshot_id)
         except KeyError:
-            return False, "config snapshot not found", parameters, snapshot_id, context
+            return (
+                False,
+                "config snapshot not found",
+                parameters,
+                snapshot_id,
+                context,
+            )
         if snapshot.descriptor_id not in spec.config_descriptor_ids:
             return (
                 False,
@@ -201,7 +263,13 @@ def _validate_request(
                 context,
             )
     elif snapshot_id is not None:
-        return False, "command does not accept a config snapshot", parameters, snapshot_id, context
+        return (
+            False,
+            "command does not accept a config snapshot",
+            parameters,
+            snapshot_id,
+            context,
+        )
 
     if command_id == "review.export_bundle":
         validation_id = request.validation_id or context.get("portfolio_validation_id")
@@ -214,11 +282,20 @@ def _validate_request(
                 context,
             )
         try:
-            parameters["validation_id"] = _safe_identifier(validation_id, "validation_id")
+            parameters["validation_id"] = _safe_identifier(
+                validation_id,
+                "validation_id",
+            )
         except ValueError as exc:
             return False, str(exc), parameters, snapshot_id, context
     elif request.validation_id is not None:
-        return False, "validation_id is not accepted by this command", parameters, snapshot_id, context
+        return (
+            False,
+            "validation_id is not accepted by this command",
+            parameters,
+            snapshot_id,
+            context,
+        )
 
     return True, "", parameters, snapshot_id, context
 
@@ -282,7 +359,8 @@ def create_control_app(
     )
     if ready != runner.service_ids:
         raise RuntimeError(
-            "application-service-ready catalog does not match registered Control Plane services"
+            "application-service-ready catalog does not match registered "
+            "Control Plane services"
         )
 
     actor = requested_by.strip()
@@ -343,7 +421,10 @@ def create_control_app(
         try:
             return store.get(command_run_id).to_dict()
         except KeyError as exc:
-            raise HTTPException(status_code=404, detail="command run not found") from exc
+            raise HTTPException(
+                status_code=404,
+                detail="command run not found",
+            ) from exc
 
     @app.post("/api/v3/control/runs")
     def create_control_run(request: ControlRunRequest):
@@ -375,10 +456,18 @@ def create_control_app(
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         if created and accepted:
             runner.submit(record.run.command_run_id)
-        status_code = 202 if accepted and record.run.state not in {"succeeded", "failed", "rejected"} else 200
+        status_code = (
+            202
+            if accepted
+            and record.run.state not in {"succeeded", "failed", "rejected"}
+            else 200
+        )
         if not accepted:
             status_code = 422
-        return JSONResponse(status_code=status_code, content=record.to_dict())
+        return JSONResponse(
+            status_code=status_code,
+            content=record.to_dict(),
+        )
 
     return app
 
@@ -386,12 +475,18 @@ def create_control_app(
 def create_app_from_environment() -> FastAPI:
     config_paths = tuple(
         value
-        for value in os.environ.get("FINAGENT_CONTROL_CONFIGS", "configs").split(os.pathsep)
+        for value in os.environ.get(
+            "FINAGENT_CONTROL_CONFIGS",
+            "configs",
+        ).split(os.pathsep)
         if value
     )
     report_paths = tuple(
         value
-        for value in os.environ.get("FINAGENT_CONTROL_REPORTS", "reports").split(os.pathsep)
+        for value in os.environ.get(
+            "FINAGENT_CONTROL_REPORTS",
+            "reports",
+        ).split(os.pathsep)
         if value
     )
     store_path = os.environ.get(
