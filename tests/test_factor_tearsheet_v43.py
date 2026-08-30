@@ -2,17 +2,21 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 from finagent.visualization.factor_tearsheet import FactorTearSheetProjection
 from finagent.visualization.workbench_api import create_workspace_app
-from tests.test_factor_series_v41 import v41_evidence  # noqa: F401
+
+pytest_plugins = ("tests.test_factor_series_v41",)
 
 
 def test_v43_projects_verified_factor_series_and_frozen_statistics(
     v41_evidence: dict[str, object],
 ) -> None:
     root = Path(v41_evidence["root"])
+    source = v41_evidence["source"]
+    assert isinstance(source, dict)
     projection = FactorTearSheetProjection((root,))
     catalog = projection.catalog()
     assert catalog["read_only"] is True
@@ -31,6 +35,14 @@ def test_v43_projects_verified_factor_series_and_frozen_statistics(
     assert dimensions["primary_label"]
     assert dimensions["quantiles"] == [1, 2, 3]
     assert dimensions["rolling_window"] == 20
+    expected_factor_identity = {
+        str(value["feature_digest"]): str(value["feature_id"])
+        for value in source["candidate_denominator"]
+    }
+    assert {
+        str(value["feature_digest"]): str(value["feature_id"])
+        for value in dimensions["factors"]
+    } == expected_factor_identity
 
     first_factor = str(dimensions["factors"][0]["feature_digest"])
     summary = projection.summary(series_id, feature_digest=first_factor)
@@ -48,6 +60,12 @@ def test_v43_projects_verified_factor_series_and_frozen_statistics(
     assert heatmap["source_authority"] == "authoritative_v4_1_period_rows"
     assert heatmap["metric"] == "rank_ic"
     assert heatmap["cells"]
+    with pytest.raises(ValueError, match="label"):
+        projection.heatmap(
+            series_id,
+            feature_digest=first_factor,
+            label_name="not-a-frozen-label",
+        )
 
     correlations = projection.correlations(series_id)
     assert correlations["correlation_authority"] == "authoritative_frozen_a2p6_summary"
@@ -117,6 +135,11 @@ def test_v43_api_is_get_only_bounded_and_context_ready(
     )
     assert heatmap.status_code == 200
     assert heatmap.json()["authority"] == "derived_presentation"
+    invalid_heatmap = client.get(
+        f"/api/v4/factor-series/{series_id}/heatmap",
+        params={"feature_digest": first_factor, "label_name": "not-a-frozen-label"},
+    )
+    assert invalid_heatmap.status_code == 422
 
     rows = client.get(
         f"/api/v4/factor-series/{series_id}/rows",
