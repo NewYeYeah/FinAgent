@@ -40,6 +40,12 @@ def _number(value: object) -> float:
     return result
 
 
+def _integer(value: object, default: int = 0) -> int:
+    if value is None:
+        return default
+    return int(_number(value))
+
+
 def _in_range(
     value: str,
     *,
@@ -148,10 +154,10 @@ class PortfolioExecutionInteractiveProjection:
                 strategy_series_id=series_id,
                 source_program_result_id=_text(source.get("source_program_result_id")),
                 source_selection_id=_text(source.get("source_selection_id")),
-                row_count=int(source.get("row_count", 0)),
+                row_count=_integer(source.get("row_count")),
                 asset_count=len(_sequence(dimensions.get("assets"))),
                 fold_count=len(_sequence(dimensions.get("folds"))),
-                session_count=int(dimensions.get("session_count", 0)),
+                session_count=_integer(dimensions.get("session_count")),
                 start_date=_text(dimensions.get("start_date")) or None,
                 end_date=_text(dimensions.get("end_date")) or None,
                 status=_text(portfolio.get("status")),
@@ -352,7 +358,7 @@ class PortfolioExecutionInteractiveProjection:
                     continue
                 yield item
             offset += len(items)
-            total = int(page.get("total", 0))
+            total = _integer(page.get("total"))
             if not items or offset >= total:
                 break
 
