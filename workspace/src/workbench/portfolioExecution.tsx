@@ -17,6 +17,7 @@ import {
   patchWorkbenchContext,
   useWorkbenchContext,
   workbenchContextSearch,
+  type WorkbenchContextKey,
 } from "./context";
 import { portfolioExecutionApi } from "./portfolioExecutionApi";
 import type {
@@ -232,6 +233,7 @@ export function PortfolioExecutionIndexPage({ mode }: { mode: "portfolio" | "exe
 }
 
 export function PortfolioInteractivePage() {
+  const navigate = useNavigate();
   const { validationId: encodedValidationId = "" } = useParams();
   const validationId = decodeURIComponent(encodedValidationId);
   const { context, select } = useWorkbenchContext();
@@ -244,7 +246,7 @@ export function PortfolioInteractivePage() {
   useEffect(() => {
     const item = detail.data?.item;
     if (!item) return;
-    const patch: Record<string, string | null | undefined> = {};
+    const patch: Partial<Record<WorkbenchContextKey, string | null | undefined>> = {};
     if (context.portfolio_validation_id !== validationId) patch.portfolio_validation_id = validationId;
     if (!context.date_range && (item.start_date || item.end_date)) patch.date_range = rangeValue(item.start_date, item.end_date);
     if (Object.keys(patch).length) select(patch, "evidence_selected", { replace: true });
@@ -267,7 +269,18 @@ export function PortfolioInteractivePage() {
       </PageHeader>
       <div className="v44-authority-banner"><ShieldCheck size={18} /><div><strong>A4 portfolio authority + server-side presentation derivatives</strong><span>No NAV, return, drawdown, rolling statistic, monthly return or cost aggregate is reconstructed in React.</span></div><AuthorityBadge value="authoritative + derived" /></div>
       <div className="v44-toolbar">
-        <label><span>Portfolio</span><select value={validationId} onChange={(event) => { const value = event.target.value; select({ portfolio_validation_id: value, asset_id: null, order_id: null, session_date: null, fold_id: null, date_range: null }, "evidence_selected"); window.location.assign(`/portfolio/${encodeURIComponent(value)}`); }}>{(catalog.data?.items ?? []).map((entry) => <option key={entry.portfolio_validation_id} value={entry.portfolio_validation_id}>{itemLabel(entry)}</option>)}</select></label>
+        <label><span>Portfolio</span><select value={validationId} onChange={(event) => {
+          const value = event.target.value;
+          const next = patchWorkbenchContext(context, {
+            portfolio_validation_id: value,
+            asset_id: null,
+            order_id: null,
+            session_date: null,
+            fold_id: null,
+            date_range: null,
+          });
+          navigate(`/portfolio/${encodeURIComponent(value)}${workbenchContextSearch(next)}`);
+        }}>{(catalog.data?.items ?? []).map((entry) => <option key={entry.portfolio_validation_id} value={entry.portfolio_validation_id}>{itemLabel(entry)}</option>)}</select></label>
         <label><span>Fold</span><select value={context.fold_id ?? ""} onChange={(event) => select({ fold_id: event.target.value || null }, "date_range_selected")}><option value="">All folds</option>{folds.map((fold) => <option key={fold} value={fold}>{fold}</option>)}</select></label>
         <label><span>Start</span><input type="date" min={item.start_date ?? undefined} max={item.end_date ?? undefined} value={range.start ?? item.start_date ?? ""} onChange={(event) => select({ date_range: rangeValue(event.target.value, range.end ?? item.end_date) }, "date_range_selected")} /></label>
         <label><span>End</span><input type="date" min={item.start_date ?? undefined} max={item.end_date ?? undefined} value={range.end ?? item.end_date ?? ""} onChange={(event) => select({ date_range: rangeValue(range.start ?? item.start_date, event.target.value) }, "date_range_selected")} /></label>
@@ -309,7 +322,7 @@ export function ExecutionInteractivePage() {
   useEffect(() => {
     const item = detail.data?.item;
     if (!item) return;
-    const patch: Record<string, string | null | undefined> = {};
+    const patch: Partial<Record<WorkbenchContextKey, string | null | undefined>> = {};
     if (context.portfolio_validation_id !== validationId) patch.portfolio_validation_id = validationId;
     if (!context.asset_id && assets[0]) patch.asset_id = assets[0];
     if (!context.date_range && (item.start_date || item.end_date)) patch.date_range = rangeValue(item.start_date, item.end_date);
@@ -330,9 +343,15 @@ export function ExecutionInteractivePage() {
     }),
   });
   const analytics = useWorkbenchQuery({
-    key: ["portfolio-execution-analytics-execution", validationId, context.asset_id, context.order_id, context.fold_id, range.start, range.end],
+    key: ["portfolio-execution-analytics-execution", validationId, context.asset_id, context.order_id, context.session_date, context.fold_id, range.start, range.end],
     enabled: Boolean(validationId),
-    queryFn: () => portfolioExecutionApi.analytics(validationId, { asset: context.asset_id, orderId: context.order_id, foldId: context.fold_id, start: range.start, end: range.end }),
+    queryFn: () => portfolioExecutionApi.analytics(validationId, {
+      asset: context.asset_id,
+      orderId: context.order_id,
+      foldId: context.fold_id,
+      start: context.session_date ?? range.start,
+      end: context.session_date ?? range.end,
+    }),
   });
 
   if (detail.isPending || allRows.isPending || decisions.isPending || analytics.isPending) return <LoadingState />;
