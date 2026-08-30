@@ -13,6 +13,7 @@ from finagent.data import (
     LocalAshareDatasetLayout,
 )
 
+from .ashare_portfolio_workflow import run_portfolio_validation
 from .ashare_research_workflows import (
     run_development_factor_research,
     run_robust_research,
@@ -32,6 +33,9 @@ APPLICATION_SERVICE_BINDINGS: dict[str, str] = {
     ),
     "research.run_a2p6": (
         "finagent.application.control_services.RobustResearchApplicationService"
+    ),
+    "portfolio.run_a4": (
+        "finagent.application.control_services.PortfolioValidationApplicationService"
     ),
     "review.export_bundle": (
         "finagent.application.control_services.ReviewBundleExportApplicationService"
@@ -317,6 +321,35 @@ class RobustResearchApplicationService:
         )
 
 
+class PortfolioValidationApplicationService:
+    """Governed L1 entry for execution-aware historical A4 validation."""
+
+    command_id = "portfolio.run_a4"
+
+    def execute(
+        self,
+        invocation: ApplicationCommandInvocation,
+    ) -> ApplicationCommandExecution:
+        _assert_command(invocation, self.command_id)
+        if invocation.parameters:
+            raise ValueError("portfolio.run_a4 accepts only ConfigSnapshot inputs")
+        workflow = run_portfolio_validation(invocation.config_values)
+        evidence_id = workflow.evidence_ids[0]
+        return ApplicationCommandExecution(
+            command_id=self.command_id,
+            status="succeeded",
+            outputs={
+                "evidence_id": evidence_id,
+                "report_path": str(workflow.report_path),
+                "reserve_access": "forbidden",
+                "scope": "historical_internal_portfolio_validation",
+            },
+            artifact_paths=tuple(str(path) for path in workflow.artifact_paths),
+            evidence_ids=workflow.evidence_ids,
+            message="A4 internal portfolio validation completed with reserve untouched",
+        )
+
+
 class ReviewBundleExportApplicationService:
     command_id = "review.export_bundle"
 
@@ -374,6 +407,7 @@ def default_application_service_registry(
             LocalAshareCertificationApplicationService(),
             DevelopmentResearchApplicationService(),
             RobustResearchApplicationService(),
+            PortfolioValidationApplicationService(),
             ReviewBundleExportApplicationService(),
         )
     )
