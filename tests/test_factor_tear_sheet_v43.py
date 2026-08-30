@@ -7,7 +7,8 @@ from fastapi.testclient import TestClient
 from finagent.research.factor_series import FactorSeriesManifest
 from finagent.visualization.factor_tear_sheet import FactorTearSheetProjection
 from finagent.visualization.workbench_api import create_workspace_app
-from tests.test_factor_series_v41 import v41_evidence
+
+pytest_plugins = ("tests.test_factor_series_v41",)
 
 
 def test_v43a_projection_exposes_v41_rows_and_frozen_a2p6_summary(
@@ -64,7 +65,10 @@ def test_v43a_projection_exposes_v41_rows_and_frozen_a2p6_summary(
     )
     assert rolling["items"]
     assert all(item["authority"] == "derived" for item in rolling["items"])
-    assert all(int(item["window_count"]) == manifest.rolling_window for item in rolling["items"])
+    assert all(
+        int(item["window_count"]) == manifest.rolling_window
+        for item in rolling["items"]
+    )
 
     summary = projection.frozen_summary(manifest.series_id)
     assert summary["authority"] == "authoritative_frozen_a2p6_summary"
@@ -141,7 +145,9 @@ def test_v43a_factor_api_is_get_only_bounded_and_preserves_authority(
     )
     assert rows.status_code == 200
     assert rows.json()["items"]
-    assert all(item["authority"] == "authoritative" for item in rows.json()["items"])
+    assert all(
+        item["authority"] == "authoritative" for item in rows.json()["items"]
+    )
 
     rolling = client.get(
         f"/api/v4/factor-series/{manifest.series_id}/rows",
