@@ -136,9 +136,7 @@ class PortfolioExecutionInteractiveProjection:
                 dimensions = self.strategy_explorer.dimensions(series_id)
                 portfolio = self.workspace_v2.portfolio_cockpit(validation_id)
             except (KeyError, RuntimeError, ValueError, TypeError) as exc:
-                warnings.append(
-                    f"{validation_id}: {type(exc).__name__}: {exc}"
-                )
+                warnings.append(f"{validation_id}: {type(exc).__name__}: {exc}")
                 continue
             if portfolio.get("no_portfolio") is True:
                 warnings.append(
@@ -154,9 +152,7 @@ class PortfolioExecutionInteractiveProjection:
                 asset_count=len(_sequence(dimensions.get("assets"))),
                 fold_count=len(_sequence(dimensions.get("folds"))),
                 session_count=int(dimensions.get("session_count", 0)),
-                start_date=(
-                    _text(dimensions.get("start_date")) or None
-                ),
+                start_date=_text(dimensions.get("start_date")) or None,
                 end_date=_text(dimensions.get("end_date")) or None,
                 status=_text(portfolio.get("status")),
             )
@@ -180,7 +176,7 @@ class PortfolioExecutionInteractiveProjection:
             "decision_authority": "authoritative_v4_0_strategy_decision_rows",
             "browser_recomputation": False,
             "benchmark_available": False,
-            "order_id_available": False,
+            "order_id_available": True,
         }
 
     def catalog(self) -> dict[str, object]:
@@ -230,17 +226,17 @@ class PortfolioExecutionInteractiveProjection:
                     "derived_presentation_sum_of_authoritative_v4_0_cost_rows"
                 ),
                 "constraint_counts": (
-                    "derived_presentation_count_of_authoritative_v4_0_reason_codes"
+                    "derived_presentation_count_of_authoritative_v4_0_constraint_codes"
                 ),
                 "target_realized": "authoritative_v4_0_rows",
                 "benchmark_available": False,
-                "order_id_available": False,
+                "order_id_available": True,
                 "benchmark_note": (
                     "No immutable benchmark return/NAV evidence is persisted for V4-4"
                 ),
                 "order_identity_note": (
-                    "V4-0 persists asset/session order quantities and reason codes but not "
-                    "a durable order_id identity; V4-4 does not invent one"
+                    "V4-0 client_order_id is retained as the durable order interaction "
+                    "identity when an A3 decision produced an order"
                 ),
             },
         }
@@ -308,26 +304,17 @@ class PortfolioExecutionInteractiveProjection:
     def _strategy_series_id(self, validation_id: str) -> str:
         return self.item(validation_id).strategy_series_id
 
-    def decisions(
+    def _query_decisions(
         self,
         validation_id: str,
         *,
-        asset: str | None = None,
-        session_date: date | None = None,
-        start: date | None = None,
-        end: date | None = None,
-        fold_id: str | None = None,
-        limit: int = 1000,
-        offset: int = 0,
+        asset: str | None,
+        start: date | None,
+        end: date | None,
+        fold_id: str | None,
+        limit: int,
+        offset: int,
     ) -> dict[str, object]:
-        if session_date is not None:
-            if start is not None or end is not None:
-                raise ValueError(
-                    "V4-4 session_date cannot be combined with start/end"
-                )
-            start = session_date
-            end = session_date
-        _validate_range(start, end)
         return self.strategy_explorer.query(
             self._strategy_series_id(validation_id),
             asset=asset,
@@ -343,13 +330,14 @@ class PortfolioExecutionInteractiveProjection:
         validation_id: str,
         *,
         asset: str | None,
+        order_id: str | None,
         start: date | None,
         end: date | None,
         fold_id: str | None,
     ) -> Iterator[Mapping[str, Any]]:
         offset = 0
         while True:
-            page = self.decisions(
+            page = self._query_decisions(
                 validation_id,
                 asset=asset,
                 start=start,
@@ -359,11 +347,64 @@ class PortfolioExecutionInteractiveProjection:
                 offset=offset,
             )
             items = [_mapping(value) for value in _sequence(page.get("items"))]
-            yield from items
+            for item in items:
+                if order_id and _text(item.get("client_order_id")) != order_id:
+                    continue
+                yield item
             offset += len(items)
             total = int(page.get("total", 0))
             if not items or offset >= total:
                 break
+
+    def decisions(
+        self,
+        validation_id: str,
+        *,
+        asset: str | None = None,
+        order_id: str | None = None,
+        session_date: date | None = None,
+        start: date | None = None,
+        end: date | None = None,
+        fold_id: str | None = None,
+        limit: int = 1000,
+        offset: int = 0,
+    ) -> dict[str, object]:
+        if session_date is not None:
+            if start is not None or end is not None:
+                raise ValueError("V4-4 session_date cannot be combined with start/end")
+            start = session_date
+            end = session_date
+        _validate_range(start, end)
+        if not order_id:
+            return self._query_decisions(
+                validation_id,
+                asset=asset,
+                start=start,
+                end=end,
+                fold_id=fold_id,
+                limit=limit,
+                offset=offset,
+            )
+        items = list(
+            self._iter_decisions(
+                validation_id,
+                asset=asset,
+                order_id=order_id,
+                start=start,
+                end=end,
+                fold_id=fold_id,
+            )
+        )
+        return {
+            "schema_version": "finagent.strategy-decision-series.query.v1",
+            "read_only": True,
+            "authority": "authoritative",
+            "series_id": self._strategy_series_id(validation_id),
+            "total": len(items),
+            "offset": offset,
+            "limit": limit,
+            "items": items[offset : offset + limit],
+        }
 
     @staticmethod
     def _drawdown(points: Sequence[Mapping[str, Any]]) -> list[dict[str, object]]:
@@ -411,9 +452,7 @@ class PortfolioExecutionInteractiveProjection:
                 standard_deviation = math.sqrt(max(variance, 0.0))
                 volatility = standard_deviation * math.sqrt(annualization)
                 if standard_deviation > 1e-15:
-                    sharpe = (
-                        mean / standard_deviation * math.sqrt(annualization)
-                    )
+                    sharpe = mean / standard_deviation * math.sqrt(annualization)
             output.append(
                 {
                     "session_date": _text(point.get("session_date")),
@@ -459,6 +498,7 @@ class PortfolioExecutionInteractiveProjection:
         validation_id: str,
         *,
         asset: str | None = None,
+        order_id: str | None = None,
         start: date | None = None,
         end: date | None = None,
         fold_id: str | None = None,
@@ -477,34 +517,38 @@ class PortfolioExecutionInteractiveProjection:
         if annualization <= 0:
             raise ValueError("V4-4 A4 annualization must be positive")
 
-        fee_cost = 0.0
-        slippage_cost = 0.0
+        fees = 0.0
+        slippage = 0.0
         desired = 0
         executable = 0
         filled = 0
         reason_counts: Counter[str] = Counter()
+        status_counts: Counter[str] = Counter()
         row_count = 0
         for row in self._iter_decisions(
             validation_id,
             asset=asset,
+            order_id=order_id,
             start=start,
             end=end,
             fold_id=fold_id,
         ):
             row_count += 1
-            fee_cost += _number(row.get("fee_cost"))
-            slippage_cost += _number(row.get("slippage_cost"))
-            if abs(_number(row.get("desired_order_qty"))) > 1e-15:
+            fees += _number(row.get("fees"))
+            slippage += _number(row.get("slippage"))
+            if _number(row.get("desired_quantity")) > 1e-15:
                 desired += 1
-            if abs(_number(row.get("order_qty"))) > 1e-15:
+            if _number(row.get("executable_quantity")) > 0:
                 executable += 1
-            if abs(_number(row.get("filled_qty"))) > 1e-15:
+            if _number(row.get("filled_quantity")) > 0:
                 filled += 1
-            for key in ("order_reason_codes", "fill_reason_codes"):
-                for reason in _sequence(row.get(key)):
-                    text = _text(reason)
-                    if text:
-                        reason_counts[text] += 1
+            status = _text(row.get("decision_status"))
+            if status:
+                status_counts[status] += 1
+            for reason in _sequence(row.get("constraint_codes")):
+                text = _text(reason)
+                if text:
+                    reason_counts[text] += 1
 
         return {
             "schema_version": PORTFOLIO_EXECUTION_ANALYTICS_SCHEMA,
@@ -512,6 +556,7 @@ class PortfolioExecutionInteractiveProjection:
             "portfolio_validation_id": validation_id,
             "filters": {
                 "asset": asset,
+                "order_id": order_id,
                 "fold_id": fold_id,
                 "start": start.isoformat() if start else None,
                 "end": end.isoformat() if end else None,
@@ -543,9 +588,9 @@ class PortfolioExecutionInteractiveProjection:
             "filtered_costs": {
                 "authority": "derived_presentation",
                 "source_authority": "authoritative_v4_0_cost_rows",
-                "fee_cost": fee_cost,
-                "slippage_cost": slippage_cost,
-                "total_cost": fee_cost + slippage_cost,
+                "fees": fees,
+                "slippage": slippage,
+                "total_cost": fees + slippage,
                 "decision_row_count": row_count,
             },
             "order_funnel": {
@@ -554,11 +599,12 @@ class PortfolioExecutionInteractiveProjection:
                 "desired": desired,
                 "executable": executable,
                 "filled": filled,
-                "order_id_available": False,
+                "decision_status_counts": dict(sorted(status_counts.items())),
+                "order_id_available": True,
             },
             "constraint_attribution": {
                 "authority": "derived_presentation",
-                "source_authority": "authoritative_v4_0_reason_code_rows",
+                "source_authority": "authoritative_v4_0_constraint_code_rows",
                 "reason_counts": dict(sorted(reason_counts.items())),
             },
             "benchmark": {
