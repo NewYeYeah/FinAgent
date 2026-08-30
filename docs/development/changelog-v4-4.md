@@ -1,5 +1,11 @@
 # V4-4 — Portfolio / Execution Interactive Pack
 
+## Status
+
+**Completed.** V4-4 is the delivered implementation milestone. The next roadmap stage is V4-5 Linked Analytics Acceptance.
+
+The composed Workbench Evidence API now reports `finagent-workbench-api-v4.4` and exposes `portfolio_execution` capability status from the top-level `workbench_api.py` composition boundary. V4-4 routes are attached independently of the V4-3 Factor route module.
+
 ## Scope
 
 V4-4 activates the Portfolio and Execution analytical modules over evidence that was already frozen by A4 and V4-0. It does not introduce a replacement portfolio engine, execution simulator, benchmark model, exposure model, or browser-side financial calculation authority.
@@ -83,7 +89,7 @@ date_range
 fold_id
 ```
 
-Cross-module Portfolio ↔ Execution navigation and browser reload preserve these identities. Selecting `session_date` constrains both authoritative decision rows and server-side derived execution aggregations to that same session.
+Cross-module Portfolio ↔ Execution navigation and browser reload preserve these identities. Selecting `session_date` constrains both authoritative decision rows and server-side derived execution aggregations to that same session. Asset/order identity remains contextual on Portfolio navigation but does not incorrectly filter account-level A4 NAV.
 
 ## UI surfaces
 
@@ -112,6 +118,7 @@ V4-4 adds focused backend tests for:
 - A4 ↔ V4-0 identity binding;
 - authoritative A4 point preservation;
 - authoritative V4-0 order/weight/constraint rows;
+- top-level Workbench `v4.4` capability/status projection;
 - GET-only and bounded APIs;
 - fail-closed invalid date/session combinations;
 - derived-presentation authority labels.
@@ -125,4 +132,4 @@ Frontend acceptance covers:
 - canonical `/portfolio` and `/execution` navigation;
 - TypeScript, Vitest, production build and Playwright browser smoke.
 
-Windows remains a retained CI path but is not required to block development reporting when Ubuntu API, frontend and quality gates are green.
+The retained CI matrix covers repository/A2.6/legacy UI regressions, Ubuntu/Windows Workspace API, Ruff/mypy, TypeScript/Vitest/build and Playwright. Per development policy, Windows remains a retained CI path but is not required to block V4-4 reporting once Ubuntu API, frontend and quality are green.
