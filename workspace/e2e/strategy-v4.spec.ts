@@ -182,7 +182,7 @@ test("V4-2 exposes linked authoritative strategy decisions without synthetic OHL
   await expect(page.getByText("Target vs realized weight")).toBeVisible();
   await expect(page.getByText("Frozen alpha context")).toBeVisible();
   await expect(page.getByText("Gross-to-net PnL & execution costs")).toBeVisible();
-  await expect(page.getByText("ACCEPTED")).toBeVisible();
+  await expect(page.locator(".strategy-code-list code", { hasText: /^ACCEPTED$/ })).toBeVisible();
 
   const context = page.getByTestId("workbench-context-bar");
   await expect(context).toContainText(validationId);
