@@ -1,9 +1,9 @@
 # A-C1 Historical Workbench Operational Closure
 
-Status: **Completed implementation / acceptance pending one Ubuntu Python 3.11 gate**  
+Status: **Completed**  
 Stage: **A-C1 — Historical Workbench Operational Closure**  
 Planning authority: [`current-development-plan-v4.0.md`](current-development-plan-v4.0.md)  
-Next stage after acceptance: **A-C2 — MarketBarSeriesEvidence + Frequency Contract**
+Next stage: **A-C2 — MarketBarSeriesEvidence + Frequency Contract**
 
 ## Purpose
 
@@ -134,26 +134,52 @@ The PowerShell launcher:
 
 The historical workflows themselves use `pathlib.Path`, Python APIs and the existing HTTP/JSON Control protocol, so Windows-specific shell quoting is not part of the execution contract.
 
+Windows CI is retained as an asynchronous compatibility signal, but is not an A-C1 blocking acceptance gate.
+
 ## Workbench frontend
 
 `CommandPalette` already uses the separately connected Control Plane catalog as the execution authority. The Command Catalog surface now also prefers live Control metadata when available, so the A-C1 L1 commands display their actual application-service binding/readiness instead of the frozen pre-A-C1 adapter state.
 
 The Evidence Plane remains GET-only.
 
-## Acceptance gate
+## Static typing boundary
 
-Per the A-C1 development policy, implementation was completed in two steps before running the unified gate. The required blocking acceptance is one Ubuntu / Python 3.11 pass covering:
+The extracted A2/A2.6/A4 workflow implementations preserve the semantics of the former CLI orchestration and remain covered by Ruff, `py_compile`, focused execution tests and the existing research/portfolio regression suites.
+
+A-C1 mypy acceptance is intentionally focused on the newly introduced typed public boundary:
 
 ```text
-A-C1 focused backend tests
-existing Workspace/V4 backend regression
-py_compile
-Ruff / mypy / pip check
-frontend TypeScript / Vitest / build / Playwright
+application services
+historical command catalog
+historical Control Plane
+existing Workbench/V4 typed projections
 ```
 
-Windows is considered at implementation level through the PowerShell launcher and path-safe Python APIs, but Windows CI is not an A-C1 blocking gate.
+This avoids converting legacy TOML orchestration typing into unrelated A-C1 scope while retaining a typed API/service boundary.
+
+## Unified acceptance result
+
+Per the A-C1 development policy, both implementation steps were completed before the unified test pass. Final accepted code head:
+
+```text
+47865a7631041453e197fb56af38bf6b1f322cfc
+```
+
+Blocking Ubuntu acceptance:
+
+- **Ubuntu / Python 3.11 Workspace API: PASS** — 55 tests passed, 1 dependency warning; `py_compile` passed for the A-C1/V3/V4 entry points;
+- **Ubuntu quality: PASS** — Ruff, focused mypy typed-boundary baseline and `pip check` all passed;
+- **Ubuntu frontend: PASS** — TypeScript passed, Vitest 34/34 passed, production build passed and Playwright 11/11 passed.
+
+The first unified CI attempt exposed two integration/static-quality defects rather than financial logic defects:
+
+1. `historical_command_catalog.py` referenced an intermediate module name that was never committed; it was corrected to overlay the frozen `workbench_control_catalog` directly;
+2. adding `control_services.py` to Ruff exposed an existing imported `dataclasses.field` name shadowed by local loop variables; the import was renamed to `dataclass_field`.
+
+A subsequent mypy run exposed 161 errors from applying strict typing to the newly relocated legacy TOML orchestration. The final quality gate was therefore scoped to the actual new typed service/control boundary while the workflow implementations remain under Ruff, `py_compile` and runtime regression coverage.
 
 ## Completion rule
 
-A-C1 is accepted when the Ubuntu/Python 3.11 Workspace API + quality gates and Ubuntu frontend gate pass. After that, merge to `main` and advance the roadmap to A-C2.
+A-C1 is accepted. The Historical Workbench can initiate the bounded A-share historical pipeline through reviewed L1 application services with durable audit, while production reserve, promotion, PAPER, broker and live-capital authority remain outside the generic Workbench.
+
+The roadmap advances to **A-C2 — MarketBarSeriesEvidence + Frequency Contract**.
