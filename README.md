@@ -14,6 +14,7 @@ The current baseline supports:
 - A4 execution-aware internal portfolio validation with frozen-factor Alpha, risk, optimizer targets, gross/net ledgers and replay;
 - A5 eligibility sealing, one-shot evaluation, crash-safe `CONSUMED`, terminal/ledger persistence and replay/audit;
 - V4-0 authoritative `StrategyDecisionSeriesEvidence`: immutable signal/alpha → target → A3 order/fill → realized weight → gross/net PnL/cost rows persisted as manifest JSON + Parquet;
+- V4-1 `FactorSeriesEvidence`: immutable primary/decay IC, quantile/long-short return, turnover and coverage period rows plus explicitly derived rolling IC/NAV persisted as manifest JSON + Parquet;
 - Alpaca SIP US reference ingestion and local A-share Parquet research;
 - V2/A5 evidence review and the accepted V3 Workbench foundation: Agent indexing, governed local Control, typed deep links, sanitized product SSE and cross-plane acceptance;
 - an explicit two-plane Workbench architecture: GET-only Evidence + local governed Control;
@@ -21,7 +22,7 @@ The current baseline supports:
 
 The market priority remains **A-share historical research first**. A-share live capital/realtime acceptance remains deferred until frozen research, execution-aware validation, reserve governance and repeated PAPER gates are complete.
 
-The V3 Workbench Foundation is complete through **V3-5 acceptance**, and **V4-0 StrategyDecisionSeriesEvidence** is complete. The current development milestone is **V4-1 — FactorSeriesEvidence**: persist the missing authoritative IC/decay/quantile/long-short/turnover/coverage time series before building the linked Factor Tear Sheet.
+The V3 Workbench Foundation is complete through **V3-5 acceptance**, and the V4 evidence foundation now includes **V4-0 StrategyDecisionSeriesEvidence** plus **V4-1 FactorSeriesEvidence**. The current development milestone is **V4-2 — Strategy Decision Explorer**: expose V4-0 through bounded Evidence Plane APIs and build the first linked analytical surface without reconstructing financial facts in React. The full Factor Tear Sheet remains V4-3 and must consume V4-1.
 
 ## Quick start
 
@@ -127,6 +128,49 @@ Default outputs are siblings of the A4 report:
 ```
 
 The manifest binds A4/A2.6/data/factor/AlphaModel/ledger/row identities plus physical SHA-256 values. `StrategyDecisionSeriesProjection` verifies those bindings and exposes bounded read-only asset/fold/date queries with at most 5,000 rows per request. Browser chart/API integration remains a later V4 product stage; React must consume authoritative series rather than reconstruct the decision path from summary reports.
+
+## V4-1 FactorSeriesEvidence
+
+V4-1 adds a separate deterministic evidence layer over the frozen A2.6 ResearchProgram. It does **not** rewrite the A2.6 report, does not select factor direction from the test period and does not access the production reserve.
+
+Long-form evidence is persisted for every frozen candidate and internal walk-forward test fold:
+
+```text
+factor / fold / session
+        ↓
+raw Pearson IC / RankIC by primary + decay horizon
+        ↓ frozen train_direction
+oriented Pearson IC / RankIC
+        ↓
+Q1–Qn primary-label return
+long-short return
+one-way turnover
+coverage
+        ↓
+rolling IC + cumulative Q/NAV transforms
+```
+
+Raw/oriented IC, return, turnover and coverage rows are authoritative. Rolling IC and cumulative quantile/long-short NAV are persisted deterministic transforms and remain explicitly `authority=derived`.
+
+Before any V4-1 file is written, the rematerialized rows must reproduce the frozen A2.6 report for every candidate/fold, including RankIC/ICIR, raw/oriented long-short Sharpe, coverage, quantile monotonicity, turnover and period counts. Candidate-level pooled/fold metrics, direction consistency and horizon-sign consistency are also reconciled. Any disagreement fails closed.
+
+Materialize from an existing A2.6 report:
+
+```bash
+python scripts/materialize_factor_series.py \
+  configs/local_ashare_robust_research.toml \
+  --a2p6-report reports/ashare_a2p6.json \
+  --rolling-window 20
+```
+
+Default outputs are siblings of the A2.6 report:
+
+```text
+<report-stem>.factor-series.json
+<report-stem>.factor-series.parquet
+```
+
+`FactorSeriesProjection` verifies source-report/manifest/Parquet identity and supports bounded filters over factor, fold, date, series kind, metric, label horizon and quantile with at most 5,000 rows per request. The Factor Tear Sheet is deliberately deferred to V4-3 so React never needs to recreate missing IC/quantile/turnover history from A2.6 summary reports.
 
 ## FinAgent Workbench V3.5
 
@@ -255,6 +299,8 @@ arbitrary Python
 - separate local Command Palette and persisted Run Inspector;
 - V3-4 normalized Agent + CommandRun SSE with deterministic event IDs and explicit no-hidden-reasoning boundary;
 - V3-5 cross-plane, authority, context-history, SSE lifecycle and browser-mode acceptance coverage;
+- V4-0 verified bounded StrategyDecisionSeries projection available to the upcoming Strategy Decision Explorer;
+- V4-1 verified bounded FactorSeries projection available to the later Factor Tear Sheet;
 - context-preserving navigation and typed server-state cache/de-duplication boundary.
 
 Configuration editing remains read-only. Protocol changes must become new governed identities/forks rather than rewriting historical evidence.
@@ -308,6 +354,7 @@ The Agent never owns positions, fills, risk limits, validation thresholds or bro
 21. V3 foundation acceptance does not imply alpha persistence, reserve authorization, promotion or live readiness.
 22. V4 authoritative series bind immutable core identities and reconcile to source evidence before presentation code may consume them.
 23. V4-0 materialization never rewrites A4 evidence or grants reserve, promotion, PAPER, broker or live authority.
+24. V4-1 materialization never rewrites A2.6 evidence, never selects direction from test data and never relabels rolling/NAV transforms as authoritative raw factor evidence.
 
 ## Documentation
 
@@ -325,6 +372,7 @@ The Agent never owns positions, fills, risk limits, validation thresholds or bro
 - [V3-4 changelog](docs/development/changelog-v3-4.md)
 - [V3-5 acceptance](docs/development/changelog-v3-5.md)
 - [V4-0 StrategyDecisionSeries contract](docs/development/changelog-v4-0.md)
+- [V4-1 FactorSeries contract](docs/development/changelog-v4-1.md)
 - [Changelog](docs/development/changelog.md)
 
 ## Data note
