@@ -63,6 +63,7 @@ def attach_portfolio_execution_routes(
     def get_v4_portfolio_execution_analytics(
         validation_id: str,
         asset: str | None = None,
+        order_id: str | None = None,
         start: date | None = None,
         end: date | None = None,
         fold_id: str | None = None,
@@ -72,6 +73,7 @@ def attach_portfolio_execution_routes(
             return projection.analytics(
                 validation_id,
                 asset=asset,
+                order_id=order_id,
                 start=start,
                 end=end,
                 fold_id=fold_id,
@@ -89,6 +91,7 @@ def attach_portfolio_execution_routes(
     def get_v4_portfolio_execution_decisions(
         validation_id: str,
         asset: str | None = None,
+        order_id: str | None = None,
         session_date: date | None = None,
         start: date | None = None,
         end: date | None = None,
@@ -100,6 +103,7 @@ def attach_portfolio_execution_routes(
             return projection.decisions(
                 validation_id,
                 asset=asset,
+                order_id=order_id,
                 session_date=session_date,
                 start=start,
                 end=end,
