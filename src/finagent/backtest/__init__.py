@@ -25,6 +25,9 @@ from .strategy_decision_alpha import (
     StrategyDecisionAlphaFoldSpec,
 )
 from .strategy_decision_series import (
+    STRATEGY_DECISION_MANIFEST_SCHEMA,
+    STRATEGY_DECISION_QUERY_SCHEMA,
+    STRATEGY_DECISION_ROW_SCHEMA,
     StrategyDecisionRow,
     StrategyDecisionSeriesManifest,
     StrategyDecisionSeriesProjection,
@@ -75,6 +78,9 @@ __all__ = [
     "NestedWalkForwardFold",
     "PurgedWalkForwardSplitter",
     "SQLiteAsharePortfolioValidationSpecStore",
+    "STRATEGY_DECISION_MANIFEST_SCHEMA",
+    "STRATEGY_DECISION_QUERY_SCHEMA",
+    "STRATEGY_DECISION_ROW_SCHEMA",
     "StrategyDecisionAlphaFoldSpec",
     "StrategyDecisionRow",
     "StrategyDecisionSeriesManifest",
