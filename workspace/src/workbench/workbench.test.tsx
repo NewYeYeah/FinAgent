@@ -153,7 +153,7 @@ describe("V3-3 Agent Workbench deep links", () => {
     expect(window.location.search).not.toContain("ctx_event");
     expect(screen.getByRole("link", { name: "Factors" })).toHaveAttribute(
       "href",
-      "/research?project=project-a",
+      "/factors?project=project-a",
     );
     await userEvent.click(await screen.findByRole("button", { name: /Factor discovery/i }));
     await waitFor(() => expect(window.location.search).toContain("thread=thread-a"));
