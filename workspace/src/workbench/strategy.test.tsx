@@ -1,5 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
@@ -248,14 +247,12 @@ describe("StrategyDecisionExplorerPage", () => {
     });
   });
 
-  it("binds the selected session into WorkbenchContext", async () => {
-    const user = userEvent.setup();
+  it("binds the selected date range into WorkbenchContext and the bounded query", async () => {
     renderPage();
     await screen.findByText("Selected session inspector");
 
     const startInput = screen.getByLabelText("Start");
-    await user.clear(startInput);
-    await user.type(startInput, "2024-01-03");
+    fireEvent.change(startInput, { target: { value: "2024-01-03" } });
 
     await waitFor(() => {
       const calls = vi.mocked(fetch).mock.calls.map(([value]) => String(value));
