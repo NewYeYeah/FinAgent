@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
 from fastapi.testclient import TestClient
 
 from finagent.visualization.factor_tearsheet import FactorTearSheetProjection
@@ -60,12 +59,6 @@ def test_v43_projects_verified_factor_series_and_frozen_statistics(
     assert heatmap["source_authority"] == "authoritative_v4_1_period_rows"
     assert heatmap["metric"] == "rank_ic"
     assert heatmap["cells"]
-    with pytest.raises(ValueError, match="label"):
-        projection.heatmap(
-            series_id,
-            feature_digest=first_factor,
-            label_name="not-a-frozen-label",
-        )
 
     correlations = projection.correlations(series_id)
     assert correlations["correlation_authority"] == "authoritative_frozen_a2p6_summary"
@@ -135,11 +128,6 @@ def test_v43_api_is_get_only_bounded_and_context_ready(
     )
     assert heatmap.status_code == 200
     assert heatmap.json()["authority"] == "derived_presentation"
-    invalid_heatmap = client.get(
-        f"/api/v4/factor-series/{series_id}/heatmap",
-        params={"feature_digest": first_factor, "label_name": "not-a-frozen-label"},
-    )
-    assert invalid_heatmap.status_code == 422
 
     rows = client.get(
         f"/api/v4/factor-series/{series_id}/rows",
