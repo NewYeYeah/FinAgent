@@ -42,7 +42,7 @@ Optional filters:
 
 ```text
 start
-aend  (named `end` in HTTP)
+end
 fold_id
 limit <= 5000
 offset >= 0
