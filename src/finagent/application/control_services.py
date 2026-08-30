@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field as dataclass_field
 from datetime import date
 from pathlib import Path
 from typing import Any, Literal, Protocol
@@ -13,6 +13,12 @@ from finagent.data import (
     LocalAshareDatasetLayout,
 )
 
+from .ashare_portfolio_workflow import run_portfolio_validation
+from .ashare_research_workflows import (
+    run_development_factor_research,
+    run_robust_research,
+)
+
 ApplicationExecutionStatus = Literal["succeeded", "rejected"]
 
 APPLICATION_SERVICE_BINDINGS: dict[str, str] = {
@@ -21,6 +27,15 @@ APPLICATION_SERVICE_BINDINGS: dict[str, str] = {
     ),
     "data.certify_local_ashare": (
         "finagent.application.control_services.LocalAshareCertificationApplicationService"
+    ),
+    "research.run_development": (
+        "finagent.application.control_services.DevelopmentResearchApplicationService"
+    ),
+    "research.run_a2p6": (
+        "finagent.application.control_services.RobustResearchApplicationService"
+    ),
+    "portfolio.run_a4": (
+        "finagent.application.control_services.PortfolioValidationApplicationService"
     ),
     "review.export_bundle": (
         "finagent.application.control_services.ReviewBundleExportApplicationService"
@@ -34,9 +49,9 @@ class ApplicationCommandInvocation:
 
     command_id: str
     config_snapshot_id: str | None = None
-    config_values: Mapping[str, object] = field(default_factory=dict)
-    parameters: Mapping[str, object] = field(default_factory=dict)
-    context: Mapping[str, str] = field(default_factory=dict)
+    config_values: Mapping[str, object] = dataclass_field(default_factory=dict)
+    parameters: Mapping[str, object] = dataclass_field(default_factory=dict)
+    context: Mapping[str, str] = dataclass_field(default_factory=dict)
     requested_by: str = "system"
 
     def __post_init__(self) -> None:
@@ -59,7 +74,7 @@ class ApplicationCommandInvocation:
 class ApplicationCommandExecution:
     command_id: str
     status: ApplicationExecutionStatus
-    outputs: Mapping[str, object] = field(default_factory=dict)
+    outputs: Mapping[str, object] = dataclass_field(default_factory=dict)
     artifact_paths: tuple[str, ...] = ()
     evidence_ids: tuple[str, ...] = ()
     message: str = ""
@@ -248,6 +263,93 @@ class LocalAshareCertificationApplicationService:
         )
 
 
+class DevelopmentResearchApplicationService:
+    """Governed L1 entry for the A2/A2.5 historical development workflow."""
+
+    command_id = "research.run_development"
+
+    def execute(
+        self,
+        invocation: ApplicationCommandInvocation,
+    ) -> ApplicationCommandExecution:
+        _assert_command(invocation, self.command_id)
+        if invocation.parameters:
+            raise ValueError("research.run_development accepts only ConfigSnapshot inputs")
+        workflow = run_development_factor_research(invocation.config_values)
+        evidence_id = workflow.evidence_ids[0]
+        return ApplicationCommandExecution(
+            command_id=self.command_id,
+            status="succeeded",
+            outputs={
+                "evidence_id": evidence_id,
+                "report_path": str(workflow.report_path),
+                "reserve_access": "forbidden",
+                "scope": "historical_development_research",
+            },
+            artifact_paths=tuple(str(path) for path in workflow.artifact_paths),
+            evidence_ids=workflow.evidence_ids,
+            message="A-share development research completed",
+        )
+
+
+class RobustResearchApplicationService:
+    """Governed L1 entry for the frozen A2.6 robust ResearchProgram workflow."""
+
+    command_id = "research.run_a2p6"
+
+    def execute(
+        self,
+        invocation: ApplicationCommandInvocation,
+    ) -> ApplicationCommandExecution:
+        _assert_command(invocation, self.command_id)
+        if invocation.parameters:
+            raise ValueError("research.run_a2p6 accepts only ConfigSnapshot inputs")
+        workflow = run_robust_research(invocation.config_values)
+        evidence_id = workflow.evidence_ids[0]
+        return ApplicationCommandExecution(
+            command_id=self.command_id,
+            status="succeeded",
+            outputs={
+                "evidence_id": evidence_id,
+                "report_path": str(workflow.report_path),
+                "reserve_access": "forbidden",
+                "scope": "historical_robust_research",
+            },
+            artifact_paths=tuple(str(path) for path in workflow.artifact_paths),
+            evidence_ids=workflow.evidence_ids,
+            message="A2.6 robust research completed with reserve untouched",
+        )
+
+
+class PortfolioValidationApplicationService:
+    """Governed L1 entry for execution-aware historical A4 validation."""
+
+    command_id = "portfolio.run_a4"
+
+    def execute(
+        self,
+        invocation: ApplicationCommandInvocation,
+    ) -> ApplicationCommandExecution:
+        _assert_command(invocation, self.command_id)
+        if invocation.parameters:
+            raise ValueError("portfolio.run_a4 accepts only ConfigSnapshot inputs")
+        workflow = run_portfolio_validation(invocation.config_values)
+        evidence_id = workflow.evidence_ids[0]
+        return ApplicationCommandExecution(
+            command_id=self.command_id,
+            status="succeeded",
+            outputs={
+                "evidence_id": evidence_id,
+                "report_path": str(workflow.report_path),
+                "reserve_access": "forbidden",
+                "scope": "historical_internal_portfolio_validation",
+            },
+            artifact_paths=tuple(str(path) for path in workflow.artifact_paths),
+            evidence_ids=workflow.evidence_ids,
+            message="A4 internal portfolio validation completed with reserve untouched",
+        )
+
+
 class ReviewBundleExportApplicationService:
     command_id = "review.export_bundle"
 
@@ -303,6 +405,9 @@ def default_application_service_registry(
         (
             ConfigValidationApplicationService(config_registry),
             LocalAshareCertificationApplicationService(),
+            DevelopmentResearchApplicationService(),
+            RobustResearchApplicationService(),
+            PortfolioValidationApplicationService(),
             ReviewBundleExportApplicationService(),
         )
     )
