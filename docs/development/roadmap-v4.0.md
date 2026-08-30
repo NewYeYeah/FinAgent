@@ -1,25 +1,26 @@
 # FinAgent Roadmap v4.0 — A-share Closure → U.S. M1 / MT5
 
 Status: **preliminary frozen roadmap index**  
-Baseline: `main @ 31ce20f7a6f78aee221e3649c5f6d2bb6e2fea0a`  
+Planning baseline: `main @ 31ce20f7a6f78aee221e3649c5f6d2bb6e2fea0a`  
+Implementation status: **A-C0 / V4-5 complete; A-C1 current**  
 Detailed planning authority: [`current-development-plan-v4.0.md`](current-development-plan-v4.0.md)
 
 This short roadmap is the execution index for the v4.0 planning baseline. Existing `roadmap.md`, `current-development-plan-v3.1.md` and completed V0–V4/A2.6–A5 documents remain valid historical/contract records. Where post-V4-5 priority ordering differs, **v4.0 governs new development after this planning baseline is accepted**.
 
 ## Current
 
-### A-C0 — V4-5 Linked Analytics Acceptance
+### Completed — A-C0 / V4-5 Linked Analytics Acceptance
 
-- accept Strategy / Factors / Portfolio / Execution as one linked analytical product;
-- authority/evidence declaration on every product surface;
-- no browser-side financial/statistical recomputation;
-- complete WorkbenchContext navigation/history/reload acceptance;
-- bounded API + full server aggregate semantics;
-- Evidence GET-only; Control remains bounded L0/L1.
+- accepted Strategy / Factors / Portfolio / Execution as one linked analytical product;
+- added a machine-readable acceptance-only contract with exact evidence, authority and unavailable-evidence declarations;
+- froze `browser_recomputation=false` across all four analytical surfaces;
+- accepted `program/factor/portfolio/asset/order/range/session/fold` WorkbenchContext round-trip through module navigation, browser history and reload;
+- retained browser `limit <= 5000` and explicitly tested full server-side aggregation across a 5,001-row execution evidence set;
+- retained Evidence GET-only and the V3 Control L0/L1 authority ceiling;
+- advanced the Workbench capability to `finagent-workbench-api-v4.5`;
+- recorded the implementation in [`changelog-v4-5.md`](changelog-v4-5.md).
 
-## A-share historical closure
-
-### A-C1 — Historical Workbench Operational Closure
+### Current — A-C1 Historical Workbench Operational Closure
 
 Extract typed L1 application services for the historical pipeline, with durable CommandRun audit:
 
@@ -29,7 +30,21 @@ research.run_a2p6
 portfolio.run_a4
 ```
 
-No reserve, promotion, PAPER or broker authority.
+Required outcome:
+
+```text
+Workbench / CLI / future Agent adapter
+                ↓
+        typed Application Service
+                ↓
+      immutable historical evidence
+                ↓
+          durable CommandRun audit
+```
+
+No reserve, promotion, PAPER or broker authority is added in A-C1.
+
+## A-share historical closure
 
 ### A-C2 — MarketBarSeriesEvidence + Frequency Contract
 
@@ -198,8 +213,7 @@ Reuse realtime/event/state/Workbench/reconciliation infrastructure; retain A-sha
 ## Immediate order
 
 ```text
-A-C0
-→ A-C1
+A-C1
 → A-C2
 → A-C3
 → A-C4

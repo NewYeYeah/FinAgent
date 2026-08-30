@@ -18,6 +18,8 @@ from finagent.application import (
 
 from .factor_tearsheet import FactorTearSheetProjection
 from .factor_tearsheet_routes import attach_factor_tearsheet_routes
+from .linked_analytics_acceptance import LinkedAnalyticsAcceptanceProjection
+from .linked_analytics_acceptance_routes import attach_linked_analytics_acceptance_routes
 from .portfolio_execution import PortfolioExecutionInteractiveProjection
 from .portfolio_execution_routes import attach_portfolio_execution_routes
 from .semantic import EvidenceContractError
@@ -27,7 +29,7 @@ from .workbench_links import WorkbenchLinkProjection
 from .workbench_streams import WorkbenchStreamProjection, sse_response
 from .workspace_api import create_workspace_app as create_evidence_app
 
-WORKBENCH_API_VERSION = "finagent-workbench-api-v4.4"
+WORKBENCH_API_VERSION = "finagent-workbench-api-v4.5"
 
 
 def _attach_frontend(app: FastAPI, frontend_dir: str | Path | None) -> None:
@@ -85,7 +87,8 @@ def create_workspace_app(
     V4-2 exposes verified StrategyDecisionSeries through the linked Strategy surface.
     V4-3 adds a verified Factor Tear Sheet over immutable V4-1 period rows and frozen
     A2.6 statistical summaries. V4-4 links authoritative A4 portfolio evidence with
-    verified V4-0 execution rows for Portfolio / Execution analytics. All remain
+    verified V4-0 execution rows for Portfolio / Execution analytics. V4-5 adds only
+    a machine-readable acceptance contract over those delivered surfaces. All remain
     GET-only read models: browser requests cannot submit host paths, recompute core
     financial facts, mutate evidence, or expand Control authority.
     """
@@ -141,6 +144,11 @@ def create_workspace_app(
         app.state.workspace_v2,
         strategy_explorer,
     )
+    linked_analytics_acceptance = LinkedAnalyticsAcceptanceProjection(
+        strategy_explorer,
+        factor_tearsheet,
+        portfolio_execution,
+    )
 
     app.state.config_registry = config_registry
     app.state.command_catalog = command_catalog
@@ -150,6 +158,7 @@ def create_workspace_app(
     app.state.strategy_explorer = strategy_explorer
     app.state.factor_tearsheet = factor_tearsheet
     app.state.portfolio_execution = portfolio_execution
+    app.state.linked_analytics_acceptance = linked_analytics_acceptance
     app.state.command_store_path = (
         Path(command_store_path).expanduser() if command_store_path else None
     )
@@ -157,6 +166,7 @@ def create_workspace_app(
 
     attach_factor_tearsheet_routes(app, factor_tearsheet)
     attach_portfolio_execution_routes(app, portfolio_execution)
+    attach_linked_analytics_acceptance_routes(app, linked_analytics_acceptance)
 
     @app.get("/api/v3/workbench/status")
     def get_v3_workbench_status() -> dict[str, object]:
@@ -174,6 +184,7 @@ def create_workspace_app(
             "strategy_explorer": strategy_explorer.status(),
             "factor_tearsheet": factor_tearsheet.status(),
             "portfolio_execution": portfolio_execution.status(),
+            "linked_analytics_acceptance": linked_analytics_acceptance.status(),
             "config_descriptor_count": len(projection.descriptors),
             "config_snapshot_count": len(projection.snapshots),
             "config_warning_count": len(projection.warnings),
