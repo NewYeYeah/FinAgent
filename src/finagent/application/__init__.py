@@ -1,5 +1,13 @@
 """Typed application boundary for governed FinAgent commands."""
 
+from .ashare_research_workflows import (
+    DevelopmentResearchOptions,
+    HistoricalWorkflowResult,
+    RobustResearchOptions,
+    load_toml_section,
+    run_development_factor_research,
+    run_robust_research,
+)
 from .command_contracts import (
     CommandEvent,
     CommandIntent,
@@ -14,8 +22,10 @@ from .control_services import (
     ApplicationCommandInvocation,
     ApplicationServiceRegistry,
     ConfigValidationApplicationService,
+    DevelopmentResearchApplicationService,
     LocalAshareCertificationApplicationService,
     ReviewBundleExportApplicationService,
+    RobustResearchApplicationService,
     default_application_service_registry,
 )
 
@@ -30,8 +40,16 @@ __all__ = [
     "CommandResult",
     "CommandRun",
     "ConfigValidationApplicationService",
+    "DevelopmentResearchApplicationService",
+    "DevelopmentResearchOptions",
+    "HistoricalWorkflowResult",
     "LocalAshareCertificationApplicationService",
     "ReviewBundleExportApplicationService",
+    "RobustResearchApplicationService",
+    "RobustResearchOptions",
     "SQLiteCommandStore",
     "default_application_service_registry",
+    "load_toml_section",
+    "run_development_factor_research",
+    "run_robust_research",
 ]
