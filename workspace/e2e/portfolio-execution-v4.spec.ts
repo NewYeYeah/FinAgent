@@ -273,7 +273,7 @@ test("V4-4 links execution identities into portfolio analytics without browser f
   await page.locator("label").filter({ hasText: /^Session/ }).locator("select").selectOption("2024-01-02");
   await expect(page).toHaveURL(/session=2024-01-02/);
   await expect(context).toContainText("2024-01-02");
-  await expect(page.getByText("Decision rows").locator("..")).toContainText("1");
+  await expect(page.getByText("Decision rows", { exact: true }).locator("..")).toContainText("1");
 
   await page.getByRole("link", { name: /Open Portfolio/i }).click();
   await expect(page).toHaveURL(new RegExp(`/portfolio/${validationId}`));
