@@ -20,10 +20,8 @@ export function CommandCatalogSurface() {
   if (!commandsQuery.data) return null;
 
   const catalog = commandsQuery.data;
-  const executable = new Set(
-    control.catalog?.items
-      .filter((item) => item.control_execution_enabled)
-      .map((item) => item.command_id) ?? [],
+  const liveById = new Map(
+    control.catalog?.items.map((item) => [item.command_id, item]) ?? [],
   );
 
   return (
@@ -60,29 +58,33 @@ export function CommandCatalogSurface() {
 
         <div className="command-card-grid">
           {catalog.items.map((command) => {
-            const ready = executable.has(command.command_id);
+            // V3 Evidence keeps the frozen command vocabulary. A-C1 operational
+            // readiness is owned by the separately running Historical Control Plane.
+            const live = liveById.get(command.command_id);
+            const visible = live ?? command;
+            const ready = Boolean(live?.control_execution_enabled);
             return (
               <article className="command-card" key={command.command_id}>
                 <header>
-                  <StatusBadge value={command.level} tone="neutral" />
-                  <StatusBadge value={command.gateway_readiness} tone="neutral" />
+                  <StatusBadge value={visible.level} tone="neutral" />
+                  <StatusBadge value={visible.gateway_readiness} tone="neutral" />
                 </header>
-                <h3>{command.title}</h3>
-                <p>{command.description}</p>
+                <h3>{visible.title}</h3>
+                <p>{visible.description}</p>
                 <dl>
                   <dt>Command ID</dt>
-                  <dd className="mono">{command.command_id}</dd>
+                  <dd className="mono">{visible.command_id}</dd>
                   <dt>Binding</dt>
-                  <dd className="mono">{command.binding_ref}</dd>
+                  <dd className="mono">{visible.binding_ref}</dd>
                   <dt>Config</dt>
-                  <dd>{command.config_descriptor_ids.join(", ") || "none"}</dd>
+                  <dd>{visible.config_descriptor_ids.join(", ") || "none"}</dd>
                   <dt>Produces</dt>
-                  <dd>{command.produces.join(", ") || "none"}</dd>
+                  <dd>{visible.produces.join(", ") || "none"}</dd>
                 </dl>
                 <button
                   type="button"
                   disabled
-                  aria-label={`${command.title} catalog status`}
+                  aria-label={`${visible.title} catalog status`}
                 >
                   {ready ? (
                     <>
