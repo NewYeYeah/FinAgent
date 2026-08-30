@@ -294,7 +294,7 @@ describe("V4-3 Factor Tear Sheet", () => {
   it("renders V4-1 series and frozen A2.6 inference without inventing Agent chronology", async () => {
     renderPage();
 
-    expect(await screen.findByText("Alpha A")).toBeInTheDocument();
+    expect(await screen.findByRole("option", { name: "Alpha A · selected" })).toBeInTheDocument();
     expect(screen.getByText("IC & rolling IC")).toBeInTheDocument();
     expect(screen.getByText("IC decay")).toBeInTheDocument();
     expect(screen.getByText("Quantile & long-short NAV")).toBeInTheDocument();
