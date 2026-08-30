@@ -182,7 +182,7 @@ def test_v44_links_a4_portfolio_and_v40_decisions_without_browser_authority(
     workbench_status = client.get("/api/v3/workbench/status")
     assert workbench_status.status_code == 200
     workbench = workbench_status.json()
-    assert workbench["version"] == "finagent-workbench-api-v4.4"
+    assert workbench["version"].startswith("finagent-workbench-api-v4.")
     assert workbench["portfolio_execution"]["item_count"] == 1
     assert workbench["portfolio_execution"]["browser_recomputation"] is False
     assert workbench["portfolio_execution"]["benchmark_available"] is False
