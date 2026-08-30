@@ -4,9 +4,9 @@ This roadmap is the canonical current implementation status. [`current-developme
 
 ## Current baseline
 
-The implementation baseline has now completed the **Visualization V3 Workbench Foundation through V3-5 acceptance** and the first four V4 linked-analytics stages: **V4-0 StrategyDecisionSeriesEvidence**, **V4-1 FactorSeriesEvidence**, **V4-2 Strategy Decision Explorer** and **V4-3 Factor Tear Sheet**, on top of PIT data contracts, bounded Agent research, A2.6 robust ResearchPrograms, A3 execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2 and A5-1～A5-4 reserve governance/evidence.
+The implementation baseline has now completed the **Visualization V3 Workbench Foundation through V3-5 acceptance** and the first five V4 linked-analytics stages: **V4-0 StrategyDecisionSeriesEvidence**, **V4-1 FactorSeriesEvidence**, **V4-2 Strategy Decision Explorer**, **V4-3 Factor Tear Sheet** and **V4-4 Portfolio / Execution Interactive Pack**, on top of PIT data contracts, bounded Agent research, A2.6 robust ResearchPrograms, A3 execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2 and A5-1～A5-4 reserve governance/evidence.
 
-The accepted V3 foundation includes Agent indexing, the governed Workbench/Control substrate, typed deep links and sanitized product SSE. V4-0 adds immutable authoritative per-asset strategy-decision series without changing A4 report/ledger identity. V4-1 adds immutable factor-period IC/quantile/long-short/turnover/coverage evidence while keeping the frozen A2.6 report unchanged and explicitly labeling rolling IC/NAV transforms as derived. V4-2 activates the linked Strategy Workbench over verified V4-0 rows with bounded GET-only APIs and explicit no-fabrication boundaries for missing OHLC and per-factor contribution evidence. V4-3 activates the Factors Workbench over verified V4-1 period rows plus frozen A2.6 inference/multiplicity/correlation summaries, while keeping fold/year aggregation and cluster ordering explicitly presentation-derived and refusing to invent an Agent generation chronology. Detailed records are in [`changelog-v3-5.md`](changelog-v3-5.md), [`changelog-v4-0.md`](changelog-v4-0.md), [`changelog-v4-1.md`](changelog-v4-1.md), [`changelog-v4-2.md`](changelog-v4-2.md) and [`changelog-v4-3.md`](changelog-v4-3.md).
+The accepted V3 foundation includes Agent indexing, the governed Workbench/Control substrate, typed deep links and sanitized product SSE. V4-0 adds immutable authoritative per-asset strategy-decision series without changing A4 report/ledger identity. V4-1 adds immutable factor-period IC/quantile/long-short/turnover/coverage evidence while keeping the frozen A2.6 report unchanged and explicitly labeling rolling IC/NAV transforms as derived. V4-2 activates the linked Strategy Workbench over verified V4-0 rows with bounded GET-only APIs and explicit no-fabrication boundaries for missing OHLC and per-factor contribution evidence. V4-3 activates the Factors Workbench over verified V4-1 period rows plus frozen A2.6 inference/multiplicity/correlation summaries, while keeping fold/year aggregation and cluster ordering explicitly presentation-derived and refusing to invent an Agent generation chronology. V4-4 activates Portfolio and Execution by linking authoritative A4 portfolio evidence with verified V4-0 asset/order evidence, adding only explicitly labeled server-side presentation derivatives and refusing to infer missing benchmark/exposure evidence. Detailed records are in [`changelog-v3-5.md`](changelog-v3-5.md), [`changelog-v4-0.md`](changelog-v4-0.md), [`changelog-v4-1.md`](changelog-v4-1.md), [`changelog-v4-2.md`](changelog-v4-2.md), [`changelog-v4-3.md`](changelog-v4-3.md) and [`changelog-v4-4.md`](changelog-v4-4.md).
 
 No production 2025+ reserve has been consumed by development or CI. Production reserve execution remains an independent human-authorized operation.
 
@@ -51,7 +51,7 @@ The Control Plane does not weaken or add mutation routes to the Evidence Plane. 
 ### Completed — V3-2A Workbench Shell + Context Bus
 
 - desktop-first registry-driven Workbench shell;
-- URL-backed `WorkbenchContextProvider` for Agent/research/portfolio/strategy/reserve/asset/date/session/fold/environment identities;
+- URL-backed `WorkbenchContextProvider` for Agent/research/portfolio/strategy/reserve/asset/order/date/session/fold/environment identities;
 - deterministic URL round-trip and context-preserving cross-module navigation;
 - linked-selection events remain presentation state rather than evidence identity;
 - registry-driven panels, Inspector and chart-workspace extension slots;
@@ -234,27 +234,37 @@ review.export_bundle
 - retained Ubuntu Workspace API, Ruff/mypy, TypeScript/Vitest/build/Playwright, repository Python, A2.6 and legacy Research UI regression gates, while preserving the existing Windows CI path for asynchronous/manual acceptance;
 - recorded the authority, API, non-fabrication and Windows acceptance contract in [`changelog-v4-3.md`](changelog-v4-3.md).
 
-### Current — V4-4 Portfolio / Execution Interactive Pack
+### Completed — V4-4 Portfolio / Execution Interactive Pack
 
-Use existing V2 evidence plus V4-0 strategy-decision evidence and any newly required immutable benchmark/portfolio series for:
+- added `PortfolioExecutionInteractiveProjection`, binding an A4 validation to exactly one verified V4-0 `StrategyDecisionSeries` by `portfolio_validation_id` and omitting unresolved/conflicting identities;
+- retained authoritative A4 portfolio points, aggregate/fold metrics, economic evidence and immutable ledger identity without re-running portfolio calculation;
+- retained authoritative V4-0 asset, target/realized weight, `client_order_id`, desired/executable/filled quantity, price, cost, PnL, decision-status and `constraint_codes` rows;
+- added GET-only `/api/v4/portfolio-execution*` status/catalog/detail/series/analytics/decisions routes with bounded browser rows (`limit <= 5000`) and fail-closed date/session combinations;
+- added server-side `derived_presentation` drawdown, rolling performance, monthly return matrix, filtered cost totals, order funnel and constraint counts, each with explicit source authority;
+- server-side aggregates over more than 5,000 verified V4-0 rows page through the existing bounded projection rather than silently truncating the evidence set;
+- activated canonical `/portfolio` and `/execution` Workbench modules and extended URL-backed context with durable `order_id -> ?order=`;
+- preserved portfolio/asset/order/session/date/fold identity across Portfolio ↔ Execution navigation and reload while avoiding nonsensical asset/order filtering of account-level NAV;
+- explicitly reports benchmark return/NAV as unavailable and does not infer benchmark-relative performance, exposure, capacity or risk-contribution evidence;
+- kept React presentation-only: no NAV, return, target, execution quantity, cost, PnL, drawdown, rolling/monthly statistic or constraint aggregate is rebuilt in the browser;
+- promoted the Workbench capability version to `finagent-workbench-api-v4.4` and exposed `portfolio_execution` through the top-level status projection;
+- retained repository/A2.6/legacy UI, Ubuntu/Windows API, Ruff/mypy, TypeScript/Vitest/build/Playwright gates; Windows remains a retained asynchronous path rather than a development-reporting blocker;
+- recorded the authority/API/non-fabrication contract in [`changelog-v4-4.md`](changelog-v4-4.md) and [`v4-4-api-contract.md`](v4-4-api-contract.md).
 
-- linked NAV / drawdown / rolling performance;
-- monthly return matrix;
-- target vs realized portfolio state;
-- order lifecycle and A3 constraint attribution;
-- explicit fee/slippage/cost waterfall;
-- asset/date/order/session interactions through `WorkbenchContext`;
-- clear authoritative/derived/diagnostic labels on every analytical surface.
+### Current — V4-5 Linked Analytics Acceptance
 
-V4-4 must not reconstruct authoritative portfolio/execution facts in React and must not infer benchmark, exposure or cost evidence that the core has not formally persisted.
+Acceptance must validate the delivered V4 analytical system as a whole rather than add another chart family:
 
-### P1 — V4-5 Linked Analytics Acceptance
-
-Every chart must declare evidence requirements and authority class, and all asset/date/order interactions must flow through `WorkbenchContext`.
+- every Strategy/Factors/Portfolio/Execution surface declares required source evidence and authority class;
+- no browser path recomputes or silently upgrades authoritative financial/statistical facts;
+- portfolio/asset/order/factor/date/session/fold interactions round-trip through `WorkbenchContext` and survive cross-module navigation/history/reload;
+- missing OHLC, per-factor contribution, benchmark and exposure evidence remains explicitly unavailable rather than inferred;
+- bounded row APIs and server-side pagination preserve exact source identities and aggregation semantics;
+- Evidence remains GET-only and Control retains the accepted V3 L0/L1 authority ceiling;
+- Ubuntu API, quality, TypeScript/Vitest/build/Playwright plus repository/A2.6/legacy-UI regressions form the development acceptance gate; Windows remains retained but asynchronous for reporting.
 
 ## Open-source implementation choices
 
-- **Apache ECharts** remains the main analytical chart engine and powers the delivered V4-2 Strategy and V4-3 Factor analytical views.
+- **Apache ECharts** remains the main analytical chart engine and powers the delivered V4-2 Strategy, V4-3 Factors and V4-4 Portfolio/Execution analytical views.
 - **React Flow** remains the lineage/DAG renderer.
 - **TanStack Table** remains the structured-table foundation.
 - the current typed query-provider abstraction remains the server-state boundary; TanStack Query can replace the internal implementation later without changing consumers.
