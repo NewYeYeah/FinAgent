@@ -41,6 +41,7 @@ import {
   ProjectCockpitPage,
 } from "./v2";
 import { AgentWorkbenchPage, LegacyAgentRunRedirect } from "./workbench/agent";
+import { FactorTearSheetPage } from "./workbench/factors";
 import { WorkbenchReferencePage } from "./workbench/reference";
 import { WorkbenchProviders, WorkbenchShell } from "./workbench/shell";
 import { StrategyDecisionExplorerPage } from "./workbench/strategy";
@@ -461,6 +462,8 @@ export default function App() {
             <Route path="/execution/:validationId" element={<ExecutionCockpitPage />} />
             <Route path="/strategy" element={<StrategyDecisionExplorerPage />} />
             <Route path="/strategy/:seriesId" element={<StrategyDecisionExplorerPage />} />
+            <Route path="/factors" element={<FactorTearSheetPage />} />
+            <Route path="/factors/:seriesId" element={<FactorTearSheetPage />} />
             <Route path="/governance" element={<GovernanceIndexPage />} />
             <Route path="/governance/:evidenceId" element={<GovernancePage />} />
             <Route path="/reserve" element={<ReserveIndexPage />} />
