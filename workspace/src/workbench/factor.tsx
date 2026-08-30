@@ -25,7 +25,6 @@ import type {
   FactorCorrelationV4,
   FactorHeatmapV4,
   FactorProvenanceV4,
-  FactorSeriesDimensionsV4,
   FactorSeriesItemV4,
   FactorSeriesRowV4,
 } from "./factorTypes";
@@ -150,7 +149,7 @@ function InferenceForest({ candidates }: { candidates: FactorCandidateSummaryV4[
       name: "Bootstrap 95% CI",
       type: "custom",
       data,
-      renderItem: (params: { dataIndex: number; coordSys?: { x?: number } }, api: { value: (index: number) => number; coord: (value: number[]) => number[] }) => {
+      renderItem: (_params: { dataIndex: number; coordSys?: { x?: number } }, api: { value: (index: number) => number; coord: (value: number[]) => number[] }) => {
         const low = api.coord([api.value(0), api.value(3)]);
         const high = api.coord([api.value(1), api.value(3)]);
         const point = api.coord([api.value(2), api.value(3)]);
