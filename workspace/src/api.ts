@@ -36,6 +36,14 @@ import type {
   ControlStatusV3,
 } from "./workbench/controlTypes";
 import type {
+  FactorSeriesCatalogV4,
+  FactorSeriesDetailV4,
+  FactorSeriesDimensionsV4,
+  FactorSeriesItemV4,
+  FactorSeriesQueryV4,
+  FactorSeriesSummaryV4,
+} from "./workbench/factorTypes";
+import type {
   StrategyDecisionQueryV4,
   StrategySeriesCatalogV4,
   StrategySeriesDetailV4,
@@ -118,6 +126,35 @@ function strategyDecisionQueryPath(
   return `/api/v4/strategy-series/${encodeURIComponent(seriesId)}/decisions?${params.toString()}`;
 }
 
+function factorSeriesQueryPath(
+  seriesId: string,
+  filters: {
+    featureDigest?: string;
+    foldId?: string;
+    seriesKind?: string;
+    metric?: string;
+    labelName?: string;
+    quantile?: number;
+    start?: string;
+    end?: string;
+    limit?: number;
+    offset?: number;
+  },
+): string {
+  const params = new URLSearchParams();
+  if (filters.featureDigest) params.set("feature_digest", filters.featureDigest);
+  if (filters.foldId) params.set("fold_id", filters.foldId);
+  if (filters.seriesKind) params.set("series_kind", filters.seriesKind);
+  if (filters.metric) params.set("metric", filters.metric);
+  if (filters.labelName) params.set("label_name", filters.labelName);
+  if (filters.quantile != null) params.set("quantile", String(filters.quantile));
+  if (filters.start) params.set("start", filters.start);
+  if (filters.end) params.set("end", filters.end);
+  params.set("limit", String(filters.limit ?? 1000));
+  params.set("offset", String(filters.offset ?? 0));
+  return `/api/v4/factor-series/${encodeURIComponent(seriesId)}/rows?${params.toString()}`;
+}
+
 export const workspaceApi = {
   catalog: () => getJson<CatalogResponse>("/api/v1/catalog"),
   widgets: async () => {
@@ -190,6 +227,38 @@ export const workspaceApi = {
       offset?: number;
     },
   ) => getJson<StrategyDecisionQueryV4>(strategyDecisionQueryPath(seriesId, filters)),
+  factorSeriesV4: () => getJson<FactorSeriesCatalogV4>("/api/v4/factor-series"),
+  factorSeriesByProgramV4: (programId: string) =>
+    getJson<FactorSeriesItemV4>(
+      `/api/v4/factor-series/by-program/${encodeURIComponent(programId)}`,
+    ),
+  factorSeriesDetailV4: (seriesId: string) =>
+    getJson<FactorSeriesDetailV4>(
+      `/api/v4/factor-series/${encodeURIComponent(seriesId)}`,
+    ),
+  factorSeriesDimensionsV4: (seriesId: string) =>
+    getJson<FactorSeriesDimensionsV4>(
+      `/api/v4/factor-series/${encodeURIComponent(seriesId)}/dimensions`,
+    ),
+  factorSeriesSummaryV4: (seriesId: string) =>
+    getJson<FactorSeriesSummaryV4>(
+      `/api/v4/factor-series/${encodeURIComponent(seriesId)}/summary`,
+    ),
+  factorSeriesRowsV4: (
+    seriesId: string,
+    filters: {
+      featureDigest?: string;
+      foldId?: string;
+      seriesKind?: string;
+      metric?: string;
+      labelName?: string;
+      quantile?: number;
+      start?: string;
+      end?: string;
+      limit?: number;
+      offset?: number;
+    },
+  ) => getJson<FactorSeriesQueryV4>(factorSeriesQueryPath(seriesId, filters)),
   projectsV2: () => getJson<ProjectsResponse>("/api/v2/projects"),
   programCockpitV2: (programId: string) =>
     getJson<ProgramCockpitResponse>(`/api/v2/programs/${encodeURIComponent(programId)}/cockpit`),
