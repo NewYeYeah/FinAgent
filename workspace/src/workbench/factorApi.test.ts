@@ -8,7 +8,7 @@ afterEach(() => {
 
 describe("V4-3 Factor Tear Sheet API client", () => {
   it("encodes only bounded semantic row filters", async () => {
-    const fetchMock = vi.fn((input: RequestInfo | URL) =>
+    const fetchMock = vi.fn(() =>
       Promise.resolve(
         new Response(
           JSON.stringify({
