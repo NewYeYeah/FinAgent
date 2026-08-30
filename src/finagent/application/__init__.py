@@ -1,5 +1,9 @@
 """Typed application boundary for governed FinAgent commands."""
 
+from .ashare_portfolio_workflow import (
+    PortfolioValidationOptions,
+    run_portfolio_validation,
+)
 from .ashare_research_workflows import (
     DevelopmentResearchOptions,
     HistoricalWorkflowResult,
@@ -24,6 +28,7 @@ from .control_services import (
     ConfigValidationApplicationService,
     DevelopmentResearchApplicationService,
     LocalAshareCertificationApplicationService,
+    PortfolioValidationApplicationService,
     ReviewBundleExportApplicationService,
     RobustResearchApplicationService,
     default_application_service_registry,
@@ -44,6 +49,8 @@ __all__ = [
     "DevelopmentResearchOptions",
     "HistoricalWorkflowResult",
     "LocalAshareCertificationApplicationService",
+    "PortfolioValidationApplicationService",
+    "PortfolioValidationOptions",
     "ReviewBundleExportApplicationService",
     "RobustResearchApplicationService",
     "RobustResearchOptions",
@@ -51,5 +58,6 @@ __all__ = [
     "default_application_service_registry",
     "load_toml_section",
     "run_development_factor_research",
+    "run_portfolio_validation",
     "run_robust_research",
 ]
