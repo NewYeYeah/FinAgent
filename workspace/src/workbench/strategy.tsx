@@ -14,8 +14,13 @@ import {
   Panel,
   StatusBadge,
 } from "../components";
-import { patchWorkbenchContext, useWorkbenchContext, workbenchContextSearch } from "./context";
-import { useWorkbenchQuery, workbenchQueryKeys } from "./query";
+import {
+  patchWorkbenchContext,
+  useWorkbenchContext,
+  workbenchContextSearch,
+  type WorkbenchContextKey,
+} from "./context";
+import { useWorkbenchQuery } from "./query";
 import type {
   StrategyDecisionRowV4,
   StrategySeriesItemV4,
@@ -178,7 +183,7 @@ function PnlCostChart({ rows }: { rows: StrategyDecisionRowV4[] }) {
     grid: { left: 66, right: 24, top: 42, bottom: 48 },
     tooltip: { trigger: "axis" },
     legend: { data: ["Gross PnL", "Net PnL", "Fees", "Slippage"] },
-    xAxis: { type: "category", data: rows.map((row) => row.session_date },
+    xAxis: { type: "category", data: rows.map((row) => row.session_date) },
     yAxis: { type: "value", name: "Currency" },
     series: [
       { name: "Gross PnL", type: "bar", data: rows.map((row) => row.gross_pnl) },
@@ -257,7 +262,7 @@ export function StrategyDecisionExplorerPage() {
 
   useEffect(() => {
     if (!activeSeries) return;
-    const patch: Record<string, string | null | undefined> = {};
+    const patch: Partial<Record<WorkbenchContextKey, string | null | undefined>> = {};
     if (context.portfolio_validation_id !== activeSeries.portfolio_validation_id) {
       patch.portfolio_validation_id = activeSeries.portfolio_validation_id;
     }
