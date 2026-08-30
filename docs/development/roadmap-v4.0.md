@@ -2,7 +2,7 @@
 
 Status: **preliminary frozen roadmap index**  
 Planning baseline: `main @ 31ce20f7a6f78aee221e3649c5f6d2bb6e2fea0a`  
-Implementation status: **A-C0 / V4-5 complete; A-C1 current**  
+Implementation status: **A-C0 / V4-5 complete; A-C1 complete; A-C2 current**  
 Detailed planning authority: [`current-development-plan-v4.0.md`](current-development-plan-v4.0.md)
 
 This short roadmap is the execution index for the v4.0 planning baseline. Existing `roadmap.md`, `current-development-plan-v3.1.md` and completed V0–V4/A2.6–A5 documents remain valid historical/contract records. Where post-V4-5 priority ordering differs, **v4.0 governs new development after this planning baseline is accepted**.
@@ -20,9 +20,9 @@ This short roadmap is the execution index for the v4.0 planning baseline. Existi
 - advanced the Workbench capability to `finagent-workbench-api-v4.5`;
 - recorded the implementation in [`changelog-v4-5.md`](changelog-v4-5.md).
 
-### Current — A-C1 Historical Workbench Operational Closure
+### Completed — A-C1 Historical Workbench Operational Closure
 
-Extract typed L1 application services for the historical pipeline, with durable CommandRun audit:
+Delivered typed L1 application-service entry points for the historical pipeline with durable CommandRun audit:
 
 ```text
 research.run_development
@@ -30,7 +30,7 @@ research.run_a2p6
 portfolio.run_a4
 ```
 
-Required outcome:
+Accepted composition:
 
 ```text
 Workbench / CLI / future Agent adapter
@@ -42,13 +42,48 @@ Workbench / CLI / future Agent adapter
           durable CommandRun audit
 ```
 
-No reserve, promotion, PAPER or broker authority is added in A-C1.
+Completion properties:
+
+- extracted A2/A2.5, A2.6 and A4 orchestration from fat scripts into reusable in-process application workflows;
+- retained the three scripts as thin compatibility wrappers over the same workflow functions;
+- added a dedicated Historical Control Plane composition over the frozen V3 command vocabulary;
+- kept the three newly operational commands at L1 with explicit confirmation required;
+- preserved `SQLiteCommandStore` lifecycle/audit and evidence identities;
+- kept production reserve, promotion, PAPER, broker, live-capital, arbitrary shell and arbitrary Python authority forbidden;
+- added a PowerShell launcher that uses native Python/`py -3.11` argument forwarding without Bash dependency;
+- accepted on Ubuntu/Python 3.11 with 55 focused backend tests + `py_compile`, Ruff/focused mypy/`pip check`, TypeScript, 34 Vitest tests, production build and 11 Playwright tests;
+- recorded the implementation in [`changelog-a-c1.md`](changelog-a-c1.md).
+
+### Current — A-C2 MarketBarSeriesEvidence + Frequency Contract
+
+Freeze authoritative market-bar evidence before any complete minute-research or U.S. migration work begins.
+
+Required contract surface:
+
+```text
+BarInterval
+BarTimestampConvention
+MarketSessionSpec
+SessionSegment
+MarketBarRow
+MarketBarSeriesManifest
+MarketBarSeriesEvidence
+LabelHorizonPolicy
+```
+
+Required product outcome:
+
+```text
+authoritative OHLCV evidence
+          ↓
+server-side bounded projection
+          ↓
+Strategy candlestick + signal/order/fill overlay
+```
+
+A-share daily OHLC should be the primary acceptance source. A small A-share M1 sample may be used only to verify frequency/session semantics; A-C2 does **not** reopen a complete A-share minute research program.
 
 ## A-share historical closure
-
-### A-C2 — MarketBarSeriesEvidence + Frequency Contract
-
-Freeze authoritative OHLCV / interval / session / timestamp / label-horizon semantics and activate evidence-backed candlesticks.
 
 ### A-C3 — Real A-share Historical E2E Acceptance
 
@@ -213,8 +248,7 @@ Reuse realtime/event/state/Workbench/reconciliation infrastructure; retain A-sha
 ## Immediate order
 
 ```text
-A-C1
-→ A-C2
+A-C2
 → A-C3
 → A-C4
 → A-C5
