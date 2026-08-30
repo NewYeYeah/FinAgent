@@ -179,6 +179,17 @@ export interface FrozenFactorStatisticsV4 {
   quantile_monotonicity?: number;
   mean_one_way_turnover?: number;
   horizon_sign_consistency?: number;
+  hac?: {
+    tstat: number;
+    raw_pvalue: number;
+    holm_adjusted_pvalue: number;
+    bh_qvalue: number;
+  };
+  block_bootstrap?: {
+    pvalue: number;
+    ci_lower: number;
+    ci_upper: number;
+  };
   hac_tstat?: number;
   raw_hac_pvalue?: number;
   bootstrap_pvalue?: number;
@@ -204,6 +215,7 @@ export interface FactorSeriesSummaryV4 {
   read_only: true;
   authority: "authoritative_frozen_a2p6_summary";
   statistics_recomputed: false;
+  statistics_projection: "source_structure_plus_direct_field_aliases";
   series_id: string;
   program_id: string;
   program_result_id: string;
