@@ -15,6 +15,7 @@ The current baseline supports:
 - A5 eligibility sealing, one-shot evaluation, crash-safe `CONSUMED`, terminal/ledger persistence and replay/audit;
 - V4-0 authoritative `StrategyDecisionSeriesEvidence`: immutable signal/alpha → target → A3 order/fill → realized weight → gross/net PnL/cost rows persisted as manifest JSON + Parquet;
 - V4-1 `FactorSeriesEvidence`: immutable primary/decay IC, quantile/long-short return, turnover and coverage period rows plus explicitly derived rolling IC/NAV persisted as manifest JSON + Parquet;
+- V4-2 Strategy Decision Explorer: verified bounded V4-0 GET APIs plus an interactive Strategy Workbench for close/reference/fill price, alpha, target/realized weight, order/fill constraints and gross/net cost evidence;
 - Alpaca SIP US reference ingestion and local A-share Parquet research;
 - V2/A5 evidence review and the accepted V3 Workbench foundation: Agent indexing, governed local Control, typed deep links, sanitized product SSE and cross-plane acceptance;
 - an explicit two-plane Workbench architecture: GET-only Evidence + local governed Control;
@@ -22,7 +23,7 @@ The current baseline supports:
 
 The market priority remains **A-share historical research first**. A-share live capital/realtime acceptance remains deferred until frozen research, execution-aware validation, reserve governance and repeated PAPER gates are complete.
 
-The V3 Workbench Foundation is complete through **V3-5 acceptance**, and the V4 evidence foundation now includes **V4-0 StrategyDecisionSeriesEvidence** plus **V4-1 FactorSeriesEvidence**. The current development milestone is **V4-2 — Strategy Decision Explorer**: expose V4-0 through bounded Evidence Plane APIs and build the first linked analytical surface without reconstructing financial facts in React. The full Factor Tear Sheet remains V4-3 and must consume V4-1.
+The V3 Workbench Foundation is complete through **V3-5 acceptance**, and V4 is complete through **V4-2 Strategy Decision Explorer**. The current development milestone is **V4-3 — Factor Tear Sheet**, which must consume V4-1 FactorSeriesEvidence and frozen A2.6 statistical summaries rather than rebuilding factor statistics in React.
 
 ## Quick start
 
@@ -127,7 +128,7 @@ Default outputs are siblings of the A4 report:
 <report-stem>.strategy-decisions.parquet
 ```
 
-The manifest binds A4/A2.6/data/factor/AlphaModel/ledger/row identities plus physical SHA-256 values. `StrategyDecisionSeriesProjection` verifies those bindings and exposes bounded read-only asset/fold/date queries with at most 5,000 rows per request. Browser chart/API integration remains a later V4 product stage; React must consume authoritative series rather than reconstruct the decision path from summary reports.
+The manifest binds A4/A2.6/data/factor/AlphaModel/ledger/row identities plus physical SHA-256 values. `StrategyDecisionSeriesProjection` verifies those bindings and exposes bounded read-only asset/fold/date queries with at most 5,000 rows per request. V4-2 consumes this verified projection directly rather than reconstructing the decision path from A4 summary reports.
 
 ## V4-1 FactorSeriesEvidence
 
@@ -170,17 +171,45 @@ Default outputs are siblings of the A2.6 report:
 <report-stem>.factor-series.parquet
 ```
 
-`FactorSeriesProjection` verifies source-report/manifest/Parquet identity and supports bounded filters over factor, fold, date, series kind, metric, label horizon and quantile with at most 5,000 rows per request. The Factor Tear Sheet is deliberately deferred to V4-3 so React never needs to recreate missing IC/quantile/turnover history from A2.6 summary reports.
+`FactorSeriesProjection` verifies source-report/manifest/Parquet identity and supports bounded filters over factor, fold, date, series kind, metric, label horizon and quantile with at most 5,000 rows per request. V4-3 Factor Tear Sheet must consume this evidence rather than recreate missing IC/quantile/turnover history from A2.6 summary reports.
 
-## FinAgent Workbench V3.5
+## V4-2 Strategy Decision Explorer
 
-The accepted V3 Workbench keeps two independent authority planes and combines deterministic context, typed navigation and notification streaming without merging authority:
+V4-2 activates the **Strategy** module in the V3 Workbench and exposes verified V4-0 series through GET-only Evidence Plane endpoints:
+
+```text
+GET /api/v4/strategy-series
+GET /api/v4/strategy-series/by-portfolio/{portfolio_validation_id}
+GET /api/v4/strategy-series/{series_id}
+GET /api/v4/strategy-series/{series_id}/dimensions
+GET /api/v4/strategy-series/{series_id}/decisions
+```
+
+A series is visible only after its V4-0 source A4 report, execution ledger and Parquet pass existing identity/SHA/schema/row verification. Decision queries accept only asset/fold/date/offset filters and remain bounded to `limit <= 5000`; the browser never supplies host paths or executable inputs.
+
+The Strategy page uses the existing `WorkbenchContext` keys `portfolio_validation_id`, `asset_id`, `date_range`, `session_date` and `fold_id`, and renders authoritative per-session V4-0 facts:
+
+- close/reference/fill price timeline with buy/sell fill markers;
+- pre-trade / target / realized weights;
+- combined frozen AlphaModel score, rank, expected return and uncertainty;
+- desired / executable / filled quantities and A3 constraint codes;
+- gross/net asset PnL, fees and slippage;
+- frozen factor/program/selection/AlphaModel identity context.
+
+Two non-fabrication boundaries are explicit. First, V4-0 does not persist authoritative open/high/low values, so V4-2 reports `ohlc_available=false` and renders a **close-price execution timeline**, not synthetic candlesticks. Second, V4-0 does not persist per-asset factor-component contributions, so the page shows combined alpha plus frozen factor identities and does not reverse engineer contribution values in React.
+
+Equivalent deterministic V4-0 rematerializations are de-duplicated by semantic series identity even when output filenames differ; genuine semantic conflicts fail closed. If optional DuckDB/local-Parquet support is absent, Strategy series become unavailable with explicit warnings while unrelated V3/V2 Workspace surfaces continue to start.
+
+## FinAgent Workbench V3.5+
+
+The accepted Workbench keeps two independent authority planes and combines deterministic context, typed navigation, notification streaming and V4 linked analytics without merging authority:
 
 ```text
 Evidence Plane  127.0.0.1:8765
   GET-only / read-only projections
   V3-3 typed refs + bounded Artifact Inspector
   V3-4 Agent / CommandRun SSE notifications
+  V4-2 Strategy Decision Explorer projections
 
 Control Plane   127.0.0.1:8766
   explicit local opt-in
@@ -190,12 +219,12 @@ Control Plane   127.0.0.1:8766
 
 The Evidence Plane never acquires a command mutation route. Starting Control is a separate user action. SSE is notification-only: complete Agent and CommandRun details still come from their canonical audit/durable records.
 
-V3-5 verifies the foundation as a whole: complete API route inventories, Evidence GET-only behavior, exact bounded Control authority, rejected L2/L3/A5-like commands, durable cross-plane command identity, context restoration through browser history/reload, sanitized SSE reconnect/disconnect/terminal behavior and Ubuntu/Windows/frontend regression.
+V3-5 verifies the foundation as a whole: complete API route inventories, Evidence GET-only behavior, exact bounded Control authority, rejected L2/L3/A5-like commands, durable cross-plane command identity, context restoration through browser history/reload, sanitized SSE reconnect/disconnect/terminal behavior and Ubuntu/Windows/frontend regression. V4-2 adds only GET analytical projections on top of that accepted authority boundary.
 
 ### Build the frontend
 
 ```bash
-python -m pip install -e ".[workspace]"
+python -m pip install -e ".[workspace,local-parquet]"
 cd workspace
 npm ci
 npm run build
@@ -215,7 +244,7 @@ python scripts/run_workspace.py \
 
 Open `http://127.0.0.1:8765`.
 
-The command-store path may be configured before the Control process creates the SQLite file. Evidence readers use SQLite read-only mode; once the store appears, CommandRun deep links/SSE become available without restarting Workspace.
+The command-store path may be configured before the Control process creates the SQLite file. Evidence readers use SQLite read-only mode; once the store appears, CommandRun deep links/SSE become available without restarting Workspace. V4 Strategy analysis additionally requires the `local-parquet` extra to open verified V4-0 Parquet evidence; if it is absent, the rest of Workspace remains available and Strategy reports an explicit warning.
 
 ### Explicitly start the local Control Plane
 
@@ -253,7 +282,7 @@ research.run_a2p6            L1  adapter_required
 portfolio.run_a4             L1  adapter_required
 ```
 
-A2/A2.6/A4 remain `adapter_required` because their current scripts still own substantial orchestration. V3 does **not** use `subprocess`, arbitrary shell or browser-supplied Python to make them appear ready. Their readiness can change only in a reviewed change that extracts the real typed application service.
+A2/A2.6/A4 remain `adapter_required` because their current scripts still own substantial orchestration. V3/V4 do **not** use `subprocess`, arbitrary shell or browser-supplied Python to make them appear ready. Their readiness can change only in a reviewed change that extracts the real typed application service.
 
 ### Durable command and SSE semantics
 
@@ -291,7 +320,7 @@ arbitrary Python
 - A4 gross/net NAV, economic evidence and execution realization;
 - A5 eligibility/consumption/terminal/ledger/audit inspection;
 - Agent Project → Thread → Run navigation and verified artifact links;
-- typed URL-backed `WorkbenchContext` across research/portfolio/Agent selections;
+- typed URL-backed `WorkbenchContext` across research/portfolio/Agent/Strategy selections;
 - V3-3 `WorkbenchReference` navigation across Agent / Factor / ResearchProgram / A4 / A5 / Config / CommandRun identities;
 - bounded, verified source-report/generated-feature Artifact Inspector;
 - public Config Registry with secret-file exclusion and recursive credential redaction;
@@ -299,8 +328,9 @@ arbitrary Python
 - separate local Command Palette and persisted Run Inspector;
 - V3-4 normalized Agent + CommandRun SSE with deterministic event IDs and explicit no-hidden-reasoning boundary;
 - V3-5 cross-plane, authority, context-history, SSE lifecycle and browser-mode acceptance coverage;
-- V4-0 verified bounded StrategyDecisionSeries projection available to the upcoming Strategy Decision Explorer;
-- V4-1 verified bounded FactorSeries projection available to the later Factor Tear Sheet;
+- V4-0 verified bounded StrategyDecisionSeries evidence;
+- V4-1 verified bounded FactorSeries evidence;
+- V4-2 linked Strategy Decision Explorer with explicit close-only/no-browser-recompute semantics;
 - context-preserving navigation and typed server-state cache/de-duplication boundary.
 
 Configuration editing remains read-only. Protocol changes must become new governed identities/forks rather than rewriting historical evidence.
@@ -355,6 +385,7 @@ The Agent never owns positions, fills, risk limits, validation thresholds or bro
 22. V4 authoritative series bind immutable core identities and reconcile to source evidence before presentation code may consume them.
 23. V4-0 materialization never rewrites A4 evidence or grants reserve, promotion, PAPER, broker or live authority.
 24. V4-1 materialization never rewrites A2.6 evidence, never selects direction from test data and never relabels rolling/NAV transforms as authoritative raw factor evidence.
+25. V4-2 never fabricates missing OHLC or per-factor contribution evidence and never turns a read-only linked analytics surface into trading/control authority.
 
 ## Documentation
 
@@ -373,6 +404,8 @@ The Agent never owns positions, fills, risk limits, validation thresholds or bro
 - [V3-5 acceptance](docs/development/changelog-v3-5.md)
 - [V4-0 StrategyDecisionSeries contract](docs/development/changelog-v4-0.md)
 - [V4-1 FactorSeries contract](docs/development/changelog-v4-1.md)
+- [V4-2 Strategy Decision Explorer](docs/development/changelog-v4-2.md)
+- [V4-2 read API contract](docs/development/v4-2-api-contract.md)
 - [Changelog](docs/development/changelog.md)
 
 ## Data note
