@@ -30,14 +30,25 @@ export interface FactorSeriesCatalogV4 {
   notices: string[];
 }
 
-export interface FactorSeriesManifestV4 extends FactorSeriesItemV4 {
+export interface FactorSeriesManifestV4 {
   schema_version: string;
+  authority: "authoritative";
+  series_id: string;
+  program_result_id: string;
+  program_id: string;
   program_spec_id: string;
   walk_forward_report_id: string;
   gate_report_id: string;
+  selection_id: string;
   plan_id: string;
+  data_version: string;
   candidate_selection_id: string;
   universe_policy_version: string;
+  candidate_feature_digests: string[];
+  selected_feature_digests: string[];
+  primary_label: string;
+  decay_labels: string[];
+  quantiles: number;
   min_cross_section: number;
   min_periods: number;
   annualization: number;
@@ -46,10 +57,17 @@ export interface FactorSeriesManifestV4 extends FactorSeriesItemV4 {
   rolling_window: number;
   quant_config_digest: string;
   rows_digest: string;
+  source_report_content_digest: string;
   source_report_file: string;
   source_report_sha256: string;
   data_file: string;
   data_sha256: string;
+  row_count: number;
+  factor_count: number;
+  fold_count: number;
+  session_count: number;
+  start_date: string | null;
+  end_date: string | null;
   columns: string[];
   nullable_columns: string[];
   metric_authority: {
