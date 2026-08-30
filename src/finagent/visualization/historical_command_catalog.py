@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from .workbench_control_catalog_base import CommandCatalog, CommandSpec, default_command_catalog
+from .workbench_control_catalog import CommandCatalog, CommandSpec, default_command_catalog
 
 _AC1_BINDINGS: dict[str, tuple[str, str]] = {
     "research.run_development": (
