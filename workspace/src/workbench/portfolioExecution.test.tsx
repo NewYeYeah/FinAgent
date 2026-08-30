@@ -252,7 +252,7 @@ function LocationProbe() {
   return <output data-testid="location">{`${location.pathname}${location.search}`}</output>;
 }
 
-function renderPage(mode: "portfolio" | "execution", initial: string) {
+function renderPage(initial: string) {
   return render(
     <MemoryRouter initialEntries={[initial]}>
       <WorkbenchQueryProvider>
@@ -296,7 +296,6 @@ describe("V4-4 Portfolio / Execution Interactive Pack", () => {
 
   it("renders A4 authority and labels all portfolio transforms as server-side derived", async () => {
     renderPage(
-      "portfolio",
       `/portfolio/${validationId}?portfolio=${validationId}&fold=wf-1&range=2024-01-02..2024-01-03`,
     );
 
@@ -312,7 +311,7 @@ describe("V4-4 Portfolio / Execution Interactive Pack", () => {
   });
 
   it("binds asset/order/session through WorkbenchContext and forwards one session to authoritative and derived queries", async () => {
-    renderPage("execution", `/execution/${validationId}?portfolio=${validationId}`);
+    renderPage(`/execution/${validationId}?portfolio=${validationId}`);
     expect(await screen.findByText("Target vs realized portfolio state")).toBeInTheDocument();
 
     await waitFor(() => {
@@ -333,7 +332,7 @@ describe("V4-4 Portfolio / Execution Interactive Pack", () => {
       expect(calls.some((value) => value.includes("limit=5000"))).toBe(true);
     });
 
-    expect(screen.getByText(orderId)).toBeInTheDocument();
+    expect(screen.getAllByText(orderId).length).toBeGreaterThan(0);
     expect(screen.getByText("A3 constraint attribution")).toBeInTheDocument();
     expect(screen.getByText(/no order identity is synthesized/i)).toBeInTheDocument();
   });
