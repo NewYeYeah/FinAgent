@@ -84,7 +84,7 @@ test("V4-5 preserves the complete linked analytics context through modules, hist
     await expect(context).toContainText(value);
   }
   await expect(page.getByRole("button", { name: "Commands" })).toBeDisabled();
-  await expect(page.getByText("Evidence Plane")).toBeVisible();
+  await expect(page.locator(".workbench-sidebar-footer strong", { hasText: /^Evidence Plane$/ })).toBeVisible();
   expectLinkedContext(page.url());
 
   await page.getByRole("link", { name: "Factors" }).click();
