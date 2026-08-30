@@ -8,8 +8,9 @@ afterEach(() => {
 
 describe("V4-3 Factor Tear Sheet API client", () => {
   it("encodes only bounded semantic row filters", async () => {
-    const fetchMock = vi.fn(() =>
-      Promise.resolve(
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      void input;
+      return Promise.resolve(
         new Response(
           JSON.stringify({
             schema_version: "finagent.factor-series.query.v1",
@@ -24,8 +25,8 @@ describe("V4-3 Factor Tear Sheet API client", () => {
           }),
           { status: 200, headers: { "Content-Type": "application/json" } },
         ),
-      ),
-    );
+      );
+    });
     vi.stubGlobal("fetch", fetchMock);
 
     await factorTearSheetApi.rows("factor-series-v43", {
