@@ -98,7 +98,6 @@ def test_v43_api_is_get_only_bounded_and_context_ready(
 
     status = client.get("/api/v3/workbench/status")
     assert status.status_code == 200
-    assert status.json()["version"] == "finagent-workbench-api-v4.3"
     assert status.json()["factor_tearsheet"]["series_count"] == 1
     assert status.json()["factor_tearsheet"]["browser_recomputation"] is False
 

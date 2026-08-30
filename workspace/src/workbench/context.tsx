@@ -18,6 +18,7 @@ export interface WorkbenchContextState {
   strategy_id?: string;
   reserve_id?: string;
   asset_id?: string;
+  order_id?: string;
   date_range?: string;
   session_date?: string;
   fold_id?: string;
@@ -47,6 +48,7 @@ const CONTEXT_PARAM_BY_KEY: Record<WorkbenchContextKey, string> = {
   strategy_id: "strategy",
   reserve_id: "reserve",
   asset_id: "asset",
+  order_id: "order",
   date_range: "range",
   session_date: "session",
   fold_id: "fold",

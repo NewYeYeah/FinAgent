@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { PanelRegistry, defaultPanelRegistry } from "./panels";
 
 describe("PanelRegistry", () => {
-  it("exposes V4 Strategy/Factor analytics, V3 catalogs and reserved future surfaces", () => {
+  it("exposes V4 linked analytics, V3 catalogs and reserved future surfaces", () => {
     expect(defaultPanelRegistry.get("agent")).toMatchObject({
       status: "available",
       route: "/agent",
@@ -27,7 +27,31 @@ describe("PanelRegistry", () => {
       slot: "chart",
       context_keys: ["program_id", "factor_id", "date_range", "fold_id"],
     });
+    expect(defaultPanelRegistry.get("portfolio")).toMatchObject({
+      status: "available",
+      route: "/portfolio",
+      slot: "chart",
+      context_keys: [
+        "portfolio_validation_id",
+        "date_range",
+        "session_date",
+        "fold_id",
+      ],
+    });
     expect(defaultPanelRegistry.get("execution")).toMatchObject({
+      status: "available",
+      route: "/execution",
+      slot: "chart",
+      context_keys: [
+        "portfolio_validation_id",
+        "asset_id",
+        "order_id",
+        "date_range",
+        "session_date",
+        "fold_id",
+      ],
+    });
+    expect(defaultPanelRegistry.get("risk")).toMatchObject({
       status: "reserved",
       slot: "chart",
     });

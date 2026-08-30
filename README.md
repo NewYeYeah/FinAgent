@@ -17,6 +17,7 @@ The current baseline supports:
 - V4-1 `FactorSeriesEvidence`: immutable primary/decay IC, quantile/long-short return, turnover and coverage period rows plus explicitly derived rolling IC/NAV persisted as manifest JSON + Parquet;
 - V4-2 Strategy Decision Explorer: verified bounded V4-0 GET APIs plus an interactive Strategy Workbench for close/reference/fill price, alpha, target/realized weight, order/fill constraints and gross/net cost evidence;
 - V4-3 Factor Tear Sheet: verified bounded V4-1 GET APIs plus an interactive Factors Workbench for IC/decay, quantile/long-short, turnover/coverage, frozen inference/multiplicity and factor-correlation evidence;
+- V4-4 Portfolio / Execution Interactive Pack: authoritative A4 NAV/performance plus verified V4-0 asset/order/weight/cost/PnL rows, with server-side derived drawdown, rolling/monthly performance, cost and constraint attribution;
 - Alpaca SIP US reference ingestion and local A-share Parquet research;
 - V2/A5 evidence review and the accepted V3 Workbench foundation: Agent indexing, governed local Control, typed deep links, sanitized product SSE and cross-plane acceptance;
 - an explicit two-plane Workbench architecture: GET-only Evidence + local governed Control;
@@ -24,7 +25,7 @@ The current baseline supports:
 
 The market priority remains **A-share historical research first**. A-share live capital/realtime acceptance remains deferred until frozen research, execution-aware validation, reserve governance and repeated PAPER gates are complete.
 
-The V3 Workbench Foundation is complete through **V3-5 acceptance**, and V4 linked analytics is complete through **V4-3 Factor Tear Sheet**. The current development milestone is **V4-4 — Portfolio / Execution Interactive Pack**, which must consume authoritative portfolio/execution evidence rather than rebuilding financial facts in React.
+The V3 Workbench Foundation is complete through **V3-5 acceptance**, and V4 linked analytics is complete through **V4-4 Portfolio / Execution Interactive Pack**. The current development milestone is **V4-5 — Linked Analytics Acceptance**, which validates authority declarations, bounded read behavior and cross-module `WorkbenchContext` interactions across the delivered Strategy, Factors, Portfolio and Execution surfaces.
 
 ## Quick start
 
@@ -221,6 +222,18 @@ The page uses URL-backed `WorkbenchContext` keys `program_id`, `factor_id`, `fol
 
 Rows remain bounded to `limit <= 5000`, all `/api/v4/factor-series*` surfaces are GET-only, and no V4-3 route adds reserve, promotion, PAPER, broker/live, shell/Python or other Control authority.
 
+## V4-4 Portfolio / Execution Interactive Pack
+
+V4-4 activates the canonical **Portfolio** and **Execution** Workbench modules by linking two existing authorities rather than creating a new calculation engine: A4 owns portfolio-level NAV/period returns/frozen performance metrics, while verified V4-0 `StrategyDecisionSeriesEvidence` owns asset/order/weight/quantity/price/cost/PnL/constraint rows.
+
+The Evidence Plane exposes GET-only `/api/v4/portfolio-execution*` catalog, detail, portfolio-series, analytics and decision routes. Browser row requests remain bounded to `limit <= 5000`; server-side aggregation over larger verified V4-0 evidence iterates the existing bounded projection in pages so transport limits never silently truncate the resulting presentation aggregate.
+
+The Portfolio surface renders authoritative A4 gross/net NAV and frozen aggregate metrics together with explicitly `derived_presentation` drawdown, rolling performance, monthly returns and filtered fee/slippage totals. The Execution surface renders authoritative V4-0 target/realized weights and bounded decision rows with `client_order_id`, desired/executable/filled quantity, prices, costs, PnL and `constraint_codes`, plus derived order-funnel and constraint-count views.
+
+`WorkbenchContext` now includes durable `order_id -> ?order=` in addition to portfolio, asset, session, date-range and fold identity. Portfolio ↔ Execution navigation and reload preserve these identities. A selected session constrains both authoritative Execution rows and the corresponding server-side derived execution aggregates; account-level Portfolio NAV is never spuriously filtered by asset/order identity.
+
+V4-4 explicitly reports benchmark return/NAV evidence as unavailable rather than inventing benchmark-relative metrics. React remains presentation-only and does not recompute NAV, return, drawdown, rolling/monthly statistics, costs or constraint aggregates.
+
 ## FinAgent Workbench V3.5+
 
 The accepted Workbench keeps two independent authority planes and combines deterministic context, typed navigation, notification streaming and V4 linked analytics without merging authority:
@@ -232,6 +245,7 @@ Evidence Plane  127.0.0.1:8765
   V3-4 Agent / CommandRun SSE notifications
   V4-2 Strategy Decision Explorer projections
   V4-3 Factor Tear Sheet projections
+  V4-4 Portfolio / Execution linked projections
 
 Control Plane   127.0.0.1:8766
   explicit local opt-in
@@ -241,7 +255,7 @@ Control Plane   127.0.0.1:8766
 
 The Evidence Plane never acquires a command mutation route. Starting Control is a separate user action. SSE is notification-only: complete Agent and CommandRun details still come from their canonical audit/durable records.
 
-V3-5 verifies the foundation as a whole: complete API route inventories, Evidence GET-only behavior, exact bounded Control authority, rejected L2/L3/A5-like commands, durable cross-plane command identity, context restoration through browser history/reload, sanitized SSE reconnect/disconnect/terminal behavior and Ubuntu/Windows/frontend regression. V4-2/V4-3 add only GET analytical projections on top of that accepted authority boundary.
+V3-5 verifies the foundation as a whole: complete API route inventories, Evidence GET-only behavior, exact bounded Control authority, rejected L2/L3/A5-like commands, durable cross-plane command identity, context restoration through browser history/reload, sanitized SSE reconnect/disconnect/terminal behavior and Ubuntu/Windows/frontend regression. V4-2/V4-3/V4-4 add only GET analytical projections on top of that accepted authority boundary.
 
 ### Build the frontend
 
@@ -266,7 +280,7 @@ python scripts/run_workspace.py \
 
 Open `http://127.0.0.1:8765`.
 
-The command-store path may be configured before the Control process creates the SQLite file. Evidence readers use SQLite read-only mode; once the store appears, CommandRun deep links/SSE become available without restarting Workspace. V4 Strategy/Factor analysis additionally requires the `local-parquet` extra to open verified columnar evidence; if it is absent, unrelated Workspace surfaces remain available with explicit analytical warnings.
+The command-store path may be configured before the Control process creates the SQLite file. Evidence readers use SQLite read-only mode; once the store appears, CommandRun deep links/SSE become available without restarting Workspace. V4 Strategy/Factor/Portfolio/Execution analysis additionally requires the `local-parquet` extra to open verified columnar evidence; if it is absent, unrelated Workspace surfaces remain available with explicit analytical warnings.
 
 ### Explicitly start the local Control Plane
 
@@ -354,6 +368,7 @@ arbitrary Python
 - V4-1 verified bounded FactorSeries evidence;
 - V4-2 linked Strategy Decision Explorer with explicit close-only/no-browser-recompute semantics;
 - V4-3 linked Factor Tear Sheet with frozen A2.6 inference/multiplicity/correlation summaries and explicit derived-presentation labels;
+- V4-4 linked Portfolio / Execution analytics with authoritative A4/V4-0 sources, server-side presentation derivatives, durable order/session context and explicit benchmark-unavailable semantics;
 - context-preserving navigation and typed server-state cache/de-duplication boundary.
 
 Configuration editing remains read-only. Protocol changes must become new governed identities/forks rather than rewriting historical evidence.
@@ -410,6 +425,7 @@ The Agent never owns positions, fills, risk limits, validation thresholds or bro
 24. V4-1 materialization never rewrites A2.6 evidence, never selects direction from test data and never relabels rolling/NAV transforms as authoritative raw factor evidence.
 25. V4-2 never fabricates missing OHLC or per-factor contribution evidence and never turns a read-only linked analytics surface into trading/control authority.
 26. V4-3 never reconstructs frozen factor inference/multiplicity evidence in React and never presents candidate denominator order as an Agent generation chronology.
+27. V4-4 never reconstructs authoritative A4/V4-0 portfolio or execution facts in React and never infers benchmark/exposure evidence that core has not persisted.
 
 ## Documentation
 
@@ -431,6 +447,8 @@ The Agent never owns positions, fills, risk limits, validation thresholds or bro
 - [V4-2 Strategy Decision Explorer](docs/development/changelog-v4-2.md)
 - [V4-2 read API contract](docs/development/v4-2-api-contract.md)
 - [V4-3 Factor Tear Sheet](docs/development/changelog-v4-3.md)
+- [V4-4 Portfolio / Execution Interactive Pack](docs/development/changelog-v4-4.md)
+- [V4-4 read API contract](docs/development/v4-4-api-contract.md)
 - [Changelog](docs/development/changelog.md)
 
 ## Data note

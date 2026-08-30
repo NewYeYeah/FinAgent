@@ -18,6 +18,8 @@ from finagent.application import (
 
 from .factor_tearsheet import FactorTearSheetProjection
 from .factor_tearsheet_routes import attach_factor_tearsheet_routes
+from .portfolio_execution import PortfolioExecutionInteractiveProjection
+from .portfolio_execution_routes import attach_portfolio_execution_routes
 from .semantic import EvidenceContractError
 from .strategy_explorer import StrategyDecisionExplorerProjection
 from .workbench_control_catalog import ConfigRegistry, default_command_catalog
@@ -25,7 +27,7 @@ from .workbench_links import WorkbenchLinkProjection
 from .workbench_streams import WorkbenchStreamProjection, sse_response
 from .workspace_api import create_workspace_app as create_evidence_app
 
-WORKBENCH_API_VERSION = "finagent-workbench-api-v4.3"
+WORKBENCH_API_VERSION = "finagent-workbench-api-v4.4"
 
 
 def _attach_frontend(app: FastAPI, frontend_dir: str | Path | None) -> None:
@@ -81,10 +83,11 @@ def create_workspace_app(
     """Compose the immutable Evidence Plane with V3/V4 Workbench read models.
 
     V4-2 exposes verified StrategyDecisionSeries through the linked Strategy surface.
-    V4-3 adds a verified Factor Tear Sheet projection over immutable V4-1 period rows
-    and frozen A2.6 statistical summaries. Both remain GET-only read models: browser
-    requests cannot submit host paths, recompute core financial facts, mutate evidence
-    or expand Control authority.
+    V4-3 adds a verified Factor Tear Sheet over immutable V4-1 period rows and frozen
+    A2.6 statistical summaries. V4-4 links authoritative A4 portfolio evidence with
+    verified V4-0 execution rows for Portfolio / Execution analytics. All remain
+    GET-only read models: browser requests cannot submit host paths, recompute core
+    financial facts, mutate evidence, or expand Control authority.
     """
 
     app = create_evidence_app(
@@ -134,6 +137,10 @@ def create_workspace_app(
     )
     strategy_explorer = StrategyDecisionExplorerProjection(report_paths)
     factor_tearsheet = FactorTearSheetProjection(report_paths)
+    portfolio_execution = PortfolioExecutionInteractiveProjection(
+        app.state.workspace_v2,
+        strategy_explorer,
+    )
 
     app.state.config_registry = config_registry
     app.state.command_catalog = command_catalog
@@ -142,12 +149,14 @@ def create_workspace_app(
     app.state.workbench_streams = streams
     app.state.strategy_explorer = strategy_explorer
     app.state.factor_tearsheet = factor_tearsheet
+    app.state.portfolio_execution = portfolio_execution
     app.state.command_store_path = (
         Path(command_store_path).expanduser() if command_store_path else None
     )
     app.state.control_plane_enabled = False
 
     attach_factor_tearsheet_routes(app, factor_tearsheet)
+    attach_portfolio_execution_routes(app, portfolio_execution)
 
     @app.get("/api/v3/workbench/status")
     def get_v3_workbench_status() -> dict[str, object]:
@@ -164,6 +173,7 @@ def create_workspace_app(
             "streams": streams.status(),
             "strategy_explorer": strategy_explorer.status(),
             "factor_tearsheet": factor_tearsheet.status(),
+            "portfolio_execution": portfolio_execution.status(),
             "config_descriptor_count": len(projection.descriptors),
             "config_snapshot_count": len(projection.snapshots),
             "config_warning_count": len(projection.warnings),

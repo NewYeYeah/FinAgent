@@ -33,15 +33,18 @@ import {
 } from "./components";
 import { ReserveDetailPage, ReserveIndexPage } from "./reserve";
 import {
-  ExecutionCockpitPage,
   GovernanceIndexPage,
   GovernancePage,
-  PortfolioCockpitPage,
   ProgramCockpitPage,
   ProjectCockpitPage,
 } from "./v2";
 import { AgentWorkbenchPage, LegacyAgentRunRedirect } from "./workbench/agent";
 import { FactorTearSheetIndexPage, FactorTearSheetPage } from "./workbench/factor";
+import {
+  ExecutionInteractivePage,
+  PortfolioExecutionIndexPage,
+  PortfolioInteractivePage,
+} from "./workbench/portfolioExecution";
 import { WorkbenchReferencePage } from "./workbench/reference";
 import { WorkbenchProviders, WorkbenchShell } from "./workbench/shell";
 import { StrategyDecisionExplorerPage } from "./workbench/strategy";
@@ -457,9 +460,10 @@ export default function App() {
             <Route path="/catalog" element={<CatalogView title="Evidence catalog" description="V1-compatible immutable evidence index and deep links." />} />
             <Route path="/research" element={<CatalogView title="Research programs" description="A2/A2.5 and A2.6 factor evidence, robust gates and frozen selections." predicate={(item) => !item.has_portfolio} />} />
             <Route path="/program/:programId" element={<ProgramCockpitPage />} />
-            <Route path="/portfolio" element={<CatalogView title="Portfolio validations" description="A4 gross/net portfolio, execution and economic evidence." predicate={(item) => item.has_portfolio} />} />
-            <Route path="/portfolio/:validationId" element={<PortfolioCockpitPage />} />
-            <Route path="/execution/:validationId" element={<ExecutionCockpitPage />} />
+            <Route path="/portfolio" element={<PortfolioExecutionIndexPage mode="portfolio" />} />
+            <Route path="/portfolio/:validationId" element={<PortfolioInteractivePage />} />
+            <Route path="/execution" element={<PortfolioExecutionIndexPage mode="execution" />} />
+            <Route path="/execution/:validationId" element={<ExecutionInteractivePage />} />
             <Route path="/strategy" element={<StrategyDecisionExplorerPage />} />
             <Route path="/strategy/:seriesId" element={<StrategyDecisionExplorerPage />} />
             <Route path="/factors" element={<FactorTearSheetIndexPage />} />
