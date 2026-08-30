@@ -106,10 +106,12 @@ class StrategyExplorerSeriesItem:
 class StrategyDecisionExplorerProjection:
     """Verified read-only V4-2 index over immutable V4-0 decision series.
 
-    Discovery is intentionally separate from the V1 evidence catalog.  A V4 manifest
+    Discovery is intentionally separate from the V1 evidence catalog. A V4 manifest
     is not promoted into an A2/A4 EvidenceBundle and the browser never receives a
-    host path.  Each listed series is opened through StrategyDecisionSeriesProjection,
+    host path. Each listed series is opened through StrategyDecisionSeriesProjection,
     so source-report, ledger and Parquet bindings are verified before it is visible.
+    Missing optional DuckDB support leaves the Workbench available and records a
+    warning instead of breaking unrelated V3/V2 evidence surfaces.
     """
 
     def __init__(self, report_paths: Sequence[str | Path]) -> None:
@@ -139,10 +141,14 @@ class StrategyDecisionExplorerProjection:
             try:
                 manifest = StrategyDecisionSeriesManifest.from_dict(payload)
                 projection = StrategyDecisionSeriesProjection(path)
-            except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
-                warnings.append(
-                    f"{path}: {type(exc).__name__}: {exc}"
-                )
+            except (
+                OSError,
+                RuntimeError,
+                ValueError,
+                TypeError,
+                json.JSONDecodeError,
+            ) as exc:
+                warnings.append(f"{path}: {type(exc).__name__}: {exc}")
                 continue
             series_id = manifest.series_id
             if series_id in conflicts:
