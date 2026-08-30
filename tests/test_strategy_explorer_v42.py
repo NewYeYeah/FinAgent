@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -89,6 +90,28 @@ def test_v42_projection_discovers_verified_series_and_dimensions(tmp_path: Path)
     assert selected["items"][0]["fill_price"] == 10.1
     assert selected["items"][0]["alpha_score"] == 1.25
     assert projection.by_portfolio(validation_id).series_id == series_id
+
+
+def test_v42_equivalent_rematerialization_is_deduplicated(tmp_path: Path) -> None:
+    manifest_path, series_id, _ = _write_v40(tmp_path)
+    original = json.loads(manifest_path.read_text(encoding="utf-8"))
+    original_data = tmp_path / str(original["data_file"])
+    replay_data = tmp_path / "a4.strategy-decisions-replay.parquet"
+    replay_manifest = tmp_path / "a4.strategy-decisions-replay.json"
+    shutil.copy2(original_data, replay_data)
+    replay = dict(original)
+    replay["data_file"] = replay_data.name
+    replay_manifest.write_text(
+        json.dumps(replay, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    projection = StrategyDecisionExplorerProjection((tmp_path,))
+    catalog = projection.catalog()
+    assert len(catalog["items"]) == 1
+    assert catalog["items"][0]["series_id"] == series_id
+    assert catalog["warnings"] == []
+    assert any("equivalent StrategyDecisionSeries" in notice for notice in catalog["notices"])
 
 
 def test_v42_evidence_api_is_get_only_and_bounded(tmp_path: Path) -> None:
