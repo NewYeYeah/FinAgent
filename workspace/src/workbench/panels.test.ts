@@ -3,13 +3,25 @@ import { describe, expect, it } from "vitest";
 import { PanelRegistry, defaultPanelRegistry } from "./panels";
 
 describe("PanelRegistry", () => {
-  it("exposes current modules, V3-2B catalogs and reserved future extension surfaces", () => {
+  it("exposes current modules, V4 Strategy Explorer, V3 catalogs and reserved future surfaces", () => {
     expect(defaultPanelRegistry.get("agent")).toMatchObject({
       status: "available",
       route: "/agent",
       slot: "main",
     });
     expect(defaultPanelRegistry.get("strategy")).toMatchObject({
+      status: "available",
+      route: "/strategy",
+      slot: "chart",
+      context_keys: [
+        "portfolio_validation_id",
+        "asset_id",
+        "date_range",
+        "session_date",
+        "fold_id",
+      ],
+    });
+    expect(defaultPanelRegistry.get("execution")).toMatchObject({
       status: "reserved",
       slot: "chart",
     });
