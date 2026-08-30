@@ -318,10 +318,12 @@ describe("V4-4 Portfolio / Execution Interactive Pack", () => {
       expect(screen.getByTestId("location").textContent).toContain(`asset=${encodeURIComponent(asset)}`);
     });
 
-    fireEvent.change(screen.getByLabelText(/^Order/), { target: { value: orderId } });
+    const orderSelect = await screen.findByLabelText(/^Order/);
+    fireEvent.change(orderSelect, { target: { value: orderId } });
     await waitFor(() => expect(screen.getByTestId("location").textContent).toContain(`order=${orderId}`));
 
-    fireEvent.change(screen.getByLabelText(/^Session/), { target: { value: "2024-01-02" } });
+    const sessionSelect = await screen.findByLabelText(/^Session/);
+    fireEvent.change(sessionSelect, { target: { value: "2024-01-02" } });
     await waitFor(() => {
       const location = screen.getByTestId("location").textContent ?? "";
       expect(location).toContain("session=2024-01-02");
