@@ -8,8 +8,9 @@ afterEach(() => {
 
 describe("V4 strategy API client", () => {
   it("encodes bounded decision filters without host paths or executable inputs", async () => {
-    const fetchMock = vi.fn(() =>
-      Promise.resolve(
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      void input;
+      return Promise.resolve(
         new Response(
           JSON.stringify({
             schema_version: "finagent.strategy-decision-series.query.v1",
@@ -23,8 +24,8 @@ describe("V4 strategy API client", () => {
           }),
           { status: 200, headers: { "Content-Type": "application/json" } },
         ),
-      ),
-    );
+      );
+    });
     vi.stubGlobal("fetch", fetchMock);
 
     await workspaceApi.strategyDecisionsV4("series-v42", {
