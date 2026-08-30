@@ -13,6 +13,11 @@ from finagent.data import (
     LocalAshareDatasetLayout,
 )
 
+from .ashare_research_workflows import (
+    run_development_factor_research,
+    run_robust_research,
+)
+
 ApplicationExecutionStatus = Literal["succeeded", "rejected"]
 
 APPLICATION_SERVICE_BINDINGS: dict[str, str] = {
@@ -21,6 +26,12 @@ APPLICATION_SERVICE_BINDINGS: dict[str, str] = {
     ),
     "data.certify_local_ashare": (
         "finagent.application.control_services.LocalAshareCertificationApplicationService"
+    ),
+    "research.run_development": (
+        "finagent.application.control_services.DevelopmentResearchApplicationService"
+    ),
+    "research.run_a2p6": (
+        "finagent.application.control_services.RobustResearchApplicationService"
     ),
     "review.export_bundle": (
         "finagent.application.control_services.ReviewBundleExportApplicationService"
@@ -248,6 +259,64 @@ class LocalAshareCertificationApplicationService:
         )
 
 
+class DevelopmentResearchApplicationService:
+    """Governed L1 entry for the A2/A2.5 historical development workflow."""
+
+    command_id = "research.run_development"
+
+    def execute(
+        self,
+        invocation: ApplicationCommandInvocation,
+    ) -> ApplicationCommandExecution:
+        _assert_command(invocation, self.command_id)
+        if invocation.parameters:
+            raise ValueError("research.run_development accepts only ConfigSnapshot inputs")
+        workflow = run_development_factor_research(invocation.config_values)
+        evidence_id = workflow.evidence_ids[0]
+        return ApplicationCommandExecution(
+            command_id=self.command_id,
+            status="succeeded",
+            outputs={
+                "evidence_id": evidence_id,
+                "report_path": str(workflow.report_path),
+                "reserve_access": "forbidden",
+                "scope": "historical_development_research",
+            },
+            artifact_paths=tuple(str(path) for path in workflow.artifact_paths),
+            evidence_ids=workflow.evidence_ids,
+            message="A-share development research completed",
+        )
+
+
+class RobustResearchApplicationService:
+    """Governed L1 entry for the frozen A2.6 robust ResearchProgram workflow."""
+
+    command_id = "research.run_a2p6"
+
+    def execute(
+        self,
+        invocation: ApplicationCommandInvocation,
+    ) -> ApplicationCommandExecution:
+        _assert_command(invocation, self.command_id)
+        if invocation.parameters:
+            raise ValueError("research.run_a2p6 accepts only ConfigSnapshot inputs")
+        workflow = run_robust_research(invocation.config_values)
+        evidence_id = workflow.evidence_ids[0]
+        return ApplicationCommandExecution(
+            command_id=self.command_id,
+            status="succeeded",
+            outputs={
+                "evidence_id": evidence_id,
+                "report_path": str(workflow.report_path),
+                "reserve_access": "forbidden",
+                "scope": "historical_robust_research",
+            },
+            artifact_paths=tuple(str(path) for path in workflow.artifact_paths),
+            evidence_ids=workflow.evidence_ids,
+            message="A2.6 robust research completed with reserve untouched",
+        )
+
+
 class ReviewBundleExportApplicationService:
     command_id = "review.export_bundle"
 
@@ -303,6 +372,8 @@ def default_application_service_registry(
         (
             ConfigValidationApplicationService(config_registry),
             LocalAshareCertificationApplicationService(),
+            DevelopmentResearchApplicationService(),
+            RobustResearchApplicationService(),
             ReviewBundleExportApplicationService(),
         )
     )
