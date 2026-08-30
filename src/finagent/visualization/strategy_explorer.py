@@ -125,7 +125,6 @@ class StrategyDecisionExplorerProjection:
     def _scan(self) -> None:
         items: dict[str, StrategyExplorerSeriesItem] = {}
         projections: dict[str, StrategyDecisionSeriesProjection] = {}
-        manifests: dict[str, Mapping[str, Any]] = {}
         warnings: list[str] = []
         notices: list[str] = []
         conflicts: set[str] = set()
@@ -151,10 +150,11 @@ class StrategyDecisionExplorerProjection:
                 warnings.append(f"{path}: {type(exc).__name__}: {exc}")
                 continue
             series_id = manifest.series_id
+            item = StrategyExplorerSeriesItem.from_manifest(manifest)
             if series_id in conflicts:
                 continue
             if series_id in items:
-                if dict(manifests[series_id]) == dict(payload):
+                if items[series_id] == item:
                     notices.append(
                         f"{path}: equivalent StrategyDecisionSeries {series_id!r} ignored"
                     )
@@ -165,12 +165,10 @@ class StrategyDecisionExplorerProjection:
                 )
                 items.pop(series_id, None)
                 projections.pop(series_id, None)
-                manifests.pop(series_id, None)
                 conflicts.add(series_id)
                 continue
-            items[series_id] = StrategyExplorerSeriesItem.from_manifest(manifest)
+            items[series_id] = item
             projections[series_id] = projection
-            manifests[series_id] = payload
 
         self._items = items
         self._projections = projections
