@@ -72,10 +72,10 @@ def _number(value: object, default: float = 0.0) -> float:
     return result
 
 
-def _integer(value: object, default: int = 0) -> int:
+def _integer(value: Any, default: int = 0) -> int:
     if value is None:
         return default
-    return int(value)  # type: ignore[arg-type]
+    return int(value)
 
 
 @dataclass(frozen=True, slots=True)
