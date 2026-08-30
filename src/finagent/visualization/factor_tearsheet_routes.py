@@ -5,13 +5,15 @@ from datetime import date
 from fastapi import FastAPI, HTTPException, Query
 
 from .factor_tearsheet import FactorTearSheetProjection
+from .portfolio_execution import PortfolioExecutionInteractiveProjection
+from .portfolio_execution_routes import attach_portfolio_execution_routes
 
 
 def attach_factor_tearsheet_routes(
     app: FastAPI,
     projection: FactorTearSheetProjection,
 ) -> None:
-    """Attach GET-only V4-3 Factor Tear Sheet routes to the Evidence Plane."""
+    """Attach GET-only V4-3/V4-4 linked analytics routes to the Evidence Plane."""
 
     @app.get("/api/v4/factor-series/status")
     def get_v4_factor_series_status() -> dict[str, object]:
@@ -145,3 +147,10 @@ def attach_factor_tearsheet_routes(
             raise HTTPException(status_code=404, detail="factor series not found") from exc
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    portfolio_execution = PortfolioExecutionInteractiveProjection(
+        app.state.workspace_v2,
+        app.state.strategy_explorer,
+    )
+    app.state.portfolio_execution = portfolio_execution
+    attach_portfolio_execution_routes(app, portfolio_execution)
