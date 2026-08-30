@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field as dataclass_field
 from datetime import date
 from pathlib import Path
 from typing import Any, Literal, Protocol
@@ -49,9 +49,9 @@ class ApplicationCommandInvocation:
 
     command_id: str
     config_snapshot_id: str | None = None
-    config_values: Mapping[str, object] = field(default_factory=dict)
-    parameters: Mapping[str, object] = field(default_factory=dict)
-    context: Mapping[str, str] = field(default_factory=dict)
+    config_values: Mapping[str, object] = dataclass_field(default_factory=dict)
+    parameters: Mapping[str, object] = dataclass_field(default_factory=dict)
+    context: Mapping[str, str] = dataclass_field(default_factory=dict)
     requested_by: str = "system"
 
     def __post_init__(self) -> None:
@@ -74,7 +74,7 @@ class ApplicationCommandInvocation:
 class ApplicationCommandExecution:
     command_id: str
     status: ApplicationExecutionStatus
-    outputs: Mapping[str, object] = field(default_factory=dict)
+    outputs: Mapping[str, object] = dataclass_field(default_factory=dict)
     artifact_paths: tuple[str, ...] = ()
     evidence_ids: tuple[str, ...] = ()
     message: str = ""
