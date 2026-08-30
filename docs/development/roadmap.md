@@ -4,9 +4,9 @@ This roadmap is the canonical current implementation status. [`current-developme
 
 ## Current baseline
 
-The implementation baseline has now completed the **Visualization V3 Workbench Foundation through V3-5 acceptance** and the first two V4 linked-analytics evidence layers, **V4-0 StrategyDecisionSeriesEvidence** and **V4-1 FactorSeriesEvidence**, on top of PIT data contracts, bounded Agent research, A2.6 robust ResearchPrograms, A3 execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2 and A5-1～A5-4 reserve governance/evidence.
+The implementation baseline has now completed the **Visualization V3 Workbench Foundation through V3-5 acceptance** and the first three V4 linked-analytics stages: **V4-0 StrategyDecisionSeriesEvidence**, **V4-1 FactorSeriesEvidence** and **V4-2 Strategy Decision Explorer**, on top of PIT data contracts, bounded Agent research, A2.6 robust ResearchPrograms, A3 execution semantics, A4 execution-aware portfolio validation, Visualization V0/V1/V2 and A5-1～A5-4 reserve governance/evidence.
 
-The accepted V3 foundation includes Agent indexing, the governed Workbench/Control substrate, typed deep links and sanitized product SSE. V4-0 adds immutable authoritative per-asset strategy-decision series without changing A4 report/ledger identity. V4-1 adds immutable factor-period IC/quantile/long-short/turnover/coverage evidence while keeping the frozen A2.6 report unchanged and explicitly labeling rolling IC/NAV transforms as derived. Detailed records are in [`changelog-v3-5.md`](changelog-v3-5.md), [`changelog-v4-0.md`](changelog-v4-0.md) and [`changelog-v4-1.md`](changelog-v4-1.md).
+The accepted V3 foundation includes Agent indexing, the governed Workbench/Control substrate, typed deep links and sanitized product SSE. V4-0 adds immutable authoritative per-asset strategy-decision series without changing A4 report/ledger identity. V4-1 adds immutable factor-period IC/quantile/long-short/turnover/coverage evidence while keeping the frozen A2.6 report unchanged and explicitly labeling rolling IC/NAV transforms as derived. V4-2 activates the linked Strategy Workbench over verified V4-0 rows with bounded GET-only APIs and explicit no-fabrication boundaries for missing OHLC and per-factor contribution evidence. Detailed records are in [`changelog-v3-5.md`](changelog-v3-5.md), [`changelog-v4-0.md`](changelog-v4-0.md), [`changelog-v4-1.md`](changelog-v4-1.md) and [`changelog-v4-2.md`](changelog-v4-2.md).
 
 No production 2025+ reserve has been consumed by development or CI. Production reserve execution remains an independent human-authorized operation.
 
@@ -207,21 +207,21 @@ review.export_bundle
 - added dedicated `v4-factor-series` Ruff/mypy/import/dependency + Ubuntu/Windows focused acceptance while retaining the existing A2.6 and repository-wide gates;
 - recorded the evidence/reconciliation/storage contract in [`changelog-v4-1.md`](changelog-v4-1.md).
 
-### Current — V4-2 Strategy Decision Explorer
+### Completed — V4-2 Strategy Decision Explorer
 
-Build the first linked interactive quantitative surface over **V4-0 authoritative StrategyDecisionSeriesEvidence**:
+- added a verified `StrategyDecisionExplorerProjection` that discovers V4-0 manifests under configured report roots and exposes a series only after the existing A4 report/ledger/Parquet identity, SHA, schema and row checks pass;
+- added GET-only `/api/v4/strategy-series*` catalog, portfolio lookup, detail, dimensions and bounded decision routes; browser requests contain semantic filters only and retain `limit <= 5000`;
+- activated the Strategy module in the V3 Workbench and bound `portfolio_validation_id`, `asset_id`, `date_range`, `session_date` and `fold_id` through the existing URL-backed `WorkbenchContext`;
+- rendered the authoritative close/reference/fill execution timeline, buy/sell fill markers, pre-trade/target/realized weights, combined frozen AlphaModel context, A3 quantities/constraint codes and per-session gross/net PnL/fees/slippage directly from V4-0 rows;
+- kept React presentation-only: no target, alpha, execution, cumulative portfolio PnL or replacement financial evidence is recalculated in the browser;
+- explicitly reports `ohlc_available=false`: V4-0 has no authoritative open/high/low evidence, so V4-2 does not fabricate candlesticks from close marks;
+- explicitly avoids per-factor contribution inference because V4-0 persists combined alpha plus factor identities, not per-asset component contributions;
+- de-duplicates semantically equivalent deterministic rematerializations even if their physical output filenames differ, while conflicting `series_id` semantics fail closed;
+- missing optional DuckDB/local-Parquet support degrades V4-2 to an explicit catalog warning rather than breaking unrelated Workspace surfaces;
+- added Ubuntu/Windows Workspace API, Ruff/mypy, TypeScript/Vitest/build/Playwright and repository/A2.6/A5/V4/legacy-UI regression coverage;
+- recorded the delivered contract in [`changelog-v4-2.md`](changelog-v4-2.md) and [`v4-2-api-contract.md`](v4-2-api-contract.md).
 
-- price/candlestick + signal/order/fill markers;
-- factor contribution / alpha context without recomputing financial facts in React;
-- target vs realized weights;
-- gross-to-net PnL and explicit fee/slippage explanation;
-- asset/date/session/fold selection through `WorkbenchContext`;
-- bounded Evidence Plane projection APIs rather than raw Parquet/host-path access;
-- every rendered value must declare authoritative/derived/diagnostic semantics.
-
-V4-2 must not wait for the Factor Tear Sheet and must not reconstruct the strategy decision path from A4 summary reports. V4-1 FactorSeries remains available for later cross-linking, while the full Factor Tear Sheet remains V4-3.
-
-### P1 — V4-3 Factor Tear Sheet
+### Current — V4-3 Factor Tear Sheet
 
 Consume V4-1 FactorSeriesEvidence for:
 
@@ -234,6 +234,8 @@ Consume V4-1 FactorSeriesEvidence for:
 - factor correlation cluster;
 - Agent discovery evolution.
 
+V4-3 must consume V4-1 authoritative/derived series and frozen A2.6 statistical summaries rather than reconstructing factor statistics in React. Asset/date/factor/fold selections must continue through `WorkbenchContext` and retain the authority class of every rendered value.
+
 ### P1 — V4-4 Portfolio / Execution Interactive Pack
 
 Use existing V2 evidence plus new benchmark/series evidence for linked NAV/drawdown/rolling metrics/monthly returns/order lifecycle/constraint attribution/cost waterfall/target-realized views.
@@ -244,12 +246,12 @@ Every chart must declare evidence requirements and authority class, and all asse
 
 ## Open-source implementation choices
 
-- **Apache ECharts** remains the main analytical chart engine.
+- **Apache ECharts** remains the main analytical chart engine and powers the delivered V4-2 close/weight/alpha/PnL analytical views.
 - **React Flow** remains the lineage/DAG renderer.
 - **TanStack Table** remains the structured-table foundation.
 - the current typed query-provider abstraction remains the server-state boundary; TanStack Query can replace the internal implementation later without changing consumers.
 - editable JSON-Schema forms remain deferred until explicit Config fork/mutation authority exists.
-- **TradingView Lightweight Charts** is planned for V4-2 candlestick/volume/order-marker views.
+- **TradingView Lightweight Charts** remains deferred until a separately frozen authoritative OHLC evidence contract exists; V4-2 deliberately does not synthesize candlesticks from close data.
 - **FINOS Perspective** remains deferred until A6/QMT profiling proves a large/streaming-table need.
 - Alphalens/QuantStats remain visual/regression references, never alternate authoritative calculation paths.
 
