@@ -58,7 +58,7 @@ export const defaultPanelRegistry = new PanelRegistry([
   { panel_id: "command-center", module: "command-center", title: "Command Center", route: "/", status: "available", context_keys: ["program_id", "portfolio_validation_id", "reserve_id"], slot: "main" },
   { panel_id: "agent", module: "agent", title: "Agent", route: "/agent", status: "available", context_keys: ["project_id", "thread_id", "run_id"], slot: "main" },
   { panel_id: "strategy", module: "strategy", title: "Strategy", route: "/strategy", status: "available", context_keys: ["portfolio_validation_id", "asset_id", "date_range", "session_date", "fold_id"], slot: "chart" },
-  { panel_id: "factors", module: "factors", title: "Factors", route: "/research", status: "available", context_keys: ["program_id", "factor_id", "fold_id"], slot: "chart" },
+  { panel_id: "factors", module: "factors", title: "Factors", route: "/factors", status: "available", context_keys: ["program_id", "factor_id", "date_range", "fold_id"], slot: "chart" },
   { panel_id: "portfolio", module: "portfolio", title: "Portfolio", route: "/portfolio", status: "available", context_keys: ["portfolio_validation_id", "date_range", "fold_id"], slot: "chart" },
   { panel_id: "execution", module: "execution", title: "Execution", status: "reserved", context_keys: ["portfolio_validation_id", "asset_id", "session_date"], slot: "chart" },
   { panel_id: "risk", module: "risk", title: "Risk", status: "reserved", context_keys: ["strategy_id", "portfolio_validation_id", "date_range"], slot: "chart" },
