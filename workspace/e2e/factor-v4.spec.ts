@@ -258,12 +258,12 @@ test("V4-3 renders verified factor analytics and preserves context without Contr
   await expect(context).toContainText(programId);
   await expect(context).toContainText(factorA);
 
-  await page.getByLabel("Fold").selectOption("wf-2");
+  await page.locator("label").filter({ hasText: /^Fold/ }).locator("select").selectOption("wf-2");
   await expect(page).toHaveURL(/fold=wf-2/);
   await expect(page).toHaveURL(new RegExp(`program=${programId}`));
   await expect(page).toHaveURL(new RegExp(`factor=${factorA}`));
 
-  await page.getByLabel("Start").fill("2024-01-03");
+  await page.locator("label").filter({ hasText: /^Start/ }).locator('input[type="date"]').fill("2024-01-03");
   await expect(page).toHaveURL(/range=2024-01-03..2024-02-02/);
 
   await page.reload();
