@@ -23,12 +23,20 @@ export interface StrategySeriesCatalogV4 {
   notices: string[];
 }
 
-export interface StrategySeriesManifestV4 extends StrategySeriesItemV4 {
+export interface StrategySeriesManifestV4 {
   schema_version: string;
+  authority: "authoritative";
+  series_id: string;
+  portfolio_validation_id: string;
   a4_spec_id: string;
+  source_program_result_id: string;
   source_program_spec_id: string;
   source_program_report_digest: string;
+  source_selection_id: string;
+  data_version: string;
   execution_ledger_digest: string;
+  selected_feature_digests: string[];
+  alpha_model_ids: string[];
   rows_digest: string;
   source_report_file: string;
   source_report_sha256: string;
@@ -36,8 +44,12 @@ export interface StrategySeriesManifestV4 extends StrategySeriesItemV4 {
   source_ledger_sha256: string;
   data_file: string;
   data_sha256: string;
+  row_count: number;
   source_session_count: number;
   row_session_count: number;
+  asset_count: number;
+  start_date: string | null;
+  end_date: string | null;
   columns: string[];
   nullable_columns: string[];
 }
