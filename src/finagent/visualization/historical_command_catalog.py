@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from .workbench_control_catalog import CommandCatalog, CommandSpec, default_command_catalog
+from .workbench_control_catalog_base import CommandCatalog, CommandSpec, default_command_catalog
 
 _AC1_BINDINGS: dict[str, tuple[str, str]] = {
     "research.run_development": (
@@ -38,13 +38,7 @@ def _ac1_spec(spec: CommandSpec) -> CommandSpec:
 
 
 def default_historical_command_catalog() -> CommandCatalog:
-    """Return the V3 command vocabulary with A-C1 historical L1 services activated.
-
-    The underlying V3 catalog remains the frozen vocabulary record. A-C1 changes only
-    gateway readiness/binding for the three previously adapter-required historical
-    workflows; command level, confirmation, config descriptor and produced evidence
-    contracts remain unchanged.
-    """
+    """Return the frozen V3 vocabulary with A-C1 historical L1 bindings activated."""
 
     base = default_command_catalog()
     return CommandCatalog(tuple(_ac1_spec(spec) for spec in base.specs))
