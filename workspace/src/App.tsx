@@ -43,6 +43,7 @@ import {
 import { AgentWorkbenchPage, LegacyAgentRunRedirect } from "./workbench/agent";
 import { WorkbenchReferencePage } from "./workbench/reference";
 import { WorkbenchProviders, WorkbenchShell } from "./workbench/shell";
+import { StrategyDecisionExplorerPage } from "./workbench/strategy";
 import "./workbench/workbench.css";
 
 import type {
@@ -458,6 +459,8 @@ export default function App() {
             <Route path="/portfolio" element={<CatalogView title="Portfolio validations" description="A4 gross/net portfolio, execution and economic evidence." predicate={(item) => item.has_portfolio} />} />
             <Route path="/portfolio/:validationId" element={<PortfolioCockpitPage />} />
             <Route path="/execution/:validationId" element={<ExecutionCockpitPage />} />
+            <Route path="/strategy" element={<StrategyDecisionExplorerPage />} />
+            <Route path="/strategy/:seriesId" element={<StrategyDecisionExplorerPage />} />
             <Route path="/governance" element={<GovernanceIndexPage />} />
             <Route path="/governance/:evidenceId" element={<GovernancePage />} />
             <Route path="/reserve" element={<ReserveIndexPage />} />
