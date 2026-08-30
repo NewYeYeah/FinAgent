@@ -9,7 +9,9 @@ from pathlib import Path
 
 import uvicorn
 
-from finagent.visualization.workbench_control_api import create_control_app
+from finagent.visualization.historical_workbench_control_api import (
+    create_historical_control_app,
+)
 
 _LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
 
@@ -17,8 +19,10 @@ _LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Run the explicit local-only FinAgent Workbench Control Plane. "
-            "Only reviewed application_service_ready L0/L1 commands are eligible."
+            "Run the explicit local-only FinAgent Historical Workbench Control Plane. "
+            "A-C1 enables only reviewed application_service_ready L0/L1 historical "
+            "commands; reserve, promotion, PAPER, broker and live-capital authority "
+            "remain forbidden."
         )
     )
     parser.add_argument("--configs", action="append", default=[])
@@ -46,7 +50,7 @@ def main() -> int:
     args = _parser().parse_args()
     if args.host not in _LOOPBACK_HOSTS:
         raise SystemExit(
-            "V3-2 Control Plane is local-only and refuses non-loopback --host values"
+            "A-C1 Control Plane is local-only and refuses non-loopback --host values"
         )
     if not 1 <= args.port <= 65535:
         raise SystemExit("--port must be in [1, 65535]")
@@ -65,7 +69,8 @@ def main() -> int:
         "port": args.port,
         "local_only": True,
         "control_plane_enabled": True,
-        "authority": "application_service_ready L0/L1 only",
+        "historical_operations": True,
+        "authority": "reviewed application_service_ready L0/L1 historical commands only",
     }
     if args.print_config:
         print(json.dumps(config, ensure_ascii=False, indent=2))
@@ -79,7 +84,7 @@ def main() -> int:
         os.environ["FINAGENT_CONTROL_ACTOR"] = args.actor
         os.environ["FINAGENT_CONTROL_WORKERS"] = str(args.workers)
         uvicorn.run(
-            "finagent.visualization.workbench_control_api:create_app_from_environment",
+            "finagent.visualization.historical_workbench_control_api:create_app_from_environment",
             factory=True,
             host=args.host,
             port=args.port,
@@ -87,7 +92,7 @@ def main() -> int:
         )
         return 0
 
-    app = create_control_app(
+    app = create_historical_control_app(
         config_paths=configs,
         report_paths=reports,
         store_path=args.store,
