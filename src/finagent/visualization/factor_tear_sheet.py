@@ -56,6 +56,32 @@ def _text(value: object) -> str:
     return "" if value is None else str(value).strip()
 
 
+def _frozen_statistics(candidate: Mapping[str, Any]) -> dict[str, object]:
+    """Project frozen A2.6 fields without calculating a replacement statistic.
+
+    A2.6 persists HAC and block-bootstrap values in nested objects.  The original
+    nested structures remain present.  Stable flat aliases are copied verbatim for
+    simple Workbench cards; the aliases are a field projection, not a recomputation.
+    """
+
+    output: dict[str, object] = dict(candidate)
+    hac = _mapping(candidate.get("hac"))
+    bootstrap = _mapping(candidate.get("block_bootstrap"))
+    aliases = {
+        "hac_tstat": hac.get("tstat"),
+        "raw_hac_pvalue": hac.get("raw_pvalue"),
+        "holm_adjusted_pvalue": hac.get("holm_adjusted_pvalue"),
+        "bh_qvalue": hac.get("bh_qvalue"),
+        "bootstrap_pvalue": bootstrap.get("pvalue"),
+        "bootstrap_ci_lower": bootstrap.get("ci_lower"),
+        "bootstrap_ci_upper": bootstrap.get("ci_upper"),
+    }
+    for key, value in aliases.items():
+        if value is not None:
+            output[key] = value
+    return output
+
+
 @dataclass(frozen=True, slots=True)
 class FactorTearSheetSeriesItem:
     series_id: str
@@ -390,7 +416,7 @@ class FactorTearSheetProjection:
                     "feature_id": feature_id,
                     "feature_digest": digest,
                     "selected": digest in set(manifest.selected_feature_digests),
-                    "statistics": candidate,
+                    "statistics": _frozen_statistics(candidate),
                     "folds": folds,
                     "gate": gate_by_digest.get(digest),
                     "selection_component": selected_by_digest.get(digest),
@@ -411,6 +437,7 @@ class FactorTearSheetProjection:
             "read_only": True,
             "authority": "authoritative_frozen_a2p6_summary",
             "statistics_recomputed": False,
+            "statistics_projection": "source_structure_plus_direct_field_aliases",
             "series_id": manifest.series_id,
             "program_id": manifest.program_id,
             "program_result_id": manifest.program_result_id,
