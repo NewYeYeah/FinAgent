@@ -4,6 +4,7 @@ import asyncio
 import os
 import sqlite3
 from collections.abc import Sequence
+from datetime import date
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query, Request
@@ -16,12 +17,13 @@ from finagent.application import (
 )
 
 from .semantic import EvidenceContractError
+from .strategy_explorer import StrategyDecisionExplorerProjection
 from .workbench_control_catalog import ConfigRegistry, default_command_catalog
 from .workbench_links import WorkbenchLinkProjection
 from .workbench_streams import WorkbenchStreamProjection, sse_response
 from .workspace_api import create_workspace_app as create_evidence_app
 
-WORKBENCH_API_VERSION = "finagent-workbench-api-v3.4"
+WORKBENCH_API_VERSION = "finagent-workbench-api-v4.2"
 
 
 def _attach_frontend(app: FastAPI, frontend_dir: str | Path | None) -> None:
@@ -74,12 +76,12 @@ def create_workspace_app(
         "http://localhost:5173",
     ),
 ) -> FastAPI:
-    """Compose the immutable Evidence Plane with V3 Workbench read models.
+    """Compose the immutable Evidence Plane with V3/V4 Workbench read models.
 
-    V3-4 adds SSE over stable Agent/CommandRun product projections. The transport
-    reads canonical audit/durable command state only. It never streams prompts,
-    provider callbacks, hidden reasoning, raw OTLP/Phoenix spans, arbitrary command
-    outputs or host artifact paths. All Evidence Plane routes remain GET-only.
+    V4-2 adds a bounded Strategy Decision Explorer projection over immutable V4-0
+    StrategyDecisionSeries.  It exposes only verified GET projections and never
+    accepts host paths, recomputes A4 financial facts, mutates evidence or expands
+    Control authority.
     """
 
     app = create_evidence_app(
@@ -127,12 +129,14 @@ def create_workspace_app(
         agent_audit_path=agent_audit_path,
         command_store_path=command_store_path,
     )
+    strategy_explorer = StrategyDecisionExplorerProjection(report_paths)
 
     app.state.config_registry = config_registry
     app.state.command_catalog = command_catalog
     app.state.application_service_ready_commands = catalog_ready_commands
     app.state.workbench_links = links
     app.state.workbench_streams = streams
+    app.state.strategy_explorer = strategy_explorer
     app.state.command_store_path = (
         Path(command_store_path).expanduser() if command_store_path else None
     )
@@ -151,6 +155,7 @@ def create_workspace_app(
             "control_plane_separate": True,
             "deep_links": links.status(),
             "streams": streams.status(),
+            "strategy_explorer": strategy_explorer.status(),
             "config_descriptor_count": len(projection.descriptors),
             "config_snapshot_count": len(projection.snapshots),
             "config_warning_count": len(projection.warnings),
@@ -158,6 +163,80 @@ def create_workspace_app(
             "application_service_ready_command_count": len(catalog_ready_commands),
             "application_service_ready_commands": list(catalog_ready_commands),
         }
+
+    @app.get("/api/v4/strategy-series")
+    def get_v4_strategy_series() -> dict[str, object]:
+        return strategy_explorer.catalog()
+
+    @app.get("/api/v4/strategy-series/by-portfolio/{portfolio_validation_id}")
+    def get_v4_strategy_series_by_portfolio(
+        portfolio_validation_id: str,
+    ) -> dict[str, object]:
+        try:
+            return strategy_explorer.by_portfolio(portfolio_validation_id).to_dict()
+        except KeyError as exc:
+            raise HTTPException(
+                status_code=404,
+                detail="StrategyDecisionSeries not found for portfolio validation",
+            ) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.get("/api/v4/strategy-series/{series_id}")
+    def get_v4_strategy_series_detail(series_id: str) -> dict[str, object]:
+        try:
+            item = strategy_explorer.item(series_id)
+            manifest = strategy_explorer.projection(series_id).manifest
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="strategy series not found") from exc
+        return {
+            "schema_version": "finagent.strategy-explorer.series.v1",
+            "read_only": True,
+            "item": item.to_dict(),
+            "manifest": manifest.to_dict(),
+            "presentation": {
+                "price_semantics": "authoritative_close_only",
+                "ohlc_available": False,
+                "browser_recomputation": False,
+                "factor_contribution_semantics": (
+                    "combined alpha context and frozen component identities only"
+                ),
+            },
+        }
+
+    @app.get("/api/v4/strategy-series/{series_id}/dimensions")
+    def get_v4_strategy_series_dimensions(series_id: str) -> dict[str, object]:
+        try:
+            return strategy_explorer.dimensions(series_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="strategy series not found") from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.get("/api/v4/strategy-series/{series_id}/decisions")
+    def get_v4_strategy_decisions(
+        series_id: str,
+        asset: str | None = None,
+        start: date | None = None,
+        end: date | None = None,
+        fold_id: str | None = None,
+        limit: int = Query(default=1000, ge=1, le=5000),
+        offset: int = Query(default=0, ge=0),
+    ) -> dict[str, object]:
+        try:
+            return strategy_explorer.query(
+                series_id,
+                asset=asset,
+                start=start,
+                end=end,
+                fold_id=fold_id,
+                limit=limit,
+                offset=offset,
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="strategy series not found") from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     @app.get("/api/v3/deep-links/status")
     def get_v3_deep_link_status() -> dict[str, object]:

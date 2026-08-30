@@ -35,6 +35,13 @@ import type {
   ControlRunRequestV3,
   ControlStatusV3,
 } from "./workbench/controlTypes";
+import type {
+  StrategyDecisionQueryV4,
+  StrategySeriesCatalogV4,
+  StrategySeriesDetailV4,
+  StrategySeriesDimensionsV4,
+  StrategySeriesItemV4,
+} from "./workbench/strategyTypes";
 
 const API_BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
 const CONTROL_API_BASE = (
@@ -90,6 +97,27 @@ async function controlPostJson<TBody extends object, TResult>(
   return { status: response.status, data: (await response.json()) as TResult };
 }
 
+function strategyDecisionQueryPath(
+  seriesId: string,
+  filters: {
+    asset?: string;
+    start?: string;
+    end?: string;
+    foldId?: string;
+    limit?: number;
+    offset?: number;
+  },
+): string {
+  const params = new URLSearchParams();
+  if (filters.asset) params.set("asset", filters.asset);
+  if (filters.start) params.set("start", filters.start);
+  if (filters.end) params.set("end", filters.end);
+  if (filters.foldId) params.set("fold_id", filters.foldId);
+  params.set("limit", String(filters.limit ?? 1000));
+  params.set("offset", String(filters.offset ?? 0));
+  return `/api/v4/strategy-series/${encodeURIComponent(seriesId)}/decisions?${params.toString()}`;
+}
+
 export const workspaceApi = {
   catalog: () => getJson<CatalogResponse>("/api/v1/catalog"),
   widgets: async () => {
@@ -138,6 +166,30 @@ export const workspaceApi = {
       `/api/v3/config/diff?left=${encodeURIComponent(left)}&right=${encodeURIComponent(right)}`,
     ),
   commandCatalogV3: () => getJson<CommandCatalogResponseV3>("/api/v3/commands"),
+  strategySeriesV4: () => getJson<StrategySeriesCatalogV4>("/api/v4/strategy-series"),
+  strategySeriesByPortfolioV4: (validationId: string) =>
+    getJson<StrategySeriesItemV4>(
+      `/api/v4/strategy-series/by-portfolio/${encodeURIComponent(validationId)}`,
+    ),
+  strategySeriesDetailV4: (seriesId: string) =>
+    getJson<StrategySeriesDetailV4>(
+      `/api/v4/strategy-series/${encodeURIComponent(seriesId)}`,
+    ),
+  strategySeriesDimensionsV4: (seriesId: string) =>
+    getJson<StrategySeriesDimensionsV4>(
+      `/api/v4/strategy-series/${encodeURIComponent(seriesId)}/dimensions`,
+    ),
+  strategyDecisionsV4: (
+    seriesId: string,
+    filters: {
+      asset?: string;
+      start?: string;
+      end?: string;
+      foldId?: string;
+      limit?: number;
+      offset?: number;
+    },
+  ) => getJson<StrategyDecisionQueryV4>(strategyDecisionQueryPath(seriesId, filters)),
   projectsV2: () => getJson<ProjectsResponse>("/api/v2/projects"),
   programCockpitV2: (programId: string) =>
     getJson<ProgramCockpitResponse>(`/api/v2/programs/${encodeURIComponent(programId)}/cockpit`),
