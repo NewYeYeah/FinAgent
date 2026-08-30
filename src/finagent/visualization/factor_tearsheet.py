@@ -78,6 +78,34 @@ def _integer(value: Any, default: int = 0) -> int:
     return int(value)
 
 
+def _required_number(value: object, field: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        raise ValueError(f"V4-3 frozen A2.6 field {field!r} must be numeric")
+    result = float(value)
+    if not math.isfinite(result):
+        raise ValueError(f"V4-3 frozen A2.6 field {field!r} must be finite")
+    return result
+
+
+def _required_integer(value: object, field: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"V4-3 frozen A2.6 field {field!r} must be an integer")
+    return int(value)
+
+
+def _source_index(values: object, *, label: str) -> dict[str, Mapping[str, Any]]:
+    output: dict[str, Mapping[str, Any]] = {}
+    for raw in _sequence(values):
+        item = _mapping(raw)
+        digest = _text(item.get("feature_digest"))
+        if not digest:
+            raise ValueError(f"V4-3 {label} contains a blank feature_digest")
+        if digest in output:
+            raise ValueError(f"V4-3 {label} contains duplicate feature_digest {digest!r}")
+        output[digest] = item
+    return output
+
+
 @dataclass(frozen=True, slots=True)
 class FactorTearSheetSeriesItem:
     series_id: str
@@ -160,6 +188,7 @@ class FactorTearSheetProjection:
         items: dict[str, FactorTearSheetSeriesItem] = {}
         projections: dict[str, FactorSeriesProjection] = {}
         reports: dict[str, Mapping[str, Any]] = {}
+        semantic_keys: dict[str, tuple[object, ...]] = {}
         warnings: list[str] = []
         notices: list[str] = []
         conflicts: set[str] = set()
@@ -191,10 +220,16 @@ class FactorTearSheetProjection:
 
             series_id = manifest.series_id
             item = FactorTearSheetSeriesItem.from_manifest(manifest)
+            semantic_key = (
+                item,
+                manifest.rows_digest,
+                manifest.quant_config_digest,
+                manifest.source_report_content_digest,
+            )
             if series_id in conflicts:
                 continue
             if series_id in items:
-                if items[series_id] == item:
+                if semantic_keys[series_id] == semantic_key:
                     notices.append(
                         f"{path}: equivalent FactorSeries {series_id!r} ignored"
                     )
@@ -206,11 +241,13 @@ class FactorTearSheetProjection:
                 items.pop(series_id, None)
                 projections.pop(series_id, None)
                 reports.pop(series_id, None)
+                semantic_keys.pop(series_id, None)
                 conflicts.add(series_id)
                 continue
             items[series_id] = item
             projections[series_id] = projection
             reports[series_id] = report
+            semantic_keys[series_id] = semantic_key
 
         self._items = items
         self._projections = projections
@@ -281,22 +318,36 @@ class FactorTearSheetProjection:
         Mapping[str, Mapping[str, Any]],
     ]:
         report = self.report(series_id)
+        manifest = self.projection(series_id).manifest
         denominator = _sequence(report.get("candidate_denominator"))
         walk = _mapping(report.get("walk_forward_report"))
         gate = _mapping(report.get("gate_report"))
         selection = _mapping(report.get("frozen_selection"))
-        candidates = {
-            _text(_mapping(value).get("feature_digest")): _mapping(value)
-            for value in _sequence(walk.get("candidates"))
-        }
-        gates = {
-            _text(_mapping(value).get("feature_digest")): _mapping(value)
-            for value in _sequence(gate.get("candidates"))
-        }
-        selected = {
-            _text(_mapping(value).get("feature_digest")): _mapping(value)
-            for value in _sequence(selection.get("components"))
-        }
+        denominator_index = _source_index(
+            denominator,
+            label="frozen candidate denominator",
+        )
+        candidates = _source_index(
+            walk.get("candidates"),
+            label="frozen walk-forward candidates",
+        )
+        gates = _source_index(
+            gate.get("candidates"),
+            label="frozen gate candidates",
+        )
+        selected = _source_index(
+            selection.get("components"),
+            label="frozen selection components",
+        )
+        expected = set(manifest.candidate_feature_digests)
+        if set(denominator_index) != expected:
+            raise ValueError("V4-3 frozen candidate denominator differs from V4-1 manifest")
+        if set(candidates) != expected:
+            raise ValueError("V4-3 frozen walk-forward candidates differ from V4-1 manifest")
+        if set(gates) != expected:
+            raise ValueError("V4-3 frozen gate candidates differ from V4-1 manifest")
+        if set(selected) != set(manifest.selected_feature_digests):
+            raise ValueError("V4-3 frozen selection components differ from V4-1 manifest")
         return denominator, candidates, gates, selected
 
     def dimensions(self, series_id: str) -> dict[str, object]:
@@ -371,6 +422,7 @@ class FactorTearSheetProjection:
         if {str(value["feature_digest"]) for value in factors} != parquet_factors:
             raise ValueError("V4-3 denominator metadata differs from V4-1 Parquet")
 
+        metric_authority = _mapping(manifest.to_dict().get("metric_authority"))
         return {
             "schema_version": FACTOR_TEAR_SHEET_DIMENSIONS_SCHEMA,
             "read_only": True,
@@ -389,18 +441,8 @@ class FactorTearSheetProjection:
             "session_count": sessions,
             "rolling_window": manifest.rolling_window,
             "metric_authority": {
-                "authoritative": [
-                    "pearson_ic_raw",
-                    "rank_ic_raw",
-                    "pearson_ic",
-                    "rank_ic",
-                    "return",
-                    "one_way_turnover",
-                    "eligible_count",
-                    "valid_factor_count",
-                    "coverage",
-                ],
-                "derived": ["rolling_pearson_ic", "rolling_rank_ic", "nav"],
+                "authoritative": list(_sequence(metric_authority.get("authoritative"))),
+                "derived": list(_sequence(metric_authority.get("derived"))),
             },
         }
 
@@ -420,10 +462,14 @@ class FactorTearSheetProjection:
             gate = gates.get(digest)
             if candidate is None or gate is None:
                 raise ValueError("V4-3 A2.6 candidate/gate identity is incomplete")
-            component = selected.get(digest, {})
+            component = selected.get(digest)
+            if digest in self.projection(series_id).manifest.selected_feature_digests and component is None:
+                raise ValueError("V4-3 selected factor lacks frozen selection component")
             hac = _mapping(candidate.get("hac"))
             bootstrap = _mapping(candidate.get("block_bootstrap"))
             folds = [_mapping(value) for value in _sequence(candidate.get("folds"))]
+            if not isinstance(gate.get("passed"), bool):
+                raise ValueError("V4-3 frozen A2.6 gate passed field must be boolean")
             items.append(
                 {
                     "ordinal": ordinal,
@@ -435,41 +481,56 @@ class FactorTearSheetProjection:
                     "lookback": _integer(provenance.get("lookback")),
                     "selected": digest in selected,
                     "selection": {
-                        "direction": _integer(component.get("direction")) if component else None,
-                        "robust_score": _number(component.get("robust_score")) if component else None,
-                        "weight": _number(component.get("weight")) if component else None,
+                        "direction": (
+                            _required_integer(component.get("direction"), "selection.direction")
+                            if component
+                            else None
+                        ),
+                        "robust_score": (
+                            _required_number(component.get("robust_score"), "selection.robust_score")
+                            if component
+                            else None
+                        ),
+                        "weight": (
+                            _required_number(component.get("weight"), "selection.weight")
+                            if component
+                            else None
+                        ),
                     },
                     "gate": {
                         "passed": gate.get("passed") is True,
                         "reason_codes": [str(value) for value in _sequence(gate.get("reason_codes"))],
-                        "robust_score": _number(gate.get("robust_score")),
+                        "robust_score": _required_number(
+                            gate.get("robust_score"),
+                            "gate.robust_score",
+                        ),
                     },
                     "metrics": {
-                        "dominant_direction": _integer(candidate.get("dominant_direction")),
-                        "direction_consistency": _number(candidate.get("direction_consistency")),
-                        "pooled_rank_ic": _number(candidate.get("pooled_rank_ic")),
-                        "pooled_rank_icir": _number(candidate.get("pooled_rank_icir")),
-                        "mean_fold_rank_icir": _number(candidate.get("mean_fold_rank_icir")),
-                        "worst_fold_rank_icir": _number(candidate.get("worst_fold_rank_icir")),
-                        "positive_fold_ratio": _number(candidate.get("positive_fold_ratio")),
-                        "mean_fold_long_short_sharpe": _number(candidate.get("mean_fold_long_short_sharpe")),
-                        "worst_fold_long_short_sharpe": _number(candidate.get("worst_fold_long_short_sharpe")),
-                        "coverage_mean": _number(candidate.get("coverage_mean")),
-                        "coverage_min": _number(candidate.get("coverage_min")),
-                        "quantile_monotonicity": _number(candidate.get("quantile_monotonicity")),
-                        "mean_one_way_turnover": _number(candidate.get("mean_one_way_turnover")),
-                        "horizon_sign_consistency": _number(candidate.get("horizon_sign_consistency")),
+                        "dominant_direction": _required_integer(candidate.get("dominant_direction"), "candidate.dominant_direction"),
+                        "direction_consistency": _required_number(candidate.get("direction_consistency"), "candidate.direction_consistency"),
+                        "pooled_rank_ic": _required_number(candidate.get("pooled_rank_ic"), "candidate.pooled_rank_ic"),
+                        "pooled_rank_icir": _required_number(candidate.get("pooled_rank_icir"), "candidate.pooled_rank_icir"),
+                        "mean_fold_rank_icir": _required_number(candidate.get("mean_fold_rank_icir"), "candidate.mean_fold_rank_icir"),
+                        "worst_fold_rank_icir": _required_number(candidate.get("worst_fold_rank_icir"), "candidate.worst_fold_rank_icir"),
+                        "positive_fold_ratio": _required_number(candidate.get("positive_fold_ratio"), "candidate.positive_fold_ratio"),
+                        "mean_fold_long_short_sharpe": _required_number(candidate.get("mean_fold_long_short_sharpe"), "candidate.mean_fold_long_short_sharpe"),
+                        "worst_fold_long_short_sharpe": _required_number(candidate.get("worst_fold_long_short_sharpe"), "candidate.worst_fold_long_short_sharpe"),
+                        "coverage_mean": _required_number(candidate.get("coverage_mean"), "candidate.coverage_mean"),
+                        "coverage_min": _required_number(candidate.get("coverage_min"), "candidate.coverage_min"),
+                        "quantile_monotonicity": _required_number(candidate.get("quantile_monotonicity"), "candidate.quantile_monotonicity"),
+                        "mean_one_way_turnover": _required_number(candidate.get("mean_one_way_turnover"), "candidate.mean_one_way_turnover"),
+                        "horizon_sign_consistency": _required_number(candidate.get("horizon_sign_consistency"), "candidate.horizon_sign_consistency"),
                     },
                     "hac": {
-                        "tstat": _number(hac.get("tstat")),
-                        "raw_pvalue": _number(hac.get("raw_pvalue"), 1.0),
-                        "holm_adjusted_pvalue": _number(hac.get("holm_adjusted_pvalue"), 1.0),
-                        "bh_qvalue": _number(hac.get("bh_qvalue"), 1.0),
+                        "tstat": _required_number(hac.get("tstat"), "hac.tstat"),
+                        "raw_pvalue": _required_number(hac.get("raw_pvalue"), "hac.raw_pvalue"),
+                        "holm_adjusted_pvalue": _required_number(hac.get("holm_adjusted_pvalue"), "hac.holm_adjusted_pvalue"),
+                        "bh_qvalue": _required_number(hac.get("bh_qvalue"), "hac.bh_qvalue"),
                     },
                     "block_bootstrap": {
-                        "pvalue": _number(bootstrap.get("pvalue"), 1.0),
-                        "ci_lower": _number(bootstrap.get("ci_lower")),
-                        "ci_upper": _number(bootstrap.get("ci_upper")),
+                        "pvalue": _required_number(bootstrap.get("pvalue"), "block_bootstrap.pvalue"),
+                        "ci_lower": _required_number(bootstrap.get("ci_lower"), "block_bootstrap.ci_lower"),
+                        "ci_upper": _required_number(bootstrap.get("ci_upper"), "block_bootstrap.ci_upper"),
                     },
                     "folds": [dict(value) for value in folds],
                 }
@@ -480,6 +541,7 @@ class FactorTearSheetProjection:
             "schema_version": FACTOR_TEAR_SHEET_SUMMARY_SCHEMA,
             "read_only": True,
             "authority": "authoritative_frozen_a2p6_summary",
+            "statistics_recomputed": False,
             "series_id": self.item(series_id).series_id,
             "program_result_id": self.item(series_id).program_result_id,
             "selection_status": _text(selection.get("status")),
@@ -495,19 +557,45 @@ class FactorTearSheetProjection:
         raw = _mapping(walk.get("factor_value_correlations"))
         factors = list(manifest.candidate_feature_digests)
         count = len(factors)
+        expected_pairs = {
+            "|".join(sorted((left, right)))
+            for index, left in enumerate(factors)
+            for right in factors[index + 1 :]
+        }
+        raw_pairs = {str(key) for key in raw}
+        if raw_pairs != expected_pairs:
+            missing = sorted(expected_pairs - raw_pairs)
+            unexpected = sorted(raw_pairs - expected_pairs)
+            raise ValueError(
+                "V4-3 frozen A2.6 factor correlations do not match the manifest "
+                f"denominator; missing={missing}, unexpected={unexpected}"
+            )
+
         matrix = np.eye(count, dtype=float)
         cells: list[dict[str, object]] = []
         for left_index, left in enumerate(factors):
             for right_index, right in enumerate(factors):
                 if left_index == right_index:
                     value = 1.0
+                    authority = "derived_presentation_identity"
                 else:
                     key = "|".join(sorted((left, right)))
-                    value = _number(raw.get(key), 0.0)
+                    value = _required_number(
+                        raw.get(key),
+                        f"factor_value_correlations[{key!r}]",
+                    )
                     if not -1.0 <= value <= 1.0:
                         raise ValueError("V4-3 factor correlation is outside [-1, 1]")
+                    authority = "authoritative_frozen_a2p6_summary"
                 matrix[left_index, right_index] = value
-                cells.append({"left": left, "right": right, "value": value})
+                cells.append(
+                    {
+                        "left": left,
+                        "right": right,
+                        "value": value,
+                        "authority": authority,
+                    }
+                )
         if not np.allclose(matrix, matrix.T, rtol=0.0, atol=1e-12):
             raise ValueError("V4-3 factor correlation matrix is not symmetric")
 
@@ -526,6 +614,7 @@ class FactorTearSheetProjection:
             "factors": factors,
             "cells": cells,
             "correlation_authority": "authoritative_frozen_a2p6_summary",
+            "diagonal_authority": "derived_presentation_identity",
             "cluster_order": cluster_order,
             "cluster_authority": "derived_presentation",
             "cluster_method": "average_linkage_on_1_minus_absolute_correlation",
