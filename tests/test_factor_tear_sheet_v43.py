@@ -73,16 +73,31 @@ def test_v43a_projection_exposes_v41_rows_and_frozen_a2p6_summary(
     summary = projection.frozen_summary(manifest.series_id)
     assert summary["authority"] == "authoritative_frozen_a2p6_summary"
     assert summary["statistics_recomputed"] is False
+    assert summary["statistics_projection"] == "source_structure_plus_direct_field_aliases"
     assert len(summary["items"]) == manifest.factor_count
     factor = next(
         item for item in summary["items"] if item["feature_digest"] == first_factor
     )
-    assert "hac_tstat" in factor["statistics"]
-    assert "bootstrap_pvalue" in factor["statistics"]
-    assert "bootstrap_ci_lower" in factor["statistics"]
-    assert "bootstrap_ci_upper" in factor["statistics"]
-    assert "holm_adjusted_pvalue" in factor["statistics"]
-    assert "bh_qvalue" in factor["statistics"]
+    statistics = factor["statistics"]
+    assert statistics["hac_tstat"] == statistics["hac"]["tstat"]
+    assert statistics["raw_hac_pvalue"] == statistics["hac"]["raw_pvalue"]
+    assert (
+        statistics["holm_adjusted_pvalue"]
+        == statistics["hac"]["holm_adjusted_pvalue"]
+    )
+    assert statistics["bh_qvalue"] == statistics["hac"]["bh_qvalue"]
+    assert (
+        statistics["bootstrap_pvalue"]
+        == statistics["block_bootstrap"]["pvalue"]
+    )
+    assert (
+        statistics["bootstrap_ci_lower"]
+        == statistics["block_bootstrap"]["ci_lower"]
+    )
+    assert (
+        statistics["bootstrap_ci_upper"]
+        == statistics["block_bootstrap"]["ci_upper"]
+    )
     assert factor["folds"]
     assert factor["gate"] is not None
 
@@ -131,6 +146,10 @@ def test_v43a_factor_api_is_get_only_bounded_and_preserves_authority(
     summary = client.get(f"/api/v4/factor-series/{manifest.series_id}/summary")
     assert summary.status_code == 200
     assert summary.json()["statistics_recomputed"] is False
+    assert (
+        summary.json()["statistics_projection"]
+        == "source_structure_plus_direct_field_aliases"
+    )
 
     first_factor = manifest.candidate_feature_digests[0]
     rows = client.get(
