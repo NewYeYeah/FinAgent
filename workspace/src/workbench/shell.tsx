@@ -64,6 +64,7 @@ const CONTEXT_LABELS: Record<WorkbenchContextKey, string> = {
   strategy_id: "Strategy",
   reserve_id: "Reserve",
   asset_id: "Asset",
+  order_id: "Order",
   date_range: "Range",
   session_date: "Session",
   fold_id: "Fold",
