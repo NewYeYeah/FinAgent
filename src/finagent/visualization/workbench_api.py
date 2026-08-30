@@ -16,6 +16,7 @@ from finagent.application import (
     default_application_service_registry,
 )
 
+from .factor_tear_sheet import FactorTearSheetProjection
 from .semantic import EvidenceContractError
 from .strategy_explorer import StrategyDecisionExplorerProjection
 from .workbench_control_catalog import ConfigRegistry, default_command_catalog
@@ -23,7 +24,7 @@ from .workbench_links import WorkbenchLinkProjection
 from .workbench_streams import WorkbenchStreamProjection, sse_response
 from .workspace_api import create_workspace_app as create_evidence_app
 
-WORKBENCH_API_VERSION = "finagent-workbench-api-v4.2"
+WORKBENCH_API_VERSION = "finagent-workbench-api-v4.3a"
 
 
 def _attach_frontend(app: FastAPI, frontend_dir: str | Path | None) -> None:
@@ -78,10 +79,11 @@ def create_workspace_app(
 ) -> FastAPI:
     """Compose the immutable Evidence Plane with V3/V4 Workbench read models.
 
-    V4-2 adds a bounded Strategy Decision Explorer projection over immutable V4-0
-    StrategyDecisionSeries.  It exposes only verified GET projections and never
-    accepts host paths, recomputes A4 financial facts, mutates evidence or expands
-    Control authority.
+    V4-2 adds the bounded Strategy Decision Explorer over immutable V4-0 rows.
+    V4-3A adds the first Factor Tear Sheet projection over verified V4-1 period
+    evidence plus the physically bound frozen A2.6 statistical summary. Both remain
+    GET-only and preserve their source authority instead of rebuilding statistics in
+    the browser.
     """
 
     app = create_evidence_app(
@@ -130,6 +132,7 @@ def create_workspace_app(
         command_store_path=command_store_path,
     )
     strategy_explorer = StrategyDecisionExplorerProjection(report_paths)
+    factor_tear_sheet = FactorTearSheetProjection(report_paths)
 
     app.state.config_registry = config_registry
     app.state.command_catalog = command_catalog
@@ -137,6 +140,7 @@ def create_workspace_app(
     app.state.workbench_links = links
     app.state.workbench_streams = streams
     app.state.strategy_explorer = strategy_explorer
+    app.state.factor_tear_sheet = factor_tear_sheet
     app.state.command_store_path = (
         Path(command_store_path).expanduser() if command_store_path else None
     )
@@ -156,6 +160,7 @@ def create_workspace_app(
             "deep_links": links.status(),
             "streams": streams.status(),
             "strategy_explorer": strategy_explorer.status(),
+            "factor_tear_sheet": factor_tear_sheet.status(),
             "config_descriptor_count": len(projection.descriptors),
             "config_snapshot_count": len(projection.snapshots),
             "config_warning_count": len(projection.warnings),
@@ -235,6 +240,97 @@ def create_workspace_app(
             )
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="strategy series not found") from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    @app.get("/api/v4/factor-series")
+    def get_v4_factor_series() -> dict[str, object]:
+        return factor_tear_sheet.catalog()
+
+    @app.get("/api/v4/factor-series/by-program/{program_id}")
+    def get_v4_factor_series_by_program(program_id: str) -> dict[str, object]:
+        try:
+            return factor_tear_sheet.by_program(program_id).to_dict()
+        except KeyError as exc:
+            raise HTTPException(
+                status_code=404,
+                detail="FactorSeries not found for ResearchProgram",
+            ) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.get("/api/v4/factor-series/{series_id}")
+    def get_v4_factor_series_detail(series_id: str) -> dict[str, object]:
+        try:
+            item = factor_tear_sheet.item(series_id)
+            manifest = factor_tear_sheet.projection(series_id).manifest
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="factor series not found") from exc
+        return {
+            "schema_version": "finagent.factor-tear-sheet.series.v1",
+            "read_only": True,
+            "item": item.to_dict(),
+            "manifest": manifest.to_dict(),
+            "presentation": {
+                "browser_recomputation": False,
+                "period_evidence": "consume persisted V4-1 rows with row authority intact",
+                "statistical_summary": "consume physically bound frozen A2.6 values",
+                "derived_metrics": [
+                    "rolling_pearson_ic",
+                    "rolling_rank_ic",
+                    "nav",
+                ],
+            },
+        }
+
+    @app.get("/api/v4/factor-series/{series_id}/dimensions")
+    def get_v4_factor_series_dimensions(series_id: str) -> dict[str, object]:
+        try:
+            return factor_tear_sheet.dimensions(series_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="factor series not found") from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.get("/api/v4/factor-series/{series_id}/summary")
+    def get_v4_factor_series_summary(series_id: str) -> dict[str, object]:
+        try:
+            return factor_tear_sheet.frozen_summary(series_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="factor series not found") from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.get("/api/v4/factor-series/{series_id}/rows")
+    def get_v4_factor_series_rows(
+        series_id: str,
+        feature_digest: str | None = None,
+        fold_id: str | None = None,
+        series_kind: str | None = None,
+        metric: str | None = None,
+        label_name: str | None = None,
+        quantile: int | None = Query(default=None, ge=1),
+        start: date | None = None,
+        end: date | None = None,
+        limit: int = Query(default=1000, ge=1, le=5000),
+        offset: int = Query(default=0, ge=0),
+    ) -> dict[str, object]:
+        try:
+            return factor_tear_sheet.query(
+                series_id,
+                feature_digest=feature_digest,
+                fold_id=fold_id,
+                series_kind=series_kind,
+                metric=metric,
+                label_name=label_name,
+                quantile=quantile,
+                start=start,
+                end=end,
+                limit=limit,
+                offset=offset,
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="factor series not found") from exc
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
 
