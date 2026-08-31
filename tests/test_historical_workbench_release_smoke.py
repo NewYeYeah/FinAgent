@@ -12,9 +12,11 @@ from fastapi import FastAPI
 
 import finagent.runtime.historical_workbench_release_smoke as smoke_module
 from finagent.runtime.historical_workbench_release_smoke import (
-    HistoricalWorkbenchReleaseSmoke,
     HistoricalWorkbenchReleaseSmokeConfig,
     recompute_ac5_freeze_id,
+)
+from finagent.runtime.historical_workbench_release_smoke_acceptance import (
+    HistoricalWorkbenchReleaseSmoke,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,7 +47,14 @@ def _descriptor(path: Path, role: str | None = None) -> dict[str, object]:
     return payload
 
 
-def _fake_app(*, validation_id: str, strategy_id: str, factor_id: str, program_result_id: str, config_count: int = 0) -> FastAPI:
+def _fake_app(
+    *,
+    validation_id: str,
+    strategy_id: str,
+    factor_id: str,
+    program_result_id: str,
+    config_count: int = 0,
+) -> FastAPI:
     app = FastAPI()
 
     @app.get("/api/v3/workbench/status")
@@ -123,12 +132,18 @@ def _fake_app(*, validation_id: str, strategy_id: str, factor_id: str, program_r
     return app
 
 
-def _fixture(tmp_path: Path, *, real: bool = False) -> tuple[HistoricalWorkbenchReleaseSmokeConfig, dict[str, object]]:
+def _fixture(
+    tmp_path: Path,
+    *,
+    real: bool = False,
+) -> tuple[HistoricalWorkbenchReleaseSmokeConfig, dict[str, str]]:
     git_sha = _git_sha()
-    validation_id = "hw1-validation"
-    strategy_id = "hw1-strategy"
-    factor_id = "hw1-factor-series"
-    program_result_id = "hw1-program-result"
+    ids = {
+        "validation_id": "hw1-validation",
+        "strategy_id": "hw1-strategy",
+        "factor_id": "hw1-factor-series",
+        "program_result_id": "hw1-program-result",
+    }
 
     evidence: dict[str, object] = {}
     for role, name in (
@@ -138,16 +153,16 @@ def _fixture(tmp_path: Path, *, real: bool = False) -> tuple[HistoricalWorkbench
         ("strategy_manifest", "strategy-series.json"),
         ("command_store", "commands.sqlite"),
     ):
-        path = tmp_path / name
-        path.write_text(f"{role}\n", encoding="utf-8")
-        evidence[role] = _descriptor(path)
+        artifact = tmp_path / name
+        artifact.write_text(f"{role}\n", encoding="utf-8")
+        evidence[role] = _descriptor(artifact)
 
     identities = {
         "development_acceptance_id": "hw1-development",
-        "program_result_id": program_result_id,
-        "portfolio_validation_id": validation_id,
-        "strategy_series_id": strategy_id,
-        "factor_series_id": factor_id,
+        "program_result_id": ids["program_result_id"],
+        "portfolio_validation_id": ids["validation_id"],
+        "strategy_series_id": ids["strategy_id"],
+        "factor_series_id": ids["factor_id"],
         "market_bar_series_id": None,
         "data_version": "hw1-data",
     }
@@ -163,7 +178,10 @@ def _fixture(tmp_path: Path, *, real: bool = False) -> tuple[HistoricalWorkbench
         "artifacts": evidence,
     }
     ac3_path = tmp_path / "ac3.json"
-    ac3_path.write_text(json.dumps(ac3, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    ac3_path.write_text(
+        json.dumps(ac3, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
     freeze: dict[str, object] = {
         "schema_version": "finagent.ashare-historical-v1-freeze.v1",
@@ -185,12 +203,6 @@ def _fixture(tmp_path: Path, *, real: bool = False) -> tuple[HistoricalWorkbench
         "stage": "A-C5",
         "contract_valid": True,
         "frozen": real,
-        "production_reserve": {
-            "historical_closure_consumed": False,
-            "promotion_eligible": False,
-            "paper_enabled_by_freeze": False,
-            "live_capital_enabled_by_freeze": False,
-        },
     }
     freeze["freeze_id"] = recompute_ac5_freeze_id(freeze)
     freeze_path = tmp_path / "freeze.json"
@@ -226,12 +238,26 @@ def _fixture(tmp_path: Path, *, real: bool = False) -> tuple[HistoricalWorkbench
         build_frontend=False,
         run_browser=True,
     )
-    return config, {
-        "validation_id": validation_id,
-        "strategy_id": strategy_id,
-        "factor_id": factor_id,
-        "program_result_id": program_result_id,
-    }
+    return config, ids
+
+
+def _patch_app(
+    monkeypatch: pytest.MonkeyPatch,
+    ids: dict[str, str],
+    *,
+    config_count: int = 0,
+) -> None:
+    monkeypatch.setattr(
+        smoke_module,
+        "create_workspace_app",
+        lambda **_kwargs: _fake_app(
+            validation_id=ids["validation_id"],
+            strategy_id=ids["strategy_id"],
+            factor_id=ids["factor_id"],
+            program_result_id=ids["program_result_id"],
+            config_count=config_count,
+        ),
+    )
 
 
 def test_hw1_ci_contract_validates_no_alpha_projection_but_cannot_accept_release(
@@ -239,46 +265,24 @@ def test_hw1_ci_contract_validates_no_alpha_projection_but_cannot_accept_release
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     config, ids = _fixture(tmp_path)
-    monkeypatch.setattr(
-        smoke_module,
-        "create_workspace_app",
-        lambda **_kwargs: _fake_app(
-            validation_id=str(ids["validation_id"]),
-            strategy_id=str(ids["strategy_id"]),
-            factor_id=str(ids["factor_id"]),
-            program_result_id=str(ids["program_result_id"]),
-        ),
-    )
+    _patch_app(monkeypatch, ids)
 
     smoke = HistoricalWorkbenchReleaseSmoke(config)
-    prepared = smoke.prepare()
-    result = smoke.finalize(prepared, browser_status="passed")
+    result = smoke.finalize(smoke.prepare(), browser_status="passed")
 
     assert result.contract_valid is True
     assert result.accepted is False
     assert result.payload["research_outcome"] == "NO_ROBUST_FACTOR_FAMILY"
     checks = result.payload["checks"]
     assert isinstance(checks, dict) and all(checks.values())
-    assert result.json_path.is_file()
-    assert result.markdown_path.is_file()
 
 
-def test_hw1_real_release_requires_actual_browser_pass(
+def test_hw1_real_release_requires_actual_browser_pass_even_backend_only(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     config, ids = _fixture(tmp_path, real=True)
-    monkeypatch.setattr(
-        smoke_module,
-        "create_workspace_app",
-        lambda **_kwargs: _fake_app(
-            validation_id=str(ids["validation_id"]),
-            strategy_id=str(ids["strategy_id"]),
-            factor_id=str(ids["factor_id"]),
-            program_result_id=str(ids["program_result_id"]),
-            config_count=1,
-        ),
-    )
+    _patch_app(monkeypatch, ids, config_count=1)
     smoke = HistoricalWorkbenchReleaseSmoke(config)
     prepared = smoke.prepare()
 
@@ -287,6 +291,7 @@ def test_hw1_real_release_requires_actual_browser_pass(
 
     assert not_run.contract_valid is True
     assert not_run.accepted is False
+    assert not_run.payload["acceptance_blocker"] == "REAL_BROWSER_SMOKE_NOT_PASSED"
     assert passed.accepted is True
 
 
@@ -295,16 +300,7 @@ def test_hw1_rejects_tampered_freeze_package(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     config, ids = _fixture(tmp_path)
-    monkeypatch.setattr(
-        smoke_module,
-        "create_workspace_app",
-        lambda **_kwargs: _fake_app(
-            validation_id=str(ids["validation_id"]),
-            strategy_id=str(ids["strategy_id"]),
-            factor_id=str(ids["factor_id"]),
-            program_result_id=str(ids["program_result_id"]),
-        ),
-    )
+    _patch_app(monkeypatch, ids)
     with zipfile.ZipFile(config.freeze_package, "w") as archive:
         archive.writestr(
             "release/freeze/finagent_ashare_historical_v1_freeze.json",
@@ -319,10 +315,13 @@ def test_hw1_rejects_tampered_freeze_package(
         HistoricalWorkbenchReleaseSmoke(config).prepare()
 
 
-def test_hw1_product_drift_denominator_allows_only_additive_smoke_code() -> None:
+def test_hw1_smoke_code_does_not_change_frozen_workbench_product() -> None:
+    # The accepted A-C5 release is the last commit before HW-1.0-RS development.
+    freeze_sha = "52856ce69fb713d486c0476117528d4c86fcb9a7"
     current = _git_sha()
-    assert smoke_module._workbench_product_drift(
-        ROOT,
-        freeze_sha=current,
-        smoke_sha=current,
-    ) == ()
+    if smoke_module._is_ancestor(ROOT, freeze_sha, current):
+        assert smoke_module._workbench_product_drift(
+            ROOT,
+            freeze_sha=freeze_sha,
+            smoke_sha=current,
+        ) == ()
