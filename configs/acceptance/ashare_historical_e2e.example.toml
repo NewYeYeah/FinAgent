@@ -10,10 +10,12 @@ portfolio_config = "configs/execution/ashare_portfolio_validation_a4.example.tom
 state_root = ".finagent/ac3"
 acceptance_report = "reports/ashare_historical_acceptance_ac3.json"
 requested_by = "ac3-local-runner"
+# Fill this with the exact commit checked out for the final local acceptance run.
+# The runner refuses an empty git_sha.
 git_sha = ""
-# Full Parquet content verification is intentionally opt-in because the local
-# A-share dataset can be large. Set true for the final A-C3 closure run.
-verify_content = false
+# A-C3 closure requires full frozen-file content verification. Keep this true for
+# the final run; metadata-only verification is insufficient for accepted=true.
+verify_content = true
 factor_rolling_window = 20
 
 [local_ashare]
