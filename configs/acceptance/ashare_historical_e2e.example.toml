@@ -1,0 +1,28 @@
+[ashare_historical_acceptance]
+# Run this file from the repository root. A-C3 is intentionally a local-data
+# acceptance milestone; GitHub CI does not contain D:/Data/A-Share and therefore
+# cannot set accepted=true.
+mode = "real_local_dataset"
+repository_root = "."
+development_config = "configs/research/local_ashare_factor_research.example.toml"
+robust_config = "configs/research/local_ashare_robust_research.example.toml"
+portfolio_config = "configs/execution/ashare_portfolio_validation_a4.example.toml"
+state_root = ".finagent/ac3"
+acceptance_report = "reports/ashare_historical_acceptance_ac3.json"
+requested_by = "ac3-local-runner"
+# Fill this with the exact commit checked out for the final local acceptance run.
+# The runner refuses an empty git_sha.
+git_sha = ""
+# A-C3 closure requires full frozen-file content verification. Keep this true for
+# the final run; metadata-only verification is insufficient for accepted=true.
+verify_content = true
+factor_rolling_window = 20
+
+[local_ashare]
+# This section is also read by ConfigRegistry so dataset certification is persisted
+# as a governed CommandRun before research starts.
+root = "D:/Data/A-Share"
+basic_filename = "stock_basic_data.parquet"
+daily_filename = "stock_daily.parquet"
+sample_frequency = "1d"
+report_path = "reports/local_ashare_certification_ac3.json"
