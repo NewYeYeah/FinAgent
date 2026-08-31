@@ -520,6 +520,7 @@ class AshareHistoricalV1Freezer:
             raise ValueError("A-C5 requires a content-hashed frozen dataset manifest")
 
         terminal_state = str(ac3.get("terminal_state", "")).strip()
+        required_artifacts: tuple[str, ...]
         if terminal_state == "NO_ROBUST_FACTOR_FAMILY":
             research_outcome = "NO_ROBUST_FACTOR_FAMILY"
             if identities.get("market_bar_series_id") is not None:
