@@ -66,7 +66,7 @@ test("Historical Workbench 1.0 renders the frozen release without inventing unav
 
   await page.goto("/catalog");
   await expect(page.getByRole("heading", { name: "Evidence catalog" })).toBeVisible();
-  await expect(page.getByText("Immutable evidence")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Immutable evidence" })).toBeVisible();
   await expect(page.getByText(programResultId).first()).toBeVisible();
   await expect(page.getByRole("button", { name: "Commands" })).toBeDisabled();
 });
