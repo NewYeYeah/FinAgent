@@ -177,7 +177,7 @@ test("V4-2 exposes linked authoritative strategy decisions without synthetic OHL
 
   await expect(page.getByRole("heading", { name: "Signal → target → order → fill → realized PnL" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Strategy" })).toBeVisible();
-  await expect(page.getByText(/OHLC is not present in V4-0 and is not fabricated/i)).toBeVisible();
+  await expect(page.getByText(/No verified MarketBarSeries is bound/i)).toBeVisible();
   await expect(page.getByText("Authoritative close-price & execution timeline")).toBeVisible();
   await expect(page.getByText("Target vs realized weight")).toBeVisible();
   await expect(page.getByText("Frozen alpha context")).toBeVisible();
