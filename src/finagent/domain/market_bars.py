@@ -4,6 +4,7 @@ import math
 from dataclasses import dataclass
 from datetime import date, datetime
 from enum import Enum
+from typing import Any, cast
 
 from ._validation import require_aware_datetime, require_non_empty, require_non_negative, require_positive
 
@@ -69,7 +70,7 @@ class LabelHorizonPolicy:
     def from_dict(cls, raw: dict[str, object]) -> LabelHorizonPolicy:
         return cls(
             mode=LabelHorizonMode(str(raw["mode"])),
-            value=int(raw.get("value", 1)),
+            value=int(cast(Any, raw.get("value", 1))),
             allow_cross_session=bool(raw.get("allow_cross_session", False)),
         )
 
