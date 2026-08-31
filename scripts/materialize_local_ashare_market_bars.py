@@ -16,6 +16,10 @@ from finagent.data import (
 )
 
 SHANGHAI = ZoneInfo("Asia/Shanghai")
+_CERTIFIED_AC2_FREQUENCIES = (
+    AshareBarFrequency.DAILY,
+    AshareBarFrequency.MINUTE_1,
+)
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -30,7 +34,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument(
         "--frequency",
-        choices=tuple(value.value for value in AshareBarFrequency),
+        choices=tuple(value.value for value in _CERTIFIED_AC2_FREQUENCIES),
         default=AshareBarFrequency.DAILY.value,
     )
     parser.add_argument("--manifest", type=Path)
@@ -70,10 +74,13 @@ def main() -> int:
     start_day = datetime.fromisoformat(start_date).date()
     end_day = datetime.fromisoformat(end_date).date()
     start = datetime.combine(start_day, time.min, tzinfo=SHANGHAI)
-    # Daily adapter uses an inclusive date filter; intraday uses a half-open timestamp
-    # interval. Advancing to the next midnight is correct for both and avoids dropping
-    # the final intraday session.
-    end = datetime.combine(end_day + timedelta(days=1), time.min, tzinfo=SHANGHAI)
+    # Daily local queries compare dates inclusively, while intraday queries use a
+    # half-open timestamp range. Keep the final strategy session exact in both cases.
+    end = (
+        datetime.combine(end_day, time.max, tzinfo=SHANGHAI)
+        if frequency is AshareBarFrequency.DAILY
+        else datetime.combine(end_day + timedelta(days=1), time.min, tzinfo=SHANGHAI)
+    )
     layout = LocalAshareDatasetLayout(args.root)
     (
         rows,
