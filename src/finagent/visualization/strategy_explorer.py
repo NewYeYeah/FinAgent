@@ -194,7 +194,7 @@ class StrategyDecisionExplorerProjection:
             if payload.get("schema_version") != MARKET_BAR_MANIFEST_SCHEMA:
                 continue
             try:
-                manifest = MarketBarSeriesManifest.from_dict(payload)
+                bar_manifest = MarketBarSeriesManifest.from_dict(payload)
                 evidence = MarketBarSeriesEvidence(path)
             except (
                 OSError,
@@ -205,21 +205,21 @@ class StrategyDecisionExplorerProjection:
             ) as exc:
                 warnings.append(f"{path}: {type(exc).__name__}: {exc}")
                 continue
-            strategy_id = manifest.linked_strategy_series_id
+            strategy_id = bar_manifest.linked_strategy_series_id
             if strategy_id not in items:
                 notices.append(
-                    f"{path}: MarketBarSeries {manifest.series_id!r} has no configured "
+                    f"{path}: MarketBarSeries {bar_manifest.series_id!r} has no configured "
                     f"StrategyDecisionSeries {strategy_id!r}; binding omitted"
                 )
                 continue
             item = items[strategy_id]
-            if manifest.portfolio_validation_id != item.portfolio_validation_id:
+            if bar_manifest.portfolio_validation_id != item.portfolio_validation_id:
                 warnings.append(
                     f"{path}: MarketBarSeries portfolio_validation_id does not match "
                     f"StrategyDecisionSeries {strategy_id!r}; binding omitted"
                 )
                 continue
-            if manifest.data_version != item.data_version:
+            if bar_manifest.data_version != item.data_version:
                 warnings.append(
                     f"{path}: MarketBarSeries data_version does not match "
                     f"StrategyDecisionSeries {strategy_id!r}; binding omitted"
@@ -229,9 +229,9 @@ class StrategyDecisionExplorerProjection:
                 continue
             existing = market_bars.get(strategy_id)
             if existing is not None:
-                if existing.manifest == manifest:
+                if existing.manifest == bar_manifest:
                     notices.append(
-                        f"{path}: equivalent MarketBarSeries {manifest.series_id!r} ignored"
+                        f"{path}: equivalent MarketBarSeries {bar_manifest.series_id!r} ignored"
                     )
                     continue
                 warnings.append(
