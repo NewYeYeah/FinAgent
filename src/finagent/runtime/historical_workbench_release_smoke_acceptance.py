@@ -1,8 +1,40 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from pathlib import Path
 
 from . import historical_workbench_release_smoke as base
+
+
+def _protected_worktree_changes(repository_root: Path) -> tuple[str, ...]:
+    """Return tracked/staged/untracked changes under the frozen Workbench product.
+
+    The real browser smoke builds from the working tree rather than a detached Git
+    object.  Commit-to-commit drift checks therefore are not sufficient: a local
+    package.json edit, source patch or staged file could otherwise be rendered while
+    the smoke still records the clean HEAD SHA.  Only the frozen product denominator
+    is inspected; reports, node_modules, dist and HW-1.0-RS verifier/test files remain
+    outside this guard.
+    """
+
+    output: set[str] = set()
+    commands = (
+        ("diff", "--name-only", "--"),
+        ("diff", "--cached", "--name-only", "--"),
+        ("ls-files", "--others", "--exclude-standard", "--"),
+    )
+    for prefix in commands:
+        result = base._git(
+            repository_root,
+            *prefix,
+            *base.WORKBENCH_PRODUCT_PATHS,
+        )
+        output.update(
+            line.strip().replace("\\", "/")
+            for line in result.stdout.splitlines()
+            if line.strip()
+        )
+    return tuple(sorted(output))
 
 
 class HistoricalWorkbenchReleaseSmoke(base.HistoricalWorkbenchReleaseSmoke):
@@ -12,6 +44,16 @@ class HistoricalWorkbenchReleaseSmoke(base.HistoricalWorkbenchReleaseSmoke):
     frozen Historical Workbench product. CI fixtures remain contract-only and can
     never claim real acceptance.
     """
+
+    def prepare(self) -> base.HistoricalWorkbenchReleaseSmokePrepared:
+        if self.config.mode == "real_frozen_release":
+            changes = _protected_worktree_changes(self.config.repository_root)
+            if changes:
+                raise ValueError(
+                    "real HW-1.0-RS requires clean protected Workbench product paths; "
+                    "uncommitted changes: " + ", ".join(changes)
+                )
+        return super().prepare()
 
     def finalize(
         self,
@@ -61,9 +103,10 @@ class HistoricalWorkbenchReleaseSmoke(base.HistoricalWorkbenchReleaseSmoke):
             "acceptance_semantics": (
                 "CI fixtures validate the HW-1.0-RS contract but cannot accept the "
                 "real frozen product. Real acceptance requires a frozen A-C5 release, "
-                "zero Workbench product drift and a passing production-build Playwright "
-                "smoke over the locally verified A-C3 evidence. Backend-only execution "
-                "is diagnostic and cannot accept the real product."
+                "a clean protected Workbench working tree, zero committed Workbench "
+                "product drift and a passing production-build Playwright smoke over "
+                "the locally verified A-C3 evidence. Backend-only execution is "
+                "diagnostic and cannot accept the real product."
             ),
         }
         if browser_required and not browser_ok:
