@@ -2,7 +2,7 @@
 
 Status: **preliminary frozen roadmap index**  
 Planning baseline: `main @ 31ce20f7a6f78aee221e3649c5f6d2bb6e2fea0a`  
-Implementation status: **A-C0 / V4-5 complete; A-C1 complete; A-C2 current**  
+Implementation status: **A-C0 / V4-5 complete; A-C1 complete; A-C2 complete; A-C3 current**  
 Detailed planning authority: [`current-development-plan-v4.0.md`](current-development-plan-v4.0.md)
 
 This short roadmap is the execution index for the v4.0 planning baseline. Existing `roadmap.md`, `current-development-plan-v3.1.md` and completed V0–V4/A2.6–A5 documents remain valid historical/contract records. Where post-V4-5 priority ordering differs, **v4.0 governs new development after this planning baseline is accepted**.
@@ -54,11 +54,11 @@ Completion properties:
 - accepted on Ubuntu/Python 3.11 with 55 focused backend tests + `py_compile`, Ruff/focused mypy/`pip check`, TypeScript, 34 Vitest tests, production build and 11 Playwright tests;
 - recorded the implementation in [`changelog-a-c1.md`](changelog-a-c1.md).
 
-### Current — A-C2 MarketBarSeriesEvidence + Frequency Contract
+### Completed — A-C2 MarketBarSeriesEvidence + Frequency Contract
 
-Freeze authoritative market-bar evidence before any complete minute-research or U.S. migration work begins.
+Delivered provider-neutral market-bar authority and authoritative Strategy candlesticks without changing V4-0 strategy/execution authority.
 
-Required contract surface:
+Frozen contract surface:
 
 ```text
 BarInterval
@@ -71,31 +71,67 @@ MarketBarSeriesEvidence
 LabelHorizonPolicy
 ```
 
-Required product outcome:
+Accepted authority composition:
 
 ```text
-authoritative OHLCV evidence
-          ↓
-server-side bounded projection
-          ↓
-Strategy candlestick + signal/order/fill overlay
+StrategyDecisionSeriesEvidence V4-0
+  → signal / target / order / fill / constraint / PnL
+
+MarketBarSeriesEvidence A-C2
+  → OHLCV / interval / timestamp / session
+
+Strategy Workbench
+  → read-only presentation overlay
 ```
 
-A-share daily OHLC should be the primary acceptance source. A small A-share M1 sample may be used only to verify frequency/session semantics; A-C2 does **not** reopen a complete A-share minute research program.
+Completion properties:
+
+- added content-addressed MarketBarSeries manifest + Parquet evidence with SHA/count/identity verification;
+- retained bounded browser queries with `limit <= 5000`;
+- froze A-share session semantics including the 11:30–13:00 lunch break;
+- froze bar-count/trading-minute/same-session/trading-day label-horizon vocabulary for later minute research;
+- bound MarketBarSeries to Strategy only when strategy-series, portfolio-validation and data-version identities match exactly;
+- fail-closed on identity mismatch or conflicting MarketBarSeries;
+- added GET-only market-bar binding/row endpoints;
+- added host-side certified A-share 1d materialization and 1min contract-smoke path without adding Control authority;
+- rendered authoritative candlesticks + V4-0 reference/fill overlays when evidence is present;
+- retained the V4-2 close-only path with explicit unavailable state when MarketBarSeries is absent;
+- generalized V4-5 acceptance so OHLC may exist only when its authority is explicitly `MarketBarSeriesEvidence`;
+- removed the Windows Workspace API matrix from this development line; Ubuntu/Python 3.11 is the blocking Python environment;
+- accepted with 60 focused backend tests + `py_compile`, Ruff/mypy/`pip check`, TypeScript, Vitest 35/35, production build and Playwright 11/11;
+- recorded the implementation in [`changelog-a-c2.md`](changelog-a-c2.md).
+
+### Current — A-C3 Real A-share Historical E2E Acceptance
+
+Run one real frozen A-share historical chain through the complete accepted architecture and verify that every Workbench surface resolves to the same immutable identities.
+
+Required chain:
+
+```text
+local dataset certification
+→ development research
+→ A2.6 robust research
+→ A4 execution-aware validation
+→ StrategyDecisionSeries
+→ FactorSeries
+→ MarketBarSeries
+→ Historical Workbench
+→ review bundle
+```
+
+Required acceptance focus:
+
+- real frozen dataset / program / selection / A4 / V4 evidence identities are recorded;
+- Workbench values match authoritative evidence rather than browser recomputation;
+- Strategy displays authoritative OHLC when the matching MarketBarSeries exists;
+- Factor / Portfolio / Execution retain their frozen authority boundaries;
+- linked Context survives navigation/history/reload;
+- review bundle resolves the same evidence identities;
+- missing benchmark/exposure/capacity/risk-contribution evidence stays explicitly unavailable;
+- production reserve remains untouched;
+- a small 1min A-share sample may be used only for intraday contract smoke, not a full minute research rerun.
 
 ## A-share historical closure
-
-### A-C3 — Real A-share Historical E2E Acceptance
-
-Run a real frozen A-share dataset through:
-
-```text
-certification → development research → A2.6 → A4
-→ StrategyDecisionSeries + FactorSeries + MarketBarSeries
-→ Historical Workbench → review bundle
-```
-
-A small A-share M1 sample may be used only for intraday contract smoke testing.
 
 ### A-C4 — Initial Requirement Compliance Audit
 
@@ -248,8 +284,7 @@ Reuse realtime/event/state/Workbench/reconciliation infrastructure; retain A-sha
 ## Immediate order
 
 ```text
-A-C2
-→ A-C3
+A-C3
 → A-C4
 → A-C5
 → US-D0
