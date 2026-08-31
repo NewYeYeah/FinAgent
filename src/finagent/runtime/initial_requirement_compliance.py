@@ -9,7 +9,7 @@ from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
-from typing import Mapping, Sequence
+from typing import Mapping
 
 INITIAL_REQUIREMENT_COMPLIANCE_SCHEMA = (
     "finagent.initial-requirement-compliance-audit.v1"
@@ -202,7 +202,10 @@ class InitialRequirementComplianceAudit:
     def status_counts(self) -> Mapping[str, int]:
         counts = Counter(entry.status for entry in self.entries)
         return MappingProxyType(
-            {status: int(counts.get(status, 0)) for status in sorted(ALLOWED_REQUIREMENT_STATUSES)}
+            {
+                status: int(counts.get(status, 0))
+                for status in sorted(ALLOWED_REQUIREMENT_STATUSES)
+            }
         )
 
     @property
@@ -211,7 +214,9 @@ class InitialRequirementComplianceAudit:
 
     @property
     def historical_freeze_ready(self) -> bool:
-        return self.audit_complete and all(entry.status != "PARTIAL" for entry in self.entries)
+        return self.audit_complete and all(
+            entry.status != "PARTIAL" for entry in self.entries
+        )
 
     @property
     def audit_id(self) -> str:
@@ -226,7 +231,9 @@ class InitialRequirementComplianceAudit:
 
     def to_dict(self) -> dict[str, object]:
         deferred = [
-            entry.requirement_id for entry in self.entries if entry.status == "DEFERRED"
+            entry.requirement_id
+            for entry in self.entries
+            if entry.status == "DEFERRED"
         ]
         return {
             "schema_version": INITIAL_REQUIREMENT_COMPLIANCE_SCHEMA,
@@ -297,7 +304,8 @@ class InitialRequirementComplianceAudit:
         target = Path(path)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(
-            json.dumps(self.to_dict(), indent=2, sort_keys=True, ensure_ascii=False) + "\n",
+            json.dumps(self.to_dict(), indent=2, sort_keys=True, ensure_ascii=False)
+            + "\n",
             encoding="utf-8",
         )
         return target
