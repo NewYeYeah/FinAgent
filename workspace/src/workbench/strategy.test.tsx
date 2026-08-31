@@ -40,6 +40,9 @@ const item = {
   asset_count: 1,
   start_date: "2024-01-02",
   end_date: "2024-01-03",
+  ohlc_available: false,
+  market_bar_series_id: null,
+  market_bar_interval: null,
   authority: "authoritative",
   detail_url: `/api/v4/strategy-series/${seriesId}`,
 };
@@ -107,6 +110,8 @@ const dimensions = {
   session_count: 2,
   price_semantics: "close_price from authoritative A4 close marks",
   ohlc_available: false,
+  market_bar_series_id: null,
+  market_bar_interval: null,
 };
 
 const decisionRows = [
@@ -229,7 +234,7 @@ describe("StrategyDecisionExplorerPage", () => {
     renderPage();
 
     expect(await screen.findByText("Signal → target → order → fill → realized PnL")).toBeInTheDocument();
-    expect(screen.getByText(/OHLC is not present in V4-0 and is not fabricated/i)).toBeInTheDocument();
+    expect(screen.getByText(/No verified MarketBarSeries is bound/i)).toBeInTheDocument();
     expect(screen.getByText("Authoritative close-price & execution timeline")).toBeInTheDocument();
     expect(screen.getByText("Target vs realized weight")).toBeInTheDocument();
     expect(screen.getByText("Frozen alpha context")).toBeInTheDocument();
@@ -244,6 +249,7 @@ describe("StrategyDecisionExplorerPage", () => {
       const decisionCall = calls.find((value) => value.includes("/decisions?"));
       expect(decisionCall).toContain(`asset=${encodeURIComponent(asset)}`);
       expect(decisionCall).toContain("limit=5000");
+      expect(calls.some((value) => value.includes("/market-bars?"))).toBe(false);
     });
   });
 
