@@ -270,11 +270,28 @@ describe("FinAgent Workspace V2", () => {
     expect(screen.getByText("One-shot reserve")).toBeInTheDocument();
     expect(screen.getByText("LOCKED_NOT_CONSUMED")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("link", { name: "A4" }));
-    await waitFor(() => expect(screen.getByText("NAV & drawdown")).toBeInTheDocument());
-    expect(await screen.findByText("Monthly return matrix")).toBeInTheDocument();
-    expect(screen.getByText(/A4 portfolio authority/i)).toBeInTheDocument();
-    expect(screen.getByText("benchmark unavailable")).toBeInTheDocument();
-    expect(screen.getByText(/No NAV, return, drawdown, rolling statistic, monthly return or cost aggregate is reconstructed in React/i)).toBeInTheDocument();
+
+    // V4-4 first resolves the detail route without an explicit range, then writes
+    // the authoritative A4 start/end dates into URL-backed WorkbenchContext. The
+    // series/analytics keys change and refetch once. Wait for that canonical context
+    // transition before treating the analytical surface as stable.
+    await waitFor(() => {
+      expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent(
+        "2024-01-02..2024-01-02",
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "NAV & drawdown" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Monthly return matrix" })).toBeInTheDocument();
+      expect(screen.getByText(/A4 portfolio authority/i)).toBeInTheDocument();
+      expect(screen.getByText("benchmark unavailable")).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /No NAV, return, drawdown, rolling statistic, monthly return or cost aggregate is reconstructed in React/i,
+        ),
+      ).toBeInTheDocument();
+    });
   });
 
   it("opens the A5-4 reserve cockpit without mutation controls", async () => {
