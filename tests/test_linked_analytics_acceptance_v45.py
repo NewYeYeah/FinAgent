@@ -72,9 +72,14 @@ def test_v45_accepts_the_linked_v4_system_as_one_read_only_product(
     assert "StrategyDecisionSeriesEvidence V4-0" in surface_by_name["strategy"][
         "required_evidence"
     ]
-    assert "OHLC candlesticks" in surface_by_name["strategy"][
-        "unavailable_not_inferred"
-    ]
+    assert (
+        "A-C2 MarketBarSeriesEvidence raw OHLCV when explicitly bound"
+        in surface_by_name["strategy"]["authoritative_sources"]
+    )
+    assert (
+        "OHLC candlesticks when no verified MarketBarSeriesEvidence is bound"
+        in surface_by_name["strategy"]["unavailable_not_inferred"]
+    )
     assert "Agent generation chronology" in surface_by_name["factors"][
         "unavailable_not_inferred"
     ]
@@ -84,7 +89,10 @@ def test_v45_accepts_the_linked_v4_system_as_one_read_only_product(
     assert "capacity/impact model" in surface_by_name["execution"][
         "unavailable_not_inferred"
     ]
-    assert all(surface["browser_recomputation"] is False for surface in surface_by_name.values())
+    assert all(
+        surface["browser_recomputation"] is False
+        for surface in surface_by_name.values()
+    )
 
     status_response = client.get("/api/v4/linked-analytics/status")
     assert status_response.status_code == 200
