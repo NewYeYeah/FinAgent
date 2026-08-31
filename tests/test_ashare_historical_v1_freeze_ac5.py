@@ -6,6 +6,7 @@ import subprocess
 import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -15,6 +16,7 @@ from finagent.runtime.ashare_historical_v1_freeze import (
     AC5_FREEZE_SCHEMA,
     AshareHistoricalV1Freezer,
     HistoricalFreezeConfig,
+    HistoricalFreezeMode,
     recompute_ac3_acceptance_id,
 )
 from finagent.runtime.initial_requirement_compliance import (
@@ -108,6 +110,13 @@ def _write_ac3(
         "a4_reserve_untouched": True,
         "fixture_contract": True,
     }
+    artifacts: dict[str, object] = {
+        "review_bundle": _artifact(review),
+    }
+    # The current no-alpha A-C3 payload does not place certification in artifacts;
+    # A-C5 must recover it from the real application-service `output_path` instead.
+    if not no_alpha:
+        artifacts["certification"] = _artifact(certification)
     payload: dict[str, object] = {
         "schema_version": AC3_ACCEPTANCE_SCHEMA,
         "stage": "A-C3",
@@ -127,14 +136,11 @@ def _write_ac3(
             "data.certify_local_ashare": {
                 "ok": True,
                 "command_run_id": "certify-fixture-run",
-                "evidence_ids": ["certification-fixture-evidence"],
-                "outputs": {"report_path": str(certification.resolve())},
+                "evidence_ids": [],
+                "outputs": {"output_path": str(certification.resolve())},
             }
         },
-        "artifacts": {
-            "certification": _artifact(certification),
-            "review_bundle": _artifact(review),
-        },
+        "artifacts": artifacts,
     }
     if no_alpha:
         payload["terminal_state"] = "NO_ROBUST_FACTOR_FAMILY"
@@ -171,7 +177,7 @@ def _config(
             ROOT / "pyproject.toml",
             ROOT / "workspace/package-lock.json",
         ),
-        mode=mode,  # type: ignore[arg-type]
+        mode=cast(HistoricalFreezeMode, mode),
         release_git_sha=git_sha,
         require_clean_tracked_worktree=True,
     )
@@ -216,6 +222,9 @@ def test_ac5_ci_contract_fixture_never_claims_real_freeze(
     assert ac3_summary["research_outcome"] == (
         "NO_ROBUST_FACTOR_FAMILY" if no_alpha else "POPULATED_STRATEGY"
     )
+    assert ac3_summary["certification_command_run_id"] == "certify-fixture-run"
+    assert ac3_summary["certification_evidence_ids"] == []
+    assert ac3_summary["certification_artifact_sha256"]
     assert result.package_path is not None and result.package_path.is_file()
     assert result.package_sha256 == _sha256(result.package_path)
 
