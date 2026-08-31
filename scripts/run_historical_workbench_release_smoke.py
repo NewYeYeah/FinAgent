@@ -16,6 +16,7 @@ from pathlib import Path
 import uvicorn
 
 from finagent.runtime.historical_workbench_release_smoke import (
+    BrowserSmokeStatus,
     HistoricalWorkbenchReleaseSmokeConfig,
     HistoricalWorkbenchReleaseSmokePrepared,
 )
@@ -182,7 +183,7 @@ def main() -> int:
 
     smoke = HistoricalWorkbenchReleaseSmoke(config)
     prepared = smoke.prepare()
-    browser_status = "not_run"
+    browser_status: BrowserSmokeStatus = "not_run"
     browser_detail = "browser smoke disabled"
     if config.run_browser:
         passed, browser_detail = _run_browser(prepared=prepared, config=config)
