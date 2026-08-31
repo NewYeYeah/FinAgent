@@ -16,8 +16,11 @@ from pathlib import Path
 import uvicorn
 
 from finagent.runtime.historical_workbench_release_smoke import (
-    HistoricalWorkbenchReleaseSmoke,
     HistoricalWorkbenchReleaseSmokeConfig,
+    HistoricalWorkbenchReleaseSmokePrepared,
+)
+from finagent.runtime.historical_workbench_release_smoke_acceptance import (
+    HistoricalWorkbenchReleaseSmoke,
 )
 from finagent.visualization.workbench_api import _attach_frontend
 
@@ -70,7 +73,7 @@ def _wait_ready(url: str, timeout_seconds: float = 20.0) -> None:
 
 def _run_browser(
     *,
-    prepared,
+    prepared: HistoricalWorkbenchReleaseSmokePrepared,
     config: HistoricalWorkbenchReleaseSmokeConfig,
 ) -> tuple[bool, str]:
     if config.build_frontend:
@@ -157,7 +160,10 @@ def main() -> int:
     parser.add_argument(
         "--backend-only",
         action="store_true",
-        help="Validate release/evidence/Workbench projections without Playwright.",
+        help=(
+            "Validate release/evidence/Workbench projections without Playwright. "
+            "In real mode this is diagnostic only and cannot set accepted=true."
+        ),
     )
     parser.add_argument(
         "--no-build",
