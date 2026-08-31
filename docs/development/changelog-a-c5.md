@@ -75,7 +75,9 @@ A-C4 is different: for a real freeze it must be regenerated on the exact final r
 A-C5:
 
 - recomputes the existing A-C3 `acceptance_id` from its frozen identities/checks;
-- verifies every A-C3 artifact SHA-256 and byte size recorded by A-C3;
+- freezes a required A-C3 release-artifact denominator instead of accepting a selectively truncated artifact map: populated strategy requires certification/development/robust/A4/A4-ledger/Factor/Strategy/MarketBar/review/command-store artifacts, while no-alpha requires the same historical chain except MarketBar and recovers certification from its CommandRun output when needed;
+- verifies every present A-C3 artifact SHA-256 and byte size recorded by A-C3;
+- requires all five A-C3 historical CommandRuns to remain successful and to expose durable CommandRun identities;
 - requires a successful data-certification CommandRun and freezes its CommandRun identity plus certification-report SHA-256/byte size; existing optional `evidence_ids` are preserved but are not fabricated or required;
 - validates the frozen dataset manifest through `LocalAshareFrozenManifest` and requires `content_hashed=true`;
 - exactly replays A-C4 from its frozen TOML manifest and requires `PARTIAL=0`;
