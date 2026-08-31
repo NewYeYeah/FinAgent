@@ -15,10 +15,14 @@ _WORKBENCH_PRODUCT_TEST_EXCLUDES = (
     ":(exclude,glob)workspace/src/**/*.test.tsx",
     ":(exclude,glob)workspace/src/test/**",
 )
-base.WORKBENCH_PRODUCT_PATHS = (
+_WORKBENCH_PRODUCT_PATHS = (
     *base.WORKBENCH_PRODUCT_PATHS,
     *_WORKBENCH_PRODUCT_TEST_EXCLUDES,
 )
+# The base module's tuple is inferred by mypy as a fixed-length literal tuple. Use an
+# explicit policy injection instead of assigning a longer tuple through that narrow
+# static type; all runtime consumers still read the same module-level denominator.
+setattr(base, "WORKBENCH_PRODUCT_PATHS", _WORKBENCH_PRODUCT_PATHS)
 
 
 def _protected_worktree_changes(repository_root: Path) -> tuple[str, ...]:
