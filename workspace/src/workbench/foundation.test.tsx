@@ -8,8 +8,7 @@ import {
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  createMemoryRouter,
-  RouterProvider,
+  MemoryRouter,
   useLocation,
   useNavigate,
 } from "react-router-dom";
@@ -162,22 +161,13 @@ describe("V3-5 Workbench foundation acceptance", () => {
   });
 
   it("restores URL-backed WorkbenchContext through browser back and forward", async () => {
-    const router = createMemoryRouter(
-      [
-        {
-          path: "*",
-          element: (
-            <WorkbenchContextProvider>
-              <ContextHistoryHarness />
-            </WorkbenchContextProvider>
-          ),
-        },
-      ],
-      {
-        initialEntries: ["/widgets?surface=configs&env=research"],
-      },
+    render(
+      <MemoryRouter initialEntries={["/widgets?surface=configs&env=research"]}>
+        <WorkbenchContextProvider>
+          <ContextHistoryHarness />
+        </WorkbenchContextProvider>
+      </MemoryRouter>,
     );
-    render(<RouterProvider router={router} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Select A" }));
     expect(screen.getByTestId("context")).toHaveTextContent("project-a");
