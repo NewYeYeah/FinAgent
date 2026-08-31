@@ -140,6 +140,11 @@ class LocalAshareFrozenManifest:
         verify_content: bool | None = None,
     ) -> None:
         verify_content = self.content_hashed if verify_content is None else verify_content
+        if verify_content and not self.content_hashed:
+            raise ValueError(
+                "full content verification requires a content_hashed frozen manifest; "
+                "regenerate the A-share frozen manifest with content_hash=True"
+            )
         for frozen in self.files:
             path = layout.root / Path(frozen.relative_path)
             if not path.is_file():
