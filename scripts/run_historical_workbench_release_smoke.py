@@ -58,6 +58,23 @@ def _run_frontend_build(repository_root: Path) -> None:
         )
 
 
+def _ensure_chromium(repository_root: Path) -> None:
+    completed = subprocess.run(
+        [_command("npx"), "playwright", "install", "chromium"],
+        cwd=repository_root / "workspace",
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError(
+            "Playwright Chromium installation failed\n"
+            + completed.stdout[-4000:]
+            + "\n"
+            + completed.stderr[-4000:]
+        )
+
+
 def _wait_ready(url: str, timeout_seconds: float = 20.0) -> None:
     deadline = time.monotonic() + timeout_seconds
     last_error = ""
@@ -84,6 +101,7 @@ def _run_browser(
             f"Workspace production build is absent at {config.frontend_dir}; "
             "run `cd workspace && npm run build`"
         )
+    _ensure_chromium(config.repository_root)
 
     # The production app is already fully composed by the smoke verifier. Attach the
     # just-built static bundle without rebuilding any evidence projections.
