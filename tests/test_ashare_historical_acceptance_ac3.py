@@ -111,7 +111,9 @@ def _record_success(
     record, created = store.create(
         request_key=f"ac3-ci:{command_id}",
         command_id=command_id,
-        config_snapshot_id=(None if command_id == "review.export_bundle" else f"snapshot:{command_id}"),
+        config_snapshot_id=(
+            None if command_id == "review.export_bundle" else f"snapshot:{command_id}"
+        ),
         context={},
         parameters={},
         requested_by="ac3-ci",
@@ -140,6 +142,7 @@ def test_ac3_ci_contract_fixture_validates_full_chain_but_cannot_close_real_acce
     factor_manifest = Path(v41_evidence["manifest"])
     robust = json.loads(robust_path.read_text(encoding="utf-8"))
     assert isinstance(robust, dict)
+    data_version = str(robust["data_version"])
 
     validation_id, strategy_series_id = _bind_v44_to_robust(root, robust)
     strategy_manifest = root / "a4.strategy-decisions.json"
@@ -147,22 +150,37 @@ def test_ac3_ci_contract_fixture_validates_full_chain_but_cannot_close_real_acce
         root,
         strategy_series_id,
         validation_id,
-        data_version=str(robust["data_version"]),
+        data_version=data_version,
     )
     market_manifest = root / "market-bars.json"
     assert market_series_id
 
     certification = root / "certification.json"
     certification.write_text(
-        json.dumps({"schema_version": "finagent.local-ashare-certification.v1", "passed": True}),
+        json.dumps(
+            {
+                "schema_version": "finagent.local-ashare-certification.v1",
+                "passed": True,
+                "data_version": "ci-fast-certification",
+            }
+        ),
         encoding="utf-8",
     )
+    development_acceptance_id = "development-ac3-ci"
     development = root / "development.json"
     development.write_text(
         json.dumps(
             {
-                "schema_version": "finagent.ashare-factor-research-acceptance.v1",
-                "acceptance_id": "development-ac3-ci",
+                "schema_version": "finagent.ashare-factor-research-acceptance.v2",
+                "acceptance_id": development_acceptance_id,
+                "passed": True,
+                "system_acceptance": {"passed": True, "status": "PASS"},
+                "data_version": data_version,
+                "reserve": {
+                    "start": "2023-01-01T00:00:00+00:00",
+                    "end": "2024-01-01T00:00:00+00:00",
+                    "status": "untouched",
+                },
             }
         ),
         encoding="utf-8",
@@ -179,23 +197,32 @@ def test_ac3_ci_contract_fixture_validates_full_chain_but_cannot_close_real_acce
     _record_success(
         store,
         command_id="research.run_development",
-        evidence_ids=("development-ac3-ci",),
+        evidence_ids=(development_acceptance_id,),
         artifact_paths=(str(development),),
-        outputs={"evidence_id": "development-ac3-ci", "report_path": str(development)},
+        outputs={
+            "evidence_id": development_acceptance_id,
+            "report_path": str(development),
+        },
     )
     _record_success(
         store,
         command_id="research.run_a2p6",
         evidence_ids=(str(robust["program_result_id"]),),
         artifact_paths=(str(robust_path),),
-        outputs={"evidence_id": str(robust["program_result_id"]), "report_path": str(robust_path)},
+        outputs={
+            "evidence_id": str(robust["program_result_id"]),
+            "report_path": str(robust_path),
+        },
     )
     _record_success(
         store,
         command_id="portfolio.run_a4",
         evidence_ids=(validation_id,),
         artifact_paths=(str(root / "a4.json"), str(root / "a4.jsonl")),
-        outputs={"evidence_id": validation_id, "report_path": str(root / "a4.json")},
+        outputs={
+            "evidence_id": validation_id,
+            "report_path": str(root / "a4.json"),
+        },
     )
 
     review_bundle = root / f"finagent-review-{validation_id}.zip"
@@ -250,19 +277,23 @@ def test_ac3_ci_contract_fixture_validates_full_chain_but_cannot_close_real_acce
     checks = result.payload["checks"]
     assert isinstance(checks, dict)
     assert all(checks.values())
-    assert result.payload["identities"]["portfolio_validation_id"] == validation_id
-    assert result.payload["identities"]["strategy_series_id"] == strategy_series_id
+    identities = result.payload["identities"]
+    assert isinstance(identities, dict)
+    assert identities["development_acceptance_id"] == development_acceptance_id
+    assert identities["portfolio_validation_id"] == validation_id
+    assert identities["strategy_series_id"] == strategy_series_id
     assert result.report_path.is_file()
 
 
-def test_ac3_real_mode_cannot_be_claimed_without_a_frozen_local_dataset(
+def test_ac3_ci_acceptance_artifact_cannot_claim_real_data(
     v41_evidence: dict[str, object],
 ) -> None:
     root = Path(v41_evidence["root"])
     acceptance_path = root / "ac3-acceptance.json"
-    if not acceptance_path.is_file():
-        pytest.skip("full A-C3 fixture is created by the preceding contract test")
+    assert acceptance_path.is_file()
     payload = json.loads(acceptance_path.read_text(encoding="utf-8"))
     assert payload["mode"] == "ci_contract_fixture"
+    assert payload["contract_valid"] is True
     assert payload["accepted"] is False
-    assert payload["acceptance_semantics"].startswith("CI contract fixtures")
+    assert payload["real_dataset_attested"] is False
+    assert "verify_content=true" in payload["acceptance_semantics"]
