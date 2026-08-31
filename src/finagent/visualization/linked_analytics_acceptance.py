@@ -57,10 +57,11 @@ SURFACE_CONTRACTS = (
             "V4-0 desired/executable/filled quantity rows",
             "V4-0 fees/slippage/gross/net PnL rows",
             "V4-0 decision status/client_order_id/constraint_codes rows",
+            "A-C2 MarketBarSeriesEvidence raw OHLCV when explicitly bound",
         ),
         derived_presentation=(),
         unavailable_not_inferred=(
-            "OHLC candlesticks",
+            "OHLC candlesticks when no verified MarketBarSeriesEvidence is bound",
             "per-asset per-factor contribution",
         ),
         context_keys=(
@@ -170,12 +171,11 @@ def _mapping(value: object) -> Mapping[str, Any]:
 
 
 class LinkedAnalyticsAcceptanceProjection:
-    """V4-5 machine-readable acceptance contract for the delivered V4 analytics.
+    """Machine-readable acceptance contract for the linked analytical Workbench.
 
-    This projection adds no financial calculation authority. It declares the exact
-    evidence, context, availability and read-only boundaries that Strategy, Factors,
-    Portfolio and Execution must continue to satisfy, then validates the runtime
-    status projections already owned by V4-2/V4-3/V4-4.
+    A-C2 extends Strategy with optional authoritative MarketBarSeriesEvidence without
+    changing the V4-0 strategy/execution authority. Missing OHLC remains explicit and
+    never becomes a reason to synthesize bars in the browser.
     """
 
     def __init__(
@@ -192,12 +192,17 @@ class LinkedAnalyticsAcceptanceProjection:
         strategy = _mapping(self.strategy_explorer.status())
         factors = _mapping(self.factor_tearsheet.status())
         portfolio = _mapping(self.portfolio_execution.status())
+        ohlc_available = strategy.get("ohlc_available") is True
+        ohlc_authority = strategy.get("ohlc_authority")
         return {
             "strategy_read_only": strategy.get("read_only") is True,
             "strategy_no_browser_recomputation": (
                 strategy.get("browser_recomputation") is False
             ),
-            "strategy_missing_ohlc_is_explicit": strategy.get("ohlc_available") is False,
+            "strategy_ohlc_authority_is_explicit": (
+                (ohlc_available and ohlc_authority == "MarketBarSeriesEvidence")
+                or (not ohlc_available and ohlc_authority == "unavailable")
+            ),
             "factors_read_only": factors.get("read_only") is True,
             "factors_no_browser_recomputation": (
                 factors.get("browser_recomputation") is False
