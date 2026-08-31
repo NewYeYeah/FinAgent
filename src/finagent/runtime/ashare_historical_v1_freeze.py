@@ -249,6 +249,7 @@ def recompute_ac3_acceptance_id(payload: Mapping[str, Any]) -> str:
     artifacts = _mapping(payload.get("artifacts"), "A-C3 artifacts")
     review = _mapping(artifacts.get("review_bundle"), "A-C3 review bundle")
     terminal = str(payload.get("terminal_state", "")).strip()
+    material: dict[str, object]
     if terminal == "NO_ROBUST_FACTOR_FAMILY":
         material = {
             "terminal_state": terminal,
@@ -503,12 +504,15 @@ class AshareHistoricalV1Freezer:
         artifacts_raw = _mapping(ac3.get("artifacts"), "A-C3 artifacts")
         descriptors: list[dict[str, object]] = []
         package_sources: list[tuple[str, Path]] = []
+        certification_descriptor: dict[str, object] | None = None
         for role, raw in sorted(artifacts_raw.items()):
             if raw is None:
                 continue
             descriptor, path = _verify_recorded_artifact(str(role), raw)
             descriptors.append(descriptor)
             package_sources.append((f"evidence/ac3/{role}/{path.name}", path))
+            if str(role) == "certification":
+                certification_descriptor = descriptor
 
         terminal_state = str(ac3.get("terminal_state", "")).strip()
         if terminal_state == "NO_ROBUST_FACTOR_FAMILY":
@@ -545,25 +549,28 @@ class AshareHistoricalV1Freezer:
         )
         if certification.get("ok") is not True:
             raise ValueError("A-C3 certification CommandRun is not successful")
+        certification_run_id = str(certification.get("command_run_id", "")).strip()
+        if not certification_run_id:
+            raise ValueError("A-C3 certification CommandRun has no run identity")
         certification_ids = [
             str(value) for value in _sequence(certification.get("evidence_ids"))
         ]
-        if not certification_ids:
-            raise ValueError("A-C3 certification CommandRun has no evidence identity")
 
-        if "certification" not in artifacts_raw:
+        if certification_descriptor is None:
             outputs = _mapping(certification.get("outputs", {}), "certification outputs")
-            report_value = str(outputs.get("report_path", "")).strip()
-            if not report_value:
+            output_value = str(
+                outputs.get("output_path") or outputs.get("report_path") or ""
+            ).strip()
+            if not output_value:
                 raise ValueError(
-                    "A-C3 no-alpha evidence must expose the certification report path"
+                    "A-C3 no-alpha evidence must expose the certification output path"
                 )
-            certification_path = Path(report_value).expanduser().resolve()
-            descriptor = _artifact_descriptor(
+            certification_path = Path(output_value).expanduser().resolve()
+            certification_descriptor = _artifact_descriptor(
                 "ac3:certification",
                 certification_path,
             )
-            descriptors.append(descriptor)
+            descriptors.append(certification_descriptor)
             package_sources.append(
                 (
                     f"evidence/ac3/certification/{certification_path.name}",
@@ -582,14 +589,16 @@ class AshareHistoricalV1Freezer:
                 + ", ".join(core_drift)
             )
 
-        evidence = {
+        evidence: dict[str, object] = {
             "acceptance_id": str(ac3.get("acceptance_id", "")),
             "git_sha": ac3_sha,
             "research_outcome": research_outcome,
             "data_version": data_version,
             "identities": dict(identities),
-            "certification_command_run_id": str(certification.get("command_run_id", "")),
+            "certification_command_run_id": certification_run_id,
             "certification_evidence_ids": certification_ids,
+            "certification_artifact_sha256": certification_descriptor["sha256"],
+            "certification_artifact_size_bytes": certification_descriptor["size_bytes"],
             "historical_core_drift": list(core_drift),
         }
         return evidence, descriptors, package_sources
