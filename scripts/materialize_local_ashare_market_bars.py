@@ -11,6 +11,7 @@ from finagent.backtest import StrategyDecisionSeriesProjection
 from finagent.data import (
     AshareBarFrequency,
     LocalAshareDatasetLayout,
+    LocalAshareFrozenManifest,
     materialize_local_ashare_market_bar_rows,
     write_market_bar_series,
 )
@@ -25,13 +26,16 @@ _CERTIFIED_AC2_FREQUENCIES = (
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Materialize authoritative A-C2 MarketBarSeries evidence from certified "
-            "local A-share OHLC. This is a host-side historical evidence command and "
-            "is not exposed through the generic Workbench Control Plane."
+            "Materialize authoritative MarketBarSeries evidence from frozen local "
+            "A-share OHLC. The frozen manifest is mandatory so MarketBarSeries uses "
+            "the same content-certified data_version as A2.6/A4/V4-0 instead of an "
+            "adapter-local fast fingerprint. This host-side command is not exposed "
+            "through the generic Workbench Control Plane."
         )
     )
     parser.add_argument("strategy_manifest", type=Path)
     parser.add_argument("--root", type=Path, required=True)
+    parser.add_argument("--frozen-manifest", type=Path, required=True)
     parser.add_argument(
         "--frequency",
         choices=tuple(value.value for value in _CERTIFIED_AC2_FREQUENCIES),
@@ -39,6 +43,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--data", type=Path)
+    parser.add_argument("--verify-content", action="store_true")
     return parser
 
 
@@ -49,7 +54,7 @@ def _dimensions(projection: StrategyDecisionSeriesProjection) -> tuple[tuple[str
     try:
         import duckdb
     except ImportError as exc:  # pragma: no cover - dependency guidance
-        raise RuntimeError("A-C2 materialization requires the local-parquet extra") from exc
+        raise RuntimeError("MarketBarSeries materialization requires the local-parquet extra") from exc
     connection = duckdb.connect()
     try:
         assets = tuple(
@@ -82,6 +87,18 @@ def main() -> int:
         else datetime.combine(end_day + timedelta(days=1), time.min, tzinfo=SHANGHAI)
     )
     layout = LocalAshareDatasetLayout(args.root)
+    frozen = LocalAshareFrozenManifest.read_json(args.frozen_manifest)
+    if frequency.value not in frozen.frequencies:
+        raise ValueError(
+            f"frozen local A-share manifest does not include frequency {frequency.value!r}"
+        )
+    frozen.verify(layout, verify_content=bool(args.verify_content))
+    if frozen.dataset_version != strategy.manifest.data_version:
+        raise ValueError(
+            "MarketBarSeries frozen dataset version differs from StrategyDecisionSeries: "
+            f"{frozen.dataset_version!r} != {strategy.manifest.data_version!r}"
+        )
+
     (
         rows,
         interval,
@@ -95,21 +112,29 @@ def main() -> int:
         start=start,
         end=end,
         frequency=frequency,
+        data_version=frozen.dataset_version,
     )
     if data_version != strategy.manifest.data_version:
         raise ValueError(
-            "A-C2 refuses to bind MarketBarSeries from a data version that differs "
-            "from the StrategyDecisionSeries: "
+            "MarketBarSeries refuses to bind a data version that differs from the "
+            "StrategyDecisionSeries: "
             f"{data_version!r} != {strategy.manifest.data_version!r}"
         )
     strategy_path = Path(args.strategy_manifest).resolve()
     stem = strategy_path.name.removesuffix(".json")
-    manifest_path = (args.manifest or strategy_path.with_name(f"{stem}.market-bars.json")).resolve()
-    data_path = (args.data or strategy_path.with_name(f"{stem}.market-bars.parquet")).resolve()
+    manifest_path = (
+        args.manifest or strategy_path.with_name(f"{stem}.market-bars.json")
+    ).resolve()
+    data_path = (
+        args.data or strategy_path.with_name(f"{stem}.market-bars.parquet")
+    ).resolve()
     manifest = write_market_bar_series(
         linked_strategy_series_id=strategy.manifest.series_id,
         portfolio_validation_id=strategy.manifest.portfolio_validation_id,
-        source_identity=f"local_ashare_parquet:{data_version}",
+        source_identity=(
+            f"local_ashare_frozen:{frozen.dataset_version}:"
+            f"{Path(args.frozen_manifest).resolve().name}"
+        ),
         data_version=data_version,
         interval=interval,
         timestamp_convention=timestamp_convention,
