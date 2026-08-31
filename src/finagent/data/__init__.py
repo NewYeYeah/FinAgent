@@ -59,6 +59,16 @@ from .local_ashare_freeze import (
 from .local_ashare_inference_adapter import LocalAshareInferenceDataAdapter
 from .local_ashare_research_adapter import LocalAshareParquetDataAdapter
 from .local_ashare_research_certification import LocalAshareDatasetInspector
+from .market_bar_series import (
+    MARKET_BAR_MANIFEST_SCHEMA,
+    MARKET_BAR_QUERY_SCHEMA,
+    MARKET_BAR_ROW_SCHEMA,
+    MarketBarSeriesEvidence,
+    MarketBarSeriesManifest,
+    ashare_session_spec,
+    materialize_local_ashare_market_bar_rows,
+    write_market_bar_series,
+)
 from .store import SQLitePriceStore
 
 __all__ = [
@@ -94,6 +104,11 @@ __all__ = [
     "LocalAshareInferenceDataAdapter",
     "LocalAshareParquetDataAdapter",
     "LocalAshareSecurityMaster",
+    "MARKET_BAR_MANIFEST_SCHEMA",
+    "MARKET_BAR_QUERY_SCHEMA",
+    "MARKET_BAR_ROW_SCHEMA",
+    "MarketBarSeriesEvidence",
+    "MarketBarSeriesManifest",
     "MarketDataManifest",
     "MarketDataProfile",
     "MarketDataPullRequest",
@@ -110,11 +125,14 @@ __all__ = [
     "SQLitePriceStore",
     "SupplementedAshareSecurityMaster",
     "TushareMarketDataIngestor",
+    "ashare_session_spec",
     "compare_provider_records",
     "create_local_ashare_frozen_manifest",
     "load_configured_market_data",
     "load_market_data_profile",
+    "materialize_local_ashare_market_bar_rows",
     "provider_capabilities",
     "read_normalized_csv",
     "validate_records",
+    "write_market_bar_series",
 ]

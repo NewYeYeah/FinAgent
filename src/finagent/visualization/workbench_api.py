@@ -82,15 +82,16 @@ def create_workspace_app(
         "http://localhost:5173",
     ),
 ) -> FastAPI:
-    """Compose the immutable Evidence Plane with V3/V4 Workbench read models.
+    """Compose the immutable Evidence Plane with V3/V4/A-C2 Workbench read models.
 
     V4-2 exposes verified StrategyDecisionSeries through the linked Strategy surface.
     V4-3 adds a verified Factor Tear Sheet over immutable V4-1 period rows and frozen
     A2.6 statistical summaries. V4-4 links authoritative A4 portfolio evidence with
     verified V4-0 execution rows for Portfolio / Execution analytics. V4-5 adds only
-    a machine-readable acceptance contract over those delivered surfaces. All remain
-    GET-only read models: browser requests cannot submit host paths, recompute core
-    financial facts, mutate evidence, or expand Control authority.
+    a machine-readable acceptance contract over those delivered surfaces. A-C2 may
+    bind an independent verified MarketBarSeries to Strategy for authoritative OHLCV.
+    All remain GET-only read models: browser requests cannot submit host paths,
+    recompute core financial facts, mutate evidence, or expand Control authority.
     """
 
     app = create_evidence_app(
@@ -218,14 +219,24 @@ def create_workspace_app(
             manifest = strategy_explorer.projection(series_id).manifest
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="strategy series not found") from exc
+        binding = strategy_explorer.market_bar_binding(series_id)
+        ohlc_available = binding is not None
         return {
             "schema_version": "finagent.strategy-explorer.series.v1",
             "read_only": True,
             "item": item.to_dict(),
             "manifest": manifest.to_dict(),
             "presentation": {
-                "price_semantics": "authoritative_close_only",
-                "ohlc_available": False,
+                "price_semantics": (
+                    "authoritative_market_bar_ohlc_with_v4_execution_overlay"
+                    if ohlc_available
+                    else "authoritative_close_only"
+                ),
+                "ohlc_available": ohlc_available,
+                "ohlc_authority": (
+                    "MarketBarSeriesEvidence" if ohlc_available else "unavailable"
+                ),
+                "market_bar_binding": binding,
                 "browser_recomputation": False,
                 "factor_contribution_semantics": (
                     "combined alpha context and frozen component identities only"

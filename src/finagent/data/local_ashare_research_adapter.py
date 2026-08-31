@@ -3,10 +3,12 @@ from __future__ import annotations
 import math
 import re
 from collections.abc import Mapping, Sequence
+from datetime import datetime
 from typing import Any
 
 import numpy as np
 
+from finagent.domain.assets import AssetId
 from finagent.domain.experiments import ArtifactRef, ArtifactType
 from finagent.domain.research import DatasetRequest, ResearchDataset, ResearchSplit
 
@@ -57,6 +59,25 @@ class LocalAshareParquetDataAdapter(_BaseLocalAshareParquetDataAdapter):
     and becomes NaN when the asset has no tradable bar on that target session.
     This prevents a one-session label from silently stretching across a suspension.
     """
+
+    def bar_history(
+        self,
+        universe: tuple[AssetId, ...],
+        start: datetime,
+        end: datetime,
+    ) -> Mapping[AssetId, tuple[AshareBarRecord, ...]]:
+        """Return bounded PIT-safe raw bar records for evidence materialization.
+
+        This is intentionally narrower than ``build_dataset`` and does not create
+        features, labels, execution semantics or browser projections. A-C2 uses it
+        as the public read boundary between a market adapter and MarketBarSeries.
+        """
+
+        histories = self._query_records(universe, start, end)
+        return {
+            asset: tuple(histories[asset])
+            for asset in universe
+        }
 
     def _select_columns(self, extra_fields: Sequence[str] = ()) -> tuple[str, ...]:
         names = super()._select_columns(extra_fields)
