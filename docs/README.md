@@ -2,10 +2,13 @@
 
 FinAgent documentation follows a **single-authority** model. The same project fact must not be maintained independently in README, a roadmap, a versioned current plan, and a changelog.
 
+New readers should begin with the [project onboarding guide](guides/project-onboarding.md). Agents and automation tools should additionally load the repository [`finagent-project` skill](../skills/finagent-project/SKILL.md).
+
 ## Authoritative documents
 
 | Question | Authority |
 | --- | --- |
+| How should a new person/Agent learn and inspect the project? | [`guides/project-onboarding.md`](guides/project-onboarding.md) / [`finagent-project` skill](../skills/finagent-project/SKILL.md) |
 | What stage is active now? | [`status.toml`](status.toml) |
 | What are the next stages, dependencies, scope and exit gates? | [`development/current-plan.md`](development/current-plan.md) |
 | What is the system architecture now? | [`architecture/overview.md`](architecture/overview.md) |
@@ -28,5 +31,6 @@ FinAgent documentation follows a **single-authority** model. The same project fa
 7. A changed user workflow updates a guide.
 8. A product release creates or finalizes one release snapshot.
 9. Detailed implementation history belongs to Git and PRs, not duplicated stage documents.
+10. The onboarding skill/guide explain how to consume these authorities; they do not create another project-status authority.
 
 `python scripts/check_docs.py` enforces the active-tree rules in CI.

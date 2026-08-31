@@ -77,7 +77,7 @@ npm run build
 
 ## Documentation
 
-Start at [`docs/README.md`](docs/README.md).
+Start at [`docs/README.md`](docs/README.md). First-time readers should use [`docs/guides/project-onboarding.md`](docs/guides/project-onboarding.md); Agents may load [`skills/finagent-project/SKILL.md`](skills/finagent-project/SKILL.md) as the repository reading/documentation protocol.
 
 - current status: [`docs/status.toml`](docs/status.toml)
 - development plan: [`docs/development/current-plan.md`](docs/development/current-plan.md)

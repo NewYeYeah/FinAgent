@@ -14,6 +14,8 @@ tag = ""
 release_document = "docs/releases/ashare-historical-v1.md"
 
 [documentation]
-governance_version = "1.0"
+governance_version = "1.1"
 active_plan_count = 1
 stage_status_authority = "docs/status.toml"
+onboarding_guide = "docs/guides/project-onboarding.md"
+onboarding_skill = "skills/finagent-project/SKILL.md"

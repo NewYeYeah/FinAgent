@@ -10,6 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 STATUS = DOCS / "status.toml"
 PLAN = DOCS / "development" / "current-plan.md"
+ONBOARDING_GUIDE = DOCS / "guides" / "project-onboarding.md"
+ONBOARDING_SKILL = ROOT / "skills" / "finagent-project" / "SKILL.md"
 
 FORBIDDEN_DEVELOPMENT_PATTERNS = (
     re.compile(r"^current-development-plan-v.*\.md$", re.I),
@@ -34,7 +36,14 @@ def check_status(errors: list[str]) -> dict[str, object]:
     except Exception as exc:  # pragma: no cover - diagnostic path
         fail(errors, f"docs/status.toml is invalid TOML: {exc}")
         return {}
-    required = ("schema_version", "planning_revision", "planning_document", "current_stage", "current_stage_status", "next_stage")
+    required = (
+        "schema_version",
+        "planning_revision",
+        "planning_document",
+        "current_stage",
+        "current_stage_status",
+        "next_stage",
+    )
     for key in required:
         if not str(raw.get(key, "")).strip():
             fail(errors, f"docs/status.toml missing/non-empty {key}")
@@ -43,6 +52,11 @@ def check_status(errors: list[str]) -> dict[str, object]:
     doc = raw.get("documentation")
     if not isinstance(doc, dict) or doc.get("active_plan_count") != 1:
         fail(errors, "documentation.active_plan_count must equal 1")
+    if isinstance(doc, dict):
+        if doc.get("onboarding_guide") != "docs/guides/project-onboarding.md":
+            fail(errors, "documentation.onboarding_guide must point to the canonical onboarding guide")
+        if doc.get("onboarding_skill") != "skills/finagent-project/SKILL.md":
+            fail(errors, "documentation.onboarding_skill must point to the canonical project skill")
     return raw
 
 
@@ -69,6 +83,19 @@ def check_active_tree(errors: list[str]) -> None:
                 fail(errors, f"forbidden active development document: {path.relative_to(ROOT)}")
 
 
+def check_onboarding(errors: list[str]) -> None:
+    if not ONBOARDING_GUIDE.is_file():
+        fail(errors, "missing docs/guides/project-onboarding.md")
+    if not ONBOARDING_SKILL.is_file():
+        fail(errors, "missing skills/finagent-project/SKILL.md")
+    docs_index = DOCS / "README.md"
+    text = docs_index.read_text(encoding="utf-8") if docs_index.is_file() else ""
+    if "guides/project-onboarding.md" not in text:
+        fail(errors, "docs/README.md must link the onboarding guide")
+    if "../skills/finagent-project/SKILL.md" not in text:
+        fail(errors, "docs/README.md must link the FinAgent project skill")
+
+
 def check_readme(errors: list[str]) -> None:
     path = ROOT / "README.md"
     text = path.read_text(encoding="utf-8") if path.is_file() else ""
@@ -79,6 +106,8 @@ def check_readme(errors: list[str]) -> None:
             fail(errors, f"README maintains independent current-stage text: {value!r}")
     if "docs/status.toml" not in text:
         fail(errors, "README must link docs/status.toml")
+    if "skills/finagent-project/SKILL.md" not in text:
+        fail(errors, "README must link the FinAgent project skill")
 
 
 def resolve_markdown_link(source: Path, target: str) -> Path | None:
@@ -89,7 +118,8 @@ def resolve_markdown_link(source: Path, target: str) -> Path | None:
 
 
 def check_links(errors: list[str]) -> None:
-    for source in [ROOT / "README.md", *DOCS.rglob("*.md")]:
+    sources = [ROOT / "README.md", *DOCS.rglob("*.md"), ONBOARDING_SKILL]
+    for source in sources:
         if not source.is_file():
             continue
         for target in LINK_RE.findall(source.read_text(encoding="utf-8")):
@@ -115,6 +145,7 @@ def main() -> int:
     status = check_status(errors)
     check_plan(errors, status)
     check_active_tree(errors)
+    check_onboarding(errors)
     check_readme(errors)
     check_release_ref(errors, status)
     check_links(errors)
