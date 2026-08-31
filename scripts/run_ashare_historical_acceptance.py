@@ -5,9 +5,9 @@ import argparse
 import json
 from pathlib import Path
 
-from finagent.runtime.ashare_historical_acceptance import (
-    AshareHistoricalAcceptanceConfig,
-    AshareHistoricalAcceptanceRunner,
+from finagent.runtime.ashare_historical_acceptance import AshareHistoricalAcceptanceConfig
+from finagent.runtime.ashare_historical_acceptance_terminal import (
+    run_ashare_historical_acceptance,
 )
 
 
@@ -16,8 +16,11 @@ def main() -> int:
         description=(
             "Run the A-C3 real A-share historical acceptance chain: certification → "
             "development research → A2.6 → A4 → V4 series → Historical Workbench → "
-            "review bundle. This host-side command has no reserve, promotion, PAPER, "
-            "broker or live-capital authority."
+            "review bundle. A reviewed NO_ROBUST_FACTOR_FOUND → "
+            "NO_ROBUST_FACTOR_FAMILY outcome is accepted as an explicit no-alpha "
+            "terminal state rather than being converted into synthetic strategy/market "
+            "evidence. This host-side command has no reserve, promotion, PAPER, broker "
+            "or live-capital authority."
         )
     )
     parser.add_argument("config", type=Path)
@@ -29,8 +32,7 @@ def main() -> int:
     args = parser.parse_args()
 
     config = AshareHistoricalAcceptanceConfig.read_toml(args.config)
-    runner = AshareHistoricalAcceptanceRunner(config, confirmed=args.confirm)
-    result = runner.run()
+    result = run_ashare_historical_acceptance(config, confirmed=args.confirm)
     print(json.dumps(result.payload, indent=2, sort_keys=True, ensure_ascii=False))
     return 0 if result.accepted else 2
 
