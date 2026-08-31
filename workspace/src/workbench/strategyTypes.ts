@@ -11,6 +11,9 @@ export interface StrategySeriesItemV4 {
   asset_count: number;
   start_date: string | null;
   end_date: string | null;
+  market_bar_series_id?: string | null;
+  market_bar_interval?: string | null;
+  ohlc_available?: boolean;
   authority: "authoritative";
   detail_url: string;
 }
@@ -60,8 +63,8 @@ export interface StrategySeriesDetailV4 {
   item: StrategySeriesItemV4;
   manifest: StrategySeriesManifestV4;
   presentation: {
-    price_semantics: "authoritative_close_only";
-    ohlc_available: false;
+    price_semantics: string;
+    ohlc_available: boolean;
     browser_recomputation: false;
     factor_contribution_semantics: string;
   };
@@ -79,7 +82,9 @@ export interface StrategySeriesDimensionsV4 {
   end_date: string | null;
   session_count: number;
   price_semantics: string;
-  ohlc_available: false;
+  ohlc_available: boolean;
+  market_bar_series_id?: string | null;
+  market_bar_interval?: string | null;
 }
 
 export interface StrategyDecisionRowV4 {
