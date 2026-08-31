@@ -1,0 +1,26 @@
+[historical_workbench_release_smoke]
+# HW-1.0-RS validates the already frozen Historical v1.0 product. It never reruns
+# research, consumes reserve data, promotes a strategy or contacts a broker.
+mode = "real_frozen_release"
+repository_root = "."
+
+freeze_report = "reports/finagent_ashare_historical_v1_freeze.json"
+freeze_package = "reports/finagent_ashare_historical_v1_freeze.zip"
+ac3_report = "reports/ashare_historical_acceptance_ac3.json"
+
+# Configuration is projected read-only from the same repository checkout. The smoke
+# rejects Workbench product drift after the A-C5 release Git SHA before using it.
+config_roots = ["configs"]
+frontend_dir = "workspace/dist"
+
+# Empty means the current checked-out HEAD. The A-C5 release SHA may be an ancestor
+# because HW-1.0-RS itself is additive test/release code outside the Workbench product.
+smoke_git_sha = ""
+
+host = "127.0.0.1"
+port = 8765
+build_frontend = true
+run_browser = true
+
+output_json = "reports/historical_workbench_release_smoke.json"
+output_markdown = "reports/historical_workbench_release_smoke.md"
