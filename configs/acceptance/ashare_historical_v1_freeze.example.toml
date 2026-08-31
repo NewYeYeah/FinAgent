@@ -1,0 +1,39 @@
+[ashare_historical_v1_freeze]
+# A-C5 is a release/freeze operation only. It does not rerun research or consume reserve data.
+mode = "real_local_evidence"
+repository_root = "."
+
+# A-C3 must already be contract-valid and, for real mode, accepted=true with
+# real_dataset_attested=true. Both populated-strategy and reviewed no-alpha terminals
+# are supported.
+ac3_report = "reports/ashare_historical_acceptance_ac3.json"
+
+# Re-run the fast A-C4 audit after checking out the final A-C5 merged main revision.
+# In real mode its git_sha must equal the exact A-C5 release Git SHA.
+ac4_report = "reports/ashare_initial_requirement_compliance_ac4.json"
+ac4_manifest = "configs/acceptance/ashare_initial_requirement_compliance_ac4.toml"
+
+# The dataset itself is not copied into the release ZIP. The content-hashed frozen
+# manifest is bound instead; A-C3 remains the authority that performed full content
+# verification against the local Parquet corpus.
+frozen_dataset_manifest = "data/manifests/local_ashare_daily.json"
+
+# Empty means resolve the current checked-out HEAD. For final freeze, run from a clean
+# tracked worktree on the exact merged main revision.
+release_git_sha = ""
+require_clean_tracked_worktree = true
+
+# Python requirements are declarative surfaces rather than a fully resolved lock;
+# workspace/package-lock.json is an exact frontend dependency lock. A-C5 binds file
+# digests without pretending stronger environment reproducibility than the repository has.
+environment_files = [
+  "pyproject.toml",
+  "environment/environment.yml",
+  "environment/requirements.txt",
+  "environment/requirements-dev.txt",
+  "workspace/package-lock.json",
+]
+
+output_json = "reports/finagent_ashare_historical_v1_freeze.json"
+output_markdown = "reports/finagent_ashare_historical_v1_freeze.md"
+output_package = "reports/finagent_ashare_historical_v1_freeze.zip"
