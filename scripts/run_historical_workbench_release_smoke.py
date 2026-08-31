@@ -12,6 +12,7 @@ import urllib.error
 import urllib.request
 from dataclasses import replace
 from pathlib import Path
+from typing import Mapping, Sequence
 
 import uvicorn
 
@@ -35,6 +36,40 @@ def _command(name: str) -> str:
     raise RuntimeError(f"{name} is required for the browser release smoke")
 
 
+def _run_captured(
+    command: Sequence[str],
+    *,
+    cwd: Path,
+    env: Mapping[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    """Capture npm/npx output without depending on the host Windows code page.
+
+    Node/Playwright emit UTF-8 output even when Python's preferred Windows text
+    encoding is GBK/cp936.  ``subprocess.run(text=True)`` otherwise decodes with the
+    locale encoding and its reader thread can fail before ``stdout``/``stderr`` are
+    populated.  Replacement decoding is intentional here: the captured text is only
+    diagnostic evidence, while the subprocess return code remains authoritative.
+    """
+
+    return subprocess.run(
+        list(command),
+        cwd=cwd,
+        env=None if env is None else dict(env),
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+
+
+def _captured_output(completed: subprocess.CompletedProcess[str]) -> str:
+    # Be defensive if a platform/runtime still yields None despite text capture.
+    stdout = completed.stdout or ""
+    stderr = completed.stderr or ""
+    return (stdout + "\n" + stderr).strip()
+
+
 def _run_frontend_build(repository_root: Path) -> None:
     workspace = repository_root / "workspace"
     if not (workspace / "node_modules").is_dir():
@@ -42,36 +77,25 @@ def _run_frontend_build(repository_root: Path) -> None:
             "workspace/node_modules is absent; run `cd workspace && npm ci` before "
             "the real HW-1.0-RS browser smoke"
         )
-    completed = subprocess.run(
+    completed = _run_captured(
         [_command("npm"), "run", "build"],
         cwd=workspace,
-        check=False,
-        text=True,
-        capture_output=True,
     )
     if completed.returncode != 0:
         raise RuntimeError(
-            "Workspace production build failed\n"
-            + completed.stdout[-4000:]
-            + "\n"
-            + completed.stderr[-4000:]
+            "Workspace production build failed\n" + _captured_output(completed)[-8000:]
         )
 
 
 def _ensure_chromium(repository_root: Path) -> None:
-    completed = subprocess.run(
+    completed = _run_captured(
         [_command("npx"), "playwright", "install", "chromium"],
         cwd=repository_root / "workspace",
-        check=False,
-        text=True,
-        capture_output=True,
     )
     if completed.returncode != 0:
         raise RuntimeError(
             "Playwright Chromium installation failed\n"
-            + completed.stdout[-4000:]
-            + "\n"
-            + completed.stderr[-4000:]
+            + _captured_output(completed)[-8000:]
         )
 
 
@@ -139,7 +163,7 @@ def _run_browser(
                 ],
             }
         )
-        completed = subprocess.run(
+        completed = _run_captured(
             [
                 _command("npx"),
                 "playwright",
@@ -149,11 +173,8 @@ def _run_browser(
             ],
             cwd=config.repository_root / "workspace",
             env=env,
-            check=False,
-            text=True,
-            capture_output=True,
         )
-        detail = (completed.stdout + "\n" + completed.stderr)[-8000:].strip()
+        detail = _captured_output(completed)[-8000:]
         return completed.returncode == 0, detail
     finally:
         server.should_exit = True
