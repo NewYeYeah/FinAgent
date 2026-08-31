@@ -20,6 +20,8 @@ import {
   workbenchContextSearch,
   type WorkbenchContextKey,
 } from "./context";
+import { MarketBarExecutionChart } from "./marketBarChart";
+import { marketBarApi } from "./marketBars";
 import { useWorkbenchQuery } from "./query";
 import type {
   StrategyDecisionRowV4,
@@ -285,6 +287,18 @@ export function StrategyDecisionExplorerPage() {
     staleTime: 60_000,
   });
   const rows = decisionsQuery.data?.items ?? [];
+  const marketBarsQuery = useWorkbenchQuery({
+    key: ["strategy-market-bars-ac2", seriesId, asset, start, end],
+    queryFn: () => marketBarApi.bars(seriesId, {
+      asset,
+      start,
+      end,
+      limit: 5000,
+    }),
+    enabled: Boolean(seriesId && asset && activeSeries?.ohlc_available),
+    staleTime: 60_000,
+  });
+  const marketBars = marketBarsQuery.data?.items ?? [];
   const selectedRow = useMemo(() => {
     if (!rows.length) return undefined;
     if (context.session_date) {
@@ -335,10 +349,12 @@ export function StrategyDecisionExplorerPage() {
     select({ session_date: session }, "session_selected");
   };
 
+  const hasAuthoritativeOhlc = Boolean(activeSeries.ohlc_available);
+
   return (
     <div className="page strategy-explorer">
       <PageHeader
-        eyebrow="V4.2 · Strategy Decision Explorer"
+        eyebrow="V4.2 + A-C2 · Strategy Decision Explorer"
         title="Signal → target → order → fill → realized PnL"
         description={activeSeries.series_id}
       >
@@ -350,8 +366,16 @@ export function StrategyDecisionExplorerPage() {
       <div className="strategy-authority-banner">
         <ShieldCheck size={18} />
         <div>
-          <strong>Verified V4-0 authoritative rows</strong>
-          <span>Price is close-only authority. OHLC is not present in V4-0 and is not fabricated. React performs no financial-fact recomputation.</span>
+          <strong>
+            {hasAuthoritativeOhlc
+              ? "Verified V4-0 decisions + authoritative A-C2 market bars"
+              : "Verified V4-0 authoritative rows"}
+          </strong>
+          <span>
+            {hasAuthoritativeOhlc
+              ? "OHLCV is passed through from the bound MarketBarSeriesEvidence; reference/fill/decision facts remain V4-0 authority. React performs no financial-fact recomputation."
+              : "Price is close-only authority. No verified MarketBarSeries is bound, so OHLC is not fabricated. React performs no financial-fact recomputation."}
+          </span>
         </div>
         <AuthorityBadge value="authoritative" />
       </div>
@@ -391,20 +415,49 @@ export function StrategyDecisionExplorerPage() {
         <MetricCard label="Rows in evidence" value={String(activeSeries.row_count)} />
         <MetricCard label="Sessions" value={String(activeSeries.session_count)} />
         <MetricCard label="Assets" value={String(activeSeries.asset_count)} />
-        <MetricCard label="Selected factors" value={String(activeSeries.selected_feature_digests.length)} />
+        <MetricCard
+          label="Market bars"
+          value={hasAuthoritativeOhlc ? `${activeSeries.market_bar_interval ?? "OHLC"}` : "Unavailable"}
+          detail={hasAuthoritativeOhlc ? activeSeries.market_bar_series_id ?? "verified evidence" : "close-only fallback"}
+        />
         <MetricCard label="Loaded asset rows" value={String(rows.length)} detail={decisionsQuery.data && decisionsQuery.data.total > rows.length ? `bounded from ${decisionsQuery.data.total}` : "bounded server projection"} />
       </div>
 
       {catalog.warnings.length ? (
-        <Panel title="Strategy-series warnings" subtitle="Invalid or identity-conflicting V4-0 manifests are excluded from the explorer.">
+        <Panel title="Strategy-series warnings" subtitle="Invalid or identity-conflicting Strategy/MarketBar manifests are excluded or fail-closed.">
           <ul className="warning-list">{catalog.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul>
         </Panel>
       ) : null}
 
       {decisionsQuery.isPending ? <LoadingState /> : decisionsQuery.error ? <ErrorState error={decisionsQuery.error} /> : rows.length ? (
         <>
-          <Panel title="Authoritative close-price & execution timeline" subtitle="Close marks, reference prices and fill prices come directly from V4-0 rows; no synthetic OHLC/candlesticks are rendered.">
-            <PriceExecutionChart rows={rows} selectedSession={selectedRow?.session_date} onSession={chooseSession} />
+          <Panel
+            title={hasAuthoritativeOhlc ? "Authoritative OHLC & execution timeline" : "Authoritative close-price & execution timeline"}
+            subtitle={
+              hasAuthoritativeOhlc
+                ? "Candles are direct MarketBarSeriesEvidence values; reference prices and fills remain direct V4-0 rows. No browser-side OHLC construction."
+                : "Close marks, reference prices and fill prices come directly from V4-0 rows; no synthetic OHLC/candlesticks are rendered."
+            }
+          >
+            {hasAuthoritativeOhlc ? (
+              marketBarsQuery.isPending ? <LoadingState /> : marketBarsQuery.error ? (
+                <ErrorState error={marketBarsQuery.error} />
+              ) : marketBars.length ? (
+                <MarketBarExecutionChart
+                  bars={marketBars}
+                  decisions={rows}
+                  selectedSession={selectedRow?.session_date}
+                  onSession={chooseSession}
+                />
+              ) : (
+                <EmptyState
+                  title="No authoritative market bars in this slice"
+                  detail="The MarketBarSeries binding exists, but the selected asset/date slice contains no rows. The browser will not fall back to synthetic candles."
+                />
+              )
+            ) : (
+              <PriceExecutionChart rows={rows} selectedSession={selectedRow?.session_date} onSession={chooseSession} />
+            )}
           </Panel>
 
           <div className="two-column strategy-two-column">
@@ -434,16 +487,16 @@ export function StrategyDecisionExplorerPage() {
                 ))}
               </div>
             </Panel>
-            <Panel title="Evidence identity" subtitle="Immutable V4-0 bindings used by every rendered row.">
+            <Panel title="Evidence identity" subtitle="Immutable Strategy and optional MarketBar bindings used by the rendered timeline.">
               <dl className="identity-grid compact">
                 <div><dt>Data version</dt><dd>{activeSeries.data_version}</dd></div>
                 <div><dt>Program result</dt><dd>{activeSeries.source_program_result_id}</dd></div>
                 <div><dt>Selection</dt><dd>{activeSeries.source_selection_id}</dd></div>
-                <div><dt>Alpha models</dt><dd>{activeSeries.alpha_model_ids.length}</dd></div>
+                <div><dt>MarketBar series</dt><dd>{activeSeries.market_bar_series_id ?? "unavailable"}</dd></div>
               </dl>
               <div className="strategy-status-row">
                 <StatusBadge value="read-only" />
-                <StatusBadge value="close-only price" />
+                <StatusBadge value={hasAuthoritativeOhlc ? "authoritative OHLC" : "close-only price"} />
                 <StatusBadge value="no browser recompute" />
               </div>
             </Panel>
