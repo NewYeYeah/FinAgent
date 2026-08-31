@@ -70,7 +70,9 @@ def main() -> int:
         "local_only": True,
         "control_plane_enabled": True,
         "historical_operations": True,
-        "authority": "reviewed application_service_ready L0/L1 historical commands only",
+        "authority": (
+            "reviewed application_service_ready L0/L1 only; historical commands only"
+        ),
     }
     if args.print_config:
         print(json.dumps(config, ensure_ascii=False, indent=2))
