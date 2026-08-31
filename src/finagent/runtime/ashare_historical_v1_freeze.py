@@ -15,6 +15,7 @@ from finagent.data import LocalAshareFrozenManifest
 from finagent.runtime.ashare_historical_acceptance import (
     AC3_ACCEPTANCE_ID_PREFIX,
     AC3_ACCEPTANCE_SCHEMA,
+    AC3_REQUIRED_COMMANDS,
 )
 from finagent.runtime.initial_requirement_compliance import (
     INITIAL_REQUIREMENT_COMPLIANCE_SCHEMA,
@@ -36,6 +37,23 @@ HISTORICAL_V1_DEFERRED_CAPABILITIES = (
     "qmt",
     "realtime_gateway",
 )
+
+AC5_COMMON_AC3_ARTIFACTS = (
+    "development",
+    "robust",
+    "a4",
+    "a4_ledger",
+    "factor_manifest",
+    "strategy_manifest",
+    "review_bundle",
+    "command_store",
+)
+AC5_POPULATED_AC3_ARTIFACTS = (
+    "certification",
+    *AC5_COMMON_AC3_ARTIFACTS,
+    "market_bar_manifest",
+)
+AC5_NO_ALPHA_AC3_ARTIFACTS = AC5_COMMON_AC3_ARTIFACTS
 
 # These paths are the historical financial/research product accepted by A-C3.
 # A-C4/A-C5 may add release/audit code, but the accepted historical core must not
@@ -217,11 +235,11 @@ def _artifact_descriptor(
 def _verify_recorded_artifact(
     role: str,
     raw: object,
+    *,
+    repository_root: Path,
 ) -> tuple[dict[str, object], Path]:
     descriptor = _mapping(raw, f"A-C3 artifact {role}")
-    path = Path(str(descriptor.get("path", ""))).expanduser()
-    if not path.is_absolute():
-        path = path.resolve()
+    path = _resolve(repository_root, descriptor.get("path", ""))
     if not path.is_file():
         raise FileNotFoundError(path)
     recorded_sha = str(descriptor.get("sha256", "")).strip()
@@ -501,24 +519,12 @@ class AshareHistoricalV1Freezer:
         if not frozen.content_hashed:
             raise ValueError("A-C5 requires a content-hashed frozen dataset manifest")
 
-        artifacts_raw = _mapping(ac3.get("artifacts"), "A-C3 artifacts")
-        descriptors: list[dict[str, object]] = []
-        package_sources: list[tuple[str, Path]] = []
-        certification_descriptor: dict[str, object] | None = None
-        for role, raw in sorted(artifacts_raw.items()):
-            if raw is None:
-                continue
-            descriptor, path = _verify_recorded_artifact(str(role), raw)
-            descriptors.append(descriptor)
-            package_sources.append((f"evidence/ac3/{role}/{path.name}", path))
-            if str(role) == "certification":
-                certification_descriptor = descriptor
-
         terminal_state = str(ac3.get("terminal_state", "")).strip()
         if terminal_state == "NO_ROBUST_FACTOR_FAMILY":
             research_outcome = "NO_ROBUST_FACTOR_FAMILY"
             if identities.get("market_bar_series_id") is not None:
                 raise ValueError("no-alpha A-C3 must not bind MarketBarSeries")
+            required_artifacts = AC5_NO_ALPHA_AC3_ARTIFACTS
         elif not terminal_state:
             research_outcome = "POPULATED_STRATEGY"
             for key in (
@@ -530,8 +536,44 @@ class AshareHistoricalV1Freezer:
             ):
                 if not str(identities.get(key, "")).strip():
                     raise ValueError(f"populated A-C3 is missing identity {key}")
+            required_artifacts = AC5_POPULATED_AC3_ARTIFACTS
         else:
             raise ValueError(f"unsupported A-C3 terminal_state: {terminal_state!r}")
+
+        artifacts_raw = _mapping(ac3.get("artifacts"), "A-C3 artifacts")
+        missing_artifacts = [
+            role for role in required_artifacts if artifacts_raw.get(role) is None
+        ]
+        if missing_artifacts:
+            raise ValueError(
+                "A-C3 required release artifacts are missing: "
+                + ", ".join(missing_artifacts)
+            )
+        if terminal_state == "NO_ROBUST_FACTOR_FAMILY" and artifacts_raw.get(
+            "market_bar_manifest"
+        ) is not None:
+            raise ValueError("no-alpha A-C3 must keep market_bar_manifest absent")
+
+        descriptors: list[dict[str, object]] = []
+        package_sources: list[tuple[str, Path]] = []
+        certification_descriptor: dict[str, object] | None = None
+        review_path: Path | None = None
+        for role, raw in sorted(artifacts_raw.items()):
+            if raw is None:
+                continue
+            descriptor, path = _verify_recorded_artifact(
+                str(role),
+                raw,
+                repository_root=self.config.repository_root,
+            )
+            descriptors.append(descriptor)
+            package_sources.append((f"evidence/ac3/{role}/{path.name}", path))
+            if str(role) == "certification":
+                certification_descriptor = descriptor
+            if str(role) == "review_bundle":
+                review_path = path
+        if review_path is None or not zipfile.is_zipfile(review_path):
+            raise ValueError("A-C3 review_bundle is not a valid ZIP artifact")
 
         checks = _mapping(ac3.get("checks"), "A-C3 checks")
         for key in (
@@ -543,19 +585,26 @@ class AshareHistoricalV1Freezer:
                 raise ValueError(f"A-C3 does not attest {key}")
 
         command_runs = _mapping(ac3.get("command_runs"), "A-C3 command_runs")
+        command_run_ids: dict[str, str] = {}
+        for command_id in AC3_REQUIRED_COMMANDS:
+            record = _mapping(
+                command_runs.get(command_id),
+                f"A-C3 CommandRun {command_id}",
+            )
+            if record.get("ok") is not True:
+                raise ValueError(f"A-C3 CommandRun is not successful: {command_id}")
+            run_id = str(record.get("command_run_id", "")).strip()
+            if not run_id:
+                raise ValueError(f"A-C3 CommandRun has no identity: {command_id}")
+            command_run_ids[command_id] = run_id
+
         certification = _mapping(
             command_runs.get("data.certify_local_ashare"),
             "A-C3 certification CommandRun",
         )
-        if certification.get("ok") is not True:
-            raise ValueError("A-C3 certification CommandRun is not successful")
-        certification_run_id = str(certification.get("command_run_id", "")).strip()
-        if not certification_run_id:
-            raise ValueError("A-C3 certification CommandRun has no run identity")
         certification_ids = [
             str(value) for value in _sequence(certification.get("evidence_ids"))
         ]
-
         if certification_descriptor is None:
             outputs = _mapping(certification.get("outputs", {}), "certification outputs")
             output_value = str(
@@ -565,7 +614,7 @@ class AshareHistoricalV1Freezer:
                 raise ValueError(
                     "A-C3 no-alpha evidence must expose the certification output path"
                 )
-            certification_path = Path(output_value).expanduser().resolve()
+            certification_path = _resolve(self.config.repository_root, output_value)
             certification_descriptor = _artifact_descriptor(
                 "ac3:certification",
                 certification_path,
@@ -595,7 +644,10 @@ class AshareHistoricalV1Freezer:
             "research_outcome": research_outcome,
             "data_version": data_version,
             "identities": dict(identities),
-            "certification_command_run_id": certification_run_id,
+            "command_run_ids": command_run_ids,
+            "certification_command_run_id": command_run_ids[
+                "data.certify_local_ashare"
+            ],
             "certification_evidence_ids": certification_ids,
             "certification_artifact_sha256": certification_descriptor["sha256"],
             "certification_artifact_size_bytes": certification_descriptor["size_bytes"],
@@ -673,6 +725,8 @@ class AshareHistoricalV1Freezer:
             "ac3_historical_core_unchanged": not ac3_evidence[
                 "historical_core_drift"
             ],
+            "ac3_required_artifacts_verified": True,
+            "ac3_required_command_runs_verified": True,
             "ac4_exact_replay": bool(ac4_id),
             "ac4_on_release_sha": (
                 self.config.mode != "real_local_evidence"
