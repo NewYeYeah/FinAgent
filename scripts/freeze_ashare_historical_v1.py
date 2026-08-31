@@ -6,9 +6,9 @@ import json
 from dataclasses import replace
 from pathlib import Path
 
-from finagent.runtime.ashare_historical_v1_freeze import (
-    AshareHistoricalV1Freezer,
-    HistoricalFreezeConfig,
+from finagent.runtime.ashare_historical_v1_freeze import HistoricalFreezeConfig
+from finagent.runtime.ashare_historical_v1_freeze_lineage import (
+    AshareHistoricalV1LineageFreezer,
 )
 
 
@@ -32,7 +32,7 @@ def main() -> int:
     config = HistoricalFreezeConfig.read_toml(args.config)
     if args.release_git_sha:
         config = replace(config, release_git_sha=args.release_git_sha)
-    result = AshareHistoricalV1Freezer(config).run()
+    result = AshareHistoricalV1LineageFreezer(config).run()
     print(
         json.dumps(
             {
