@@ -1,0 +1,858 @@
+# FinAgent Current Development Plan
+
+Planning revision: **4.1**  
+Stable path: `docs/development/current-plan.md`  
+Stage authority: `docs/status.toml`  
+Scope: **Historical v1.0 closure → U.S. minute research → Agent incremental-value validation → CFD historical execution → provider-neutral realtime → MT5 demo/PAPER → separately governed live-capital acceptance**
+
+This document answers **why the next work exists, what it changes, its dependencies and its exit gate**. It does not duplicate PR-level implementation history, the test command catalog or release notes.
+
+---
+
+## 1. Planning authority and stage map
+
+There is one active plan and one current-stage authority. Planning revisions update this file in place; Git history preserves previous revisions.
+
+```text
+DOC-0  Documentation authority reset
+  ↓
+H0     A-share Historical v1.0 final release closure
+  ↓
+ENG-0  Reproducible development baseline
+  ↓
+US-S0 U.S. historical source authority
+  ↓
+US-C0 Intraday provider-neutral contracts
+  ├─────────────→ MT5-P0 read-only broker capability probe
+  ↓                         ↓
+US-I0 ResearchInstrument ↔ BrokerInstrument mapping
+  ↓
+US-D1 DuckDB/Parquet minute Data Plane
+  ├─────────────→ MT5-D0 read-only broker market reference
+  ↓
+US-D2 session-aware resampling / typed labels / corporate actions
+  ↓
+US-D3 U.S. minute certification
+  ↓
+US-B0 deterministic non-Agent baselines
+  ↓
+US-A0 Agent incremental-value experiment
+  ↓
+US-R1 robust intraday research + Alpha Gate
+  ↓
+       robust Alpha?
+      /             \
+    NO               YES
+    ↓                 ↓
+research iteration  US-X0 CFD historical execution semantics
+                      ↓
+                    US-X1 execution-aware historical portfolio gate
+                      ↓
+                    RT-R0 realtime event contracts
+                      ↓
+                    RT-R1 ReplayGateway
+                      ↓
+                    RT-R2 state projection
+                      ↓
+                    MT5-M1 market gateway + source reconciliation
+                      ↓
+                    MT5-E1 demo/PAPER execution
+                      ↓
+                    MT5-O1 reconciliation / recovery / safety
+                      ↓
+                    RT-R3 Live Workbench acceptance
+                      ↓
+                    MT5-L0 separate live-capital gate
+```
+
+The exact active stage is never inferred from this diagram; read `docs/status.toml`.
+
+---
+
+## 2. Frozen strategic constraints
+
+### 2.1 Historical A-share becomes a release, not a permanent constraint on `main`
+After H0, the accepted Historical v1.0 product is preserved through release identity/tag/evidence. Future U.S./MT5 changes to normal runtime/Workbench files must not be treated as illegal drift from the historical release.
+
+### 2.2 U.S. source authority precedes bulk ingestion
+A convenient large dataset is only a candidate until provenance, revision, usage rights, timestamp convention, adjustment/corporate-action behavior and symbol lifecycle are certified.
+
+### 2.3 `ResearchDataset` stays bounded
+Do not make dense NumPy research panels responsible for tens of billions of potential sparse minute cells. Introduce a lazy/out-of-core query layer below them.
+
+### 2.4 DuckDB is the first Data Plane engine
+Use partitioned Parquet + DuckDB predicate/column pushdown. Arrow is an interchange boundary; Polars is deferred until a demonstrated requirement avoids a three-engine semantic/test matrix.
+
+### 2.5 First U.S. signal clock is 15 minutes
+Source/execution clock is 1m; canonical research signal is 15m, with 5m/30m robustness checks. This reduces microstructure noise, compute and turnover while retaining intraday behavior.
+
+### 2.6 First strategy is same-session / intraday-flat
+No overnight position is required for the first Alpha Gate. Research prices still handle cross-day corporate actions correctly, but account-level overnight swap/financing is not a prerequisite for proving intraday edge.
+
+### 2.7 MT5 read-only measurement moves early; order authority stays late
+Instrument availability, symbol specifications, spread/history depth and broker constraints are cheap to measure and necessary for universe design. `order_send`/external mutation remains forbidden until the historical Alpha and execution gates pass.
+
+### 2.8 Engineering and statistical universes are distinct
+The present broker intersection is an integration universe. Formal broader Alpha claims require an explicit PIT/survivorship policy.
+
+### 2.9 Agent value must be falsifiable
+The Agent is compared with manual and programmatic search under identical data, candidate budgets, validation gates and costs. Architecture investment alone is not evidence of incremental research value.
+
+### 2.10 Agent Value Gate and Alpha Gate are different
+A manual strategy may pass Alpha while the Agent adds no value; the trading system can continue while Agent scope contracts. Conversely, an Agent can outperform search baselines while all candidates still fail the deployment Alpha Gate.
+
+### 2.11 Historical simulator is not the broker interface
+Keep deterministic synchronous historical execution separate from asynchronous broker lifecycle ports/events.
+
+### 2.12 Live Workbench is last
+Do not build live dashboards before the canonical event/state/reconciliation semantics they would display are accepted.
+
+---
+
+# 3. DOC-0 — Documentation Authority Reset
+
+## Goal
+Reduce active documentation to current truth + compact historical summaries and make authority machine-checkable.
+
+## Deliverables
+- `docs/status.toml` as the only stage authority;
+- stable `docs/development/current-plan.md`;
+- consolidated architecture/testing/guides;
+- aggregate changelog and active risk register;
+- release snapshot(s) for frozen products;
+- removal of versioned current plans, roadmaps and stage changelogs from the active tree;
+- `scripts/check_docs.py`, governance regression and CI;
+- PR template documentation-impact declaration.
+
+## Exit Gate
+- exactly one active plan;
+- no forbidden versioned plan/roadmap/stage-changelog file remains under active `docs/development`;
+- docs checker passes;
+- README has no independent current-stage value;
+- existing detailed history remains recoverable in Git/PRs.
+
+---
+
+# 4. H0 — A-share Historical v1.0 Release Closure
+
+## Goal
+Finish the already frozen A-share Historical v1.0 product and detach future `main` development from its post-freeze drift denominator.
+
+## Required work
+1. close the remaining V4-4 stable-render unit-test race without modifying financial runtime semantics;
+2. run the complete frontend unit/type/build/E2E gates;
+3. run real HW-1.0-RS against exact A-C5/A-C3 local evidence;
+4. require `contract_valid=true`, browser `passed`, `accepted=true`, reserve non-consumption;
+5. record final smoke identity, release SHA, freeze identity and reviewed no-alpha interpretation;
+6. create a historical release tag (recommended `finagent-ashare-historical-v1.0`);
+7. finalize `docs/releases/ashare-historical-v1.md` and update `docs/status.toml` to the next stage.
+
+## Interpretation boundary
+Historical v1.0 may validly terminate at `NO_ROBUST_FACTOR_FAMILY`. That proves the platform can preserve evidence and say “no robust Alpha”; it does not create a strategy, portfolio result, PAPER readiness or live-capital claim.
+
+## Non-goals
+No new A-share factor family, new Workbench analytics, reserve consumption, PAPER, realtime or broker authority.
+
+## Exit Gate
+```text
+A-C5 frozen = true
+HW-1.0-RS accepted = true
+production reserve consumed = false
+release snapshot finalized
+tag/release identity recorded
+status.current_stage advanced
+```
+
+---
+
+# 5. ENG-0 — Reproducible Development Baseline
+
+## Goal
+Make the environment identity sufficiently reproducible before a large new U.S./MT5 line increases the dependency graph.
+
+## Python
+- introduce one resolved lock strategy (`uv.lock`, `conda-lock`, or hash-pinned generated requirements; choose one, not several authorities);
+- keep `pyproject.toml` as dependency intent, lock as resolution;
+- CI verifies lock consistency and `pip check`.
+
+## Node
+- document Node 22 as the current frontend developer/CI baseline until an explicit upgrade gate is run;
+- keep `package-lock.json` authoritative for frontend resolution;
+- do not change install-script policy merely to silence warnings without an explicit dependency review.
+
+## Exit Gate
+Fresh Ubuntu core/research and Windows frontend/MT5-prep environments can be reproduced from repository files without ad-hoc version guessing.
+
+---
+
+# 6. US-S0 — U.S. Historical Source Authority
+
+## Goal
+Decide which exact minute source may become authoritative research evidence before bulk download or adapter optimization.
+
+## New contracts
+Recommended package: `src/finagent/data/provenance/`.
+
+```text
+DatasetSourceCandidate
+DatasetRevision
+DatasetFileDescriptor
+DatasetProvenanceRecord
+DatasetUsageRightsRecord
+DatasetAuthorityDecision
+```
+
+## Required certification
+- exact repository/provider and immutable revision;
+- upstream/origin statement;
+- license/usage-rights status;
+- file inventory and physical/content identity where feasible;
+- schema and partitioning convention;
+- observed coverage and asset inventory;
+- timezone and minute timestamp meaning (bar start/end);
+- regular vs extended-hours inclusion;
+- no-trade/halt/gap behavior;
+- raw vs adjusted OHLC;
+- split/dividend representation;
+- ticker rename/delisting/survivorship characteristics;
+- duplicate and OHLC sanity samples.
+
+Do not assume coverage, row count, corporate-action correctness or redistribution rights from a dataset title/readme alone.
+
+## Outcome states
+```text
+ACCEPTED_FOR_RESEARCH
+REFERENCE_ONLY
+REJECTED
+```
+
+Only `ACCEPTED_FOR_RESEARCH` may feed authoritative US-D1/US-D3 evidence. A rejected candidate may still be retained as diagnostic/reference metadata.
+
+## Exit Gate
+An immutable source authority record exists and downstream code takes a source/revision identity rather than a mutable URL assumption.
+
+---
+
+# 7. US-C0 — Intraday Core Contracts
+
+## Goal
+Freeze time, query, calendar, label and action semantics before minute storage/research code proliferates.
+
+## Modules
+Prefer small domain modules over extending `market_bars.py` indefinitely:
+
+```text
+src/finagent/domain/market_bars.py        # existing bar primitives
+src/finagent/domain/trading_calendar.py   # new
+src/finagent/domain/labels.py             # new
+src/finagent/domain/corporate_actions.py  # new
+src/finagent/data/query.py                # new
+src/finagent/data/capabilities.py         # new adapter capability layer
+```
+
+## Contracts
+
+### TradingCalendarEvidence
+```text
+calendar_id
+market_id
+source/revision
+session_date
+open_at
+close_at
+pre_open_at?
+post_close_at?
+is_half_day
+```
+The exact materialized schedule is hashed/versioned even when generated by a third-party calendar library.
+
+### LabelSpec
+```text
+metric
+horizon
+horizon_unit
+allow_cross_session
+price_basis
+availability_policy
+```
+For example, “60 trading minutes, same-session simple return” is a different identity from “4 bars” or “next day”.
+
+### CorporateActionEvent
+Start with split/dividend/cash-event types needed to state research-price semantics. Do not claim complete event accounting when the source cannot support it.
+
+### MarketDataQuery
+```text
+assets
+start/end
+interval
+fields
+session_policy
+adjustment_policy
+availability_policy
+```
+Returns a bounded/lazy `MarketDataView`; it does not return a full multi-year dense NumPy panel.
+
+### AdapterCapabilities
+Record only functionality actually implemented/tested in FinAgent. Provider/API capability remains separate.
+
+## Tests
+- timezone-aware invariant;
+- DST transition weeks;
+- holiday and half-day schedules;
+- no cross-session label when forbidden;
+- action-adjustment fixtures;
+- query bound and field validation;
+- provider-capability ≠ adapter-capability regression.
+
+## Exit Gate
+All later minute adapters/resamplers/research code consume these contracts instead of inventing provider-specific time/horizon semantics.
+
+---
+
+# 8. MT5-P0 — Read-only Broker Capability Probe
+
+## Goal
+Measure the actual connected broker/terminal surface early without order authority.
+
+## Platform
+Official MT5 Python integration is a Windows-native adapter. Core/research/replay stay cross-platform; real capability evidence is collected locally on Windows against the selected demo/real-data terminal session.
+
+## Package
+```text
+src/finagent/brokers/mt5/
+  capabilities.py
+  symbols.py
+  probe.py
+```
+
+The package must remain import-safe when `MetaTrader5` is unavailable; optional dependency/platform errors are explicit.
+
+## Evidence
+```text
+MT5TerminalCapability
+MT5SymbolSpec
+MT5HistoryCapability
+MT5CapabilityProbeReport
+```
+
+Collect, without mutation:
+- terminal/broker/server/build/version;
+- symbol inventory and visibility;
+- trade/contract/tick/digits fields;
+- volume min/max/step;
+- margin/swap properties;
+- supported order/fill/trade modes;
+- broker sessions where exposed;
+- earliest/latest/count of available M1/tick history;
+- representative spread snapshots.
+
+## Safety rules
+Forbidden in this stage: `order_send`, position mutation, account-setting mutation, live-capital command registration or generic browser execution authority.
+
+## Exit Gate
+The project knows what the actual broker can trade and measure before freezing the engineering universe.
+
+---
+
+# 9. US-I0 — Research/Broker Instrument Mapping
+
+## Goal
+Make the listed research asset and broker CFD explicitly different identities with an evidence-bound mapping.
+
+## Contracts
+```text
+ResearchInstrument
+BrokerInstrument
+InstrumentMapping
+InstrumentMappingEvidence
+EngineeringUniverse
+```
+
+`BrokerInstrument` includes broker symbol plus contract/point/tick/volume/margin/swap/session semantics from MT5-P0. Mapping includes validity/version and source evidence.
+
+Do not strip broker prefixes/suffixes ad hoc inside strategy code.
+
+## EngineeringUniverse
+Initial integration target: roughly 20–30 liquid names selected from certified history ∩ measured MT5 availability ∩ acceptable current spread/liquidity.
+
+This is **not** a survivorship-unbiased ResearchUniverse and cannot support a market-wide historical claim by itself.
+
+## Exit Gate
+Every engineering asset used downstream has both research and broker identities or is rejected with an explicit mapping reason.
+
+---
+
+# 10. US-D1 — Out-of-core Minute Data Plane
+
+## Goal
+Query very large minute history without full-dataset pandas/NumPy materialization.
+
+## Package
+```text
+src/finagent/data/minute_store/
+  manifest.py
+  parquet_store.py
+  query.py
+  materialize.py
+```
+
+## Engine
+First implementation uses partitioned Parquet + DuckDB. Use Arrow only as an interchange/record-batch boundary when useful; do not add Polars as a second execution engine without a demonstrated requirement.
+
+## Canonical normalized row
+At minimum:
+```text
+research_asset_id
+session_date
+event_time
+available_at
+interval
+open/high/low/close
+volume
+session_type
+source_id
+source_revision
+data_version
+```
+
+## Bounds
+Every query requires bounded assets and time range, validates requested fields, uses predicate/column pushdown and exposes estimated/actual row counts. Browser/API limits remain separate from internal aggregate scans.
+
+`ResearchDataset` is materialized only for the bounded window/universe needed by a computation.
+
+## Exit Gate
+Representative multi-month/multi-asset scans demonstrate bounded memory behavior and exact deterministic results/replay identities.
+
+---
+
+# 11. MT5-D0 — Read-only Broker Market Reference
+
+## Goal
+Collect broker-side M1/tick/spread samples for reconciliation and later CFD cost calibration without making MT5 the historical research authority.
+
+Persist:
+```text
+broker symbol
+UTC timestamp
+bid/ask or broker bar
+spread
+volume fields available
+source terminal/server identity
+retrieved_at
+```
+
+Cross-source disagreement remains evidence; it is never silently normalized away.
+
+---
+
+# 12. US-D2 — Session-aware Resampling, Labels and Corporate Actions
+
+## Goal
+Produce deterministic higher-timeframe research bars and labels from certified 1m data under explicit market/calendar/action semantics.
+
+## Resampling
+Canonical derived bars:
+```text
+1m → 5m / 15m / 30m
+```
+60m may be added only after the session-boundary rule is explicitly frozen because the 390-minute regular session does not partition into identical 60-minute bars.
+
+Rules include:
+- group only inside a materialized session segment;
+- deterministic OHLCV aggregation;
+- no spanning lunch/closed/overnight gaps;
+- explicit partial-bar policy;
+- derived-series identity binds source series + resampling spec + calendar identity.
+
+## Initial research clock
+```text
+source/execution: 1m
+canonical signal: 15m
+robustness: 5m and 30m
+first labels: same-session trading-minute horizons
+```
+
+## Corporate actions
+Maintain a research-price policy and raw/executable price authority separately. If source action semantics cannot be certified, fail or narrow the research claim rather than infer a transformation.
+
+## Exit Gate
+Golden fixtures across normal days, DST weeks, half-days, gaps and split/dividend examples reproduce exactly.
+
+---
+
+# 13. US-D3 — U.S. Minute Data Certification
+
+## Goal
+Create the data gate that must pass before robust Agent or Alpha research.
+
+## Checks
+**Identity:** source/revision/file/partition/row identities.  
+**Time:** UTC conversion, NY session membership, DST, holidays, half-days, monotonic availability, duplicates/out-of-order.  
+**Market:** OHLC invariants, gaps/no-trade behavior, volume semantics, extended-hour classification.  
+**Actions:** split/dividend consistency with the frozen policy.  
+**Lifecycle:** symbol mapping and survivorship/PIT limitations stated explicitly.  
+**Reconciliation:** sampled comparison with independent/broker references produces a report, not silent replacement.
+
+## Outcomes
+```text
+CERTIFIED_FOR_ENGINEERING_RESEARCH
+CERTIFIED_FOR_RESEARCH_UNDER_LIMITATIONS
+REJECTED
+```
+A broad ResearchUniverse requires stronger lifecycle/PIT evidence than the EngineeringUniverse.
+
+---
+
+# 14. US-B0 — Deterministic Intraday Baselines
+
+## Goal
+Establish non-Agent research baselines before evaluating Agent value.
+
+## Initial feature families
+Keep the first library small, interpretable and implementable from certified OHLCV, for example:
+- short-horizon reversal / momentum;
+- intraday volatility/range;
+- volume surprise / relative volume;
+- close-location / gap/session-position features;
+- simple cross-sectional normalization and lagged combinations.
+
+No feature may depend on information after `available_at` or silently use future session totals.
+
+## Split protocol
+Freeze a pilot walk-forward design before observing final results. The engineering universe is for pipeline/Agent comparison; broader market claims require a PIT ResearchUniverse.
+
+## Output
+Baseline candidate denominator, feature artifacts, Factor Quant evidence and cost-free/diagnostic performance sufficient to define the later controlled experiment.
+
+---
+
+# 15. US-A0 — Agent Incremental-Value Experiment
+
+## Goal
+Answer “why does this project need an Agent?” with controlled evidence.
+
+## Evidence additions
+```text
+CandidateGenerationEvent
+CandidateGenerationRun
+SearchArmResult
+AgentValueExperiment
+```
+
+Record generation metadata needed for product/research analysis without hidden chain-of-thought:
+```text
+run/round/candidate/parent IDs
+generator_type
+model/provider identity where applicable
+prompt-template identity
+proposal/validation status
+repair/replacement counts
+generated_at
+LLM calls/tokens/latency/cost metadata
+```
+
+## Arms
+```text
+MANUAL       fixed human-designed candidates
+PROGRAMMATIC deterministic/randomized bounded search
+AGENT        LLM Agent proposal/repair workflow
+```
+All arms use the same certified data, universe, primitive vocabulary, candidate budget, robust gates and transaction-cost assumptions where applicable.
+
+## Initial budgets
+Pilot: 16 candidate slots per arm.  
+Formal experiment: 32 slots per arm; programmatic search ≥3 seeds; Agent ≥3 independent runs. Revisions require a preregistered experiment update before results are inspected.
+
+## Compare
+- valid-candidate rate;
+- invalid/repair/duplicate rate;
+- novelty and redundancy;
+- OOS RankIC / worst-fold evidence;
+- robust accepted-factor count;
+- quality versus trial count;
+- trials to first accepted factor;
+- LLM calls/tokens/cost;
+- regime/fold transfer.
+
+## Agent Value Gate
+A practical first gate requires evidence of incremental research efficiency/quality, not merely different outputs. If the Agent does not improve accepted quality, discovery efficiency or meaningful novelty under the fixed budget, no new Agent complexity becomes P0; the Agent remains an optional hypothesis interface.
+
+---
+
+# 16. US-R1 — Robust Intraday Research and Deployment Alpha Gate
+
+## Goal
+Run the formal robust program on certified minute data with intraday-aware inference and a terminal that can stop downstream deployment.
+
+## Statistical requirements
+- purged/embargoed walk-forward where label overlap requires it;
+- HAC lag sufficient for overlapping horizons/autocorrelation;
+- session/block bootstrap rather than IID minute bootstrap;
+- Holm/BH multiplicity over the frozen candidate denominator;
+- frequency-aware turnover and annualized presentation metrics;
+- statistical inference sample size is not replaced by a naive `sqrt(252 × bars/day)` display factor.
+
+## Valid terminals
+```text
+ROBUST_FACTOR_FAMILY
+NO_ROBUST_FACTOR_FAMILY
+SYSTEM_FAILURE
+```
+
+## Deployment Alpha Gate
+Only `ROBUST_FACTOR_FAMILY` with preregistered OOS/fold/stability/economic criteria permits strategy-specific CFD execution/Live-product work. `NO_ROBUST_FACTOR_FAMILY` is a valid research-platform result but stops the deployment branch; data/replay/reference infrastructure may continue independently.
+
+---
+
+# 17. US-X0 — CFD Historical Execution Semantics
+
+## Goal
+Translate robust research signals into broker-compatible historical execution without importing A-share T+1/lot/limit defaults.
+
+## Domain
+```text
+CFDInstrumentSpec
+CFDAccountSpec
+CFDOrderIntent
+CFDOrderCompiler
+CFDSpreadModel
+CFDSlippageModel
+CFDMarginModel
+CFDSwapModel        # may remain unavailable while strategy is intraday-flat
+```
+
+The cost model binds measured/assumed spread, volume step, contract size and broker semantics to a versioned execution specification. Historical simulation remains deterministic and separate from MT5 order APIs.
+
+## Exit Gate
+Target → quantity → cost → fill → account/NAV conservation is exact and broker-spec-compatible for the EngineeringUniverse.
+
+---
+
+# 18. US-X1 — Execution-aware Historical Portfolio Acceptance
+
+## Goal
+Determine whether the robust signal survives realistic CFD friction and portfolio constraints before realtime/broker order integration.
+
+Required evidence:
+- gross/net NAV and returns;
+- spread/slippage/fees where applicable;
+- turnover/participation diagnostics;
+- realized vs target weights;
+- constraint/rejection attribution;
+- margin/cash utilization;
+- exact replay/reconciliation of ledger to portfolio aggregates.
+
+## Exit Gate
+A preregistered historical economic gate passes. Failure returns to research/execution assumptions; it does not proceed to broker mutation merely because statistical Alpha existed.
+
+---
+
+# 19. RT-R0 — Provider-neutral Realtime Event Contract
+
+## Goal
+Freeze replayable event semantics before a real broker gateway owns state transitions.
+
+Recommended package: `src/finagent/realtime/`.
+
+Envelope:
+```text
+event_id
+source
+source_event_id?
+event_time
+received_at
+sequence?
+schema_version
+```
+
+Events:
+```text
+QuoteEvent
+BarEvent
+MarketStatusEvent
+AccountStatusEvent
+OrderEvent
+TradeEvent
+OrderErrorEvent
+ConnectionEvent
+```
+
+Duplicate, late and out-of-order behavior is part of the contract.
+
+---
+
+# 20. RT-R1 — ReplayGateway
+
+## Goal
+Test state machines and failure semantics without a broker.
+
+Required scenarios:
+```text
+normal quote/bar flow
+stale market data
+disconnect / reconnect
+duplicate events
+out-of-order events
+order reject
+partial fills
+cancel / expire
+restart from persisted event/state checkpoint
+```
+
+Replay fixtures are authoritative for contract tests, not evidence of broker readiness.
+
+---
+
+# 21. RT-R2 — Projection / State Store
+
+## Goal
+Build canonical state from append-only events.
+
+Projections:
+```text
+MarketState
+StrategyState
+PortfolioState
+ExecutionState
+AccountState
+SystemHealthState
+```
+
+State transitions are idempotent/replayable and retain source event identities. Browser code consumes projections, not event-reduction business logic.
+
+---
+
+# 22. MT5-M1 — Read-only Market Gateway and Source Reconciliation
+
+## Goal
+Normalize official MT5 historical/realtime bar/tick data into realtime contracts and persist differences from the historical research source.
+
+Do not select “the better source” silently. Reconciliation records timestamp/session/OHLC/volume/instrument differences and classifies expected CFD-vs-equity differences separately from data-quality failures.
+
+---
+
+# 23. MT5-E1 — Demo/PAPER Execution
+
+## Ports
+```text
+OrderCommandPort
+BrokerEventSource
+BrokerQueryPort
+```
+
+Identities include `client_order_id`, broker order/ticket ID, deal/fill ID and event IDs.
+
+Required behavior:
+- idempotent submit/retry policy;
+- broker acknowledgement and reject handling;
+- partial fills;
+- cancel/expire lifecycle;
+- append-only command/event audit;
+- demo/PAPER only.
+
+A successful demo order is not a live-capital acceptance.
+
+---
+
+# 24. MT5-O1 — Reconciliation, Recovery and Safety
+
+Required capabilities:
+- internal vs broker orders/deals/positions/account reconciliation;
+- restart/recovery from durable state;
+- stale-data gate;
+- exposure/notional/daily-loss guardrails;
+- kill switch and incident ledger;
+- explicit unknown/drift state when reconciliation cannot be proven.
+
+This stage must fail closed; “broker responded” is not equivalent to state consistency.
+
+---
+
+# 25. RT-R3 — Live Workbench Acceptance
+
+Only now activate live Market/Strategy/Portfolio/Execution/System Health panels.
+
+The browser displays canonical projections, including freshness, broker/reconciliation drift, order lifecycle and system health. It never calls MT5 directly and never recomputes broker/account truth.
+
+Acceptance is demo/PAPER product acceptance only.
+
+---
+
+# 26. MT5-L0 — Separate Live-capital Acceptance
+
+This is an intentionally separate human-governed milestone. It requires a new explicit acceptance plan covering broker/account identity, capital/risk ceilings, operational responsibility, recovery, kill-switch procedure, monitoring/incident policy and jurisdiction/account-specific constraints.
+
+No previous research, historical, replay, demo/PAPER or Workbench gate implicitly authorizes live capital.
+
+---
+
+# 27. Cross-stage quality policy
+
+## Strict typing for new lines
+All new provenance/calendar/minute/CFD/realtime/MT5 code starts under strict focused mypy. Do not extend legacy typing exemptions into new modules.
+
+## No new fat modules
+Separate domain contracts, calculations, application orchestration, storage, projections and provider adapters. New 30–60 KB mixed-responsibility files are considered an architectural regression.
+
+## Evidence first
+Financial/statistical facts become Workbench features only after an authoritative/derived evidence contract exists. Missing benchmark/risk/capacity facts remain unavailable.
+
+## No hidden fallback
+Unsupported provider capability, missing corporate-action semantics, incomplete mapping, stale broker state or reconciliation mismatch produces an explicit terminal/limitation; no silent provider/rule substitution.
+
+## Reproducibility
+A meaningful result binds Git/code identity, data source/revision, configuration/protocol and dependency environment sufficiently to reproduce the calculation path.
+
+---
+
+# 28. Recommended PR sequence
+
+```text
+DOC-0  docs authority + consolidation + docs CI
+H0     final Historical v1.0 test/smoke/tag/release closure
+ENG-0  dependency/runtime reproducibility
+US-S0  source authority contracts + real source certification
+US-C0  calendar/LabelSpec/actions/query/adapter-capability contracts
+MT5-P0 Windows read-only capability probe
+US-I0  instrument mapping + EngineeringUniverse
+US-D1  DuckDB/Parquet minute store
+MT5-D0 read-only broker market reference
+US-D2  resampling/labels/actions
+US-D3  minute certification gate
+US-B0  deterministic baselines
+US-A0  Agent controlled experiment evidence
+US-R1  robust intraday Alpha Gate
+US-X0/X1 only if Alpha passes
+RT-R0/R1/R2
+MT5-M1/E1/O1
+RT-R3
+MT5-L0 separate live-capital plan
+```
+
+Do not combine source certification, Agent research and broker-order mutation in one PR. Each gate must be inspectable and independently reversible before irreversible/external authority appears.
+
+---
+
+# 29. Explicitly deferred
+
+- new A-share-only analytics/features except correctness/security fixes;
+- A-share reserve consumption solely to improve a historical release badge;
+- full A-share minute research stack before the U.S. pivot;
+- QMT callback/order implementation without a real SDK/account acceptance environment;
+- generic live-capital commands;
+- benchmark/style/industry/capacity/risk contribution without authoritative evidence;
+- overnight CFD strategy semantics until intraday Alpha survives costs;
+- multiple Data Plane engines without a demonstrated need.
+
+---
+
+# 30. v4.1 definition of success
+
+v4.1 is successful if the project can make and preserve the following evidence-based decisions:
+
+1. **Data:** the exact U.S. historical source is trustworthy enough for the stated research claim, or is rejected explicitly.
+2. **Agent:** controlled evidence shows whether the Agent improves research quality/efficiency over non-Agent baselines.
+3. **Alpha:** robust intraday Alpha either passes or stops strategy deployment honestly.
+4. **Execution:** passing Alpha survives broker-compatible historical CFD friction before broker mutation.
+5. **Operations:** realtime/demo/PAPER state is replayable, reconciled and recoverable before a Live Workbench is accepted.
+6. **Authority:** live capital remains separately human-governed.

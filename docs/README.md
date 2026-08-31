@@ -1,0 +1,32 @@
+# FinAgent documentation
+
+FinAgent documentation follows a **single-authority** model. The same project fact must not be maintained independently in README, a roadmap, a versioned current plan, and a changelog.
+
+## Authoritative documents
+
+| Question | Authority |
+| --- | --- |
+| What stage is active now? | [`status.toml`](status.toml) |
+| What are the next stages, dependencies, scope and exit gates? | [`development/current-plan.md`](development/current-plan.md) |
+| What is the system architecture now? | [`architecture/overview.md`](architecture/overview.md) |
+| Which design decisions are still active? | [`architecture/decisions.md`](architecture/decisions.md) |
+| What meaningful milestones have been completed? | [`development/changelog.md`](development/changelog.md) |
+| What unresolved risks remain? | [`development/risks.md`](development/risks.md) |
+| How are tests and acceptance gates structured? | [`testing/strategy.md`](testing/strategy.md) |
+| How do I use the system? | [`guides/`](guides/) |
+| What exactly did a frozen release prove? | [`releases/`](releases/) |
+| What exactly changed in one implementation? | Git commit / pull-request history |
+
+## Lifecycle rules
+
+1. `docs/status.toml` is the only current-stage authority.
+2. There is exactly one active plan at the stable path `docs/development/current-plan.md`.
+3. Planning revisions update that file in place; Git preserves previous revisions.
+4. Stage implementation does **not** create `changelog-<stage>.md`, `roadmap-vX.md` or `current-development-plan-vX.md` files.
+5. A completed stage normally updates only `status.toml` and the aggregate changelog.
+6. A changed architecture invariant updates `architecture/overview.md` or `architecture/decisions.md`.
+7. A changed user workflow updates a guide.
+8. A product release creates or finalizes one release snapshot.
+9. Detailed implementation history belongs to Git and PRs, not duplicated stage documents.
+
+`python scripts/check_docs.py` enforces the active-tree rules in CI.

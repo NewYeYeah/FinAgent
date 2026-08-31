@@ -1,110 +1,138 @@
-# Architecture Overview
+# Architecture overview
 
-FinAgent separates adaptive research from deterministic financial state.
+FinAgent separates **adaptive research** from **deterministic financial state and authority**.
 
-## Layered model
+## 1. Layered model
 
 ```text
-Data sources
-  local Parquet / market providers
+Data / broker sources
         ↓
-Data adapters
-  PIT clocks, units, identity, ResearchDataset
+Provider adapters
+  provider semantics, entitlement/capability declarations, source identity
+        ↓
+Historical Data Plane
+  immutable source evidence, Parquet/DuckDB bounded scans, calendars/actions
+        ↓
+Bounded materialization
+  ResearchDataset / ResearchSplit
         ↓
 Research
-  Agent hypotheses, generated features, Factor Quant, experiment families
+  manual/programmatic/Agent candidate generation, Factor Quant, robust gates
         ↓
 Models
   AlphaModel / RiskModel
         ↓
-Portfolio
-  constraints, optimizer, stress, RiskGate
+Portfolio and historical execution
+  constraints, optimizer, market-specific execution semantics, cost accounting
         ↓
-Validation
-  nested walk-forward, multiplicity, DSR, PBO, Reality Check, sealed holdout
+Immutable evidence
+  reports, manifests, Parquet/SQLite/JSONL, exact identity and replay
         ↓
-Operations
-  model registry, human approval, paper/shadow, reconciliation, kill switch
+Workbench
+  read-only Evidence projections + separately governed local Control
 ```
 
-## Authority boundary
-
-The Agent may:
-
-- propose hypotheses;
-- generate bounded feature code;
-- read development-only structured evidence;
-- propose new research candidates within a frozen budget.
-
-The Agent may not:
-
-- write positions or fills;
-- set final portfolio weights;
-- alter risk/acceptance thresholds after observing evidence;
-- consume sealed holdout repeatedly;
-- self-promote a model to PAPER/LIVE;
-- bypass human approval.
-
-## Data contract
-
-`ResearchSplit` arrays use:
+The future realtime/broker path is additive rather than a rewrite:
 
 ```text
-feature_values[time, asset, feature]
-label_values[time, asset, label]
-eligibility_mask[time, asset]
+Provider-neutral realtime events
+        ↓
+ReplayGateway / canonical state projections
+        ↓
+Broker gateway and queries
+        ↓
+Demo/PAPER order lifecycle
+        ↓
+Reconciliation / recovery / risk controls
+        ↓
+Live Workbench projections
 ```
 
-`event_time` describes the market event represented by an observation. `available_at` is when the system may use it. Feature windows contain no observation with `available_at > asof`.
+## 2. Authority boundaries
 
-Forward labels are evaluation data and are clipped at split boundaries.
+The Agent may propose hypotheses, generate bounded feature code and consume development-only evidence. It may not mutate positions/fills, change final risk or acceptance thresholds after observing evidence, repeatedly consume sealed evaluation data, self-promote a strategy or directly submit broker/live-capital orders.
 
-## Research identity
+Browser code is presentation-only for authoritative financial facts. It can filter, select and visualize verified evidence; it does not recreate missing research, portfolio, execution or statistical truth.
 
-Evidence is bound to explicit immutable identity:
+## 3. Historical data boundary
+
+`ResearchDataset` remains the bounded numerical compute contract. It is **not** the storage abstraction for a multi-billion-row minute corpus.
+
+The U.S. minute architecture therefore inserts an out-of-core query layer below it:
 
 ```text
-data version / digest
-universe
-feature/code artifact
-experiment family
-parameters / seed
-validation windows
-strategy specification
+partitioned Parquet
+        ↓
+MarketDataQuery / DuckDB bounded scan
+        ↓
+MarketDataView
+        ↓
+bounded feature/label materialization
+        ↓
+ResearchDataset
 ```
 
-Changing a provider, candidate family, dataset digest or strategy protocol creates different evidence.
+Provider capability and FinAgent adapter capability are different concepts. An external provider may expose M1/realtime data while the installed FinAgent adapter implements only daily ingestion; the adapter must not advertise provider-level capability as implemented functionality.
 
-## Factor research
+## 4. Time and market semantics
 
-Development path:
+Information and market clocks remain separate:
+
+- `event_time`: market event represented by an observation;
+- `available_at`: earliest time FinAgent may consume the observation;
+- bar interval and timestamp convention are part of data identity;
+- trading calendars are materialized/versioned evidence, not inferred from wall-clock rules in UI code;
+- intraday labels use typed horizon semantics rather than ambiguous names such as `forward_return_4`.
+
+For U.S. minute research, DST, holidays, half-days, extended hours, corporate actions and symbol lifecycle must be explicit before robust research can become authoritative.
+
+## 5. Research identity and multiplicity
+
+Evidence identity binds the exact dataset/source, universe policy, feature/code artifact, candidate denominator, program parameters, validation windows and strategy/execution protocol.
+
+Every searched candidate remains in the effective multiplicity denominator, including Agent-generated candidates, failed candidates and alternative search arms where the experiment contract defines them as one family.
+
+## 6. Historical versus broker execution
+
+The existing synchronous `ExecutionVenue` abstraction remains a deterministic historical simulator. Broker execution is asynchronous and uses separate ports/events:
 
 ```text
-Agent → candidate feature
-      ↓
-Factor Quant diagnostics
-      ↓
-structured development feedback
-      ↺
-complete candidate family
+OrderIntent
+  → submit command
+  → broker acknowledgement
+  → accepted / rejected
+  → partial fills
+  → filled / cancelled / expired
+  → deal/history reconciliation
 ```
 
-Formal validation is separate from Agent-visible feedback. Multi-factor selections are deterministic and frozen before independent validation.
+Research instruments and broker instruments are separate identities. A listed U.S. equity and a broker stock CFD are not the same asset merely because their ticker text matches.
 
-## Historical execution clock
+## 7. Workbench architecture
 
-The reference historical backtest uses information at time `t` to create a target that executes no earlier than the configured next executable event. Market/execution snapshots expose only prices whose field-level availability is valid at `asof`.
+The Workbench keeps two independent authority planes:
 
-## A-share data model
+```text
+Evidence Plane
+  GET-only verified projections
 
-Local A-share raw data remains external and immutable. `LocalAshareParquetDataAdapter` normalizes vendor units and time semantics while preserving raw OHLC for market/execution use and adjusted research prices for return features/labels.
+Control Plane
+  explicit local opt-in
+  allowlisted L0/L1 application services only
+```
 
-The current security master is candidate-only because source delisting/list-status history is incomplete. Supplemental status data is a separate identity and must not be silently merged into raw vendor files.
+Realtime panels will consume canonical state projections, never MT5/QMT/vendor SDK calls directly from React.
 
-## Operational model
+## 8. Release meaning
 
-Research promotion and operational execution are deliberately separate. Human approval binds immutable requests to stage transitions or rebalance applications. `PaperStrategyRuntime` prepares a deterministic plan but does not own broker mutation.
+FinAgent distinguishes:
 
-## Persistence
+```text
+Research Platform Acceptance
+≠ Alpha Acceptance
+≠ Historical Portfolio Acceptance
+≠ Demo/PAPER Acceptance
+≠ Live-capital Acceptance
+```
 
-Typed SQLite stores are used for generated features, research programs, experiment/result evidence, memory visibility, model registry and paper operations. Chat history is not a source of truth.
+A valid no-alpha terminal is a successful research-platform outcome, not a profitable strategy claim.

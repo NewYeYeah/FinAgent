@@ -1,0 +1,19 @@
+schema_version = "finagent.project-status.v1"
+planning_revision = "4.1"
+planning_document = "docs/development/current-plan.md"
+
+# This file is the only project-stage authority. README and Markdown documents
+# link here rather than maintaining independent "current milestone" values.
+current_stage = "H0"
+current_stage_status = "in_progress"
+next_stage = "ENG-0"
+
+[release.ashare_historical_v1]
+status = "frozen_pending_post_freeze_smoke"
+tag = ""
+release_document = "docs/releases/ashare-historical-v1.md"
+
+[documentation]
+governance_version = "1.0"
+active_plan_count = 1
+stage_status_authority = "docs/status.toml"

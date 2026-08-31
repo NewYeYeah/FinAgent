@@ -1,82 +1,63 @@
-# Development Risk Register
+# Development risk register
 
-Only active risks are listed here. Resolved implementation history belongs in the changelog and Git history.
+Only active/unresolved risks belong here. Resolved implementation history belongs in the aggregate changelog, release snapshots and Git/PR history.
 
-## P0 — blocks research correctness
+## P0 — blocks research correctness or downstream authority
 
-### A-share timestamp/price semantics
+### U.S. minute source provenance / usage rights
+A large public dataset is not automatically research authority. Exact revision, upstream origin, timestamp/adjustment/action semantics and usage rights must be resolved in US-S0 before bulk authoritative research.
 
-Status: partially resolved.
+### Intraday clock and calendar correctness
+DST, holidays, half-days, session boundaries, extended hours and bar timestamp convention can create leakage or incorrect resampling/labels. US-C0/US-D3 are blocking gates.
 
-Daily and audited 1-minute semantics are frozen. 5/15/30/60-minute data remain disabled by default until representative samples verify bar boundaries.
+### Corporate-action and price-basis semantics
+Research and executable prices may have different authority. Split/dividend handling must be explicit and identity-bound; ambiguous source behavior narrows or rejects the research claim.
 
-### Dataset and protocol identity drift
+### Survivorship / universe bias
+The present MT5 CFD intersection is an EngineeringUniverse, not a historical PIT universe. Formal market-wide Alpha claims require lifecycle/PIT evidence or an explicit limited interpretation.
 
-Local vendor data is external and large. Research must bind the frozen manifest, candidate universe, ResearchProgram, factor family, A3 execution assumptions, A4 specification and execution-ledger digest. A changed file or rule set cannot silently reuse prior evidence identity.
+### Overlapping intraday labels / invalid inference
+Minute observations are serially dependent and forward horizons can overlap. Purging, HAC and block/session bootstrap must replace IID assumptions in formal research.
 
-### Split/reserve leakage
+### Search denominator / Agent multiplicity
+Manual, programmatic and Agent search must retain the frozen denominator required by the experiment. Failed/weak Agent trials do not disappear from multiplicity accounting.
 
-Forward labels must stay inside split boundaries. A4 test calendars use a feature-only adapter and must not read a future reserve row. The 2025+ reserve is one-shot and cannot be reused for adaptive research.
+### Research-to-CFD identity mismatch
+Listed equity bars and broker CFD instruments differ in contract size, volume units, sessions, margin and swap. A ticker string is not a sufficient mapping.
 
-### Search denominator or frozen-factor mutation
+### Broker/realtime state reconciliation
+Internal order/position/account state must reconcile to broker order/deal history. Unknown drift, stale data or restart ambiguity must fail closed before external authority grows.
 
-All searched factors must remain in the A2.6 denominator. A4 may use only the frozen robust factor digests, directions and weights; it cannot reselect or reverse them from portfolio results.
+## P1 — record explicit limitation and continue only when the stage permits
 
-### Accounting and exact replay
+### Minute Data Plane runtime and memory pressure
+Parquet scans are out-of-core but bounded research windows, feature matrices and inference may still exceed memory. Instrument scan/materialization budgets and profiling are required before scaling the universe.
 
-Cash, positions, T+1 inventory, fees and NAV must conserve across every cycle. A4 report and JSONL execution ledger must replay exactly. Approximate replay is not accepted as a substitute for deterministic ordering and stable aggregation.
+### Provider/broker entitlement variation
+Historical depth, realtime feed quality and symbols depend on account/broker/terminal configuration. Capability evidence is environment-specific and must not be promoted to universal provider claims.
 
-## P1 — record and continue with explicit limitation
+### Cross-source differences
+Equity history and CFD broker bars/ticks may differ legitimately. Reconciliation must distinguish expected instrument/source differences from defects rather than force equality.
 
-### Incomplete A-share security master
+### Transaction-cost model uncertainty
+Current spread/slippage samples may not represent historical or stressed execution. Cost assumptions require versioned scenarios and sensitivity analysis before economic acceptance.
 
-Vendor `delist_date`/`list_status` coverage is incomplete. Current universe is candidate-only. Supplemental delisting/status files may improve coverage but must remain independently versioned and must state their coverage.
+### Agent cost / instability
+LLM provider/model changes can alter candidate output, latency and cost. Agent experiments bind model/provider/prompt identity and use repeated runs rather than one anecdotal result.
 
-### Historical ST/suspension/price-limit coverage
-
-Daily vendor rows expose status and limit fields, and A3 handles exact-session rows conservatively, but complete historical event semantics are not certified. Avoid claims that A4 is a fully survivorship- and tradability-correct market study.
-
-### Daily-bar fill realism
-
-A3/A4 use conservative exact-open fills and block one-sided limit states. They do not model queue priority, intraday reopening, partial fills or order-book depth. This can over- or understate realizable execution depending on the scenario.
-
-### Capacity and market impact
-
-A4 full-day volume participation is ex-post diagnostic only and does not decide fills. Before reserve or PAPER, define a preregistered lagged-liquidity/impact model and explicit capacity gate.
-
-### Corporate-action cash/event accounting
-
-Research returns use adjustment-aware prices while execution uses raw prices. A4 does not yet maintain a complete dividend, split, rights-issue and cash-distribution event ledger. Long-horizon economic returns require this extension or an explicit exclusion policy.
-
-### Benchmark, industry and style exposure
-
-The first A4 optimizer is long-only with asset caps and target cash, but does not yet constrain benchmark beta, sector concentration or style exposure. Apparent Alpha may include unintended market/industry bets.
-
-### Fee schedule applicability
-
-Broker commission, minimum commission and pass-through assumptions are configurable and account-specific. A single schedule must not be presented as universally valid across accounts and historical periods.
-
-### Large-panel runtime and memory pressure
-
-Parquet scanning is out-of-core, but feature panels, risk windows and ledgers still materialize in memory. Full A-share × long history × many factors may require chunked study orchestration and cached immutable panels.
-
-### Secondary provider instability
-
-AKShare depends on upstream public websites and local proxy/network behavior. Failure of this secondary source must not block the primary local A-share or Alpaca SIP research path.
-
-### Cross-store crash consistency
-
-Some research/operational state transitions cross SQLite stores and are recoverable rather than globally transactional.
+### Dependency/runtime drift
+Python currently expresses dependency intent more strongly than fully resolved environment identity. ENG-0 must close this before long-lived U.S. evidence depends on changing transitive graphs.
 
 ## P2 — deployment hardening
 
-- physical separation of sealed data;
-- cryptographic/HSM-backed evidence sealing;
-- general process information-flow controls;
-- production external broker connectivity;
-- high-availability realtime feed/reconciliation infrastructure;
-- incident recovery under partial fills, disconnects and stale provider state.
+- secure secret isolation and broker credential handling;
+- physical/cryptographic separation for sealed or operational evidence;
+- high-availability feed/broker connectivity;
+- incident response under network partition, duplicate/partial fills and broker outages;
+- operational monitoring/SLOs;
+- live-capital jurisdiction/account-specific review;
+- optional future QMT adapter acceptance.
 
-## Current A-share operational decision
+## Historical A-share note
 
-Realtime A-share validation and live-capital operation are deferred. Expensive realtime or complete historical-status products are not a prerequisite for the current historical research milestone. The next permitted evidence step is unified A2.6/A3/A4 acceptance, followed only then by a separately authorized one-shot reserve protocol.
+A-share Historical v1.0 may close with a reviewed no-alpha result. Its limitations (security-master completeness, daily-fill realism, corporate-action account ledger, benchmark/capacity/risk-attribution gaps) are historical release interpretation, not reasons to continue adding A-share-only P0 features to the new U.S./MT5 development line.

@@ -1,73 +1,72 @@
-# Architecture Decisions
+# Active architecture decisions
 
-This document replaces the previous phase-by-phase ADR files with a concise list of decisions that remain active. Historical rationale remains available in Git history.
+Only decisions that remain active are kept here. Superseded rationale is available in Git history and release records.
 
-## D1 — Canonical numerical data contract
-
-All research uses typed `ResearchDataset` / `ResearchSplit` panels with explicit universe, features, labels, split windows and data identity. Data adapters own provider/vendor normalization.
+## D1 — Bounded numerical research contract
+`ResearchDataset` / `ResearchSplit` remain the canonical bounded compute representation. Large historical storage uses a separate out-of-core Data Plane.
 
 ## D2 — Separate information and execution clocks
+`event_time` and `available_at` are distinct; future labels never become features and execution may use only information available at the configured `asof`.
 
-`event_time` and `available_at` are distinct. Historical execution may use only the configured executable price field at or before execution `asof`. Forward labels never become input features.
+## D3 — Immutable evidence identity
+Changing dataset/source identity, candidate family, code artifact, universe, validation protocol or execution assumptions creates different evidence.
 
-## D3 — Immutable experiment identity
+## D4 — Fixed search denominator
+Every searched candidate remains in the effective denominator. Agent generation receives no multiplicity exemption.
 
-Experiment identity includes dataset, code/factor artifacts, universe, parameters and seed. Existing experiment/family identity is idempotent but not mutable.
+## D5 — Bounded Agent authority
+Agent code/hypotheses are proposals. Deterministic application/core services own validation, portfolio, execution and lifecycle authority.
 
-## D4 — Fixed search denominator and program budget
+## D6 — Independent evaluation remains independent
+Development feedback is separate from outer/holdout/reserve or operational evidence. Evaluation data is not recycled into the same adaptive search program.
 
-Every searched candidate, including weak and failed trials, remains in the effective family/program record. Agent automation does not grant a free multiplicity exemption.
+## D7 — Model validation is model-level
+Multi-factor selections are frozen and validated through actual `AlphaModel`/risk/portfolio/execution paths, not by post-hoc weighted return narratives.
 
-## D5 — Agent proposal authority is bounded
+## D8 — Human-governed operational handoff
+Research/Alpha acceptance does not self-authorize PAPER or live capital. Irreversible/external authority requires separately governed milestones.
 
-Agent tools are finite and policy-controlled. LLM output cannot directly modify portfolio or broker state. Generated feature code must pass AST restrictions and sandbox execution.
+## D9 — Provider capability is not adapter capability
+External API capability, account entitlement and FinAgent implementation status are recorded separately and fail closed on gaps.
 
-## D6 — Development feedback is not outer/holdout evidence
+## D10 — No silent provider fallback
+Cross-provider differences are reconciliation evidence. One provider does not silently overwrite another provider's authority.
 
-Agent adaptive feedback is development-only. Outer validation, sealed holdout and operational outcomes are not fed back into the same adaptive search program.
+## D11 — Source authority precedes large-scale U.S. ingestion
+A U.S. minute source must have exact revision/provenance, schema, timestamp, adjustment/corporate-action and usage-rights decisions before becoming authoritative research data.
 
-## D7 — Model-level validation
+## D12 — Trading calendars are evidence
+DST, holidays, half-days and sessions are materialized/versioned schedules. Static session clock strings are not sufficient for authoritative U.S. minute research.
 
-Selected generated factors are calibrated through standard `AlphaModel` interfaces. Multi-factor ensembles are validated as real models through the same risk/portfolio/execution pipeline, not as post-hoc weighted return series.
+## D13 — Typed labels
+Intraday label identity includes metric, horizon, horizon unit, session-crossing policy and price basis.
 
-## D8 — One-shot sealed holdout
+## D14 — First U.S. research clock
+The initial line uses 1-minute source/execution data and a canonical 15-minute signal clock, with 5/30-minute robustness checks. It is not an HFT project.
 
-Holdout specification and acceptance policy are registered before access. Post-access failure consumes the holdout; accepted/rejected evidence is terminal for that research program unless a new program is explicitly created.
+## D15 — Initial strategy is intraday-flat
+The first execution-aware study closes before the session end, isolating overnight CFD financing/swap/accounting until intraday Alpha survives costs.
 
-## D9 — Human-approved operational handoff
+## D16 — Engineering universe and research universe are different
+A present-day MT5 CFD intersection is valid for integration engineering but does not by itself support survivorship-unbiased market-wide Alpha claims.
 
-Research promotion to `VALIDATED` is deterministic. Transition to operational PAPER and rebalance application require immutable requests plus explicit human approval.
+## D17 — Agent value is empirical
+Manual, programmatic and Agent candidate-generation arms are compared under fixed data, budgets, gates and costs. If Agent adds no measurable value, its role is reduced rather than expanded by default.
 
-## D10 — Structured evidence memory
+## D18 — Alpha gates downstream deployment
+Broker execution/live product work beyond contract/replay infrastructure is gated by robust historical Alpha evidence; `NO_ROBUST_FACTOR_FAMILY` does not justify building a strategy deployment stack.
 
-SQLite-backed typed evidence is authoritative. Agent-visible memory is filtered by scope; sealed holdout evidence is not Agent-readable.
+## D19 — Historical and broker execution remain separate
+Synchronous deterministic `ExecutionVenue` remains historical. MT5 uses asynchronous command/event/query ports and broker/deal identities.
 
-## D11 — Provider capability is explicit
+## D20 — Windows is authoritative for official MT5 integration
+Core/research/replay remain cross-platform; the official `MetaTrader5` Python integration is treated as a Windows-native adapter and real broker acceptance runs locally against a demo terminal/account.
 
-A provider name is not a capability guarantee. Market/frequency/asset support and entitlements must be checked explicitly. Provider fallback is never silent.
+## D21 — Workbench remains source-neutral
+React consumes evidence/state projections and does not contain provider-, MT5-, QMT- or broker-specific financial logic.
 
-## D12 — Local A-share vendor data is raw input, not truth by assertion
+## D22 — Live Workbench is downstream
+Realtime UI is built after event contracts, replay, state projection, read-only broker data, demo order lifecycle, reconciliation and recovery semantics are accepted.
 
-The local Parquet dataset is treated as immutable vendor raw data. FinAgent normalizes observed units and timestamp semantics but does not automatically certify seller claims such as complete delisting history or “no future data”.
-
-Current A-share contract:
-
-- `ts_code` is authoritative identity;
-- daily volume is normalized from lots to shares;
-- daily amount is normalized from thousand CNY to CNY;
-- continuous 1-minute bars use bar-end timestamps and exclude the 09:30 opening-auction observation by default;
-- executable/market OHLC remains raw;
-- return features/labels use `raw close × adj_factor`;
-- vendor basic data provides a candidate listing-date universe, not survivorship certification.
-
-## D13 — Supplemental A-share status data is independent
-
-Delisting, historical ST, suspension and similar externally collected status data must be stored and versioned separately from vendor raw Parquet. Missing supplemental coverage must remain visible in metadata/limitations.
-
-## D14 — A-share historical research before realtime operations
-
-Near-term A-share development focuses on local historical daily research and data quality. Realtime A-share feed acceptance and live brokerage are deferred until execution semantics and historical supplementary data are sufficiently mature.
-
-## D15 — Platform support
-
-Ubuntu remains the canonical shell/isolation environment; native Windows is a supported test environment. CI validates Windows Python 3.11 in addition to the Ubuntu Python matrix. POSIX-only shell-wrapper tests are skipped on Windows by design.
+## D23 — Documentation uses single authority
+`docs/status.toml` owns current stage; `docs/development/current-plan.md` is the only active plan. Historical implementation detail belongs to Git/PR history and release snapshots.
