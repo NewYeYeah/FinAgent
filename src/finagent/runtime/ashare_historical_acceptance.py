@@ -162,7 +162,10 @@ class AshareHistoricalAcceptanceConfig:
             state_root=_resolve(repository_root, values.get("state_root", ".finagent/ac3")),
             acceptance_report=_resolve(
                 repository_root,
-                values.get("acceptance_report", "reports/ashare_historical_acceptance_ac3.json"),
+                values.get(
+                    "acceptance_report",
+                    "reports/ashare_historical_acceptance_ac3.json",
+                ),
             ),
             requested_by=requested_by,
             git_sha=str(values.get("git_sha", "")).strip(),
@@ -227,9 +230,7 @@ class AshareHistoricalAcceptanceResult:
         return bool(self.payload.get("contract_valid"))
 
 
-def _command_records(
-    store: SQLiteCommandStore,
-) -> dict[str, object]:
+def _command_records(store: SQLiteCommandStore) -> dict[str, object]:
     records = store.list(limit=500)
     output: dict[str, object] = {}
     for command_id in AC3_REQUIRED_COMMANDS:
@@ -270,7 +271,7 @@ def verify_ashare_historical_acceptance(
 
     CI may exercise this verifier with ``ci_contract_fixture``. Such a run can make
     ``contract_valid`` true, but ``accepted`` is deliberately forced false. Only a
-    ``real_local_dataset`` run that also verifies the frozen local dataset can close
+    ``real_local_dataset`` run with full frozen-data content verification can close
     A-C3.
     """
 
@@ -278,6 +279,7 @@ def verify_ashare_historical_acceptance(
         if not path.is_file():
             raise FileNotFoundError(path)
 
+    certification = _load_json(artifacts.certification_report, "certification report")
     development = _load_json(artifacts.development_report, "development report")
     robust = _load_json(artifacts.robust_report, "A2.6 report")
     a4 = _load_json(artifacts.a4_report, "A4 report")
@@ -287,14 +289,17 @@ def verify_ashare_historical_acceptance(
     store = SQLiteCommandStore(artifacts.command_store)
     command_records = _command_records(store)
 
+    development_reserve = _mapping(development.get("reserve"), "development reserve")
     robust_result_id = str(robust.get("program_result_id", ""))
     robust_program = _mapping(robust.get("program_spec"), "program_spec")
     robust_reserve = _mapping(robust.get("reserve"), "robust reserve")
     robust_acceptance = _mapping(robust.get("system_acceptance"), "system_acceptance")
     a4_spec = _mapping(a4.get("validation_spec"), "validation_spec")
     a4_reserve = _mapping(a4.get("reserve"), "A4 reserve")
+    a4_acceptance = _mapping(a4.get("system_acceptance"), "A4 system_acceptance")
     validation_id = str(a4.get("portfolio_validation_id", ""))
     data_version = str(robust.get("data_version", ""))
+    development_acceptance_id = str(development.get("acceptance_id", ""))
 
     real_dataset_attested = False
     dataset_payload: dict[str, object] = {
@@ -304,6 +309,7 @@ def verify_ashare_historical_acceptance(
             str(artifacts.frozen_manifest) if artifacts.frozen_manifest else None
         ),
         "verify_content": bool(verify_dataset_content),
+        "content_verified": False,
     }
     if mode == "real_local_dataset":
         if artifacts.dataset_root is None or artifacts.frozen_manifest is None:
@@ -317,9 +323,12 @@ def verify_ashare_historical_acceptance(
             {
                 "dataset_version": frozen.dataset_version,
                 "manifest_sha256": _sha256(artifacts.frozen_manifest),
+                "content_verified": bool(verify_dataset_content),
             }
         )
-        real_dataset_attested = frozen.dataset_version == data_version
+        real_dataset_attested = (
+            bool(verify_dataset_content) and frozen.dataset_version == data_version
+        )
 
     roots = artifacts.evidence_roots or tuple(
         sorted(
@@ -351,7 +360,8 @@ def verify_ashare_historical_acceptance(
     factor_items = [
         item
         for item in factor_projection.catalog().get("items", [])
-        if isinstance(item, Mapping) and str(item.get("program_result_id", "")) == robust_result_id
+        if isinstance(item, Mapping)
+        and str(item.get("program_result_id", "")) == robust_result_id
     ]
     portfolio_item = portfolio_projection.item(validation_id)
 
@@ -366,30 +376,73 @@ def verify_ashare_historical_acceptance(
         if not methods <= AC3_EVIDENCE_METHODS:
             v4_methods_ok = False
 
-    review_ok = zipfile.is_zipfile(artifacts.review_bundle) and artifacts.review_bundle.stat().st_size > 0
+    review_ok = (
+        zipfile.is_zipfile(artifacts.review_bundle)
+        and artifacts.review_bundle.stat().st_size > 0
+    )
     strategy_manifest = strategy.manifest
     factor_manifest = factors.manifest
     market_manifest = market_bars.manifest
 
-    command_trace_ok = all(_command_ok(command_records, command) for command in AC3_REQUIRED_COMMANDS)
-    robust_record = _mapping(command_records.get("research.run_a2p6"), "robust command record")
-    a4_record = _mapping(command_records.get("portfolio.run_a4"), "A4 command record")
-    review_record = _mapping(command_records.get("review.export_bundle"), "review command record")
+    command_trace_ok = all(
+        _command_ok(command_records, command) for command in AC3_REQUIRED_COMMANDS
+    )
+    development_record = _mapping(
+        command_records.get("research.run_development"),
+        "development command record",
+    )
+    robust_record = _mapping(
+        command_records.get("research.run_a2p6"),
+        "robust command record",
+    )
+    a4_record = _mapping(
+        command_records.get("portfolio.run_a4"),
+        "A4 command record",
+    )
+    review_record = _mapping(
+        command_records.get("review.export_bundle"),
+        "review command record",
+    )
+    development_evidence = tuple(
+        str(value) for value in development_record.get("evidence_ids", ())
+    )
     robust_evidence = tuple(str(value) for value in robust_record.get("evidence_ids", ()))
     a4_evidence = tuple(str(value) for value in a4_record.get("evidence_ids", ()))
     review_evidence = tuple(str(value) for value in review_record.get("evidence_ids", ()))
 
     checks: dict[str, bool] = {
-        "development_report_schema": str(development.get("schema_version", "")).startswith("finagent."),
+        "git_sha_recorded": bool(git_sha.strip()),
+        "certification_schema": (
+            certification.get("schema_version") == "finagent.local-ashare-certification.v1"
+        ),
+        "certification_passed": certification.get("passed") is True,
+        "development_report_schema": (
+            development.get("schema_version")
+            == "finagent.ashare-factor-research-acceptance.v2"
+        ),
+        "development_system_acceptance_passed": development.get("passed") is True,
+        "development_reserve_untouched": (
+            str(development_reserve.get("status", "")) == "untouched"
+        ),
+        "development_data_version_matches_robust": (
+            str(development.get("data_version", "")) == data_version
+        ),
         "robust_program_frozen": str(robust.get("program_status", "")) == "frozen",
         "robust_system_acceptance_passed": robust_acceptance.get("passed") is True,
         "robust_reserve_untouched": str(robust_reserve.get("status", "")) == "untouched",
+        "a4_system_acceptance_passed": a4_acceptance.get("passed") is True,
         "a4_reserve_untouched": str(a4_reserve.get("status", "")) == "untouched",
-        "a4_binds_robust_program": str(a4_spec.get("source_program_result_id", "")) == robust_result_id,
-        "a4_data_version_matches_robust": str(a4_spec.get("data_version", "")) == data_version,
+        "a4_binds_robust_program": (
+            str(a4_spec.get("source_program_result_id", "")) == robust_result_id
+        ),
+        "a4_data_version_matches_robust": (
+            str(a4_spec.get("data_version", "")) == data_version
+        ),
         "strategy_verified_nonempty": strategy_manifest.row_count > 0,
         "strategy_binds_a4": strategy_manifest.portfolio_validation_id == validation_id,
-        "strategy_binds_robust": strategy_manifest.source_program_result_id == robust_result_id,
+        "strategy_binds_robust": (
+            strategy_manifest.source_program_result_id == robust_result_id
+        ),
         "strategy_data_version_matches": strategy_manifest.data_version == data_version,
         "factor_verified_nonempty": factor_manifest.row_count > 0,
         "factor_binds_robust": factor_manifest.program_result_id == robust_result_id,
@@ -401,7 +454,9 @@ def verify_ashare_historical_acceptance(
         ),
         "market_bars_bind_a4": market_manifest.portfolio_validation_id == validation_id,
         "market_bars_data_version_matches": market_manifest.data_version == data_version,
-        "workbench_strategy_identity_exact": strategy_item.series_id == strategy_manifest.series_id,
+        "workbench_strategy_identity_exact": (
+            strategy_item.series_id == strategy_manifest.series_id
+        ),
         "workbench_market_bar_identity_exact": (
             isinstance(market_binding, Mapping)
             and str(market_binding.get("series_id", "")) == market_manifest.series_id
@@ -414,14 +469,31 @@ def verify_ashare_historical_acceptance(
             portfolio_item.strategy_series_id == strategy_manifest.series_id
         ),
         "linked_analytics_accepted": linked.get("accepted") is True,
-        "linked_analytics_no_browser_recompute": linked.get("browser_recomputation") is False,
+        "linked_analytics_no_browser_recompute": (
+            linked.get("browser_recomputation") is False
+        ),
         "linked_analytics_explicit_missing_policy": (
             linked.get("missing_evidence_policy") == "explicit_unavailable_not_inferred"
         ),
-        "linked_analytics_context_contract": set(cast(Sequence[str], linked.get("context_keys", ())))
-        >= {"program_id", "factor_id", "portfolio_validation_id", "asset_id", "order_id", "date_range", "session_date", "fold_id"},
+        "linked_analytics_context_contract": set(
+            cast(Sequence[str], linked.get("context_keys", ()))
+        )
+        >= {
+            "program_id",
+            "factor_id",
+            "portfolio_validation_id",
+            "asset_id",
+            "order_id",
+            "date_range",
+            "session_date",
+            "fold_id",
+        },
         "evidence_plane_v4_get_only": v4_methods_ok,
         "command_runs_complete": command_trace_ok,
+        "command_run_development_evidence_exact": (
+            bool(development_acceptance_id)
+            and development_acceptance_id in development_evidence
+        ),
         "command_run_robust_evidence_exact": robust_result_id in robust_evidence,
         "command_run_a4_evidence_exact": validation_id in a4_evidence,
         "command_run_review_evidence_exact": validation_id in review_evidence,
@@ -429,13 +501,18 @@ def verify_ashare_historical_acceptance(
     }
 
     contract_valid = all(checks.values())
-    accepted = contract_valid and mode == "real_local_dataset" and real_dataset_attested
+    accepted = (
+        contract_valid
+        and mode == "real_local_dataset"
+        and real_dataset_attested
+    )
     acceptance_id = _digest(
         AC3_ACCEPTANCE_ID_PREFIX,
         {
             "mode": mode,
             "git_sha": git_sha,
             "data_version": data_version,
+            "development_acceptance_id": development_acceptance_id,
             "robust_result_id": robust_result_id,
             "portfolio_validation_id": validation_id,
             "strategy_series_id": strategy_manifest.series_id,
@@ -456,14 +533,13 @@ def verify_ashare_historical_acceptance(
         "real_dataset_attested": real_dataset_attested,
         "acceptance_semantics": (
             "CI contract fixtures may validate the verifier but can never set accepted=true; "
-            "A-C3 closes only after a real_local_dataset run verifies the frozen local data."
+            "A-C3 closes only after a real_local_dataset run records git_sha and verifies "
+            "the frozen local dataset with verify_content=true."
         ),
         "git_sha": git_sha,
         "data": dataset_payload,
         "identities": {
-            "development_evidence_ids": cast(
-                Mapping[str, Any], command_records["research.run_development"]
-            ).get("evidence_ids", []),
+            "development_acceptance_id": development_acceptance_id,
             "program_result_id": robust_result_id,
             "program_id": str(robust_program.get("program_id", "")),
             "portfolio_validation_id": validation_id,
@@ -493,8 +569,10 @@ def verify_ashare_historical_acceptance(
         },
     }
 
-    target = Path(report_path).expanduser().resolve() if report_path else artifacts.a4_report.with_name(
-        "ashare_historical_acceptance_ac3.json"
+    target = (
+        Path(report_path).expanduser().resolve()
+        if report_path
+        else artifacts.a4_report.with_name("ashare_historical_acceptance_ac3.json")
     )
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(
@@ -524,9 +602,18 @@ class AshareHistoricalAcceptanceRunner:
         self.registry = ConfigRegistry(config.config_roots)
         self.catalog = default_historical_command_catalog()
         self.services = historical_application_service_registry(self.registry)
-        self.development_values = _table(config.development_config, "local_ashare_factor_research")
-        self.robust_values = _table(config.robust_config, "local_ashare_robust_research")
-        self.portfolio_values = _table(config.portfolio_config, "ashare_portfolio_validation")
+        self.development_values = _table(
+            config.development_config,
+            "local_ashare_factor_research",
+        )
+        self.robust_values = _table(
+            config.robust_config,
+            "local_ashare_robust_research",
+        )
+        self.portfolio_values = _table(
+            config.portfolio_config,
+            "ashare_portfolio_validation",
+        )
         self.certification_snapshot = _snapshot_for(
             self.registry,
             section="local_ashare",
@@ -547,13 +634,47 @@ class AshareHistoricalAcceptanceRunner:
             section="ashare_portfolio_validation",
             source_path=config.portfolio_config,
         )
-        self.dataset_root = _resolve(config.repository_root, self.robust_values["root"])
-        self.frozen_manifest = _resolve(
-            config.repository_root,
-            self.robust_values["frozen_manifest"],
-        )
+
+        dataset_roots = {
+            _resolve(config.repository_root, values["root"])
+            for values in (
+                self.development_values,
+                self.robust_values,
+                self.portfolio_values,
+            )
+        }
+        frozen_manifests = {
+            _resolve(config.repository_root, values["frozen_manifest"])
+            for values in (
+                self.development_values,
+                self.robust_values,
+                self.portfolio_values,
+            )
+        }
+        if len(dataset_roots) != 1 or len(frozen_manifests) != 1:
+            raise ValueError(
+                "A-C3 requires development, A2.6 and A4 to share one dataset root "
+                "and one frozen manifest"
+            )
+        self.dataset_root = next(iter(dataset_roots))
+        self.frozen_manifest = next(iter(frozen_manifests))
         if not self.frozen_manifest.is_file():
             raise FileNotFoundError(self.frozen_manifest)
+
+        robust_report_path = _resolve(
+            config.repository_root,
+            self.robust_values["report_path"],
+        )
+        portfolio_source = _resolve(
+            config.repository_root,
+            self.portfolio_values["a2p6_report"],
+        )
+        if portfolio_source != robust_report_path:
+            raise ValueError(
+                "A-C3 A4 config must consume the exact robust report produced by the "
+                "A2.6 config"
+            )
+
         seed = {
             "acceptance_config_sha256": _sha256(config.config_path),
             "development_config_sha256": _sha256(config.development_config),
@@ -573,9 +694,9 @@ class AshareHistoricalAcceptanceRunner:
         command_id: str,
         *,
         snapshot: ConfigSnapshot | None = None,
-        parameters: Mapping[str, object] = {},
-        context: Mapping[str, str] = {},
-    ):
+        parameters: Mapping[str, object] | None = None,
+        context: Mapping[str, str] | None = None,
+    ) -> Any:
         spec = self.catalog.get(command_id)
         if spec.level not in {"L0", "L1"}:
             raise RuntimeError(f"A-C3 refuses non-L0/L1 command {command_id}")
@@ -590,21 +711,33 @@ class AshareHistoricalAcceptanceRunner:
                 f"A-C3 cannot execute redacted ConfigSnapshot {snapshot.snapshot_id}; "
                 "bind secrets at the host application-service boundary instead"
             )
+        if spec.config_descriptor_ids:
+            if snapshot is None:
+                raise ValueError(f"A-C3 command requires ConfigSnapshot: {command_id}")
+            if snapshot.descriptor_id not in spec.config_descriptor_ids:
+                raise ValueError(
+                    f"A-C3 ConfigSnapshot descriptor is not allowed for {command_id}"
+                )
+        elif snapshot is not None:
+            raise ValueError(f"A-C3 command does not accept ConfigSnapshot: {command_id}")
 
+        normalized_parameters = dict(parameters or {})
+        normalized_context = dict(context or {})
         request_key = f"{self.run_id}:{command_id}"
         record, created = self.store.create(
             request_key=request_key,
             command_id=command_id,
             config_snapshot_id=snapshot.snapshot_id if snapshot else None,
-            context=context,
-            parameters=parameters,
+            context=normalized_context,
+            parameters=normalized_parameters,
             requested_by=self.config.requested_by,
             accepted=True,
         )
         if not created:
             if record.run.state != "succeeded":
                 raise RuntimeError(
-                    f"existing A-C3 CommandRun is not succeeded: {command_id}={record.run.state}"
+                    f"existing A-C3 CommandRun is not succeeded: "
+                    f"{command_id}={record.run.state}"
                 )
             return record
 
@@ -613,8 +746,8 @@ class AshareHistoricalAcceptanceRunner:
             command_id=command_id,
             config_snapshot_id=snapshot.snapshot_id if snapshot else None,
             config_values=snapshot.values if snapshot else {},
-            parameters=parameters,
-            context=context,
+            parameters=normalized_parameters,
+            context=normalized_context,
             requested_by=self.config.requested_by,
         )
         try:
@@ -656,7 +789,9 @@ class AshareHistoricalAcceptanceRunner:
         outputs = record.outputs or {}
         value = outputs.get("report_path")
         if not value:
-            raise ValueError(f"CommandRun {record.run.command_run_id} has no report_path")
+            raise ValueError(
+                f"CommandRun {record.run.command_run_id} has no report_path"
+            )
         return Path(str(value)).expanduser().resolve()
 
     def run(self) -> AshareHistoricalAcceptanceResult:
@@ -664,9 +799,16 @@ class AshareHistoricalAcceptanceRunner:
             raise ValueError("A-C3 execution runner only accepts mode=real_local_dataset")
         if not self.confirmed:
             raise PermissionError("A-C3 real execution requires explicit --confirm")
+        if not self.config.git_sha:
+            raise ValueError("A-C3 real execution requires an exact git_sha")
+        if not self.config.verify_content:
+            raise ValueError(
+                "A-C3 real acceptance requires verify_content=true; metadata-only "
+                "frozen-manifest verification cannot close the stage"
+            )
 
         certification_report = self.state_dir / "local_ashare_certification.json"
-        certification = self._audited_command(
+        self._audited_command(
             "data.certify_local_ashare",
             snapshot=self.certification_snapshot,
             parameters={
@@ -675,7 +817,6 @@ class AshareHistoricalAcceptanceRunner:
                 "output": str(certification_report),
             },
         )
-        del certification
         development = self._audited_command(
             "research.run_development",
             snapshot=self.development_snapshot,
@@ -698,11 +839,18 @@ class AshareHistoricalAcceptanceRunner:
             raise ValueError("A-C3 A4 report has no portfolio_validation_id")
         ledger_path = _resolve(
             self.config.repository_root,
-            self.portfolio_values.get("ledger_path", "reports/ashare_a4_ledger.jsonl"),
+            self.portfolio_values.get(
+                "ledger_path",
+                "reports/ashare_a4_ledger.jsonl",
+            ),
         )
 
-        factor_manifest = robust_report.with_name(f"{robust_report.stem}.factor-series.json")
-        strategy_manifest = a4_report.with_name(f"{a4_report.stem}.strategy-decisions.json")
+        factor_manifest = robust_report.with_name(
+            f"{robust_report.stem}.factor-series.json"
+        )
+        strategy_manifest = a4_report.with_name(
+            f"{a4_report.stem}.strategy-decisions.json"
+        )
         market_bar_manifest = strategy_manifest.with_name(
             f"{strategy_manifest.name.removesuffix('.json')}.market-bars.json"
         )
@@ -714,11 +862,17 @@ class AshareHistoricalAcceptanceRunner:
             str(self.config.factor_rolling_window),
         ]
         strategy_args = [
-            str(self.config.repository_root / "scripts/materialize_strategy_decision_series.py"),
+            str(
+                self.config.repository_root
+                / "scripts/materialize_strategy_decision_series.py"
+            ),
             str(self.config.portfolio_config),
         ]
         market_args = [
-            str(self.config.repository_root / "scripts/materialize_local_ashare_market_bars.py"),
+            str(
+                self.config.repository_root
+                / "scripts/materialize_local_ashare_market_bars.py"
+            ),
             str(strategy_manifest),
             "--root",
             str(self.dataset_root),
@@ -727,10 +881,9 @@ class AshareHistoricalAcceptanceRunner:
             "--frequency",
             AshareBarFrequency.DAILY.value,
         ]
-        if self.config.verify_content:
-            factor_args.append("--verify-content")
-            strategy_args.append("--verify-content")
-            market_args.append("--verify-content")
+        factor_args.append("--verify-content")
+        strategy_args.append("--verify-content")
+        market_args.append("--verify-content")
 
         self._materialize(factor_args)
         self._materialize(strategy_args)
@@ -773,6 +926,6 @@ class AshareHistoricalAcceptanceRunner:
             artifacts=artifacts,
             mode=self.config.mode,
             git_sha=self.config.git_sha,
-            verify_dataset_content=self.config.verify_content,
+            verify_dataset_content=True,
             report_path=self.config.acceptance_report,
         )
