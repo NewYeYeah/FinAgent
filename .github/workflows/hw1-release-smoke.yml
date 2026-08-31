@@ -11,6 +11,8 @@ on:
       - "tests/test_historical_workbench_release_smoke.py"
       - "tests/test_historical_workbench_release_smoke_cli.py"
       - "tests/test_historical_workbench_release_smoke_worktree.py"
+      - "workspace/src/**/*.test.ts"
+      - "workspace/src/**/*.test.tsx"
       - "workspace/playwright.release-smoke.config.ts"
       - "workspace/e2e/historical-release-smoke.spec.ts"
       - "workspace/e2e/historical-release-smoke-real.spec.ts"
@@ -27,6 +29,8 @@ on:
       - "tests/test_historical_workbench_release_smoke.py"
       - "tests/test_historical_workbench_release_smoke_cli.py"
       - "tests/test_historical_workbench_release_smoke_worktree.py"
+      - "workspace/src/**/*.test.ts"
+      - "workspace/src/**/*.test.tsx"
       - "workspace/playwright.release-smoke.config.ts"
       - "workspace/e2e/historical-release-smoke.spec.ts"
       - "workspace/e2e/historical-release-smoke-real.spec.ts"
@@ -100,6 +104,9 @@ jobs:
       - name: Type check
         working-directory: workspace
         run: npm run typecheck
+      - name: Unit tests
+        working-directory: workspace
+        run: npm run test
       - name: Production build
         working-directory: workspace
         run: npm run build
