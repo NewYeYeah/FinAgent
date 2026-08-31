@@ -147,7 +147,7 @@ class AshareHistoricalAcceptanceConfig:
         mode = str(values.get("mode", "real_local_dataset"))
         if mode not in {"real_local_dataset", "ci_contract_fixture"}:
             raise ValueError("A-C3 mode must be real_local_dataset or ci_contract_fixture")
-        rolling = int(values.get("factor_rolling_window", 20))
+        rolling = int(cast(Any, values.get("factor_rolling_window", 20)))
         if rolling < 2:
             raise ValueError("factor_rolling_window must be >= 2")
         requested_by = str(values.get("requested_by", "ac3-local-runner")).strip()
@@ -275,9 +275,9 @@ def verify_ashare_historical_acceptance(
     A-C3.
     """
 
-    for path in artifacts.all_files:
-        if not path.is_file():
-            raise FileNotFoundError(path)
+    for artifact_path in artifacts.all_files:
+        if not artifact_path.is_file():
+            raise FileNotFoundError(artifact_path)
 
     certification = _load_json(artifacts.certification_report, "certification report")
     development = _load_json(artifacts.development_report, "development report")
@@ -309,6 +309,7 @@ def verify_ashare_historical_acceptance(
             str(artifacts.frozen_manifest) if artifacts.frozen_manifest else None
         ),
         "verify_content": bool(verify_dataset_content),
+        "content_hashed": False,
         "content_verified": False,
     }
     if mode == "real_local_dataset":
@@ -319,15 +320,17 @@ def verify_ashare_historical_acceptance(
         if AshareBarFrequency.DAILY.value not in frozen.frequencies:
             raise ValueError("A-C3 frozen dataset must include daily A-share data")
         frozen.verify(layout, verify_content=verify_dataset_content)
+        content_verified = bool(verify_dataset_content and frozen.content_hashed)
         dataset_payload.update(
             {
                 "dataset_version": frozen.dataset_version,
                 "manifest_sha256": _sha256(artifacts.frozen_manifest),
-                "content_verified": bool(verify_dataset_content),
+                "content_hashed": frozen.content_hashed,
+                "content_verified": content_verified,
             }
         )
         real_dataset_attested = (
-            bool(verify_dataset_content) and frozen.dataset_version == data_version
+            content_verified and frozen.dataset_version == data_version
         )
 
     roots = artifacts.evidence_roots or tuple(
@@ -534,7 +537,7 @@ def verify_ashare_historical_acceptance(
         "acceptance_semantics": (
             "CI contract fixtures may validate the verifier but can never set accepted=true; "
             "A-C3 closes only after a real_local_dataset run records git_sha and verifies "
-            "the frozen local dataset with verify_content=true."
+            "a content-hashed frozen local dataset with verify_content=true."
         ),
         "git_sha": git_sha,
         "data": dataset_payload,
@@ -805,6 +808,12 @@ class AshareHistoricalAcceptanceRunner:
             raise ValueError(
                 "A-C3 real acceptance requires verify_content=true; metadata-only "
                 "frozen-manifest verification cannot close the stage"
+            )
+        frozen = LocalAshareFrozenManifest.read_json(self.frozen_manifest)
+        if not frozen.content_hashed:
+            raise ValueError(
+                "A-C3 real acceptance requires a content-hashed frozen manifest; "
+                "re-freeze the local A-share dataset with content_hash=true"
             )
 
         certification_report = self.state_dir / "local_ashare_certification.json"
