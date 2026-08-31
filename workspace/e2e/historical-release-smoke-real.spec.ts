@@ -1,5 +1,18 @@
 import { expect, test } from "@playwright/test";
 
+const realSmokeEnabled = [
+  "FINAGENT_HW_RS_OUTCOME",
+  "FINAGENT_HW_RS_PORTFOLIO_VALIDATION_ID",
+  "FINAGENT_HW_RS_STRATEGY_SERIES_ID",
+  "FINAGENT_HW_RS_FACTOR_SERIES_ID",
+  "FINAGENT_HW_RS_PROGRAM_RESULT_ID",
+].every((name) => Boolean(process.env[name]?.trim()));
+
+test.skip(
+  !realSmokeEnabled,
+  "real frozen-evidence smoke is executed only by the HW-1.0-RS local orchestrator",
+);
+
 function required(name: string): string {
   const value = process.env[name]?.trim();
   if (!value) throw new Error(`${name} is required by HW-1.0-RS`);
@@ -17,7 +30,7 @@ test("Historical Workbench 1.0 renders the frozen release without inventing unav
   await page.goto(`/strategy/${encodeURIComponent(strategySeriesId)}?portfolio=${encodeURIComponent(validationId)}`);
   await expect(page.getByRole("heading", { name: "Signal → target → order → fill → realized PnL" })).toBeVisible();
   await expect(page.getByTestId("workbench-context-bar")).toContainText(validationId);
-  await expect(page.getByText("React performs no financial-fact recomputation.")).toBeVisible();
+  await expect(page.getByText(/React performs no financial-fact recomputation/i)).toBeVisible();
 
   if (outcome === "NO_ROBUST_FACTOR_FAMILY") {
     await expect(page.locator(".metric-card", { hasText: "Rows in evidence" })).toContainText("0");
@@ -42,7 +55,7 @@ test("Historical Workbench 1.0 renders the frozen release without inventing unav
 
   await page.goto(`/factors/${encodeURIComponent(factorSeriesId)}`);
   await expect(page.getByText("Verified V4-1 period rows + frozen A2.6 inference")).toBeVisible();
-  await expect(page.getByText("No factor statistics are reconstructed in React.")).toBeVisible();
+  await expect(page.getByText(/No factor statistics are reconstructed in React/i)).toBeVisible();
   await expect(page).toHaveURL(/program=/);
   await expect(page).toHaveURL(/factor=/);
   if (outcome === "NO_ROBUST_FACTOR_FAMILY") {
@@ -55,6 +68,5 @@ test("Historical Workbench 1.0 renders the frozen release without inventing unav
   await expect(page.getByRole("heading", { name: "Evidence catalog" })).toBeVisible();
   await expect(page.getByText("Immutable evidence")).toBeVisible();
   await expect(page.getByText(programResultId).first()).toBeVisible();
-
   await expect(page.getByRole("button", { name: "Commands" })).toBeDisabled();
 });
