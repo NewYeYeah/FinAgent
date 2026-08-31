@@ -271,7 +271,7 @@ describe("FinAgent Workspace V2", () => {
     expect(screen.getByText("LOCKED_NOT_CONSUMED")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("link", { name: "A4" }));
     await waitFor(() => expect(screen.getByText("NAV & drawdown")).toBeInTheDocument());
-    expect(screen.getByText("Monthly return matrix")).toBeInTheDocument();
+    expect(await screen.findByText("Monthly return matrix")).toBeInTheDocument();
     expect(screen.getByText(/A4 portfolio authority/i)).toBeInTheDocument();
     expect(screen.getByText("benchmark unavailable")).toBeInTheDocument();
     expect(screen.getByText(/No NAV, return, drawdown, rolling statistic, monthly return or cost aggregate is reconstructed in React/i)).toBeInTheDocument();
