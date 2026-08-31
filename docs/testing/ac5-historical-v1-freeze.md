@@ -92,7 +92,8 @@ release Git SHA
 A-C3 acceptance_id and evidence Git SHA
 A-C3 research outcome
 A-C3 program/A4/Strategy/Factor/MarketBar identities
-A-C3 data-certification CommandRun/evidence identities
+A-C3 data-certification CommandRun identity + certification artifact SHA-256/size
+optional existing certification evidence_ids without inventing one
 A-C4 audit_id
 content-hashed dataset manifest identity
 A-C3 artifact digests
@@ -133,7 +134,8 @@ A-C5 must reject at least:
 - A-C3 `accepted=false` or `real_dataset_attested=false` in real mode;
 - tampered A-C3 `acceptance_id`;
 - changed A-C3 artifact SHA/size;
-- missing successful data-certification evidence identity;
+- missing or unsuccessful data-certification CommandRun;
+- missing certification report artifact/output path when it is not already recorded in A-C3 artifacts;
 - non-content-hashed or wrong-version dataset manifest;
 - A-C3 Git SHA not ancestral to release SHA;
 - protected historical-core changes after A-C3;
