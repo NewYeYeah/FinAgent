@@ -1,9 +1,9 @@
 # A-C2 MarketBarSeriesEvidence + Frequency Contract
 
-Status: **Implementation complete / unified acceptance pending**  
+Status: **Completed**  
 Stage: **A-C2 — MarketBarSeriesEvidence + Frequency Contract**  
 Planning authority: [`current-development-plan-v4.0.md`](current-development-plan-v4.0.md)  
-Next stage after acceptance: **A-C3 — Real A-share Historical E2E Acceptance**
+Next stage: **A-C3 — Real A-share Historical E2E Acceptance**
 
 ## Purpose
 
@@ -203,7 +203,7 @@ A missing bar series returns an explicit unavailable state; the server does not 
 
 ## A-share source materialization
 
-A-C2 retains the frozen Phase-1 `DataAdapter` interface. The local A-share research adapter exposes a narrow read-only `bar_history()` boundary for evidence materialization instead of requiring downstream code to depend on `_query_records` implementation details.
+A-C2 retains the frozen Phase-1 `DataAdapter` interface. The local A-share research adapter now exposes a narrow read-only `bar_history()` source boundary so later evidence consumers have a public bar-read contract. The A-C2 MarketBarSeries implementation itself is co-located inside the `finagent.data` package and preserves the existing certified local query semantics; external/visualization code does not call adapter-private query functions.
 
 Host-side materialization is provided by:
 
@@ -217,7 +217,7 @@ It:
 
 1. verifies the source StrategyDecisionSeries manifest/Parquet;
 2. derives the exact strategy asset and date scope;
-3. reads certified raw A-share bars through the adapter boundary;
+3. reads certified raw A-share bars inside the data layer;
 4. compares the adapter's real `data_version` to the strategy's frozen `data_version`;
 5. refuses the binding when the versions differ;
 6. materializes sibling MarketBarSeries manifest + Parquet evidence.
@@ -277,22 +277,6 @@ else:
 
 This preserves V4-5's core invariant: missing evidence is never inferred and browser recomputation remains false.
 
-## Test strategy
-
-Per the development-efficiency policy, Step 1 and Step 2 were implemented before opening the PR or running the unified gate.
-
-The A-C2 blocking gate is only:
-
-```text
-Ubuntu latest
-Python 3.11
-Workspace focused API regression
-Ruff / typed-boundary mypy / pip check
-frontend TypeScript / Vitest / build / Playwright
-```
-
-The previous Windows API matrix is removed from this Workbench stage. Windows/PowerShell compatibility remains a design constraint inherited from A-C1, but Windows CI is not executed as part of A-C2 acceptance.
-
 ## Acceptance cases
 
 A-C2 tests cover:
@@ -309,6 +293,46 @@ A-C2 tests cover:
 - frontend authoritative candlestick mode;
 - no browser OHLC reconstruction.
 
+## Unified acceptance result
+
+Per the development-efficiency policy, Step 1 and Step 2 were completed before the unified gate. The accepted code/test head is:
+
+```text
+6b78aa270db0e105c99aa3023708c09e335a01f2
+```
+
+Blocking acceptance used only Ubuntu and Python 3.11 for Python tests. No Windows Workspace API job was generated.
+
+Final results:
+
+- **Ubuntu / Python 3.11 Workspace API: PASS** — 60 focused backend tests passed, 1 dependency warning, in 284.82 seconds; subsequent `py_compile` passed for A-C2/V3/V4 entry points;
+- **Ubuntu quality: PASS** — Ruff, typed-boundary mypy and `pip check` all passed;
+- **Ubuntu frontend: PASS** — TypeScript passed; Vitest 35/35 passed across 19 files; production build passed; Playwright 11/11 passed.
+
+The new frontend unit test explicitly exercises the authoritative OHLC mode, while the retained V4-2 browser smoke verifies that a Strategy without MarketBarSeries stays close-only.
+
+## CI findings resolved during closure
+
+Two non-financial integration issues were found and fixed during the unified gate:
+
+1. mypy detected that the two-pass Strategy scanner reused the local name `manifest` for both `StrategyDecisionSeriesManifest` and `MarketBarSeriesManifest`; the second identity is now named `bar_manifest`, preserving distinct static types;
+2. the legacy V4-2 Playwright test asserted the old close-only explanatory sentence. The close-only behavior itself was correct; the assertion was updated to the A-C2 wording that no verified MarketBarSeries is bound.
+
+Neither issue changed A2.6, A3, A4 or V4-0 financial semantics.
+
+## Test-efficiency policy
+
+The Workspace workflow is now intentionally single-environment for this development line:
+
+```text
+Ubuntu latest
+Python 3.11
+```
+
+The previous Windows API matrix is removed from the A-C2 Workbench gate. Windows/PowerShell compatibility remains a design constraint inherited from A-C1, but Windows CI is not run as part of A-C2 acceptance.
+
 ## Completion rule
 
-After the unified Ubuntu/Python 3.11 and frontend gates pass, this document will be marked **Completed**, the roadmap will advance to **A-C3 Real A-share Historical E2E Acceptance**, and the PR will be merged to `main`.
+A-C2 is accepted. FinAgent now has a provider-neutral frequency/session vocabulary and an independent authoritative OHLCV evidence series that can be linked to Strategy without browser reconstruction or evidence-authority inflation.
+
+The roadmap advances to **A-C3 — Real A-share Historical E2E Acceptance**.
