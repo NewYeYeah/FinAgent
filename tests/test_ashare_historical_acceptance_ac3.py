@@ -4,8 +4,6 @@ import hashlib
 import json
 from pathlib import Path
 
-import pytest
-
 from finagent.application import (
     ApplicationCommandExecution,
     ApplicationCommandInvocation,
