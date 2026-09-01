@@ -28,17 +28,17 @@ def _dt(year: int, month: int, day: int, hour: int, minute: int = 0) -> datetime
     return datetime(year, month, day, hour, minute, tzinfo=UTC)
 
 
-def _calendar(*, half_day_minutes: int = 210) -> TradingCalendarEvidence:
+def _calendar() -> TradingCalendarEvidence:
     return TradingCalendarEvidence(
         market_id="XNYS",
         timezone="America/New_York",
         source="synthetic-calendar:XNYS",
-        source_revision=f"synthetic-{half_day_minutes}",
+        source_revision="synthetic-v1",
         sessions=(
             TradingSession(
                 session_date=date(2025, 11, 28),
                 open_at=_dt(2025, 11, 28, 14, 30),
-                close_at=_dt(2025, 11, 28, 14, 30 + half_day_minutes),
+                close_at=_dt(2025, 11, 28, 18, 0),
                 is_half_day=True,
             ),
             TradingSession(
