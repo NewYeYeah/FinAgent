@@ -1,10 +1,21 @@
 name: a2p6-robust-research
 
 on:
+  # Keep the historical A2.6 regression on every main integration, but do not
+  # block unrelated pull requests such as the U.S. minute data line.
   push:
     branches: [main]
   pull_request:
     branches: [main]
+    paths:
+      - "src/finagent/research/ashare_robust_program.py"
+      - "src/finagent/research/factor_feedback_v3.py"
+      - "scripts/run_local_ashare_robust_research.py"
+      - "tests/test_ashare_robust_research_a26.py"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/a2p6.yml"
+  workflow_dispatch:
 
 jobs:
   robust-research:
