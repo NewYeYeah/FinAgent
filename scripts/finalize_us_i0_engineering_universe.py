@@ -23,12 +23,21 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Freeze the final US-I0 20-30 name EngineeringUniverse from a deterministic "
-            "candidate report, a read-only quote probe and the accepted MT5-P0 inventory."
+            "candidate report, a read-only quote probe and a fresh read-only MT5 inventory "
+            "that records final Market Watch visibility/tradability."
         )
     )
     parser.add_argument("--candidate-report", type=Path, required=True)
     parser.add_argument("--quote-probe", type=Path, required=True)
-    parser.add_argument("--mt5-p0-probe", type=Path, required=True)
+    parser.add_argument(
+        "--mt5-inventory-probe",
+        type=Path,
+        required=True,
+        help=(
+            "Fresh read-only MT5 inventory after manually making selected candidates visible. "
+            "FinAgent does not call symbol_select."
+        ),
+    )
     parser.add_argument("--target-count", type=int, default=25)
     parser.add_argument("--minimum-count", type=int, default=20)
     parser.add_argument("--maximum-count", type=int, default=30)
@@ -60,7 +69,7 @@ def main() -> int:
     report = finalize_us_engineering_universe(
         _read_mapping(args.candidate_report),
         _read_mapping(args.quote_probe),
-        _read_mapping(args.mt5_p0_probe),
+        _read_mapping(args.mt5_inventory_probe),
         policy=policy,
         operator_attested=args.attest_selected_exact_matches,
     )
