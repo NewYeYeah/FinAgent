@@ -6,6 +6,7 @@ import math
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
+from itertools import pairwise
 
 from finagent.domain.labels import AvailabilityPolicy, ResearchPriceBasis
 from finagent.domain.market_bars import BarInterval
@@ -208,8 +209,8 @@ class USBaselineBar:
         values = (self.open, self.high, self.low, self.close, self.volume)
         if any(not math.isfinite(float(value)) for value in values):
             raise ValueError("OHLCV values must be finite")
-        if self.low < 0 or self.open < 0 or self.high < 0 or self.close < 0:
-            raise ValueError("OHLC values must be non-negative")
+        if min(self.open, self.high, self.low, self.close) <= 0:
+            raise ValueError("cleaned baseline OHLC values must be positive")
         if self.high < max(self.open, self.close, self.low):
             raise ValueError("high must be >= open/close/low")
         if self.low > min(self.open, self.close, self.high):
@@ -320,7 +321,7 @@ def evaluate_us_baseline_feature(
         raise ValueError("baseline evaluation requires at least the current bar")
     if spec.protocol_id != protocol.protocol_id:
         raise ValueError("feature/protocol identity mismatch")
-    for left, right in zip(bars, bars[1:]):
+    for left, right in pairwise(bars):
         if right.event_time <= left.event_time:
             raise ValueError("baseline input bars must be strictly ordered by event_time")
         if right.available_at <= left.available_at:
@@ -430,7 +431,10 @@ def canonical_us_baseline_denominator() -> USBaselineCandidateDenominator:
             kind=USBaselineFeatureKind.VOLUME_SURPRISE,
             window_bars=9,
             input_fields=("volume",),
-            hypothesis="Unusually high current volume relative to recent same-session bars is informative.",
+            hypothesis=(
+                "Unusually high current volume relative to recent same-session bars is "
+                "informative."
+            ),
             description="Current 15m volume divided by the mean of the prior eight bars minus one.",
             protocol_id=protocol_id,
         ),
