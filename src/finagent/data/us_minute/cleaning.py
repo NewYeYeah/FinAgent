@@ -129,9 +129,7 @@ class MinuteSampleQuality:
             return False
         if self.invalid_ohlc_rate > policy.max_invalid_ohlc_rate:
             return False
-        if self.exact_duplicate_extra_row_rate > policy.max_exact_duplicate_extra_row_rate:
-            return False
-        return True
+        return self.exact_duplicate_extra_row_rate <= policy.max_exact_duplicate_extra_row_rate
 
     def warning_codes(self) -> tuple[str, ...]:
         warnings: list[str] = []
