@@ -13,6 +13,9 @@ The selected OHLCV-1m source is treated as raw/split-unadjusted intraday history
 ### Survivorship / universe bias
 The minute corpus contains historical ticker observations but does not provide a point-in-time security master/lifecycle table. The present MT5 CFD intersection is also an EngineeringUniverse, not a historical PIT universe. Formal market-wide Alpha claims require lifecycle/PIT evidence or an explicit limited interpretation.
 
+### Conflicting duplicate market bars
+Exact duplicate full rows are deterministic to collapse, but two different OHLCV observations for the same `(ticker,timestamp)` have no safe generic winner. Sampled conflicting duplicate keys remain a fail-closed condition until a source-specific reconciliation rule with evidence exists.
+
 ### Overlapping intraday labels / invalid inference
 Minute observations are serially dependent and forward horizons can overlap. Purging, HAC and block/session bootstrap must replace IID assumptions in formal research.
 
@@ -32,6 +35,9 @@ The Hugging Face dataset README does not declare a license and the upstream Finn
 
 ### Local minute snapshot integrity
 The local corpus is large enough that accidental partial downloads, wrong Hugging Face revisions or missing monthly partitions are plausible. The local certification gate binds the exact revision, inventories all monthly files and scans selected partitions before research admission.
+
+### Sparse market-data defects and cleaning-policy drift
+Real certification observed extremely sparse invalid OHLC rows and duplicate keys. FinAgent permits bounded deterministic quarantine/collapse rather than requiring a mathematically perfect 80+ GB corpus. The thresholds and actions are identity-bound in `MinuteDataCleaningPolicy`; changing a threshold changes `policy_id` and certification identity. Thresholds must not be loosened ad hoc to make a failing dataset pass. Outside-session observations remain diagnostic unless a later session contract proves them invalid.
 
 ### Minute Data Plane runtime and memory pressure
 Parquet scans are out-of-core but bounded research windows, feature matrices and inference may still exceed memory. Instrument scan/materialization budgets and profiling are required before scaling the universe.
