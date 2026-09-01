@@ -311,7 +311,7 @@ def test_label_source_query_requires_close_only_and_available_at(tmp_path: Path)
             _query(availability_policy=AvailabilityPolicy.EVENT_TIME),
             label_spec,
         )
-    with pytest.raises(ValueError, match="exactly \(close,\)"):
+    with pytest.raises(ValueError, match="fields must be exactly"):
         store.plan(
             _query(fields=(MarketDataField.CLOSE, MarketDataField.VOLUME)),
             label_spec,
