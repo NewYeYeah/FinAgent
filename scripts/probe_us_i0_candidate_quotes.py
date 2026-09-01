@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import cast
 
@@ -15,6 +15,15 @@ def _read_mapping(path: Path) -> Mapping[str, object]:
     if not isinstance(value, Mapping):
         raise TypeError(f"JSON root must be an object: {path}")
     return cast(Mapping[str, object], value)
+
+
+def _rows(value: object) -> tuple[object, ...]:
+    if isinstance(value, (str, bytes, bytearray, Mapping)) or not isinstance(
+        value,
+        Iterable,
+    ):
+        raise TypeError("MT5 symbol inventory must be an iterable of rows")
+    return tuple(value)
 
 
 def _row_mapping(value: object) -> Mapping[str, object]:
@@ -70,8 +79,7 @@ def main() -> int:
                 "connected MT5 broker server does not match the accepted MT5-P0 probe: "
                 f"observed={observed_server!r}, expected={expected_server!r}"
             )
-        raw_symbols = client.symbols_get()
-        rows = tuple(_row_mapping(item) for item in raw_symbols)
+        rows = tuple(_row_mapping(item) for item in _rows(client.symbols_get()))
     finally:
         client.shutdown()
 
