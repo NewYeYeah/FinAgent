@@ -59,13 +59,6 @@ def _integer(value: object, field_name: str) -> int:
     return int(value)
 
 
-def _aware(value: object, field_name: str) -> datetime:
-    parsed = datetime.fromisoformat(_text(value, field_name).replace("Z", "+00:00"))
-    if parsed.tzinfo is None or parsed.utcoffset() is None:
-        raise ValueError(f"{field_name} must be timezone-aware")
-    return parsed.astimezone(UTC)
-
-
 @dataclass(frozen=True, slots=True)
 class USCandidateQuoteSnapshot:
     symbol: str
@@ -189,12 +182,18 @@ def build_candidate_quote_probe_report(
     *,
     generated_at: datetime | None = None,
 ) -> USCandidateQuoteProbeReport:
-    if not _boolean(candidate_document.get("ready_for_spread_probe"), "candidate.ready_for_spread_probe"):
+    if not _boolean(
+        candidate_document.get("ready_for_spread_probe"),
+        "candidate.ready_for_spread_probe",
+    ):
         raise ValueError("candidate report is not ready for quote probing")
     selection_id = _text(candidate_document.get("selection_id"), "candidate.selection_id")
     requested = tuple(
         _text(item, "candidate.spread_probe_symbols[]")
-        for item in _sequence(candidate_document.get("spread_probe_symbols"), "candidate.spread_probe_symbols")
+        for item in _sequence(
+            candidate_document.get("spread_probe_symbols"),
+            "candidate.spread_probe_symbols",
+        )
     )
     policy = _mapping(candidate_document.get("policy"), "candidate.policy")
     minimum_count = _integer(
@@ -207,7 +206,10 @@ def build_candidate_quote_probe_report(
     )
     probe_id = _text(mt5_probe_document.get("probe_id"), "mt5_probe.probe_id")
     terminal = _mapping(mt5_probe_document.get("terminal"), "mt5_probe.terminal")
-    broker_server = _text(terminal.get("broker_server"), "mt5_probe.terminal.broker_server")
+    broker_server = _text(
+        terminal.get("broker_server"),
+        "mt5_probe.terminal.broker_server",
+    )
 
     rows_by_symbol: dict[str, Mapping[str, object]] = {}
     for row in symbol_rows:
@@ -224,9 +226,8 @@ def build_candidate_quote_probe_report(
         try:
             bid = _number(row.get("bid"), f"symbol_rows[{symbol}].bid")
             ask = _number(row.get("ask"), f"symbol_rows[{symbol}].ask")
-            time_value = row.get("time")
             sampled_at = datetime.fromtimestamp(
-                _integer(time_value, f"symbol_rows[{symbol}].time"),
+                _integer(row.get("time"), f"symbol_rows[{symbol}].time"),
                 tz=UTC,
             )
             trade_mode = _integer(
@@ -283,7 +284,10 @@ class USUniverseFinalizationPolicy:
 
     @property
     def policy_id(self) -> str:
-        return _canonical_hash(self.to_dict(include_id=False), prefix="us-universe-final-policy")
+        return _canonical_hash(
+            self.to_dict(include_id=False),
+            prefix="us-universe-final-policy",
+        )
 
     def to_dict(self, *, include_id: bool = True) -> dict[str, object]:
         payload: dict[str, object] = {
@@ -298,6 +302,9 @@ class USUniverseFinalizationPolicy:
         if include_id:
             payload["policy_id"] = self.policy_id
         return payload
+
+
+DEFAULT_US_UNIVERSE_FINALIZATION_POLICY = USUniverseFinalizationPolicy()
 
 
 @dataclass(frozen=True, slots=True)
@@ -399,7 +406,7 @@ def finalize_us_engineering_universe(
     quote_document: Mapping[str, object],
     mt5_probe_document: Mapping[str, object],
     *,
-    policy: USUniverseFinalizationPolicy = USUniverseFinalizationPolicy(),
+    policy: USUniverseFinalizationPolicy = DEFAULT_US_UNIVERSE_FINALIZATION_POLICY,
     operator_attested: bool = False,
     generated_at: datetime | None = None,
 ) -> USUniverseFinalizationReport:
@@ -410,7 +417,10 @@ def finalize_us_engineering_universe(
         "quote.candidate_selection_id",
     ) != candidate_id:
         raise ValueError("quote probe does not bind the supplied candidate selection")
-    if not _boolean(quote_document.get("ready_for_finalization"), "quote.ready_for_finalization"):
+    if not _boolean(
+        quote_document.get("ready_for_finalization"),
+        "quote.ready_for_finalization",
+    ):
         raise ValueError("quote probe is not ready for finalization")
 
     quote_bps: dict[str, float] = {}
@@ -422,13 +432,19 @@ def finalize_us_engineering_universe(
             "quote.quotes[].tradable",
         ):
             continue
-        quote_bps[symbol] = _number(row.get("spread_bps"), "quote.quotes[].spread_bps")
+        quote_bps[symbol] = _number(
+            row.get("spread_bps"),
+            "quote.quotes[].spread_bps",
+        )
 
     candidates: list[tuple[int, str]] = []
     excluded: list[str] = []
     for raw in _sequence(candidate_document.get("candidates"), "candidate.candidates"):
         row = _mapping(raw, "candidate.candidates[]")
-        symbol = _text(row.get("research_symbol"), "candidate.candidates[].research_symbol")
+        symbol = _text(
+            row.get("research_symbol"),
+            "candidate.candidates[].research_symbol",
+        )
         rank = _integer(row.get("rank"), "candidate.candidates[].rank")
         spread = quote_bps.get(symbol)
         if spread is None or spread > policy.maximum_current_spread_bps:
