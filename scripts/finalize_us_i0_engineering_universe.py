@@ -6,9 +6,9 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import cast
 
-from finagent.data.us_universe_finalization import (
-    USUniverseFinalizationPolicy,
-    finalize_us_engineering_universe,
+from finagent.data.us_universe_finalization_v2 import (
+    USUniverseFinalizationPolicyV2,
+    finalize_us_engineering_universe_v2,
 )
 
 
@@ -23,8 +23,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Freeze the final US-I0 20-30 name EngineeringUniverse from a deterministic "
-            "candidate report, a read-only quote probe and a fresh read-only MT5 inventory "
-            "that records final Market Watch visibility/tradability."
+            "candidate report, fresh read-only quote evidence and a fresh read-only MT5 "
+            "inventory that records final Market Watch visibility/tradability."
         )
     )
     parser.add_argument("--candidate-report", type=Path, required=True)
@@ -43,6 +43,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--maximum-count", type=int, default=30)
     parser.add_argument("--maximum-current-spread-bps", type=float, default=50.0)
     parser.add_argument(
+        "--maximum-quote-age-seconds",
+        type=int,
+        default=900,
+        help="Maximum quote age at finalization time (default: 900 seconds).",
+    )
+    parser.add_argument(
+        "--maximum-future-quote-skew-seconds",
+        type=int,
+        default=60,
+        help="Maximum tolerated quote timestamp lead over local finalization time.",
+    )
+    parser.add_argument(
         "--attest-selected-exact-matches",
         action="store_true",
         help=(
@@ -60,13 +72,15 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = build_parser().parse_args()
-    policy = USUniverseFinalizationPolicy(
+    policy = USUniverseFinalizationPolicyV2(
         target_count=args.target_count,
         minimum_count=args.minimum_count,
         maximum_count=args.maximum_count,
         maximum_current_spread_bps=args.maximum_current_spread_bps,
+        maximum_quote_age_seconds=args.maximum_quote_age_seconds,
+        maximum_future_quote_skew_seconds=args.maximum_future_quote_skew_seconds,
     )
-    report = finalize_us_engineering_universe(
+    report = finalize_us_engineering_universe_v2(
         _read_mapping(args.candidate_report),
         _read_mapping(args.quote_probe),
         _read_mapping(args.mt5_inventory_probe),
@@ -88,7 +102,13 @@ def main() -> int:
                 "universe_id": report.universe_id,
                 "accepted_mapping_count": report.accepted_mapping_count,
                 "selected_symbols": list(report.selected_symbols),
+                "excluded_by_quote_quality": sorted(
+                    set(report.quote_evidence.stale_quote_symbols)
+                    | set(report.quote_evidence.future_quote_symbols)
+                ),
                 "excluded_by_spread": list(report.excluded_by_spread),
+                "quote_evidence_id": report.quote_evidence.assessment_id,
+                "quote_evidence_passed": report.quote_evidence.passed,
                 "blockers": list(report.blockers),
                 "output": str(output),
             },

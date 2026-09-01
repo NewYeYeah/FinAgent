@@ -76,9 +76,15 @@ selected_candidate_count >= 20
 
 This is only a candidate set. Exact ticker equality is not a security-identity attestation.
 
-## 3. Collect current quote evidence without broker mutation
+## 3. Make candidate symbols visible manually
 
-Keep the same accepted MetaQuotes-Demo account connected and run:
+The accepted MT5-P0 inventory originally contains only a small visible Market Watch subset. Candidate discovery intentionally does not call `symbol_select`, so inspect `spread_probe_symbols` and `manual_visibility_required_symbols` in the candidate report and add the intended candidate symbols to MetaTrader 5 Market Watch manually.
+
+Do not add a programmatic `symbol_select` path to FinAgent. Visibility is broker-terminal state and remains outside the read-only P0/US-I0 code surface.
+
+## 4. Collect fresh quote evidence and immediately record fresh inventory
+
+Run these commands back-to-back while the broker is publishing fresh stock quotes. The finalization Gate rejects stale quote timestamps, excessive future clock skew, a quote report bound to a different accepted P0 probe, or a broker-server mismatch between candidate/quote/fresh-inventory evidence.
 
 ```powershell
 python scripts\probe_us_i0_candidate_quotes.py `
@@ -86,11 +92,15 @@ python scripts\probe_us_i0_candidate_quotes.py `
   --mt5-p0-probe reports\mt5\mt5_p0_capability_probe.json `
   --expected-package-version 5.0.6147 `
   --output reports\us_instruments\us_i0_candidate_quotes.json
+
+python scripts\probe_mt5_readonly.py `
+  --expected-package-version 5.0.6147 `
+  --output reports\mt5\mt5_us_i0_final_inventory.json
 ```
 
-The probe uses the read-only `symbols_get` surface. FinAgent does not call `symbol_select`, `order_check`, `order_send` or position/account mutation APIs.
+Both probes are read-only. FinAgent does not call `symbol_select`, `order_check`, `order_send` or position/account mutation APIs.
 
-Required output:
+Required quote output:
 
 ```text
 ready_for_finalization = true
@@ -100,23 +110,9 @@ valid_quote_count >= 20
 
 The current quote/spread snapshot is an engineering filter only. It is not historical transaction-cost authority.
 
-## 4. Make the selected symbols visible manually, then record fresh inventory evidence
-
-`ACCEPTED_FOR_ENGINEERING` mappings still require broker `visible=true` and `tradable=true`. If the candidate report or quote report contains symbols not currently visible, add the policy-selected symbols to MetaTrader 5 Market Watch manually. Do not add a programmatic `symbol_select` path to FinAgent.
-
-Then capture a fresh read-only inventory:
-
-```powershell
-python scripts\probe_mt5_readonly.py `
-  --expected-package-version 5.0.6147 `
-  --output reports\mt5\mt5_us_i0_final_inventory.json
-```
-
-No P0 representative symbols are required for this inventory-only refresh.
-
 ## 5. Freeze the final 25-name EngineeringUniverse
 
-After reviewing the selected exact-symbol mappings, explicitly attest them for bounded engineering integration:
+After reviewing the selected exact-symbol mappings, explicitly attest them for bounded engineering integration. The v2 finalization policy requires quote age <= 900 seconds by default and tolerates at most 60 seconds of future quote clock skew.
 
 ```powershell
 python scripts\finalize_us_i0_engineering_universe.py `
@@ -127,15 +123,18 @@ python scripts\finalize_us_i0_engineering_universe.py `
   --minimum-count 20 `
   --maximum-count 30 `
   --maximum-current-spread-bps 50 `
+  --maximum-quote-age-seconds 900 `
+  --maximum-future-quote-skew-seconds 60 `
   --attest-selected-exact-matches `
   --output reports\us_instruments\us_i0_final_engineering_universe.json
 ```
 
-The attestation means only that each exact research/broker symbol pair may be used in this engineering universe. It does not prove listed venue, PIT lifecycle, corporate-action completeness or live-trading suitability.
+The attestation means only that each exact research/broker symbol pair may be used in this engineering universe. It does not prove listed venue, PIT lifecycle, corporate-action completeness or live-trading suitability. The accepted four-name seed set must remain in the final universe; if a seed is dropped by the quote/spread filter, finalization fails closed for review rather than silently changing the integration denominator.
 
 Required output:
 
 ```text
+quote_evidence_passed = true
 accepted = true
 blockers = []
 accepted_mapping_count = 25
