@@ -4,9 +4,9 @@ planning_document = "docs/development/current-plan.md"
 
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
-current_stage = "MT5-P0"
-current_stage_status = "awaiting_local_terminal_probe"
-next_stage = "US-I0"
+current_stage = "US-I0"
+current_stage_status = "awaiting_seed_mapping_attestation"
+next_stage = "US-D1"
 
 [release.ashare_historical_v1]
 status = "accepted"
@@ -98,16 +98,62 @@ adapter_capabilities = true
 focused_ci = ".github/workflows/us-c0-intraday-contracts.yml"
 
 [stage.mt5_p0]
-status = "in_progress"
+status = "accepted"
+accepted_at = "2026-09-01"
 read_only_contracts = true
 import_safe_adapter = true
 synthetic_probe_regression = true
-local_terminal_probe = false
+local_terminal_probe = true
 expected_python_package = "MetaTrader5"
 expected_python_package_version = "5.0.6147"
+observed_python_package_version = "5.0.6147"
 probe_script = "scripts/probe_mt5_readonly.py"
+probe_schema = "finagent.mt5-capability-probe-report.v2"
+probe_id = "mt5-capability-probe-db652a528408fda2dd3a606e"
+acceptance_policy_schema = "finagent.mt5-p0-acceptance-policy.v2"
+acceptance_policy_id = "mt5-p0-policy-a9e0145cc6af9018f16f75c5"
+acceptance_assessment_schema = "finagent.mt5-p0-acceptance-assessment.v2"
+acceptance_assessment_id = "mt5-p0-assessment-31cbb83d554010e791698384"
+acceptance_assessment_passed = true
+broker_server = "MetaQuotes-Demo"
+terminal_capability_id = "mt5-terminal-dba98bf993e2e6495eee2bd8"
+terminal_build = 6140
+symbol_count = 12455
+visible_symbol_count = 13
+tradable_symbol_count = 11517
+representative_symbols = ["MSFT", "NVDA", "AMD", "INTC"]
+tick_probe_symbols = ["MSFT"]
+tick_probe_window_basis = "derived_from_m1_tail"
+tick_probe_window_m1_bar_count = 60
+tick_history_available_in_probe_window = false
+limitations = [
+  "terminal:automated_trading_not_allowed",
+  "history:MSFT:tick_history_unavailable_in_observed_m1_window",
+]
 focused_ci = ".github/workflows/mt5-p0-readonly.yml"
 mutation_authority = false
+
+[stage.us_i0]
+status = "in_progress"
+contracts_frozen = true
+research_instrument_contract = true
+broker_instrument_contract = true
+instrument_mapping_contract = true
+instrument_mapping_evidence_contract = true
+engineering_universe_contract = true
+mapping_materialization_tool = true
+mapping_materialization_script = "scripts/materialize_us_i0_engineering_universe.py"
+seed_mapping_status = "awaiting_local_operator_attestation"
+seed_research_symbols = ["MSFT", "NVDA", "AMD", "INTC"]
+seed_broker_symbols = ["MSFT", "NVDA", "AMD", "INTC"]
+engineering_universe_target_min = 20
+engineering_universe_target_max = 30
+research_source_candidate = "hf-mito0o852-ohlcv-1m"
+research_source_revision = "776328445b7ac6e7815ef3a483e9c8ded1eb6d56"
+mt5_probe_id = "mt5-capability-probe-db652a528408fda2dd3a606e"
+broker_path_exchange_authority = false
+point_in_time_security_master_available = false
+focused_ci = ".github/workflows/us-i0-instrument-mapping.yml"
 
 [documentation]
 governance_version = "1.1"
