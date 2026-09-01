@@ -255,8 +255,8 @@ def materialize_engineering_universe_from_mt5_probe(
     )
 
     for research_symbol, broker_symbol in pairs:
-        spec = symbol_specs.get(broker_symbol)
-        if spec is None:
+        broker_spec = symbol_specs.get(broker_symbol)
+        if broker_spec is None:
             unmapped.append(
                 f"mapping:{research_symbol}:broker_symbol_missing:{broker_symbol}"
             )
@@ -268,7 +268,7 @@ def materialize_engineering_universe_from_mt5_probe(
             source_revision=source_revision,
         )
         broker = _broker_instrument_from_spec(
-            spec,
+            broker_spec,
             broker_server=broker_server,
             terminal_capability_id=terminal_capability_id,
         )
