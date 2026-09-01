@@ -69,6 +69,78 @@ universe_id = engineering-universe-...
 
 If a broker symbol is missing, invisible, disabled or has incompatible currency evidence, the materializer fails closed and records the exact mapping blocker. Do not rename, strip suffixes or substitute another broker symbol merely to force acceptance.
 
+## Deterministic candidate selection
+
+The 20–30-name expansion begins with a reproducible candidate report rather than manual cherry-picking. The selector uses the admitted cleaning stack and accepted XNYS calendar to evaluate recent regular-session activity, then intersects research symbols with the exact tradable MT5 inventory.
+
+Default window:
+
+```text
+2026-01-01T00:00:00Z ≤ event_time < 2026-04-01T00:00:00Z
+```
+
+Default candidate gates:
+
+```text
+minimum active sessions                20
+minimum active-session ratio           0.80
+minimum median regular-minute coverage 0.80
+minimum median session close            1.00 USD
+selected spread-probe candidates       40
+minimum viable candidate set           20
+```
+
+Run locally:
+
+```powershell
+python scripts\select_us_i0_universe_candidates.py `
+  "D:\Data\datasets--mito0o852--OHLCV-1m" `
+  --mt5-probe reports\mt5\mt5_p0_capability_probe.json `
+  --calendar reports\us_calendar\xnys_1992_2026.json `
+  --start 2026-01-01T00:00:00+00:00 `
+  --end 2026-04-01T00:00:00+00:00 `
+  --top-n 40 `
+  --minimum-selected 20 `
+  --memory-limit 512MB `
+  --threads 2 `
+  --max-temp-directory-size 4GB `
+  --temp-directory data\duckdb_temp\us_i0_candidates `
+  --output reports\us_instruments\us_i0_universe_candidates.json
+```
+
+The report is row-free and records:
+
+```text
+research symbol count
+tradable broker symbol count
+exact symbol intersection count
+eligible candidate count
+selected ranking and aggregate activity/coverage metrics
+current spread bps when already present in the supplied probe
+manual Market Watch visibility actions
+```
+
+Selection uses an explicit liquidity proxy:
+
+```text
+daily_notional_proxy = Σ(close × source volume)
+```
+
+This is a ranking diagnostic, not independently verified consolidated dollar volume. It must not be used as market-capacity authority.
+
+Exact ticker equality is still not same-security proof. The selected 40-name report is only the input to visibility/spread measurement and mapping review. Invisible but tradable MT5 symbols remain candidates with `visibility_action_required=true`; the selector does not call `symbol_select` or mutate terminal state.
+
+A valid first-stage output has:
+
+```text
+ready_for_spread_probe = true
+blockers = []
+selected_candidate_count >= 20
+missing_seed_symbols = []
+```
+
+The resulting `spread_probe_symbols` should then be measured with the read-only MT5 spread surface, preferably during the broker-observed active session. Current spread is diagnostic and does not substitute for historical transaction-cost evidence.
+
 ## Expansion beyond the seed
 
 The planning target remains roughly 20–30 liquid engineering names. Seed acceptance proves the mapping machinery, not the final universe denominator. Expansion must intersect:
@@ -79,4 +151,4 @@ certified local research-history availability
 ∩ acceptable current spread/liquidity evidence
 ```
 
-The broader expansion should be generated through a deterministic candidate-selection report rather than manual cherry-picking. US-I0 closes only when every engineering asset used downstream has an accepted mapping or an explicit rejection and the final universe identity is recorded in `docs/status.toml`.
+The broader expansion is generated through the deterministic candidate-selection report, followed by visibility/spread measurement and explicit mapping attestation. US-I0 closes only when every engineering asset used downstream has an accepted mapping or an explicit rejection and the final universe identity is recorded in `docs/status.toml`.
