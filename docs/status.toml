@@ -4,9 +4,9 @@ planning_document = "docs/development/current-plan.md"
 
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
-current_stage = "US-I0"
-current_stage_status = "seed_mapping_accepted_us_d1_foundation_parallel"
-next_stage = "US-D1"
+current_stage = "US-D1"
+current_stage_status = "awaiting_real_full_snapshot_smoke"
+next_stage = "US-D2"
 
 [release.ashare_historical_v1]
 status = "accepted"
@@ -134,7 +134,7 @@ focused_ci = ".github/workflows/mt5-p0-readonly.yml"
 mutation_authority = false
 
 [stage.us_i0]
-status = "in_progress"
+status = "seed_accepted_expansion_parallel"
 contracts_frozen = true
 research_instrument_contract = true
 broker_instrument_contract = true
@@ -151,9 +151,11 @@ seed_materialization_id = "engineering-universe-materialization-1cfe4b41a041dde9
 seed_universe_id = "engineering-universe-13c3e478ecef31cf69e74aa6"
 seed_research_symbols = ["MSFT", "NVDA", "AMD", "INTC"]
 seed_broker_symbols = ["MSFT", "NVDA", "AMD", "INTC"]
+data_plane_unblocked = true
 engineering_universe_target_min = 20
 engineering_universe_target_max = 30
-engineering_universe_expansion_status = "pending_parallel"
+engineering_universe_expansion_status = "pending_parallel_before_us_d3"
+expansion_required_before = "US-D3"
 research_source_candidate = "hf-mito0o852-ohlcv-1m"
 research_source_revision = "776328445b7ac6e7815ef3a483e9c8ded1eb6d56"
 mt5_probe_id = "mt5-capability-probe-db652a528408fda2dd3a606e"
@@ -162,7 +164,9 @@ point_in_time_security_master_available = false
 focused_ci = ".github/workflows/us-i0-instrument-mapping.yml"
 
 [stage.us_d1]
-status = "foundation_parallel"
+status = "in_progress"
+started_at = "2026-09-01"
+foundation_merged = true
 manifest_contract = true
 duckdb_parquet_store = true
 bounded_query_plan = true
@@ -176,9 +180,28 @@ committed_fixture = "tests/fixtures/us_minute/synthetic_ohlcv.csv"
 committed_fixture_origin = "fully_synthetic_no_source_rows"
 real_sample_export_script = "scripts/export_us_minute_dev_sample.py"
 real_sample_git_policy = "ignored_do_not_commit_or_redistribute"
+execution_policy_contract = true
+execution_policy_schema = "finagent.duckdb-execution-policy.v2"
+default_memory_limit = "512MB"
+default_threads = 2
+default_temp_spill_enabled = true
+default_max_temp_directory_size = "4GB"
+materialization_schema = "finagent.minute-materialization.v2"
+materialization_content_sha256 = true
+smoke_policy_contract = true
+smoke_policy_schema = "finagent.minute-store-smoke-policy.v1"
+smoke_report_schema = "finagent.minute-store-smoke-report.v2"
+smoke_minimum_assets = 4
+smoke_minimum_partitions = 2
+smoke_require_materialization = true
+smoke_require_replay_match = true
+portable_smoke_report_contains_source_rows = false
 full_corpus_smoke_script = "scripts/smoke_us_d1_minute_store.py"
+focused_ci = ".github/workflows/us-d1-minute-data-plane.yml"
+focused_ci_passed = true
 full_corpus_smoke_passed = false
-bounded_memory_smoke_passed = false
+engine_resource_policy_smoke_passed = false
+replay_materialization_match_passed = false
 stage_exit_gate_passed = false
 
 [documentation]
