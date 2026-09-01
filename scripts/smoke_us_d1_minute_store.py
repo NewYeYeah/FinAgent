@@ -36,7 +36,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--asset", action="append", required=True)
     parser.add_argument("--start", type=_aware_datetime, required=True)
     parser.add_argument("--end", type=_aware_datetime, required=True)
-    parser.add_argument("--preview-rows", type=int, default=8)
+    parser.add_argument(
+        "--preview-rows",
+        type=int,
+        default=0,
+        help=(
+            "Optional local row preview count in 0..100. Defaults to 0 so portable smoke "
+            "summaries contain no source OHLCV rows."
+        ),
+    )
     parser.add_argument("--output", type=Path)
     return parser
 
@@ -46,6 +54,8 @@ def main() -> int:
     assets = tuple(sorted(dict.fromkeys(item.strip() for item in args.asset if item.strip())))
     if not assets:
         raise SystemExit("at least one non-empty --asset is required")
+    if not 0 <= args.preview_rows <= 100:
+        raise SystemExit("--preview-rows must be in 0..100")
     manifest = manifest_from_huggingface_snapshot(
         args.root,
         expected_revision=SOURCE_REVISION,
@@ -66,7 +76,7 @@ def main() -> int:
     )
     plan = store.plan(query)
     count = count_plan_rows(plan)
-    preview = fetch_plan_rows(plan, limit=max(1, min(args.preview_rows, 100)))
+    preview = fetch_plan_rows(plan, limit=args.preview_rows) if args.preview_rows else ()
     materialization = None
     if args.output is not None:
         materialization = copy_plan_to_parquet(plan, args.output, overwrite=True)
