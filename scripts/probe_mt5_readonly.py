@@ -7,8 +7,8 @@ from pathlib import Path
 
 from finagent.brokers.mt5 import (
     RECOMMENDED_MT5_PACKAGE_VERSION,
-    MT5P0AcceptancePolicy,
     MetaTrader5ReadOnlyClient,
+    MT5P0AcceptancePolicy,
     assess_mt5_p0,
     run_mt5_readonly_probe,
 )
