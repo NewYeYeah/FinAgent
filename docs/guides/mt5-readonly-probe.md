@@ -73,21 +73,25 @@ The console prints only a compact summary. The JSON report retains the complete 
 
 Use the report to identify exact broker symbols that are already `visible=true` and `tradable=true`. Do not call `symbol_select` merely to force a candidate into the MT5-P0 acceptance set, and do not normalize or strip broker names inside the MT5 adapter.
 
-An inventory-only report is deliberately insufficient to close MT5-P0 because it contains no targeted M1/tick history or representative spread evidence.
+An inventory-only report is deliberately insufficient to close MT5-P0 because it contains no targeted M1/tick capability or representative spread evidence.
 
-## Pass 2 — acceptance-bound history and spread evidence
+## Pass 2 — acceptance-bound capability evidence
 
-After selecting exact visible/tradable broker symbols from pass 1, use `--p0-representative-symbol`. Each representative symbol is automatically included in M1 history, tick history and current spread measurement.
+After selecting exact visible/tradable broker symbols from pass 1, use `--p0-representative-symbol`. Every representative receives symbol-spec, M1-history and spread measurement. Historical tick retrieval is intentionally treated as a **capability-level** probe because it can be expensive and may be unavailable even when M1 history exists.
+
+By default only the first representative becomes the tick capability probe symbol. Override this with repeatable `--p0-tick-symbol` only when a second independent tick-history measurement is justified.
+
+Do **not** assume the listed exchange's theoretical UTC session when choosing a tick interval. The default P0 path first reads the broker's returned M1 history and then derives a 60-minute tick window from the tail of that observed M1 history:
 
 ```powershell
 python scripts\probe_mt5_readonly.py `
   --expected-package-version 5.0.6147 `
-  --p0-representative-symbol <BROKER_SYMBOL_1> `
-  --p0-representative-symbol <BROKER_SYMBOL_2> `
+  --p0-representative-symbol MSFT `
+  --p0-representative-symbol NVDA `
+  --p0-representative-symbol AMD `
+  --p0-representative-symbol INTC `
   --bar-start 2026-08-24T00:00:00+00:00 `
   --bar-end 2026-09-01T00:00:00+00:00 `
-  --tick-start 2026-08-31T13:30:00+00:00 `
-  --tick-end 2026-08-31T14:30:00+00:00 `
   --output reports\mt5\mt5_p0_capability_probe.json
 ```
 
@@ -97,7 +101,18 @@ The command also writes, by default:
 reports/mt5/mt5_p0_capability_probe_assessment.json
 ```
 
-Keep tick windows small: tick history can be much larger than M1 bars. `copy_rates_range` and `copy_ticks_range` evidence means exactly what the connected terminal returned for the requested UTC interval. It is not silently promoted to the authoritative U.S. historical research source or to broker-global history beyond the requested window.
+For explicit diagnostics, `--tick-start` and `--tick-end` remain available and replace the automatic window. The history evidence records:
+
+```text
+requested_tick_start / requested_tick_end
+tick_window_basis = explicit | derived_from_m1_tail
+tick_window_m1_bar_count
+tick_count / tick_first_at / tick_last_at
+```
+
+A zero tick count is interpretable only when the requested tick interval contains observed M1 activity for that same broker symbol. A zero count in a window with no M1 bars does **not** prove that the broker lacks historical ticks.
+
+`copy_rates_range` and `copy_ticks_range` evidence means exactly what the connected terminal returned for the requested UTC interval. It is not silently promoted to the authoritative U.S. historical research source or to broker-global history beyond the requested window.
 
 ## MT5-P0 deterministic acceptance
 
@@ -114,9 +129,18 @@ symbol exists in measured inventory
 symbol.visible = true
 symbol.tradable = true
 M1 row count > 0
-tick row count > 0
-bid/ask spread sample is valid
+bid/ask spread sample is structurally valid
 ```
+
+For the selected tick capability probe symbol, the policy additionally requires that a tick request was actually made and that its interval overlaps observed M1 bars. The broker is **not required to return non-zero historical ticks**. When an M1-anchored `copy_ticks_range` call returns an empty array, P0 records:
+
+```text
+history:<SYMBOL>:tick_history_unavailable_in_observed_m1_window
+```
+
+as a broker capability limitation. This is measured absence, not successful tick support and not a reason to invent tick data.
+
+A structurally valid spread whose broker tick timestamp is already stale before the probe begins is also retained as a limitation (`spread:<SYMBOL>:stale_at_probe_start`) rather than silently treated as a fresh market quote. Later US-I0/MT5-D0 universe design must use the measured spread/session evidence appropriate to its own gate.
 
 `terminal.trade_allowed=false` does **not** invalidate the read-only P0 measurement; it is preserved as `terminal:automated_trading_not_allowed` and becomes a downstream Demo/PAPER limitation. A later execution stage must independently prove trading permission before any order authority exists.
 
