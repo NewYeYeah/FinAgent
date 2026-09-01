@@ -396,7 +396,7 @@ class DatasetAuthorityBundle:
 
     @property
     def bundle_id(self) -> str:
-        payload = {
+        payload: dict[str, object] = {
             "schema_version": self.schema_version,
             "provenance_id": self.provenance.provenance_id,
             "usage_rights_id": self.usage_rights.usage_rights_id,
@@ -513,8 +513,7 @@ def evaluate_dataset_authority(
 
 
 def _parse_datetime(value: object) -> datetime:
-    text = str(value).strip().replace("Z", "+00:00")
-    return datetime.fromisoformat(text)
+    return datetime.fromisoformat(str(value).strip())
 
 
 def _bundle_from_dict(payload: dict[str, Any]) -> DatasetAuthorityBundle:
