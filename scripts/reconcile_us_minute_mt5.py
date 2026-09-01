@@ -15,7 +15,10 @@ from finagent.data.minute_store import (
     fetch_plan_rows,
     manifest_from_huggingface_snapshot,
 )
-from finagent.data.minute_transform import CalendarSessionizedMinuteStore, load_trading_calendar_evidence_json
+from finagent.data.minute_transform import (
+    CalendarSessionizedMinuteStore,
+    load_trading_calendar_evidence_json,
+)
 from finagent.data.query import MarketDataField, MarketDataQuery, SessionPolicy
 from finagent.data.us_minute.reconciliation import (
     MinuteReferenceReconciliationPolicy,
@@ -76,7 +79,10 @@ def _final_mappings(document: Mapping[str, object]) -> tuple[tuple[str, str], ..
         materialization_raw if isinstance(materialization_raw, Mapping) else document
     )
     mappings_raw = materialization.get("mappings")
-    if not isinstance(mappings_raw, Sequence) or isinstance(mappings_raw, (str, bytes, bytearray)):
+    if not isinstance(mappings_raw, Sequence) or isinstance(
+        mappings_raw,
+        (str, bytes, bytearray),
+    ):
         raise TypeError("engineering universe materialization must contain mappings[]")
     pairs: list[tuple[str, str]] = []
     for raw in mappings_raw:
@@ -98,7 +104,7 @@ def _final_mappings(document: Mapping[str, object]) -> tuple[tuple[str, str], ..
 
 
 def _aware(value: str) -> datetime:
-    parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    parsed = datetime.fromisoformat(value.strip())
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise argparse.ArgumentTypeError("timestamp must be timezone-aware ISO-8601")
     return parsed.astimezone(UTC)
@@ -115,16 +121,31 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--calendar", type=Path, required=True)
     parser.add_argument("--engineering-universe", type=Path, required=True)
     parser.add_argument("--mt5-p0-probe", type=Path, required=True)
-    parser.add_argument("--start", type=_aware, default=_aware("2026-03-09T13:30:00+00:00"))
-    parser.add_argument("--end", type=_aware, default=_aware("2026-03-09T20:00:00+00:00"))
+    parser.add_argument(
+        "--start",
+        type=_aware,
+        default=_aware("2026-03-09T13:30:00+00:00"),
+    )
+    parser.add_argument(
+        "--end",
+        type=_aware,
+        default=_aware("2026-03-09T20:00:00+00:00"),
+    )
     parser.add_argument("--reference-symbol-count", type=int, default=4)
     parser.add_argument("--minimum-overlap-ratio", type=float, default=0.80)
     parser.add_argument("--maximum-abs-offset-minutes", type=int, default=360)
     parser.add_argument("--memory-limit", default="512MB")
     parser.add_argument("--threads", type=int, default=2)
     parser.add_argument("--max-temp-directory-size", default="4GB")
-    parser.add_argument("--temp-directory", type=Path, default=Path("data/duckdb_temp/mt5_d0"))
-    parser.add_argument("--expected-package-version", default=RECOMMENDED_MT5_PACKAGE_VERSION)
+    parser.add_argument(
+        "--temp-directory",
+        type=Path,
+        default=Path("data/duckdb_temp/mt5_d0"),
+    )
+    parser.add_argument(
+        "--expected-package-version",
+        default=RECOMMENDED_MT5_PACKAGE_VERSION,
+    )
     parser.add_argument(
         "--output",
         type=Path,
@@ -147,7 +168,9 @@ def main() -> int:
     mappings = _final_mappings(_read_mapping(args.engineering_universe))
     mappings = mappings[: args.reference_symbol_count]
     if len(mappings) < args.reference_symbol_count:
-        raise SystemExit("final EngineeringUniverse has fewer mappings than required references")
+        raise SystemExit(
+            "final EngineeringUniverse has fewer mappings than required references"
+        )
 
     policy = MinuteReferenceReconciliationPolicy(
         start=args.start,
@@ -157,7 +180,10 @@ def main() -> int:
         minimum_aligned_overlap_ratio=args.minimum_overlap_ratio,
         maximum_abs_offset_minutes=args.maximum_abs_offset_minutes,
     )
-    calendar = load_trading_calendar_evidence_json(args.calendar, expected_calendar_id=CALENDAR_ID)
+    calendar = load_trading_calendar_evidence_json(
+        args.calendar,
+        expected_calendar_id=CALENDAR_ID,
+    )
     manifest = manifest_from_huggingface_snapshot(
         args.root,
         expected_revision=SOURCE_REVISION,
@@ -206,7 +232,9 @@ def main() -> int:
             )
         )
 
-    client = MetaTrader5ReadOnlyClient(expected_package_version=args.expected_package_version)
+    client = MetaTrader5ReadOnlyClient(
+        expected_package_version=args.expected_package_version
+    )
     client.initialize()
     try:
         account = _row_mapping(client.account_info())
@@ -216,11 +244,17 @@ def main() -> int:
                 f"connected MT5 server mismatch: observed={observed_server!r}, "
                 f"expected={expected_server!r}"
             )
-        broker_start = policy.start - timedelta(minutes=policy.maximum_abs_offset_minutes)
+        broker_start = policy.start - timedelta(
+            minutes=policy.maximum_abs_offset_minutes
+        )
         broker_end = policy.end + timedelta(minutes=policy.maximum_abs_offset_minutes)
         checks = []
         for research_symbol, broker_symbol in mappings:
-            broker_raw = client.copy_rates_range(broker_symbol, broker_start, broker_end)
+            broker_raw = client.copy_rates_range(
+                broker_symbol,
+                broker_start,
+                broker_end,
+            )
             broker_bars: list[ReferenceMinuteBar] = []
             for raw in broker_raw:
                 mapped = _row_mapping(raw)
@@ -229,7 +263,10 @@ def main() -> int:
                     continue
                 broker_bars.append(
                     ReferenceMinuteBar(
-                        timestamp=datetime.fromtimestamp(_integer(mapped.get("time")), tz=UTC),
+                        timestamp=datetime.fromtimestamp(
+                            _integer(mapped.get("time")),
+                            tz=UTC,
+                        ),
                         close=close,
                         tick_volume=_number(mapped.get("tick_volume")),
                         real_volume=_number(mapped.get("real_volume")),
@@ -273,9 +310,13 @@ def main() -> int:
                     {
                         "research_symbol": item.research_symbol,
                         "broker_symbol": item.broker_symbol,
-                        "best_offset_minutes": item.best_broker_to_research_offset_minutes,
+                        "best_offset_minutes": (
+                            item.best_broker_to_research_offset_minutes
+                        ),
                         "aligned_overlap_ratio": item.aligned_overlap_ratio,
-                        "median_close_relative_difference": item.median_close_relative_difference,
+                        "median_close_relative_difference": (
+                            item.median_close_relative_difference
+                        ),
                     }
                     for item in report.symbol_checks
                 ],
