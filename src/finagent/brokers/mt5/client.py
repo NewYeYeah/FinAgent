@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import importlib
 from types import ModuleType
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Protocol, Self, runtime_checkable
 
 RECOMMENDED_MT5_PACKAGE_VERSION = "5.0.6147"
 
@@ -109,7 +109,7 @@ class MetaTrader5ReadOnlyClient:
             self._module.shutdown()
             self._initialized = False
 
-    def __enter__(self) -> MetaTrader5ReadOnlyClient:
+    def __enter__(self) -> Self:
         self.initialize()
         return self
 
