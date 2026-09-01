@@ -1,0 +1,63 @@
+[candidate]
+candidate_id = "hf-mito0o852-ohlcv-1m"
+source_kind = "huggingface_dataset"
+locator = "https://huggingface.co/datasets/mito0o852/OHLCV-1m"
+provider_name = "mito0o852/OHLCV-1m"
+market = "us_equity"
+frequency = "1m"
+
+[revision]
+kind = "git_commit"
+value = "776328445b7ac6e7815ef3a483e9c8ded1eb6d56"
+immutable = true
+
+[provenance]
+upstream_origin = "Finnhub.io, as declared by the Hugging Face dataset publisher"
+origin_status = "declared_by_publisher"
+schema_fields = ["timestamp", "open", "high", "low", "close", "volume", "ticker"]
+partitioning = "monthly parquet: data/ohlcv_YYYY-MM.parquet"
+coverage_start = "1992-01"
+coverage_end = "2026-03"
+timezone = "UTC"
+timestamp_meaning = "bar_start"
+session_coverage = "unknown"
+price_adjustment = "unknown"
+corporate_actions = "unknown"
+symbol_lifecycle = "unknown"
+inventory_complete = false
+inventory_identity = "immutable_repository_revision"
+observed_at = "2026-09-01T03:20:00+00:00"
+evidence_urls = [
+  "https://huggingface.co/datasets/mito0o852/OHLCV-1m/commit/776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+  "https://huggingface.co/datasets/mito0o852/OHLCV-1m/blob/776328445b7ac6e7815ef3a483e9c8ded1eb6d56/README.md",
+]
+notes = [
+  "The repository revision pins the remote tree, but a complete local file inventory/hash manifest has not been materialized in US-S0.",
+  "The publisher describes the dataset as monthly Parquet and reports UTC minute-start timestamps.",
+  "The publisher declares Finnhub as the upstream origin; FinAgent has not independently verified the upstream acquisition/redistribution chain.",
+  "No authoritative claim is made here about regular/extended sessions, no-trade gaps, halts, adjustments, corporate actions, delistings, ticker renames, or survivorship behavior.",
+]
+
+[usage_rights]
+status = "unresolved"
+evidence_url = "https://huggingface.co/datasets/mito0o852/OHLCV-1m/blob/776328445b7ac6e7815ef3a483e9c8ded1eb6d56/README.md"
+license_identifier = ""
+observed_at = "2026-09-01T03:20:00+00:00"
+notes = [
+  "The inspected dataset README does not declare a license.",
+  "An upstream-origin statement is not treated as proof of redistribution or research-use rights.",
+]
+
+[decision]
+decided_at = "2026-09-01T03:20:00+00:00"
+
+[expectation]
+authority_status = "reference_only"
+required_blockers = [
+  "upstream_origin:declared_only",
+  "usage_rights:unresolved",
+  "session_coverage:unknown",
+  "price_adjustment:unknown",
+  "corporate_actions:unknown",
+  "symbol_lifecycle:unknown",
+]
