@@ -135,6 +135,9 @@ class USMinuteCertificationPolicy:
         return payload
 
 
+DEFAULT_US_MINUTE_CERTIFICATION_POLICY = USMinuteCertificationPolicy()
+
+
 @dataclass(frozen=True, slots=True)
 class USMinuteCertificationInputs:
     source_admission_id: str
@@ -320,7 +323,10 @@ def load_us_minute_certification_inputs(
     d2_action: Mapping[str, object] | None = None
     if d2_document is not None:
         d2_scenarios_raw = _sequence(d2_document.get("scenarios", ()), "d2.scenarios")
-        d2_action = _optional_mapping(d2_document.get("action_authority"), "d2.action_authority")
+        d2_action = _optional_mapping(
+            d2_document.get("action_authority"),
+            "d2.action_authority",
+        )
 
     reconciliation_blockers: tuple[str, ...] = ()
     if reconciliation_document is not None:
@@ -330,7 +336,10 @@ def load_us_minute_certification_inputs(
         )
 
     return USMinuteCertificationInputs(
-        source_admission_id=_text(admission.get("admission_id"), "source.admission.admission_id"),
+        source_admission_id=_text(
+            admission.get("admission_id"),
+            "source.admission.admission_id",
+        ),
         source_revision=_text(
             source_identity.get("revision"),
             "source.admission.source_identity.revision",
@@ -422,7 +431,7 @@ def load_us_minute_certification_inputs(
 def evaluate_us_minute_certification(
     inputs: USMinuteCertificationInputs,
     *,
-    policy: USMinuteCertificationPolicy = USMinuteCertificationPolicy(),
+    policy: USMinuteCertificationPolicy = DEFAULT_US_MINUTE_CERTIFICATION_POLICY,
 ) -> USMinuteCertificationReport:
     blockers: list[str] = []
     if inputs.source_revision != policy.expected_source_revision:
@@ -486,9 +495,7 @@ def evaluate_us_minute_certification(
         "universe:engineering_integration_universe",
     ]
     if inputs.source_authority_status != "accepted_for_research":
-        limitations.append(
-            f"source_authority:{inputs.source_authority_status}"
-        )
+        limitations.append(f"source_authority:{inputs.source_authority_status}")
     if not inputs.point_in_time_security_master_available:
         limitations.extend(
             (
