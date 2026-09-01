@@ -55,6 +55,40 @@ zero_reference_volume
 
 There is no nearest-bar repair, cross-session carry or use of future label availability in feature formation.
 
-## What this increment does not yet claim
+## Deterministic evaluation evidence
 
-This foundation does not run formal US-B0 statistics, choose a winning factor, define transaction-cost authority, create a portfolio result or advance the project stage. After US-D3 certification passes, the next US-B0 increment should materialize these eight candidates on the certified 15m EngineeringUniverse, bind the full candidate denominator to the certification/universe IDs, and produce deterministic baseline evaluation evidence for the later MANUAL/PROGRAMMATIC/AGENT controlled experiment.
+`USBaselineRunSpec` binds any later formal evaluation to all of:
+
+```text
+accepted US-D3 certification report id
+accepted certification outcome
+final EngineeringUniverse id
+frozen manual denominator id
+15m signal clock
+same-session 60-trading-minute RAW label
+```
+
+The evaluation core groups already-formed feature observations by formation `available_at`. Cross-sectional rank weights are formed from eligible finite feature values **before** realised label availability is considered. Realised labels are used only ex post for diagnostics.
+
+For each candidate the evidence records:
+
+```text
+observation / eligible / valid-feature cells
+feature coverage
+realised evaluation periods
+RankIC periods and mean RankIC
+cost-free rank-neutral gross return
+one-way turnover / gross traded weight
+expected same-session label-boundary periods
+explicit blockers
+```
+
+A period where every formed asset has `target_crosses_session` is recognised as the expected same-session horizon boundary and is not zero-filled or charged fictitious close/reopen turnover. A partially missing realised target is fail-closed and retained as a blocker; it may not change the already-formed cross-section.
+
+The evaluation report always retains the complete eight-candidate denominator. Missing/invalid candidates cannot disappear merely because they have weak or unavailable evidence.
+
+## Current authority boundary
+
+The code above is a preimplementation of the next stage only. It does not make `US-B0` the active project stage and no formal baseline result may be recorded until the real US-D3 certification is accepted. The current implementation also deliberately avoids intraday annualised Sharpe, p-values or deployment claims; robust inference belongs to the later frozen research protocol rather than being copied from the historical A-share daily evaluator.
+
+After US-D3 certification passes, the next US-B0 increment is the bounded DuckDB materializer that joins certified 15m bars, exact same-session labels and this eight-candidate evaluator for the final EngineeringUniverse.
