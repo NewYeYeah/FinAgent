@@ -1,0 +1,63 @@
+name: us-i0-instrument-mapping
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/domain/instruments.py"
+      - "src/finagent/data/us_instruments.py"
+      - "scripts/materialize_us_i0_engineering_universe.py"
+      - "tests/test_us_i0_instrument_mapping.py"
+      - "docs/status.toml"
+      - "docs/development/current-plan.md"
+      - "docs/development/changelog.md"
+      - "docs/guides/us-instrument-mapping.md"
+      - ".github/workflows/us-i0-instrument-mapping.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/finagent/domain/instruments.py"
+      - "src/finagent/data/us_instruments.py"
+      - "scripts/materialize_us_i0_engineering_universe.py"
+      - "tests/test_us_i0_instrument_mapping.py"
+      - "docs/status.toml"
+      - "docs/development/current-plan.md"
+      - "docs/development/changelog.md"
+      - "docs/guides/us-instrument-mapping.md"
+      - ".github/workflows/us-i0-instrument-mapping.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  instrument-mapping:
+    name: US-I0 research/broker instrument contracts
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Instrument mapping regression
+        run: uv run --frozen pytest -q tests/test_us_i0_instrument_mapping.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/domain/instruments.py \
+            src/finagent/data/us_instruments.py \
+            scripts/materialize_us_i0_engineering_universe.py \
+            tests/test_us_i0_instrument_mapping.py
+          uv run --frozen mypy --strict \
+            src/finagent/domain/instruments.py \
+            src/finagent/data/us_instruments.py \
+            scripts/materialize_us_i0_engineering_universe.py
+          uv run --frozen python -m py_compile \
+            src/finagent/domain/instruments.py \
+            src/finagent/data/us_instruments.py \
+            scripts/materialize_us_i0_engineering_universe.py
