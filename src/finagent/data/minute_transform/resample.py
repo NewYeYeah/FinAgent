@@ -183,15 +183,15 @@ def _base_event_window(
 
 def _aggregation_expression(field: MarketDataField) -> str:
     if field is MarketDataField.OPEN:
-        return "arg_min(d.open, d.event_time) AS open"
+        return "CAST(arg_min(d.open, d.event_time) AS DOUBLE) AS open"
     if field is MarketDataField.HIGH:
-        return "max(d.high) AS high"
+        return "CAST(max(d.high) AS DOUBLE) AS high"
     if field is MarketDataField.LOW:
-        return "min(d.low) AS low"
+        return "CAST(min(d.low) AS DOUBLE) AS low"
     if field is MarketDataField.CLOSE:
-        return "arg_max(d.close, d.event_time) AS close"
+        return "CAST(arg_max(d.close, d.event_time) AS DOUBLE) AS close"
     if field is MarketDataField.VOLUME:
-        return "sum(d.volume) AS volume"
+        return "CAST(sum(d.volume) AS DOUBLE) AS volume"
     raise ValueError(f"unsupported market-data field {field!r}")  # pragma: no cover
 
 
