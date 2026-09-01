@@ -55,6 +55,20 @@ def _text(value: object, field_name: str) -> str:
     return rendered
 
 
+def _integer(value: object, field_name: str) -> int:
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, (int, float, str)):
+        return int(value)
+    raise TypeError(f"{field_name} must be integer-like")
+
+
+def _boolean(value: object, field_name: str) -> bool:
+    if isinstance(value, bool):
+        return value
+    raise TypeError(f"{field_name} must be boolean")
+
+
 def _aware_datetime(value: object, field_name: str) -> datetime:
     parsed = datetime.fromisoformat(_text(value, field_name))
     if parsed.tzinfo is None or parsed.utcoffset() is None:
@@ -158,7 +172,7 @@ def load_trading_calendar_evidence_json(
                 close_at=_aware_datetime(row.get("close_at"), "close_at"),
                 pre_open_at=_optional_aware_datetime(row.get("pre_open_at"), "pre_open_at"),
                 post_close_at=_optional_aware_datetime(row.get("post_close_at"), "post_close_at"),
-                is_half_day=bool(row.get("is_half_day", False)),
+                is_half_day=_boolean(row.get("is_half_day", False), "is_half_day"),
             )
         )
     evidence = TradingCalendarEvidence(
@@ -167,7 +181,10 @@ def load_trading_calendar_evidence_json(
         source=_text(evidence_raw.get("source"), "evidence.source"),
         source_revision=_text(evidence_raw.get("source_revision"), "evidence.source_revision"),
         sessions=tuple(sessions),
-        regular_session_minutes=int(evidence_raw.get("regular_session_minutes", 390)),
+        regular_session_minutes=_integer(
+            evidence_raw.get("regular_session_minutes", 390),
+            "evidence.regular_session_minutes",
+        ),
         schema_version=_text(
             evidence_raw.get("schema_version", "finagent.trading-calendar-evidence.v1"),
             "evidence.schema_version",
@@ -189,17 +206,25 @@ def _relevant_sessions(
     query: MarketDataQuery,
 ) -> tuple[TradingSession, ...]:
     zone = ZoneInfo(calendar.timezone)
-    start_date = query.start.astimezone(zone).date() - timedelta(days=1)
-    end_date = query.end.astimezone(zone).date() + timedelta(days=1)
-    sessions = tuple(
+    query_start_date = query.start.astimezone(zone).date()
+    query_end_date = query.end.astimezone(zone).date()
+    if query_end_date < calendar.coverage_start or query_start_date > calendar.coverage_end:
+        raise ValueError("market-data query is outside materialized calendar coverage")
+    start_date = query_start_date - timedelta(days=1)
+    end_date = query_end_date + timedelta(days=1)
+    return tuple(
         item for item in calendar.sessions if start_date <= item.session_date <= end_date
     )
+
+
+def _calendar_relation_sql(sessions: tuple[TradingSession, ...]) -> str:
     if not sessions:
-        raise ValueError("market-data query does not intersect materialized calendar coverage")
-    return sessions
-
-
-def _calendar_values_sql(sessions: tuple[TradingSession, ...]) -> str:
+        return (
+            "SELECT CAST(NULL AS DATE) AS session_date, "
+            "CAST(NULL AS TIMESTAMPTZ) AS open_at, "
+            "CAST(NULL AS TIMESTAMPTZ) AS close_at, "
+            "CAST(NULL AS BOOLEAN) AS is_half_day WHERE false"
+        )
     values = []
     for session in sessions:
         values.append(
@@ -210,7 +235,11 @@ def _calendar_values_sql(sessions: tuple[TradingSession, ...]) -> str:
             + ("true" if session.is_half_day else "false")
             + ")"
         )
-    return ",\n                ".join(values)
+    return (
+        "SELECT * FROM (VALUES\n                "
+        + ",\n                ".join(values)
+        + ") AS sessions(session_date, open_at, close_at, is_half_day)"
+    )
 
 
 def _sessionized_data_version(
@@ -253,7 +282,7 @@ def build_sessionized_minute_plan(
     value_projection = "\n            ".join(f", d.{name} AS {name}" for name in value_columns)
     regular_expression = "d.event_time >= c.open_at AND d.event_time < c.close_at"
     session_filter = (
-        f"WHERE {regular_expression}" if query.session_policy is SessionPolicy.REGULAR else ""
+        "WHERE d.is_regular_session" if query.session_policy is SessionPolicy.REGULAR else ""
     )
     output_columns = (
         "research_asset_id",
@@ -277,9 +306,8 @@ def build_sessionized_minute_plan(
         WITH base_data AS (
             {base_plan.sql}
         ),
-        calendar_sessions(session_date, open_at, close_at, is_half_day) AS (
-            VALUES
-                {_calendar_values_sql(sessions)}
+        calendar_sessions AS (
+            {_calendar_relation_sql(sessions)}
         ),
         classified AS (
             SELECT
@@ -316,7 +344,7 @@ def build_sessionized_minute_plan(
         )
         SELECT {', '.join(output_columns)}
         FROM classified AS d
-        {session_filter.replace('c.', 'd.').replace('d.event_time >= d.open_at', 'd.event_time >= d.session_open').replace('d.event_time < d.close_at', 'd.event_time < d.session_close')}
+        {session_filter}
         ORDER BY event_time, research_asset_id
     """.strip()
 
