@@ -24,11 +24,17 @@ def _event(
     action_type: CorporateActionEventType,
     effective_at: datetime,
 ) -> CorporateActionEvent:
-    kwargs: dict[str, object] = {}
     if action_type is CorporateActionEventType.SPLIT:
-        kwargs["split_ratio"] = 2.0
-    else:
-        kwargs["cash_amount"] = 0.5
+        return CorporateActionEvent(
+            event_id=event_id,
+            asset="MSFT",
+            action_type=action_type,
+            effective_at=effective_at,
+            available_at=effective_at,
+            source="synthetic-actions",
+            source_revision="synthetic-v1",
+            split_ratio=2.0,
+        )
     return CorporateActionEvent(
         event_id=event_id,
         asset="MSFT",
@@ -37,7 +43,7 @@ def _event(
         available_at=effective_at,
         source="synthetic-actions",
         source_revision="synthetic-v1",
-        **kwargs,  # type: ignore[arg-type]
+        cash_amount=0.5,
     )
 
 
@@ -111,7 +117,11 @@ def test_complete_coverage_can_prove_raw_cross_session_continuity_when_no_event_
 def test_observed_action_makes_raw_cross_session_price_discontinuous(
     action_type: CorporateActionEventType,
 ) -> None:
-    event = _event(event_id=f"event-{action_type.value}", action_type=action_type, effective_at=_dt(10))
+    event = _event(
+        event_id=f"event-{action_type.value}",
+        action_type=action_type,
+        effective_at=_dt(10),
+    )
     decision = assess_research_price_authority(
         _complete_coverage((event,)),
         asset="MSFT",
@@ -189,7 +199,7 @@ def test_coverage_identity_is_order_independent_for_assets_and_events() -> None:
     assert left.coverage_id == right.coverage_id
 
 
-def test_coverage_rejects_events_outside_declared_asset_or_type() -> None:
+def test_coverage_rejects_events_outside_declared_type() -> None:
     split = _event(
         event_id="split",
         action_type=CorporateActionEventType.SPLIT,
