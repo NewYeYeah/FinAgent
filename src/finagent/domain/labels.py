@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import date
 from enum import Enum
 
-from ._validation import require_non_empty, require_positive
+from ._validation import require_positive
 
 
 def _canonical_hash(payload: dict[str, object], *, prefix: str) -> str:
