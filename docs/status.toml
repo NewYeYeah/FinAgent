@@ -5,7 +5,7 @@ planning_document = "docs/development/current-plan.md"
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
 current_stage = "US-D2"
-current_stage_status = "sessionization_implemented_resampling_next"
+current_stage_status = "resampling_implemented_labels_next"
 next_stage = "US-D3"
 
 [release.ashare_historical_v1]
@@ -243,8 +243,24 @@ extended_session_blocker = "calendar_pre_post_boundaries_not_materialized"
 sessionization_fixture = "tests/fixtures/us_minute/sessionization_edge_cases.csv"
 sessionization_focused_ci = ".github/workflows/us-d2-sessionization.yml"
 sessionization_focused_ci_passed = true
-resampling_status = "pending_next_increment"
-label_materialization_status = "pending"
+resampling_status = "implemented"
+resampling_spec_schema = "finagent.minute-resampling-spec.v1"
+resampling_evidence_schema = "finagent.minute-resampling-evidence.v1"
+resampled_adapter_id = "us-minute-resampled-duckdb-v1"
+canonical_resample_intervals = ["5m", "15m", "30m"]
+canonical_signal_interval = "15m"
+robustness_intervals = ["5m", "30m"]
+resample_session_policy = "regular"
+resample_bucket_anchor = "session_open"
+resample_event_time = "bucket_start"
+resample_available_at = "bucket_end"
+resample_missing_minute_policy = "preserve_incomplete"
+resample_partial_bar_policy = "reject_non_divisible_session"
+resample_60m_implemented = false
+resampling_focused_ci = ".github/workflows/us-d2-resampling.yml"
+resampling_focused_ci_passed = true
+transform_preview_session_clocks_supported = true
+label_materialization_status = "pending_next_increment"
 corporate_action_transform_status = "pending"
 stage_exit_gate_passed = false
 
