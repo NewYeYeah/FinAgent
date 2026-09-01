@@ -22,7 +22,7 @@ DatasetSourceCandidate
   ↓ source review
 DatasetAuthorityDecision
   ↓ exact local snapshot
-LocalMinuteResearchCertification
+LocalMinuteResearchCertification / LocalMinuteQuarantineCertification
   ↓ cleaning-policy-bound local admission
 LocalMinuteResearchAdmission
   ↓ later US-C0 / US-D1
@@ -107,30 +107,93 @@ D:\Data\datasets--mito0o852--OHLCV-1m
 
 Do not move or duplicate the 80+ GB corpus into the FinAgent repository.
 
-## Cleaning policy
+## Cleaning and quarantine stack
 
-The first real certification found sparse data defects rather than structural corruption: isolated invalid OHLC rows and a small number of duplicate `(ticker,timestamp)` keys. FinAgent therefore separates **quarantinable defects** from **ambiguous defects**.
+The first real certifications found sparse defects rather than broad structural corruption. FinAgent therefore preserves raw anomaly evidence but materializes a deterministic admitted view.
 
-`MinuteDataCleaningPolicy` v1 uses:
+Base cleaning v2:
 
 ```text
 max invalid OHLC row rate:          1e-6
 max exact-duplicate extra-row rate: 1e-4
 invalid OHLC action:                drop
 exact duplicate action:             collapse_full_row
-conflicting duplicate keys:         reject
 null/blank ticker or timestamp:      reject
 negative/null volume:                reject
-outside 04:00–20:00 ET:             diagnostic, not an automatic reject
+outside 04:00–20:00 ET:             diagnostic
 ```
 
-The thresholds are part of `policy_id`; changing them changes certification identity. A passing certification therefore does not mean the raw files are perfect. It means observed sparse defects are bounded and the exact deterministic cleaning behavior is frozen.
+Conflict quarantine v1:
 
-`clean_month_select_sql()` is the canonical v1 read transformation for admitted local data. It removes invalid OHLC/identity/volume rows and collapses exact full-row duplicates. It does **not** choose between conflicting rows with the same `(ticker,timestamp)` key; certification must fail if such conflicts are observed.
+```text
+max conflicting raw-row rate: 5e-5
+conflicting duplicate action: drop_entire_key_group
+```
 
-## Local minute recertification
+A conflicting group means two or more distinct OHLCV variants share the same `(ticker,timestamp)`. The source carries no arrival/correction sequence that proves which variant is authoritative, so FinAgent does not choose a winner, average prices, take maximum volume, or use diagnostic row ordering as source precedence.
 
-Run from the repository root in the active Conda environment:
+The whole group becomes an explicit missing minute in the admitted view. The 5e-5 raw-row ceiling prevents this mechanism from hiding structural data corruption. Policy thresholds/actions are identity-bound; changing them creates a new policy/certification identity.
+
+`quarantined_clean_month_select_sql()` is the canonical admitted read transformation. It:
+
+- removes invalid identity/OHLC/volume rows;
+- collapses exact full-row duplicates;
+- detects conflicting `(ticker,timestamp)` groups from the raw partition;
+- removes **every raw row** in each conflicting group.
+
+The raw Parquet snapshot is never modified.
+
+## Evidence that motivated whole-group quarantine
+
+The v2 certification is:
+
+```text
+certification_id: us-minute-certification-105aaf18a6ea908d9457c539
+inventory_id:     us-minute-inventory-c2cbf682b456f97eb613ed65
+cleaning_policy:  us-minute-cleaning-policy-aa9858b0a35545ea34c62cac
+```
+
+The blocking 2026-03 partition contained:
+
+```text
+row_count:                              34,379,927
+duplicate_key_count:                           409
+exact_duplicate_key_count:                      17
+exact_duplicate_extra_row_count:                17
+conflicting_duplicate_key_count:               392
+conflicting_duplicate_extra_row_count:         407
+conflicting raw rows:                          799
+```
+
+The follow-up diagnostic is:
+
+```text
+diagnostic_id: us-minute-conflict-diagnostic-798426d5f48a381d3608f40b
+conflicting tickers: 333
+conflicting keys with >2 rows: 11
+conflict time range: 2026-03-31T13:30:00Z .. 2026-03-31T21:33:00Z
+```
+
+Field/pattern evidence showed that the ambiguity is not safely resolvable by one-column rules: 391/392 keys differed in volume, 378/392 differed in both price and volume, and only 13 were volume-only. The conflicting raw-row rate is approximately `799 / 34,379,927 = 2.324e-5`, below the frozen `5e-5` quarantine ceiling. The defect is therefore retained as an explicit gap rather than converted into invented market truth.
+
+## Conflict diagnostics
+
+To reproduce the read-only diagnostic in the active Conda environment:
+
+```powershell
+python scripts\diagnose_us_minute_conflicts.py `
+  "D:\Data\datasets--mito0o852--OHLCV-1m" `
+  --month 2026-03 `
+  --examples 30 `
+  --output reports\us_minute_conflict_diagnostic_2026-03.json `
+  --rows-output reports\us_minute_conflicting_rows_2026-03.csv
+```
+
+`diagnostic_variant_rank` in the CSV is deterministic output ordering only. It is not source arrival order and must never be used as a winner rule.
+
+## Local minute v3 recertification
+
+After pulling the conflict-quarantine increment, run from the repository root in the active Conda environment:
 
 ```powershell
 python scripts\certify_us_minute_snapshot.py `
@@ -143,98 +206,26 @@ python scripts\certify_us_minute_snapshot.py `
   --output reports\us_minute_local_certification.json
 ```
 
-Certification performs:
-
-- exact `refs/main` / snapshot revision verification;
-- inventory of every `ohlcv_YYYY-MM.parquet` file using path and size identity;
-- expected 1992-01 → 2026-03 coverage and missing-month detection;
-- Parquet schema and timezone-aware timestamp validation;
-- full scans of selected monthly partitions;
-- duplicate-key classification into exact versus conflicting duplicates;
-- invalid identity, OHLC and volume counts;
-- sampled ticker counts and timestamp ranges;
-- observed regular/extended-hours diagnostics in `America/New_York`;
-- cleaning-policy-bound inventory/certification identities.
-
-A successful v2 report may contain warning codes such as:
+The v3 report preserves the raw v2-style counts inside `base_certification` and adds:
 
 ```text
-quarantine:invalid_ohlc
-collapse:exact_duplicate_rows
-session:outside_0400_2000_observed
+conflict_quarantine_policy
+cleaning_identity
+quarantined_conflicting_key_count
+quarantined_conflicting_raw_row_count
+post_clean_conflicting_duplicate_key_count
 ```
 
-Warnings are evidence, not silent fixes. The corresponding deterministic action is recorded in the local research admission.
-
-If certification passes, FinAgent emits a `LocalMinuteResearchAdmission` with scope:
+A valid US-S0 terminal requires:
 
 ```text
-local_non_redistributed_research
+certification.schema_version = finagent.us-minute-local-certification.v3
+certification.passed = true
+local_research_admitted = true
+post_clean_conflicting_duplicate_key_count = 0
 ```
 
-The admission binds the exact source revision, inventory, certification and cleaning policy while carrying public-source limitations forward.
-
-## Current v2 conflict terminal
-
-The 2026-09-01 local v2 certification is bound to:
-
-```text
-certification_id: us-minute-certification-105aaf18a6ea908d9457c539
-inventory_id:     us-minute-inventory-c2cbf682b456f97eb613ed65
-cleaning_policy:  us-minute-cleaning-policy-aa9858b0a35545ea34c62cac
-```
-
-The early sparse OHLC anomalies are below the frozen quarantine threshold and pass. The blocking result is isolated to the `2026-03` partition:
-
-```text
-row_count:                              34,379,927
-duplicate_key_count:                           409
-exact_duplicate_key_count:                      17
-exact_duplicate_extra_row_count:                17
-conflicting_duplicate_key_count:               392
-conflicting_duplicate_extra_row_count:         407
-```
-
-Therefore `local_research_admitted=false` remains correct. Do not increase the cleaning threshold or choose an arbitrary duplicate winner. The next action is to inspect the conflicting groups as evidence.
-
-The 392 conflicting keys imply 799 raw rows in conflicting groups (`392 + 407`). That is small enough to export completely without copying or materializing the full monthly corpus.
-
-## Conflicting duplicate diagnostics
-
-After pulling the diagnostic increment, run in the active `finagent` Conda environment:
-
-```powershell
-python scripts\diagnose_us_minute_conflicts.py `
-  "D:\Data\datasets--mito0o852--OHLCV-1m" `
-  --month 2026-03 `
-  --examples 30 `
-  --output reports\us_minute_conflict_diagnostic_2026-03.json `
-  --rows-output reports\us_minute_conflicting_rows_2026-03.csv
-```
-
-The command is read-only with respect to the source Parquet snapshot. It writes:
-
-- a JSON summary with conflict counts, affected ticker count, time range, maximum rows per key and keys with more than two rows;
-- field-level conflict counts for `open/high/low/close/volume`;
-- pattern counts for `volume_only`, `price_only` and `price_and_volume` conflicts;
-- a bounded set of representative conflict groups including min/max values;
-- a CSV containing **all raw rows belonging to conflicting keys**, with deterministic diagnostic ordering only.
-
-`diagnostic_variant_rank` in the CSV is not source arrival order and must never be interpreted as “first” or “last” authoritative market data. The source file exposes no correction/arrival sequence that would justify selecting a winner.
-
-The diagnostic command exits successfully when it completes even if unresolved conflicts exist; it does not grant admission. Its terminal is reported separately as:
-
-```text
-UNRESOLVED_CONFLICTING_DUPLICATES
-```
-
-or:
-
-```text
-NO_CONFLICTING_DUPLICATES_OBSERVED
-```
-
-Only after the observed conflict structure is understood should the cleaning policy be reconsidered. A defensible later rule may quarantine an entire ambiguous `(ticker,timestamp)` group if the evidence supports that design; silently choosing one conflicting row remains forbidden.
+A pass does not claim the raw source is defect-free. It proves that the exact revision, inventory, bounded cleaning stack and deterministic quarantine behavior are sufficient for the stated `local_non_redistributed_research` scope.
 
 ## Research and execution prices
 
