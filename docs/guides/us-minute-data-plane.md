@@ -29,7 +29,7 @@ The repository instead contains:
 tests/fixtures/us_minute/synthetic_ohlcv.csv
 ```
 
-This is fully synthetic, follows the same raw schema and contains synthetic exact/conflicting duplicates plus invalid OHLC/volume rows. CI converts it to monthly Parquet with DuckDB and runs the actual Data Plane against those Parquet files.
+This fixture is fully synthetic, follows the same raw schema and contains synthetic exact/conflicting duplicates plus invalid OHLC/volume rows. CI converts it to monthly Parquet with DuckDB and runs the actual Data Plane against those Parquet files.
 
 For local L3 integration, use the real-sample exporter. Its default output is under `/data`, which is ignored by Git.
 
@@ -61,7 +61,7 @@ The exported rows are a developer sample only. They are not a ResearchUniverse, 
 
 ## Full local-corpus smoke
 
-A bounded query against the full 87GB corpus uses the same code:
+The US-D1 closure smoke intentionally intersects at least four mapped assets and two monthly partitions. It executes against the complete local snapshot inventory while keeping the actual query bounded:
 
 ```powershell
 (finagent) PS D:\PythonWorkspace\FinAgent> python scripts\smoke_us_d1_minute_store.py `
@@ -70,14 +70,35 @@ A bounded query against the full 87GB corpus uses the same code:
   --asset NVDA `
   --asset AMD `
   --asset INTC `
-  --start 2026-03-23T13:31:00+00:00 `
-  --end 2026-03-27T20:01:00+00:00 `
-  --output reports\us_d1\seed_week.parquet
+  --start 2026-01-01T00:00:00+00:00 `
+  --end 2026-03-01T00:00:00+00:00 `
+  --memory-limit 512MB `
+  --threads 2 `
+  --max-temp-directory-size 4GB `
+  --temp-directory data\duckdb_temp\us_d1 `
+  --output data\dev_samples\us_d1_smoke\seed_jan_feb.parquet `
+  --report-output reports\us_d1\us_d1_smoke_report.json
 ```
+
+Default behavior materializes the same deterministic plan twice and requires identical row count, content SHA-256 and materialization identity. The portable report contains identities, counts, selected partition bytes and engine settings, but no source OHLCV rows. The two real-data Parquet outputs remain under the gitignored `/data` tree.
+
+The execution policy freezes:
+
+```text
+DuckDB memory_limit
+DuckDB thread count
+preserve_insertion_order = false
+temporary spill allowed/disabled
+maximum temporary-directory size
+```
+
+The default `512MB` memory setting is an engine resource policy, not a claim that total process RSS can never exceed 512MB. The explicit temporary-directory ceiling prevents an out-of-core query from consuming unbounded local disk.
+
+Use `--no-allow-temp-spill` only for a deliberate no-spill diagnostic. The script then applies `max_temp_directory_size=0B`; large queries may correctly terminate with an out-of-memory error rather than silently using disk.
 
 The query interval is `[start, end)`. Under the default `available_at` policy, a raw bar timestamped `13:30` becomes observable at `13:31`; the Data Plane therefore pushes an event-time window shifted back by one minute into the monthly Parquet scan.
 
-The query plan reports selected partition months/bytes and the materializer reports actual row count and output size. The store never constructs a multi-year dense NumPy/pandas panel.
+The query plan reports selected partition months/bytes and the materializer reports actual row count, output size and content SHA-256. The store never constructs a multi-year dense NumPy/pandas panel.
 
 ## Predicate and cleaning boundary
 
@@ -87,4 +108,4 @@ After monthly reads are unioned, the Data Plane repeats exact/conflicting duplic
 
 ## Development ordering
 
-US-I0 remains the current stage until the full 20–30-name EngineeringUniverse is frozen. The accepted four-name seed mapping is sufficient to develop and validate the US-D1 foundation in parallel. The complete EngineeringUniverse remains a gate before broader data certification/baseline research; seed-only development does not create a market-wide or survivorship-unbiased claim.
+US-I0 seed mapping is accepted for MSFT/NVDA/AMD/INTC. That seed is sufficient for US-D1 implementation and real-corpus closure smoke. Expansion to the planned 20–30-name EngineeringUniverse remains parallel work and must be completed before broader US-D3 certification and US-B0 baseline research; it does not need to block storage/query-engine development.
