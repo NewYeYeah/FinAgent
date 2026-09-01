@@ -71,6 +71,12 @@ workspace = [
   "httpx>=0.28,<1",
 ]
 
+[tool.uv]
+# ENG-0 canonical resolver. pyproject.toml remains dependency intent; uv.lock is the
+# resolved environment authority. Compatibility CI may still exercise newer Python
+# versions independently of this canonical Python 3.11 developer baseline.
+required-version = "==0.12.1"
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 
