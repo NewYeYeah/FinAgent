@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from finagent.data.capabilities import AdapterCapabilities
@@ -171,7 +171,10 @@ def _require_divisible_sessions(
         )
 
 
-def _base_event_window(query: MarketDataQuery, interval_minutes: int) -> tuple[object, object]:
+def _base_event_window(
+    query: MarketDataQuery,
+    interval_minutes: int,
+) -> tuple[datetime, datetime]:
     delta = timedelta(minutes=interval_minutes)
     if query.availability_policy is AvailabilityPolicy.AVAILABLE_AT:
         return query.start - delta, query.end
@@ -209,7 +212,7 @@ def build_resampled_minute_plan(
     value_columns = tuple(field.value for field in query.fields)
     value_projection = "\n            ".join(f", a.{name} AS {name}" for name in value_columns)
     interval_literal = _sql_string(query.interval.value)
-    source_data_version_literal = _sql_string(data_version)
+    data_version_literal = _sql_string(data_version)
     clock_column = (
         "available_at"
         if query.availability_policy is AvailabilityPolicy.AVAILABLE_AT
@@ -295,7 +298,7 @@ def build_resampled_minute_plan(
                 a.is_half_day,
                 a.source_id,
                 a.source_revision,
-                {source_data_version_literal} AS data_version
+                {data_version_literal} AS data_version
             FROM aggregated AS a
         )
         SELECT {', '.join(output_columns)}
@@ -356,8 +359,6 @@ class SessionResampledMinuteStore:
         )
         _require_divisible_sessions(self.sessionized_store, query, spec)
         base_start, base_end = _base_event_window(query, spec.interval_minutes)
-        if not hasattr(base_start, "tzinfo") or not hasattr(base_end, "tzinfo"):
-            raise TypeError("resampling base window must remain datetime-like")
         base_query = MarketDataQuery(
             market_id=query.market_id,
             assets=query.assets,
