@@ -9,6 +9,7 @@ on:
       - "scripts/export_us_minute_dev_sample.py"
       - "scripts/smoke_us_d1_minute_store.py"
       - "tests/test_us_d1_minute_store.py"
+      - "tests/test_us_d1_execution_policy.py"
       - "tests/fixtures/us_minute/**"
       - "docs/status.toml"
       - "docs/guides/us-minute-data-plane.md"
@@ -21,6 +22,7 @@ on:
       - "scripts/export_us_minute_dev_sample.py"
       - "scripts/smoke_us_d1_minute_store.py"
       - "tests/test_us_d1_minute_store.py"
+      - "tests/test_us_d1_execution_policy.py"
       - "tests/fixtures/us_minute/**"
       - "docs/status.toml"
       - "docs/guides/us-minute-data-plane.md"
@@ -45,7 +47,10 @@ jobs:
       - name: Reproduce locked development environment
         run: uv sync --frozen --extra dev
       - name: Synthetic Parquet data-plane regression
-        run: uv run --frozen pytest -q tests/test_us_d1_minute_store.py
+        run: >-
+          uv run --frozen pytest -q
+          tests/test_us_d1_minute_store.py
+          tests/test_us_d1_execution_policy.py
       - name: Strict static checks
         run: |
           uv run --frozen ruff check \
@@ -53,7 +58,8 @@ jobs:
             src/finagent/data/us_minute/quarantine.py \
             scripts/export_us_minute_dev_sample.py \
             scripts/smoke_us_d1_minute_store.py \
-            tests/test_us_d1_minute_store.py
+            tests/test_us_d1_minute_store.py \
+            tests/test_us_d1_execution_policy.py
           uv run --frozen mypy --strict \
             src/finagent/data/minute_store \
             scripts/export_us_minute_dev_sample.py \
