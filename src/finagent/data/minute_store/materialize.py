@@ -8,6 +8,12 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
+from .execution import (
+    DEFAULT_DUCKDB_EXECUTION_POLICY,
+    DuckDBExecutionPolicy,
+    DuckDBExecutionSettings,
+    configure_duckdb_connection,
+)
 from .query import MinuteQueryPlan
 
 
@@ -19,6 +25,14 @@ def _canonical_hash(payload: dict[str, object], *, prefix: str) -> str:
         ensure_ascii=False,
     ).encode("utf-8")
     return f"{prefix}-{hashlib.sha256(encoded).hexdigest()[:24]}"
+
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _duckdb() -> Any:
@@ -39,14 +53,41 @@ def _quoted_identifier(value: str) -> str:
     return '"' + value.replace('"', '""') + '"'
 
 
+def _connect(
+    policy: DuckDBExecutionPolicy,
+    *,
+    temp_directory: str | Path | None,
+) -> tuple[Any, DuckDBExecutionSettings]:
+    connection = _duckdb().connect(database=":memory:")
+    try:
+        settings = configure_duckdb_connection(
+            connection,
+            policy,
+            temp_directory=temp_directory,
+        )
+    except Exception:
+        connection.close()
+        raise
+    return connection, settings
+
+
 @dataclass(frozen=True, slots=True)
 class MinuteMaterialization:
     plan_id: str
     data_version: str
     row_count: int
     size_bytes: int
+    content_sha256: str
     output_filename: str
-    schema_version: str = "finagent.minute-materialization.v1"
+    schema_version: str = "finagent.minute-materialization.v2"
+
+    def __post_init__(self) -> None:
+        if self.row_count < 0 or self.size_bytes < 0:
+            raise ValueError("minute materialization counts/sizes must be >= 0")
+        digest = self.content_sha256.strip().lower()
+        if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
+            raise ValueError("content_sha256 must be a 64-character hexadecimal SHA-256")
+        object.__setattr__(self, "content_sha256", digest)
 
     @property
     def materialization_id(self) -> str:
@@ -56,8 +97,7 @@ class MinuteMaterialization:
                 "plan_id": self.plan_id,
                 "data_version": self.data_version,
                 "row_count": self.row_count,
-                "size_bytes": self.size_bytes,
-                "output_filename": self.output_filename,
+                "content_sha256": self.content_sha256,
             },
             prefix="minute-materialization",
         )
@@ -70,12 +110,28 @@ class MinuteMaterialization:
             "data_version": self.data_version,
             "row_count": self.row_count,
             "size_bytes": self.size_bytes,
+            "content_sha256": self.content_sha256,
             "output_filename": self.output_filename,
         }
 
 
-def count_plan_rows(plan: MinuteQueryPlan) -> int:
-    connection = _duckdb().connect(database=":memory:")
+def inspect_execution_settings(
+    *,
+    policy: DuckDBExecutionPolicy = DEFAULT_DUCKDB_EXECUTION_POLICY,
+    temp_directory: str | Path | None = None,
+) -> DuckDBExecutionSettings:
+    connection, settings = _connect(policy, temp_directory=temp_directory)
+    connection.close()
+    return settings
+
+
+def count_plan_rows(
+    plan: MinuteQueryPlan,
+    *,
+    policy: DuckDBExecutionPolicy = DEFAULT_DUCKDB_EXECUTION_POLICY,
+    temp_directory: str | Path | None = None,
+) -> int:
+    connection, _settings = _connect(policy, temp_directory=temp_directory)
     try:
         row = connection.execute(f"SELECT COUNT(*) FROM ({plan.sql}) AS bounded_query").fetchone()
         if row is None:
@@ -89,6 +145,8 @@ def fetch_plan_rows(
     plan: MinuteQueryPlan,
     *,
     limit: int = 1000,
+    policy: DuckDBExecutionPolicy = DEFAULT_DUCKDB_EXECUTION_POLICY,
+    temp_directory: str | Path | None = None,
 ) -> tuple[dict[str, object], ...]:
     """Fetch a bounded Python preview without requiring DuckDB's optional pytz bridge.
 
@@ -109,7 +167,7 @@ def fetch_plan_rows(
         else:
             projections.append(identifier)
 
-    connection = _duckdb().connect(database=":memory:")
+    connection, _settings = _connect(policy, temp_directory=temp_directory)
     try:
         cursor = connection.execute(
             "SELECT "
@@ -139,6 +197,8 @@ def copy_plan_to_parquet(
     output: str | Path,
     *,
     overwrite: bool = False,
+    policy: DuckDBExecutionPolicy = DEFAULT_DUCKDB_EXECUTION_POLICY,
+    temp_directory: str | Path | None = None,
 ) -> MinuteMaterialization:
     output_path = Path(output).expanduser().resolve()
     if output_path.exists() and not overwrite:
@@ -147,7 +207,7 @@ def copy_plan_to_parquet(
     if output_path.exists():
         output_path.unlink()
 
-    connection = _duckdb().connect(database=":memory:")
+    connection, _settings = _connect(policy, temp_directory=temp_directory)
     try:
         connection.execute(
             f"COPY ({plan.sql}) TO {_sql_string(output_path.as_posix())} "
@@ -167,5 +227,6 @@ def copy_plan_to_parquet(
         data_version=plan.data_version,
         row_count=row_count,
         size_bytes=output_path.stat().st_size,
+        content_sha256=_file_sha256(output_path),
         output_filename=output_path.name,
     )

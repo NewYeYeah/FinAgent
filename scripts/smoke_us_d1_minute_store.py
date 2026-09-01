@@ -6,10 +6,14 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from finagent.data.minute_store import (
+    DEFAULT_MINUTE_STORE_SMOKE_POLICY,
+    DuckDBExecutionPolicy,
     DuckDBParquetMinuteStore,
+    MinuteStoreSmokeReport,
     copy_plan_to_parquet,
     count_plan_rows,
     fetch_plan_rows,
+    inspect_execution_settings,
     manifest_from_huggingface_snapshot,
 )
 from finagent.data.query import MarketDataField, MarketDataQuery, SessionPolicy
@@ -30,12 +34,52 @@ def _aware_datetime(value: str) -> datetime:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Run one bounded US-D1 query against the admitted local OHLCV-1m corpus."
+        description=(
+            "Run a bounded, replayable US-D1 query against the admitted local OHLCV-1m corpus "
+            "under explicit DuckDB memory/thread/temp-spill limits."
+        )
     )
     parser.add_argument("root", type=Path)
     parser.add_argument("--asset", action="append", required=True)
     parser.add_argument("--start", type=_aware_datetime, required=True)
     parser.add_argument("--end", type=_aware_datetime, required=True)
+    parser.add_argument("--memory-limit", default="512MB")
+    parser.add_argument("--threads", type=int, default=2)
+    parser.add_argument(
+        "--allow-temp-spill",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Allow bounded DuckDB disk spill; use --no-allow-temp-spill to force 0B.",
+    )
+    parser.add_argument(
+        "--max-temp-directory-size",
+        default="4GB",
+        help="Maximum DuckDB spill size when temp spill is enabled.",
+    )
+    parser.add_argument(
+        "--temp-directory",
+        type=Path,
+        default=Path("data/duckdb_temp/us_d1"),
+        help="Local spill directory; /data is gitignored by repository policy",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=Path("data/dev_samples/us_d1_smoke/bounded.parquet"),
+        help="Local real-data materialization; do not commit or redistribute",
+    )
+    parser.add_argument(
+        "--report-output",
+        type=Path,
+        default=Path("reports/us_d1/us_d1_smoke_report.json"),
+        help="Row-free smoke evidence JSON that is safe to paste for project review",
+    )
+    parser.add_argument(
+        "--verify-replay",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Materialize the same plan twice and require identical content SHA-256",
+    )
     parser.add_argument(
         "--preview-rows",
         type=int,
@@ -45,7 +89,6 @@ def build_parser() -> argparse.ArgumentParser:
             "summaries contain no source OHLCV rows."
         ),
     )
-    parser.add_argument("--output", type=Path)
     return parser
 
 
@@ -56,6 +99,19 @@ def main() -> int:
         raise SystemExit("at least one non-empty --asset is required")
     if not 0 <= args.preview_rows <= 100:
         raise SystemExit("--preview-rows must be in 0..100")
+
+    execution_policy = DuckDBExecutionPolicy(
+        memory_limit=args.memory_limit,
+        threads=args.threads,
+        allow_temp_spill=args.allow_temp_spill,
+        max_temp_directory_size=args.max_temp_directory_size,
+        preserve_insertion_order=False,
+    )
+    temp_directory = args.temp_directory if execution_policy.allow_temp_spill else None
+    execution_settings = inspect_execution_settings(
+        policy=execution_policy,
+        temp_directory=temp_directory,
+    )
     manifest = manifest_from_huggingface_snapshot(
         args.root,
         expected_revision=SOURCE_REVISION,
@@ -75,34 +131,80 @@ def main() -> int:
         availability_policy=AvailabilityPolicy.AVAILABLE_AT,
     )
     plan = store.plan(query)
-    count = count_plan_rows(plan)
-    preview = fetch_plan_rows(plan, limit=args.preview_rows) if args.preview_rows else ()
-    materialization = None
-    if args.output is not None:
-        materialization = copy_plan_to_parquet(plan, args.output, overwrite=True)
 
-    print(
-        json.dumps(
-            {
-                "manifest": manifest.to_dict(),
-                "view": store.view(query).to_dict(),
-                "plan": plan.to_dict(),
-                "actual_rows": count,
-                "preview": [
-                    {
-                        key: value.isoformat() if isinstance(value, datetime) else value
-                        for key, value in row.items()
-                    }
-                    for row in preview
-                ],
-                "materialization": materialization.to_dict() if materialization else None,
-            },
-            sort_keys=True,
-            indent=2,
-            default=str,
-        )
+    primary = copy_plan_to_parquet(
+        plan,
+        args.output,
+        overwrite=True,
+        policy=execution_policy,
+        temp_directory=temp_directory,
     )
-    return 0
+    actual_rows = primary.row_count
+
+    replay = None
+    replay_match = None
+    if args.verify_replay:
+        replay_output = args.output.with_name(
+            f"{args.output.stem}.replay{args.output.suffix or '.parquet'}"
+        )
+        replay = copy_plan_to_parquet(
+            plan,
+            replay_output,
+            overwrite=True,
+            policy=execution_policy,
+            temp_directory=temp_directory,
+        )
+        replay_match = (
+            replay.row_count == primary.row_count
+            and replay.content_sha256 == primary.content_sha256
+            and replay.materialization_id == primary.materialization_id
+        )
+
+    preview = (
+        fetch_plan_rows(
+            plan,
+            limit=args.preview_rows,
+            policy=execution_policy,
+            temp_directory=temp_directory,
+        )
+        if args.preview_rows
+        else ()
+    )
+    if not args.verify_replay:
+        actual_rows = count_plan_rows(
+            plan,
+            policy=execution_policy,
+            temp_directory=temp_directory,
+        )
+
+    report = MinuteStoreSmokeReport(
+        plan=plan,
+        smoke_policy=DEFAULT_MINUTE_STORE_SMOKE_POLICY,
+        execution_policy=execution_policy,
+        execution_settings=execution_settings,
+        actual_rows=actual_rows,
+        primary_materialization=primary,
+        replay_materialization=replay,
+        replay_match=replay_match,
+        ran_at=datetime.now(UTC),
+    )
+    args.report_output.parent.mkdir(parents=True, exist_ok=True)
+    args.report_output.write_text(
+        json.dumps(report.to_dict(), sort_keys=True, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+    console = report.to_dict()
+    console["report_output"] = str(args.report_output)
+    console["preview"] = [
+        {
+            key: value.isoformat() if isinstance(value, datetime) else value
+            for key, value in row.items()
+        }
+        for row in preview
+    ]
+    print(json.dumps(console, sort_keys=True, indent=2, default=str))
+    return 0 if report.passed else 2
 
 
 if __name__ == "__main__":
