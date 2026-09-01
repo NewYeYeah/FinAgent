@@ -65,8 +65,8 @@ def test_trading_calendar_requires_aware_times_and_hashes_materialized_schedule(
     with pytest.raises(ValueError, match="timezone-aware"):
         TradingSession(
             session_date=date(2026, 3, 9),
-            open_at=datetime(2026, 3, 9, 9, 30),
-            close_at=datetime(2026, 3, 9, 16, 0),
+            open_at=datetime(2026, 3, 9, 9, 30),  # noqa: DTZ001 - intentional naive fixture
+            close_at=datetime(2026, 3, 9, 16, 0),  # noqa: DTZ001 - intentional naive fixture
         )
 
     calendar = _xnys_calendar_fixture()
@@ -209,7 +209,10 @@ def test_market_data_query_is_bounded_canonical_and_half_open() -> None:
     with pytest.raises(ValueError, match="end must be later"):
         replace(query, end=query.start)
     with pytest.raises(ValueError, match="timezone-aware"):
-        replace(query, start=datetime(2026, 3, 9, 13, 30))
+        replace(
+            query,
+            start=datetime(2026, 3, 9, 13, 30),  # noqa: DTZ001 - intentional naive fixture
+        )
 
 
 def test_adapter_capabilities_do_not_inherit_provider_claims() -> None:
