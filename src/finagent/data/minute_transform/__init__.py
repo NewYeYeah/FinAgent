@@ -31,6 +31,14 @@ from .sessionize import (
     build_sessionized_minute_plan,
     load_trading_calendar_evidence_json,
 )
+from .smoke import (
+    D2ActionAuthoritySmokeCheck,
+    D2LabelSmokeCheck,
+    D2ResampleSmokeCheck,
+    D2ScenarioSmokeCheck,
+    D2TransformSmokePolicy,
+    D2TransformSmokeReport,
+)
 
 __all__ = [
     "CANONICAL_US_60M_LABEL_NAME",
@@ -41,6 +49,12 @@ __all__ = [
     "CorporateActionCoverageEvidence",
     "CorporateActionCoverageStatus",
     "CorporateActionResearchPolicy",
+    "D2ActionAuthoritySmokeCheck",
+    "D2LabelSmokeCheck",
+    "D2ResampleSmokeCheck",
+    "D2ScenarioSmokeCheck",
+    "D2TransformSmokePolicy",
+    "D2TransformSmokeReport",
     "LabelMaterializationSpec",
     "LabelQueryPlan",
     "LabelSeriesEvidence",
