@@ -307,7 +307,7 @@ def materialize_xnys_exchange_calendars(
             f"expected {spec.expected_package_version}"
         )
 
-    get_calendar: Any = getattr(package, "get_calendar")
+    get_calendar: Any = package.get_calendar
     calendar: Any = get_calendar(
         spec.market_id,
         start=spec.requested_start.isoformat(),
