@@ -6,7 +6,7 @@ import json
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 from .execution import (
     DEFAULT_DUCKDB_EXECUTION_POLICY,
@@ -14,7 +14,22 @@ from .execution import (
     DuckDBExecutionSettings,
     configure_duckdb_connection,
 )
-from .query import MinuteQueryPlan
+
+
+class ExecutableQueryPlan(Protocol):
+    """Minimal read-only SQL plan surface accepted by Data Plane executors."""
+
+    @property
+    def plan_id(self) -> str: ...
+
+    @property
+    def data_version(self) -> str: ...
+
+    @property
+    def sql(self) -> str: ...
+
+    @property
+    def output_columns(self) -> tuple[str, ...]: ...
 
 
 def _canonical_hash(payload: dict[str, object], *, prefix: str) -> str:
@@ -126,7 +141,7 @@ def inspect_execution_settings(
 
 
 def count_plan_rows(
-    plan: MinuteQueryPlan,
+    plan: ExecutableQueryPlan,
     *,
     policy: DuckDBExecutionPolicy = DEFAULT_DUCKDB_EXECUTION_POLICY,
     temp_directory: str | Path | None = None,
@@ -142,7 +157,7 @@ def count_plan_rows(
 
 
 def fetch_plan_rows(
-    plan: MinuteQueryPlan,
+    plan: ExecutableQueryPlan,
     *,
     limit: int = 1000,
     policy: DuckDBExecutionPolicy = DEFAULT_DUCKDB_EXECUTION_POLICY,
@@ -152,13 +167,22 @@ def fetch_plan_rows(
 
     DuckDB keeps TIMESTAMPTZ/DATE authoritative inside SQL and Parquet. Only this
     interactive Python boundary casts temporal columns to ISO text before `fetchall`,
-    then reconstructs standard-library datetime/date objects. Transformed session
-    clocks are handled through the same boundary as event/availability clocks.
+    then reconstructs standard-library datetime/date objects. Transform-specific
+    source/target/session clocks use the same boundary.
     """
 
     if not 1 <= limit <= 100_000:
         raise ValueError("fetch limit must be in 1..100000")
-    temporal_datetime = {"event_time", "available_at", "session_open", "session_close"}
+    temporal_datetime = {
+        "event_time",
+        "available_at",
+        "session_open",
+        "session_close",
+        "source_event_time",
+        "source_available_at",
+        "target_event_time",
+        "target_available_at",
+    }
     temporal_date = {"session_date"}
     projections: list[str] = []
     for column in plan.output_columns:
@@ -194,7 +218,7 @@ def fetch_plan_rows(
 
 
 def copy_plan_to_parquet(
-    plan: MinuteQueryPlan,
+    plan: ExecutableQueryPlan,
     output: str | Path,
     *,
     overwrite: bool = False,
