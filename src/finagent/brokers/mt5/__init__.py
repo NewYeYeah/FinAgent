@@ -7,12 +7,13 @@ from .capabilities import (
 )
 from .client import (
     RECOMMENDED_MT5_PACKAGE_VERSION,
-    MT5ReadOnlyClientProtocol,
     MetaTrader5ReadOnlyClient,
+    MT5ReadOnlyClientProtocol,
 )
 from .probe import probe_mt5_capabilities, run_mt5_readonly_probe
 
 __all__ = [
+    "RECOMMENDED_MT5_PACKAGE_VERSION",
     "MT5CapabilityProbeReport",
     "MT5HistoryCapability",
     "MT5ReadOnlyClientProtocol",
@@ -20,7 +21,6 @@ __all__ = [
     "MT5SymbolSpec",
     "MT5TerminalCapability",
     "MetaTrader5ReadOnlyClient",
-    "RECOMMENDED_MT5_PACKAGE_VERSION",
     "probe_mt5_capabilities",
     "run_mt5_readonly_probe",
 ]
