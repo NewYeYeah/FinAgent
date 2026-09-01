@@ -5,7 +5,7 @@ planning_document = "docs/development/current-plan.md"
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
 current_stage = "US-C0"
-current_stage_status = "contracts_implemented_calendar_materialization_pending"
+current_stage_status = "awaiting_xnys_calendar_materialization"
 next_stage = "MT5-P0"
 
 [release.ashare_historical_v1]
@@ -71,7 +71,13 @@ authority_config = "configs/us_source_authority/mito0o852_ohlcv_1m.toml"
 contracts_frozen = false
 trading_calendar_contract = true
 trading_calendar_evidence = false
-calendar_materialization_status = "pending_exact_xnys_schedule"
+calendar_materialization_tool = true
+calendar_materialization_status = "awaiting_local_operator_run"
+calendar_package = "exchange_calendars"
+expected_calendar_package_version = "4.13.2"
+calendar_requested_start = "1992-01-01"
+calendar_requested_end = "2026-03-31"
+calendar_materialization_script = "scripts/materialize_xnys_calendar.py"
 label_spec = true
 corporate_action_event = true
 market_data_query = true

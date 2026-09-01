@@ -9,10 +9,13 @@ on:
       - "src/finagent/domain/corporate_actions.py"
       - "src/finagent/data/query.py"
       - "src/finagent/data/capabilities.py"
+      - "src/finagent/data/calendar_materialization.py"
       - "src/finagent/data/__init__.py"
+      - "scripts/materialize_xnys_calendar.py"
       - "tests/test_us_c0_intraday_contracts.py"
+      - "tests/test_us_c0_calendar_materialization.py"
       - "docs/status.toml"
-      - "docs/guides/data.md"
+      - "docs/guides/us-intraday-contracts.md"
       - ".github/workflows/us-c0-intraday-contracts.yml"
   push:
     branches: [main]
@@ -22,10 +25,13 @@ on:
       - "src/finagent/domain/corporate_actions.py"
       - "src/finagent/data/query.py"
       - "src/finagent/data/capabilities.py"
+      - "src/finagent/data/calendar_materialization.py"
       - "src/finagent/data/__init__.py"
+      - "scripts/materialize_xnys_calendar.py"
       - "tests/test_us_c0_intraday_contracts.py"
+      - "tests/test_us_c0_calendar_materialization.py"
       - "docs/status.toml"
-      - "docs/guides/data.md"
+      - "docs/guides/us-intraday-contracts.md"
       - ".github/workflows/us-c0-intraday-contracts.yml"
 
 permissions:
@@ -47,7 +53,10 @@ jobs:
       - name: Reproduce locked development environment
         run: uv sync --frozen --extra dev
       - name: Contract regression
-        run: uv run --frozen pytest -q tests/test_us_c0_intraday_contracts.py
+        run: >-
+          uv run --frozen pytest -q
+          tests/test_us_c0_intraday_contracts.py
+          tests/test_us_c0_calendar_materialization.py
       - name: Strict static checks
         run: |
           uv run --frozen ruff check \
@@ -56,16 +65,22 @@ jobs:
             src/finagent/domain/corporate_actions.py \
             src/finagent/data/query.py \
             src/finagent/data/capabilities.py \
-            tests/test_us_c0_intraday_contracts.py
+            src/finagent/data/calendar_materialization.py \
+            scripts/materialize_xnys_calendar.py \
+            tests/test_us_c0_intraday_contracts.py \
+            tests/test_us_c0_calendar_materialization.py
           uv run --frozen mypy --strict \
             src/finagent/domain/trading_calendar.py \
             src/finagent/domain/labels.py \
             src/finagent/domain/corporate_actions.py \
             src/finagent/data/query.py \
-            src/finagent/data/capabilities.py
+            src/finagent/data/capabilities.py \
+            src/finagent/data/calendar_materialization.py
           uv run --frozen python -m py_compile \
             src/finagent/domain/trading_calendar.py \
             src/finagent/domain/labels.py \
             src/finagent/domain/corporate_actions.py \
             src/finagent/data/query.py \
-            src/finagent/data/capabilities.py
+            src/finagent/data/capabilities.py \
+            src/finagent/data/calendar_materialization.py \
+            scripts/materialize_xnys_calendar.py

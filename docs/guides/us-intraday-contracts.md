@@ -29,7 +29,60 @@ all materialized TradingSession rows
 
 `calendar_id` hashes the complete materialized schedule rather than trusting a mutable calendar-library name. `TradingSession` requires timezone-aware open/close timestamps and validates the session date in the calendar timezone. Half-days are explicit and must agree with the observed regular-session duration.
 
-US-C0 contract regression includes known XNYS DST, holiday-absence and half-day fixtures. These fixtures freeze semantics only; they are **not** the authoritative 1992–2026 XNYS schedule. Stage closure still requires a concrete exact-version schedule to be materialized as calendar evidence.
+US-C0 contract regression includes known XNYS DST, holiday-absence and half-day fixtures. These fixtures freeze semantics only; they are not themselves the authoritative 1992–2026 XNYS schedule.
+
+## Exact XNYS calendar materialization
+
+The authoritative local schedule is generated once from an exact `exchange_calendars` package version and persisted as JSON evidence. `exchange_calendars` is an operator/materialization dependency, not a FinAgent core runtime dependency.
+
+Current materialization specification:
+
+```text
+calendar: XNYS
+timezone: America/New_York
+start: 1992-01-01
+end: 2026-03-31
+package: exchange_calendars
+exact version: 4.13.2
+side: left
+```
+
+The requested range is explicit because calendar libraries may otherwise use a moving/default construction window. The persisted evidence records every materialized session, package version, materialization spec, anchor checks and deterministic `calendar_id`.
+
+From the Windows workstation, use the active Conda environment:
+
+```powershell
+conda activate finagent
+cd D:\PythonWorkspace\FinAgent
+python -m pip install "exchange-calendars==4.13.2"
+
+python scripts\materialize_xnys_calendar.py `
+  --start 1992-01-01 `
+  --end 2026-03-31 `
+  --expected-version 4.13.2 `
+  --output reports\us_calendar\xnys_1992_2026.json
+```
+
+The command fails closed if the installed package version differs from the requested exact version. It also validates high-information NYSE anchors that lie inside the admitted minute-data interval:
+
+```text
+2025-07-04            Independence Day closure
+2025-11-28            09:30–13:00 ET post-Thanksgiving half-day
+2026-03-06            pre-DST 09:30–16:00 ET = 14:30–21:00 UTC
+2026-03-09            post-DST 09:30–16:00 ET = 13:30–20:00 UTC
+```
+
+The output must report:
+
+```text
+passed = true
+coverage_boundary_passed = true
+observed_package_version = 4.13.2
+all anchor_checks passed
+calendar_id = trading-calendar-...
+```
+
+Only then may `trading_calendar_evidence=true` and `contracts_frozen=true` be recorded in `docs/status.toml`.
 
 ## LabelSpec
 
@@ -91,7 +144,7 @@ Both assets and value fields must be non-empty. Start/end are timezone-aware and
 
 ## AdapterCapabilities
 
-`AdapterCapabilities` records what one **FinAgent adapter actually implements and tests**. It is separate from `data.ingestion.ProviderCapabilities`, which describes a provider/API surface.
+`AdapterCapabilities` records what one FinAgent adapter actually implements and tests. It is separate from `data.ingestion.ProviderCapabilities`, which describes a provider/API surface.
 
 For example:
 
@@ -109,14 +162,4 @@ The adapter must reject a split-adjusted query until that functionality exists i
 
 ## Current US-C0 boundary
 
-The code contracts and golden semantics are implemented. The remaining US-C0 blocker is:
-
-```text
-materialize exact XNYS schedule evidence
-→ bind source + exact revision
-→ cover the research calendar interval needed downstream
-→ persist/hash TradingCalendarEvidence
-→ close US-C0
-```
-
-Until that evidence exists, `docs/status.toml` keeps `contracts_frozen=false` and `trading_calendar_evidence=false` even though the calendar contract itself is implemented.
+The five contracts and materialization tooling are implemented. The remaining US-C0 blocker is the real local XNYS materialization report. Until that evidence exists, `docs/status.toml` keeps `contracts_frozen=false` and `trading_calendar_evidence=false`.
