@@ -4,9 +4,9 @@ planning_document = "docs/development/current-plan.md"
 
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
-current_stage = "US-C0"
-current_stage_status = "awaiting_xnys_calendar_materialization"
-next_stage = "MT5-P0"
+current_stage = "MT5-P0"
+current_stage_status = "in_progress"
+next_stage = "US-I0"
 
 [release.ashare_historical_v1]
 status = "accepted"
@@ -68,21 +68,42 @@ observed_conflict_end_utc = "2026-03-31T21:33:00+00:00"
 authority_config = "configs/us_source_authority/mito0o852_ohlcv_1m.toml"
 
 [stage.us_c0]
-contracts_frozen = false
+status = "accepted"
+accepted_at = "2026-09-01"
+contracts_frozen = true
 trading_calendar_contract = true
-trading_calendar_evidence = false
+trading_calendar_evidence = true
 calendar_materialization_tool = true
-calendar_materialization_status = "awaiting_local_operator_run"
+calendar_materialization_status = "accepted"
 calendar_package = "exchange_calendars"
 expected_calendar_package_version = "4.13.2"
+observed_calendar_package_version = "4.13.2"
 calendar_requested_start = "1992-01-01"
 calendar_requested_end = "2026-03-31"
+calendar_coverage_start = "1992-01-02"
+calendar_coverage_end = "2026-03-31"
+calendar_session_count = 8622
+calendar_half_day_count = 75
+calendar_id = "trading-calendar-03a9c29f566d6634aedbbbdc"
+calendar_materialization_report_id = "calendar-materialization-9cf62f5d9925477884cf9a56"
+calendar_materialization_spec_id = "calendar-materialization-spec-da0e911d7be47db888ee69c9"
+calendar_materialization_passed = true
+calendar_anchor_checks_passed = true
 calendar_materialization_script = "scripts/materialize_xnys_calendar.py"
+calendar_local_report = "reports/us_calendar/xnys_1992_2026.json"
 label_spec = true
 corporate_action_event = true
 market_data_query = true
 adapter_capabilities = true
 focused_ci = ".github/workflows/us-c0-intraday-contracts.yml"
+
+[stage.mt5_p0]
+status = "in_progress"
+read_only_contracts = false
+import_safe_adapter = false
+synthetic_probe_regression = false
+local_terminal_probe = false
+mutation_authority = false
 
 [documentation]
 governance_version = "1.1"
