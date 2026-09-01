@@ -5,7 +5,7 @@ planning_document = "docs/development/current-plan.md"
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
 current_stage = "US-S0"
-current_stage_status = "conflicting_duplicate_diagnostics_required"
+current_stage_status = "awaiting_conflict_quarantine_recertification"
 next_stage = "US-C0"
 
 [release.ashare_historical_v1]
@@ -31,22 +31,35 @@ source_publication_blocking_issue_count = 3
 local_snapshot_download_attested = true
 local_research_scope = "local_non_redistributed_research"
 local_research_admitted = false
-local_certification_status = "failed_conflicting_duplicate_keys"
+local_certification_status = "v3_quarantine_recertification_required"
 local_certification_script = "scripts/certify_us_minute_snapshot.py"
 local_conflict_diagnostic_script = "scripts/diagnose_us_minute_conflicts.py"
 local_conflict_diagnostic_month = "2026-03"
-cleaning_policy_schema = "finagent.us-minute-cleaning-policy.v1"
-cleaning_policy_id = "us-minute-cleaning-policy-aa9858b0a35545ea34c62cac"
+previous_cleaning_policy_schema = "finagent.us-minute-cleaning-policy.v1"
+previous_cleaning_policy_id = "us-minute-cleaning-policy-aa9858b0a35545ea34c62cac"
+proposed_base_cleaning_policy_schema = "finagent.us-minute-cleaning-policy.v2"
+proposed_base_cleaning_policy_id = "us-minute-cleaning-policy-b4265dc1696a83633c0a0de8"
+proposed_conflict_quarantine_policy_schema = "finagent.us-minute-conflict-quarantine-policy.v1"
+proposed_conflict_quarantine_policy_id = "us-minute-conflict-policy-bb3e82878d94725388806d02"
+proposed_cleaning_stack_id = "us-minute-cleaning-stack-a0d745a4a75d25a63e3a8244"
+max_conflicting_raw_row_rate = 0.00005
+conflicting_duplicate_action = "drop_entire_key_group"
 previous_certification_id = "us-minute-certification-ab39dd4da1af36c974a43fad"
 latest_certification_id = "us-minute-certification-105aaf18a6ea908d9457c539"
 latest_certification_schema = "finagent.us-minute-local-certification.v2"
 latest_certification_passed = false
+latest_conflict_diagnostic_id = "us-minute-conflict-diagnostic-798426d5f48a381d3608f40b"
 observed_inventory_id = "us-minute-inventory-c2cbf682b456f97eb613ed65"
 observed_2026_03_row_count = 34379927
 observed_exact_duplicate_key_count = 17
 observed_exact_duplicate_extra_row_count = 17
 observed_conflicting_duplicate_key_count = 392
 observed_conflicting_duplicate_extra_row_count = 407
+observed_conflicting_raw_row_count = 799
+observed_conflicting_ticker_count = 333
+observed_conflicting_keys_over_two_rows = 11
+observed_conflict_start_utc = "2026-03-31T13:30:00+00:00"
+observed_conflict_end_utc = "2026-03-31T21:33:00+00:00"
 authority_config = "configs/us_source_authority/mito0o852_ohlcv_1m.toml"
 
 [documentation]
