@@ -4,9 +4,9 @@ planning_document = "docs/development/current-plan.md"
 
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
-current_stage = "US-D2"
-current_stage_status = "awaiting_real_transform_smoke"
-next_stage = "US-D3"
+current_stage = "US-D3"
+current_stage_status = "awaiting_final_universe_and_reconciliation_evidence"
+next_stage = "US-B0"
 
 [release.ashare_historical_v1]
 status = "accepted"
@@ -134,7 +134,7 @@ focused_ci = ".github/workflows/mt5-p0-readonly.yml"
 mutation_authority = false
 
 [stage.us_i0]
-status = "seed_accepted_expansion_parallel"
+status = "finalization_implemented_awaiting_local_evidence"
 contracts_frozen = true
 research_instrument_contract = true
 broker_instrument_contract = true
@@ -154,8 +154,8 @@ seed_broker_symbols = ["MSFT", "NVDA", "AMD", "INTC"]
 data_plane_unblocked = true
 engineering_universe_target_min = 20
 engineering_universe_target_max = 30
-engineering_universe_expansion_status = "candidate_selector_implemented_awaiting_local_report"
-expansion_required_before = "US-D3"
+engineering_universe_expansion_status = "candidate_selector_and_finalization_implemented_awaiting_local_evidence"
+expansion_required_before = "US-D3_CERTIFICATION"
 candidate_selection_contract = true
 candidate_selection_policy_schema = "finagent.us-universe-candidate-selection-policy.v1"
 candidate_selection_report_schema = "finagent.us-universe-candidate-selection-report.v1"
@@ -171,8 +171,19 @@ candidate_selection_requires_operator_attestation = true
 candidate_selection_focused_ci = ".github/workflows/us-i0-universe-candidates.yml"
 candidate_selection_focused_ci_passed = true
 candidate_selection_local_report_status = "pending"
-spread_probe_status = "pending_after_candidate_selection"
+quote_probe_contract = true
+quote_probe_schema = "finagent.us-candidate-quote-probe-report.v1"
+quote_probe_script = "scripts/probe_us_i0_candidate_quotes.py"
+quote_probe_mutation_authority = false
+quote_probe_status = "pending_local"
+finalization_policy_schema = "finagent.us-engineering-universe-finalization-policy.v1"
+finalization_report_schema = "finagent.us-engineering-universe-finalization-report.v1"
+finalization_script = "scripts/finalize_us_i0_engineering_universe.py"
+finalization_default_target_count = 25
+finalization_default_maximum_current_spread_bps = 50.0
+finalization_requires_fresh_visible_inventory = true
 final_mapping_attestation_status = "pending"
+final_engineering_universe_status = "pending"
 research_source_candidate = "hf-mito0o852-ohlcv-1m"
 research_source_revision = "776328445b7ac6e7815ef3a483e9c8ded1eb6d56"
 mt5_probe_id = "mt5-capability-probe-db652a528408fda2dd3a606e"
@@ -244,8 +255,9 @@ accepted_temp_spill_enabled = true
 accepted_local_report = "reports/us_d1/us_d1_smoke_report.json"
 
 [stage.us_d2]
-status = "in_progress"
+status = "accepted"
 started_at = "2026-09-01"
+accepted_at = "2026-09-01"
 calendar_id = "trading-calendar-03a9c29f566d6634aedbbbdc"
 sessionization_contract = true
 sessionization_spec_schema = "finagent.minute-sessionization-spec.v1"
@@ -314,8 +326,54 @@ transform_smoke_required_scenarios = ["half_day", "pre_dst", "post_dst"]
 transform_smoke_default_assets = ["MSFT", "NVDA", "AMD", "INTC"]
 transform_smoke_focused_ci = ".github/workflows/us-d2-transform-smoke.yml"
 transform_smoke_focused_ci_passed = true
-real_transform_smoke_passed = false
+real_transform_smoke_passed = true
+stage_exit_gate_passed = true
+accepted_transform_smoke_report_id = "us-d2-transform-smoke-4b47e2fe2525d7f599d6579f"
+accepted_transform_smoke_policy_id = "us-d2-transform-smoke-policy-1c20c683e20eb0b1a910c9bf"
+accepted_transform_manifest_id = "minute-store-manifest-425d29a05cd26890d972c8f9"
+accepted_transform_source_data_version = "minute-data-version-999f210df720fd8d9c998fd9"
+accepted_transform_assets = ["AMD", "INTC", "MSFT", "NVDA"]
+accepted_transform_corporate_action_coverage_id = "corporate-action-coverage-4812f92e4fae339f3ccec35d"
+accepted_transform_scenarios = ["half_day", "pre_dst", "post_dst"]
+accepted_transform_unknown_label_unavailability_count = 0
+accepted_transform_all_regular_row_coverage_ratio = 1.0
+accepted_transform_all_resamples_complete = true
+accepted_transform_local_report = "reports/us_d2/us_d2_transform_smoke_report.json"
+
+[stage.mt5_d0]
+status = "implementation_ready_awaiting_local_reconciliation"
+started_at = "2026-09-01"
+read_only = true
+reconciliation_policy_schema = "finagent.minute-reference-reconciliation-policy.v1"
+reconciliation_symbol_check_schema = "finagent.minute-reference-symbol-check.v1"
+reconciliation_report_schema = "finagent.minute-reference-reconciliation-report.v1"
+reconciliation_script = "scripts/reconcile_us_minute_mt5.py"
+required_reference_symbol_count = 4
+minimum_rows_per_reference_symbol = 100
+minimum_aligned_overlap_ratio = 0.80
+maximum_abs_offset_minutes = 360
+price_difference_is_diagnostic = true
+volume_semantics_are_not_assumed_equivalent = true
+timestamp_offset_does_not_rewrite_source_clock = true
+local_reconciliation_status = "pending"
+mutation_authority = false
+
+[stage.us_d3]
+status = "in_progress"
+started_at = "2026-09-01"
+certification_policy_schema = "finagent.us-minute-certification-policy.v1"
+certification_inputs_schema = "finagent.us-minute-certification-inputs.v1"
+certification_report_schema = "finagent.us-minute-certification-report.v1"
+certification_script = "scripts/certify_us_minute_research.py"
+expected_terminal_outcome = "CERTIFIED_FOR_ENGINEERING_RESEARCH"
+final_engineering_universe_required = true
+reconciliation_required = true
+point_in_time_security_master_available = false
+source_publication_authority = "reference_only"
+certification_local_report_status = "pending"
 stage_exit_gate_passed = false
+focused_ci = ".github/workflows/us-d3-minute-certification.yml"
+completion_ci = ".github/workflows/us-d3-completion.yml"
 
 [documentation]
 governance_version = "1.1"
