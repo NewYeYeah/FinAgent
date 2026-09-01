@@ -5,7 +5,7 @@ planning_document = "docs/development/current-plan.md"
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
 current_stage = "US-I0"
-current_stage_status = "awaiting_seed_mapping_attestation"
+current_stage_status = "seed_mapping_accepted_us_d1_foundation_parallel"
 next_stage = "US-D1"
 
 [release.ashare_historical_v1]
@@ -143,17 +143,43 @@ instrument_mapping_evidence_contract = true
 engineering_universe_contract = true
 mapping_materialization_tool = true
 mapping_materialization_script = "scripts/materialize_us_i0_engineering_universe.py"
-seed_mapping_status = "awaiting_local_operator_attestation"
+seed_mapping_status = "accepted"
+seed_mapping_accepted_at = "2026-09-01"
+seed_mapping_count = 4
+seed_mapping_blocker_count = 0
+seed_materialization_id = "engineering-universe-materialization-1cfe4b41a041dde979d59362"
+seed_universe_id = "engineering-universe-13c3e478ecef31cf69e74aa6"
 seed_research_symbols = ["MSFT", "NVDA", "AMD", "INTC"]
 seed_broker_symbols = ["MSFT", "NVDA", "AMD", "INTC"]
 engineering_universe_target_min = 20
 engineering_universe_target_max = 30
+engineering_universe_expansion_status = "pending_parallel"
 research_source_candidate = "hf-mito0o852-ohlcv-1m"
 research_source_revision = "776328445b7ac6e7815ef3a483e9c8ded1eb6d56"
 mt5_probe_id = "mt5-capability-probe-db652a528408fda2dd3a606e"
 broker_path_exchange_authority = false
 point_in_time_security_master_available = false
 focused_ci = ".github/workflows/us-i0-instrument-mapping.yml"
+
+[stage.us_d1]
+status = "foundation_parallel"
+manifest_contract = true
+duckdb_parquet_store = true
+bounded_query_plan = true
+predicate_pushdown = true
+canonical_available_at = "bar_start_plus_1m"
+canonical_session_type = "observed_unclassified"
+implemented_interval = "1m"
+implemented_session_policy = "all_observed"
+implemented_adjustment_policy = "raw"
+committed_fixture = "tests/fixtures/us_minute/synthetic_ohlcv.csv"
+committed_fixture_origin = "fully_synthetic_no_source_rows"
+real_sample_export_script = "scripts/export_us_minute_dev_sample.py"
+real_sample_git_policy = "ignored_do_not_commit_or_redistribute"
+full_corpus_smoke_script = "scripts/smoke_us_d1_minute_store.py"
+full_corpus_smoke_passed = false
+bounded_memory_smoke_passed = false
+stage_exit_gate_passed = false
 
 [documentation]
 governance_version = "1.1"
