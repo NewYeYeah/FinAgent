@@ -1,10 +1,24 @@
 name: research-ui
 
 on:
+  # Historical visualization remains a post-merge regression on main. PRs run it
+  # only when the visualization surface or its dependency declaration changes.
   push:
     branches: [main]
   pull_request:
     branches: [main]
+    paths:
+      - "src/finagent/visualization/**"
+      - "apps/research_ui.py"
+      - "scripts/run_research_ui.py"
+      - "tests/test_research_visualization.py"
+      - "tests/test_research_ui_app.py"
+      - "tests/test_visualization_semantic_contract_v2.py"
+      - "tests/test_visualization_semantic_a2_compat.py"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/research-ui.yml"
+  workflow_dispatch:
 
 jobs:
   visualization:
