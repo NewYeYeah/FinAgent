@@ -68,13 +68,13 @@ def _text(value: object, field_name: str) -> str:
 
 def _boolean(value: object, field_name: str) -> bool:
     if not isinstance(value, bool):
-        raise ValueError(f"{field_name} must be boolean")
+        raise TypeError(f"{field_name} must be boolean")
     return value
 
 
 def _number(value: object, field_name: str) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float, str)):
-        raise ValueError(f"{field_name} must be numeric")
+        raise TypeError(f"{field_name} must be numeric")
     return float(value)
 
 
