@@ -74,8 +74,8 @@ The exact active stage is never inferred from this diagram; read `docs/status.to
 ### 2.1 Historical A-share becomes a release, not a permanent constraint on `main`
 After H0, the accepted Historical v1.0 product is preserved through release identity/tag/evidence. Future U.S./MT5 changes to normal runtime/Workbench files must not be treated as illegal drift from the historical release.
 
-### 2.2 U.S. source authority precedes bulk ingestion
-A convenient large dataset is only a candidate until provenance, revision, usage rights, timestamp convention, adjustment/corporate-action behavior and symbol lifecycle are certified.
+### 2.2 U.S. source review precedes local research admission
+A convenient large dataset is not accepted by title or mutable URL alone. FinAgent binds an immutable source/revision and records public provenance, usage-rights and semantic limitations. For the project's current **local, non-redistributed engineering-research** scope, a public source that remains `REFERENCE_ONLY` may receive a separate exact-snapshot local research admission after inventory, schema/time and sampled data-quality certification under an identity-bound cleaning policy. A `REJECTED` source can never be admitted. Publication/redistribution authority remains separate from local research admission.
 
 ### 2.3 `ResearchDataset` stays bounded
 Do not make dense NumPy research panels responsible for tens of billions of potential sparse minute cells. Introduce a lazy/out-of-core query layer below them.
@@ -185,13 +185,26 @@ Fresh Ubuntu core/research and Windows frontend/MT5-prep environments can be rep
 
 ---
 
-# 6. US-S0 — U.S. Historical Source Authority
+# 6. US-S0 — U.S. Historical Source Authority and Local Research Admission
 
 ## Goal
-Decide which exact minute source may become authoritative research evidence before bulk download or adapter optimization.
+Bind the exact U.S. minute source and prove that the downloaded immutable snapshot is fit for an explicitly limited local research scope before provider-neutral query/calendar/label code is built on top of it.
 
-## New contracts
-Recommended package: `src/finagent/data/provenance/`.
+US-S0 distinguishes two independent facts:
+
+```text
+public source/publication authority
+                ↓
+exact local snapshot certification
+                ↓
+local research admission
+```
+
+The public layer records what is actually known about origin, redistribution/usage rights and published semantics. The local layer decides whether one exact snapshot may be used for `local_non_redistributed_research` under explicit limitations and a deterministic cleaning policy.
+
+## Contracts
+
+Source/publication authority:
 
 ```text
 DatasetSourceCandidate
@@ -200,36 +213,87 @@ DatasetFileDescriptor
 DatasetProvenanceRecord
 DatasetUsageRightsRecord
 DatasetAuthorityDecision
+DatasetAuthorityBundle
 ```
 
-## Required certification
+Local snapshot/admission:
+
+```text
+HuggingFaceSnapshotLayout
+LocalMinuteInventory
+MinuteDataCleaningPolicy
+MinuteSampleQuality
+LocalMinuteResearchCertification
+LocalMinuteResearchAdmission
+```
+
+## Required review and certification
+
+**Public/source evidence**
 - exact repository/provider and immutable revision;
-- upstream/origin statement;
-- license/usage-rights status;
-- file inventory and physical/content identity where feasible;
-- schema and partitioning convention;
-- observed coverage and asset inventory;
-- timezone and minute timestamp meaning (bar start/end);
-- regular vs extended-hours inclusion;
-- no-trade/halt/gap behavior;
-- raw vs adjusted OHLC;
-- split/dividend representation;
-- ticker rename/delisting/survivorship characteristics;
-- duplicate and OHLC sanity samples.
+- upstream/origin statement and verification status;
+- license/usage-rights status without inventing redistribution permission;
+- published schema/partitioning/time semantics;
+- raw/adjusted and corporate-action behavior where supportable;
+- ticker/lifecycle limitations explicitly recorded.
 
-Do not assume coverage, row count, corporate-action correctness or redistribution rights from a dataset title/readme alone.
+**Exact local snapshot**
+- `refs/main` / immutable snapshot revision match;
+- complete monthly file inventory and expected coverage;
+- schema and timezone-aware timestamp validation;
+- observed ticker/time coverage on representative partitions;
+- regular versus extended-hours diagnostics measured from data rather than assumed from README;
+- duplicate `(ticker,timestamp)` classification into exact versus conflicting duplicates;
+- identity/OHLC/volume sanity checks;
+- bounded deterministic cleaning policy whose thresholds/actions are part of certification identity.
 
-## Outcome states
+Do not assume coverage, row count, corporate-action correctness or redistribution rights from a dataset title/readme alone. Conversely, do not reject a multi-decade local research corpus merely because it contains extremely sparse deterministic defects that can be quarantined under a frozen policy.
+
+## Public authority states
+
 ```text
 ACCEPTED_FOR_RESEARCH
 REFERENCE_ONLY
 REJECTED
 ```
 
-Only `ACCEPTED_FOR_RESEARCH` may feed authoritative US-D1/US-D3 evidence. A rejected candidate may still be retained as diagnostic/reference metadata.
+Interpretation:
+
+- `REJECTED` can never receive local research admission.
+- `ACCEPTED_FOR_RESEARCH` still requires local snapshot/data-quality certification before the local corpus is consumed.
+- `REFERENCE_ONLY` may receive a separate `local_non_redistributed_research` admission when the exact snapshot passes local certification; all unresolved public-source blockers remain attached as limitations.
+- Local admission does **not** grant redistribution/publication rights and does not convert the public authority state to `ACCEPTED_FOR_RESEARCH`.
+
+## Cleaning policy boundary
+
+For the bound `mito0o852/OHLCV-1m` snapshot, sparse deterministic defects may be handled only through the identity-bound `MinuteDataCleaningPolicy`:
+
+```text
+invalid OHLC within frozen rate      → quarantine/drop
+exact duplicate full rows within rate → deterministic collapse
+conflicting duplicate keys           → fail closed
+invalid ticker/timestamp              → fail closed
+negative/null volume                  → fail closed
+outside-session observations          → diagnostic unless later calendar evidence proves invalid
+```
+
+Changing thresholds or actions changes `policy_id` and therefore certification identity. Thresholds must not be loosened ad hoc to force acceptance.
 
 ## Exit Gate
-An immutable source authority record exists and downstream code takes a source/revision identity rather than a mutable URL assumption.
+
+```text
+immutable source/revision bound
+public provenance/usage limitations recorded
+local inventory covers expected 1992-01..2026-03 with no missing month
+schema/time contract passes
+representative partition quality passes the frozen cleaning policy
+conflicting duplicate keys = 0 in certification samples
+LocalMinuteResearchAdmission exists for local_non_redistributed_research
+source + revision + inventory + certification + cleaning-policy identities are preserved
+publication/redistribution limitations remain explicit
+```
+
+Only after this gate passes does `docs/status.toml` advance to US-C0. US-S0 does not itself claim survivorship-free market-wide Alpha validity; that remains constrained by lifecycle/PIT evidence in later research stages.
 
 ---
 
@@ -811,7 +875,7 @@ A meaningful result binds Git/code identity, data source/revision, configuration
 DOC-0  docs authority + consolidation + docs CI
 H0     final Historical v1.0 test/smoke/tag/release closure
 ENG-0  dependency/runtime reproducibility
-US-S0  source authority contracts + real source certification
+US-S0  source/publication authority + exact local snapshot certification/admission
 US-C0  calendar/LabelSpec/actions/query/adapter-capability contracts
 MT5-P0 Windows read-only capability probe
 US-I0  instrument mapping + EngineeringUniverse
@@ -850,7 +914,7 @@ Do not combine source certification, Agent research and broker-order mutation in
 
 v4.1 is successful if the project can make and preserve the following evidence-based decisions:
 
-1. **Data:** the exact U.S. historical source is trustworthy enough for the stated research claim, or is rejected explicitly.
+1. **Data:** the exact U.S. historical source and local snapshot are trustworthy enough for the stated research claim, with public-source and cleaning limitations preserved explicitly, or the source/snapshot is rejected.
 2. **Agent:** controlled evidence shows whether the Agent improves research quality/efficiency over non-Agent baselines.
 3. **Alpha:** robust intraday Alpha either passes or stops strategy deployment honestly.
 4. **Execution:** passing Alpha survives broker-compatible historical CFD friction before broker mutation.

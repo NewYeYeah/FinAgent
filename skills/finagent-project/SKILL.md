@@ -150,6 +150,31 @@ When asked to implement the current or next stage:
 
 A partial implementation may be merged without changing the current stage to complete.
 
+### Local Windows execution convention
+
+The current operator workstation uses **Conda** for Python environment management and **PowerShell** for shell execution.
+
+When writing commands intended for the operator's local Windows machine:
+
+```powershell
+conda activate finagent
+cd D:\PythonWorkspace\FinAgent
+python ...
+npm ...
+```
+
+Rules:
+
+- assume the `finagent` Conda environment is activated unless the task explicitly establishes another environment;
+- use PowerShell syntax and backticks `` ` `` for multiline commands;
+- use Windows paths when the user supplies Windows paths;
+- invoke `python`, `pytest`, `npm`, or repository scripts directly inside the active Conda environment;
+- do **not** rewrite normal local instructions as `uv run ...` or require the user to replace Conda with uv;
+- `uv.lock` and the pinned uv resolver remain the ENG-0 **CI/reproducibility resolution authority**, not the workstation environment manager;
+- when a local dependency is missing, state the Conda-environment installation/update needed rather than silently switching environment systems.
+
+CI examples may continue to use uv exactly as defined by repository workflows.
+
 ## 7. Documentation development protocol
 
 ### 7.1 Decide which authority owns the change
@@ -206,6 +231,7 @@ Before approving a documentation change, verify:
 - [ ] platform acceptance is not described as Alpha/PAPER/live acceptance;
 - [ ] historical A-share limitations remain explicit where relevant;
 - [ ] provider/API capability is not confused with FinAgent adapter capability;
+- [ ] local Windows commands follow the Conda + PowerShell convention;
 - [ ] relative links resolve;
 - [ ] `python scripts/check_docs.py` passes.
 
