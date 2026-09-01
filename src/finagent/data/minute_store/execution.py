@@ -26,6 +26,17 @@ def _sql_string(value: str) -> str:
     return "'" + value.replace("'", "''") + "'"
 
 
+def _setting_bool(value: object) -> bool:
+    if isinstance(value, bool):
+        return value
+    rendered = str(value).strip().lower()
+    if rendered in {"true", "1", "yes", "on"}:
+        return True
+    if rendered in {"false", "0", "no", "off"}:
+        return False
+    raise ValueError(f"unexpected DuckDB boolean setting value: {value!r}")
+
+
 @dataclass(frozen=True, slots=True)
 class DuckDBExecutionPolicy:
     """Engine-resource bounds for out-of-core minute queries.
@@ -125,6 +136,6 @@ def configure_duckdb_connection(
         policy_id=policy.policy_id,
         observed_memory_limit=str(memory_row[0]),
         observed_threads=int(threads_row[0]),
-        observed_preserve_insertion_order=bool(insertion_row[0]),
+        observed_preserve_insertion_order=_setting_bool(insertion_row[0]),
         temp_spill_enabled=spill_enabled,
     )
