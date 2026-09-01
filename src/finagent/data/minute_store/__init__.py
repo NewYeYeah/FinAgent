@@ -19,9 +19,15 @@ from .materialize import (
 )
 from .parquet_store import US_MINUTE_DUCKDB_ADAPTER_ID, DuckDBParquetMinuteStore
 from .query import MinuteQueryPlan, build_minute_query_plan, select_partitions
+from .smoke import (
+    DEFAULT_MINUTE_STORE_SMOKE_POLICY,
+    MinuteStoreSmokePolicy,
+    MinuteStoreSmokeReport,
+)
 
 __all__ = [
     "DEFAULT_DUCKDB_EXECUTION_POLICY",
+    "DEFAULT_MINUTE_STORE_SMOKE_POLICY",
     "US_MINUTE_DUCKDB_ADAPTER_ID",
     "DuckDBExecutionPolicy",
     "DuckDBExecutionSettings",
@@ -30,6 +36,8 @@ __all__ = [
     "MinuteQueryPlan",
     "MinuteStoreManifest",
     "MinuteStorePartition",
+    "MinuteStoreSmokePolicy",
+    "MinuteStoreSmokeReport",
     "build_minute_query_plan",
     "configure_duckdb_connection",
     "copy_plan_to_parquet",
