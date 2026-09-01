@@ -212,26 +212,29 @@ def build_candidate_quote_probe_report(
     )
 
     rows_by_symbol: dict[str, Mapping[str, object]] = {}
-    for row in symbol_rows:
-        symbol = _text(row.get("name", row.get("symbol")), "symbol_rows[].name")
-        rows_by_symbol[symbol] = row
+    for source_row in symbol_rows:
+        symbol = _text(
+            source_row.get("name", source_row.get("symbol")),
+            "symbol_rows[].name",
+        )
+        rows_by_symbol[symbol] = source_row
 
     quotes: list[USCandidateQuoteSnapshot] = []
     invalid: list[str] = []
     for symbol in requested:
-        row = rows_by_symbol.get(symbol)
-        if row is None:
+        matched_row = rows_by_symbol.get(symbol)
+        if matched_row is None:
             invalid.append(symbol)
             continue
         try:
-            bid = _number(row.get("bid"), f"symbol_rows[{symbol}].bid")
-            ask = _number(row.get("ask"), f"symbol_rows[{symbol}].ask")
+            bid = _number(matched_row.get("bid"), f"symbol_rows[{symbol}].bid")
+            ask = _number(matched_row.get("ask"), f"symbol_rows[{symbol}].ask")
             sampled_at = datetime.fromtimestamp(
-                _integer(row.get("time"), f"symbol_rows[{symbol}].time"),
+                _integer(matched_row.get("time"), f"symbol_rows[{symbol}].time"),
                 tz=UTC,
             )
             trade_mode = _integer(
-                row.get("trade_mode"),
+                matched_row.get("trade_mode"),
                 f"symbol_rows[{symbol}].trade_mode",
             )
             quote = USCandidateQuoteSnapshot(
@@ -240,7 +243,7 @@ def build_candidate_quote_probe_report(
                 bid=bid,
                 ask=ask,
                 visible=_boolean(
-                    row.get("visible", False),
+                    matched_row.get("visible", False),
                     f"symbol_rows[{symbol}].visible",
                 ),
                 tradable=trade_mode != 0,
@@ -425,27 +428,27 @@ def finalize_us_engineering_universe(
 
     quote_bps: dict[str, float] = {}
     for raw in _sequence(quote_document.get("quotes"), "quote.quotes"):
-        row = _mapping(raw, "quote.quotes[]")
-        symbol = _text(row.get("symbol"), "quote.quotes[].symbol")
+        quote_row = _mapping(raw, "quote.quotes[]")
+        symbol = _text(quote_row.get("symbol"), "quote.quotes[].symbol")
         if policy.require_tradable and not _boolean(
-            row.get("tradable"),
+            quote_row.get("tradable"),
             "quote.quotes[].tradable",
         ):
             continue
         quote_bps[symbol] = _number(
-            row.get("spread_bps"),
+            quote_row.get("spread_bps"),
             "quote.quotes[].spread_bps",
         )
 
     candidates: list[tuple[int, str]] = []
     excluded: list[str] = []
     for raw in _sequence(candidate_document.get("candidates"), "candidate.candidates"):
-        row = _mapping(raw, "candidate.candidates[]")
+        candidate_row = _mapping(raw, "candidate.candidates[]")
         symbol = _text(
-            row.get("research_symbol"),
+            candidate_row.get("research_symbol"),
             "candidate.candidates[].research_symbol",
         )
-        rank = _integer(row.get("rank"), "candidate.candidates[].rank")
+        rank = _integer(candidate_row.get("rank"), "candidate.candidates[].rank")
         spread = quote_bps.get(symbol)
         if spread is None or spread > policy.maximum_current_spread_bps:
             excluded.append(symbol)
