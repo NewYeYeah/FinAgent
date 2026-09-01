@@ -4,9 +4,9 @@ planning_document = "docs/development/current-plan.md"
 
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
-current_stage = "US-D1"
-current_stage_status = "awaiting_real_full_snapshot_smoke"
-next_stage = "US-D2"
+current_stage = "US-D2"
+current_stage_status = "sessionization_implemented_resampling_next"
+next_stage = "US-D3"
 
 [release.ashare_historical_v1]
 status = "accepted"
@@ -164,8 +164,9 @@ point_in_time_security_master_available = false
 focused_ci = ".github/workflows/us-i0-instrument-mapping.yml"
 
 [stage.us_d1]
-status = "in_progress"
+status = "accepted"
 started_at = "2026-09-01"
+accepted_at = "2026-09-01"
 foundation_merged = true
 manifest_contract = true
 duckdb_parquet_store = true
@@ -199,9 +200,52 @@ portable_smoke_report_contains_source_rows = false
 full_corpus_smoke_script = "scripts/smoke_us_d1_minute_store.py"
 focused_ci = ".github/workflows/us-d1-minute-data-plane.yml"
 focused_ci_passed = true
-full_corpus_smoke_passed = false
-engine_resource_policy_smoke_passed = false
-replay_materialization_match_passed = false
+full_corpus_smoke_passed = true
+engine_resource_policy_smoke_passed = true
+replay_materialization_match_passed = true
+stage_exit_gate_passed = true
+accepted_smoke_report_id = "minute-store-smoke-ac583e1435f96a227f460f00"
+accepted_smoke_policy_id = "minute-store-smoke-policy-609041fa27f3857a736a5483"
+accepted_execution_policy_id = "duckdb-execution-policy-117a694bf219b8ea12068250"
+accepted_manifest_id = "minute-store-manifest-425d29a05cd26890d972c8f9"
+accepted_data_version = "minute-data-version-999f210df720fd8d9c998fd9"
+accepted_query_id = "market-data-query-af0f6f905d8a8674607e88a1"
+accepted_plan_id = "minute-query-plan-9746d0925c96a56086c21865"
+accepted_materialization_id = "minute-materialization-209027e1a1aa93b20184ad0e"
+accepted_materialization_content_sha256 = "dcfb8e623a024391a67551b3c870e152909551b06fb2ed11eedc4f424dd2a744"
+accepted_smoke_row_count = 129398
+accepted_smoke_asset_count = 4
+accepted_smoke_partition_count = 3
+accepted_smoke_partition_months = ["2025-12", "2026-01", "2026-02"]
+accepted_smoke_selected_size_bytes = 1228137154
+accepted_materialization_size_bytes = 2092059
+accepted_observed_memory_limit = "488.2 MiB"
+accepted_observed_threads = 2
+accepted_observed_max_temp_directory_size = "3.7 GiB"
+accepted_temp_directory_configured = true
+accepted_temp_spill_enabled = true
+accepted_local_report = "reports/us_d1/us_d1_smoke_report.json"
+
+[stage.us_d2]
+status = "in_progress"
+started_at = "2026-09-01"
+calendar_id = "trading-calendar-03a9c29f566d6634aedbbbdc"
+sessionization_contract = true
+sessionization_spec_schema = "finagent.minute-sessionization-spec.v1"
+sessionization_evidence_schema = "finagent.minute-sessionization-evidence.v1"
+sessionized_adapter_id = "us-minute-sessionized-duckdb-v1"
+sessionization_clock = "event_time"
+regular_boundary = "open_inclusive_close_exclusive"
+regular_session_policy_implemented = true
+all_observed_session_policy_implemented = true
+extended_session_policy_implemented = false
+extended_session_blocker = "calendar_pre_post_boundaries_not_materialized"
+sessionization_fixture = "tests/fixtures/us_minute/sessionization_edge_cases.csv"
+sessionization_focused_ci = ".github/workflows/us-d2-sessionization.yml"
+sessionization_focused_ci_passed = true
+resampling_status = "pending_next_increment"
+label_materialization_status = "pending"
+corporate_action_transform_status = "pending"
 stage_exit_gate_passed = false
 
 [documentation]
