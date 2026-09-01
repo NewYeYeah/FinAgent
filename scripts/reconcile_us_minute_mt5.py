@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 from collections import defaultdict
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import cast
@@ -42,6 +42,15 @@ def _read_mapping(path: Path) -> Mapping[str, object]:
     return cast(Mapping[str, object], value)
 
 
+def _rows(value: object) -> tuple[object, ...]:
+    if isinstance(value, (str, bytes, bytearray, Mapping)) or not isinstance(
+        value,
+        Iterable,
+    ):
+        raise TypeError("MT5 rate collection must be an iterable of rows")
+    return tuple(value)
+
+
 def _row_mapping(value: object) -> Mapping[str, object]:
     if isinstance(value, Mapping):
         return cast(Mapping[str, object], value)
@@ -51,8 +60,9 @@ def _row_mapping(value: object) -> Mapping[str, object]:
         if isinstance(mapped, Mapping):
             return cast(Mapping[str, object], mapped)
     names = getattr(getattr(value, "dtype", None), "names", None)
-    if names:
-        return {str(name): value[name] for name in names}
+    getitem = getattr(value, "__getitem__", None)
+    if names and callable(getitem):
+        return {str(name): getitem(name) for name in names}
     raise TypeError(f"MT5 row is not mapping/namedtuple/structured-row like: {type(value)!r}")
 
 
@@ -64,6 +74,13 @@ def _number(value: object, default: float | None = None) -> float | None:
     if isinstance(scalar, (bool, int, float, str, bytes, bytearray)):
         return float(scalar)
     raise TypeError(f"numeric value has unsupported type {type(value)!r}")
+
+
+def _required_number(value: object, field_name: str) -> float:
+    number = _number(value)
+    if number is None:
+        raise ValueError(f"{field_name} is missing")
+    return number
 
 
 def _integer(value: object) -> int:
@@ -227,8 +244,8 @@ def main() -> int:
         research_by_symbol[symbol].append(
             ReferenceMinuteBar(
                 timestamp=event_time,
-                close=float(row["close"]),
-                volume=float(row["volume"]),
+                close=_required_number(row.get("close"), "research.close"),
+                volume=_required_number(row.get("volume"), "research.volume"),
             )
         )
 
@@ -248,7 +265,7 @@ def main() -> int:
             minutes=policy.maximum_abs_offset_minutes
         )
         broker_end = policy.end + timedelta(minutes=policy.maximum_abs_offset_minutes)
-        checks = []
+        checks: list[MinuteReferenceSymbolCheck] = []
         for research_symbol, broker_symbol in mappings:
             broker_raw = client.copy_rates_range(
                 broker_symbol,
@@ -256,7 +273,7 @@ def main() -> int:
                 broker_end,
             )
             broker_bars: list[ReferenceMinuteBar] = []
-            for raw in broker_raw:
+            for raw in _rows(broker_raw):
                 mapped = _row_mapping(raw)
                 close = _number(mapped.get("close"))
                 if close is None or close <= 0:
