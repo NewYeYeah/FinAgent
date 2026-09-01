@@ -9,6 +9,15 @@ from .ashare_supplemental import (
     AshareSuspensionPeriod,
 )
 from .ashare_supplemental_master import SupplementedAshareSecurityMaster
+from .calendar_materialization import (
+    RECOMMENDED_EXCHANGE_CALENDARS_VERSION,
+    CalendarAnchorCheck,
+    ExchangeCalendarMaterializationSpec,
+    TradingCalendarMaterializationReport,
+    materialize_calendar_evidence_from_rows,
+    materialize_xnys_exchange_calendars,
+    validate_xnys_research_anchors,
+)
 from .capabilities import AdapterCapabilities
 from .ingestion import (
     AKSHARE_CAPABILITIES,
@@ -111,9 +120,11 @@ __all__ = [
     "AshareSupplementalDataStore",
     "AshareSuspensionPeriod",
     "CSVPriceDataAdapter",
+    "CalendarAnchorCheck",
     "ConfiguredMarketData",
     "DEFAULT_MINUTE_CLEANING_POLICY",
     "DataFrequency",
+    "ExchangeCalendarMaterializationSpec",
     "FrozenLocalFile",
     "HiThinkMarketDataIngestor",
     "HuggingFaceSnapshotLayout",
@@ -156,11 +167,13 @@ __all__ = [
     "ProviderDiffReport",
     "ProviderSymbolMap",
     "QualityIssue",
+    "RECOMMENDED_EXCHANGE_CALENDARS_VERSION",
     "ResearchDataRequirement",
     "SQLitePriceDataAdapter",
     "SQLitePriceStore",
     "SessionPolicy",
     "SupplementedAshareSecurityMaster",
+    "TradingCalendarMaterializationReport",
     "TushareMarketDataIngestor",
     "admit_local_non_redistributed_research",
     "admit_local_research_with_cleaning",
@@ -173,9 +186,12 @@ __all__ = [
     "inventory_monthly_parquet",
     "load_configured_market_data",
     "load_market_data_profile",
+    "materialize_calendar_evidence_from_rows",
     "materialize_local_ashare_market_bar_rows",
+    "materialize_xnys_exchange_calendars",
     "provider_capabilities",
     "read_normalized_csv",
     "validate_records",
+    "validate_xnys_research_anchors",
     "write_market_bar_series",
 ]
