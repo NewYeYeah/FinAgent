@@ -27,6 +27,14 @@ def _canonical_hash(payload: dict[str, object], *, prefix: str) -> str:
     return f"{prefix}-{hashlib.sha256(encoded).hexdigest()[:24]}"
 
 
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def _duckdb() -> Any:
     try:
         return importlib.import_module("duckdb")
@@ -69,8 +77,17 @@ class MinuteMaterialization:
     data_version: str
     row_count: int
     size_bytes: int
+    content_sha256: str
     output_filename: str
-    schema_version: str = "finagent.minute-materialization.v1"
+    schema_version: str = "finagent.minute-materialization.v2"
+
+    def __post_init__(self) -> None:
+        if self.row_count < 0 or self.size_bytes < 0:
+            raise ValueError("minute materialization counts/sizes must be >= 0")
+        digest = self.content_sha256.strip().lower()
+        if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
+            raise ValueError("content_sha256 must be a 64-character hexadecimal SHA-256")
+        object.__setattr__(self, "content_sha256", digest)
 
     @property
     def materialization_id(self) -> str:
@@ -80,8 +97,7 @@ class MinuteMaterialization:
                 "plan_id": self.plan_id,
                 "data_version": self.data_version,
                 "row_count": self.row_count,
-                "size_bytes": self.size_bytes,
-                "output_filename": self.output_filename,
+                "content_sha256": self.content_sha256,
             },
             prefix="minute-materialization",
         )
@@ -94,6 +110,7 @@ class MinuteMaterialization:
             "data_version": self.data_version,
             "row_count": self.row_count,
             "size_bytes": self.size_bytes,
+            "content_sha256": self.content_sha256,
             "output_filename": self.output_filename,
         }
 
@@ -210,5 +227,6 @@ def copy_plan_to_parquet(
         data_version=plan.data_version,
         row_count=row_count,
         size_bytes=output_path.stat().st_size,
+        content_sha256=_file_sha256(output_path),
         output_filename=output_path.name,
     )
