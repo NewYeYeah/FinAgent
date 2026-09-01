@@ -2,6 +2,14 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-01 — Reproducible development baseline (ENG-0)
+
+- fixed the canonical Python developer baseline at 3.11 via `.python-version`, pinned uv 0.12.1 as the sole resolver, and committed `uv.lock` as the resolved Python environment authority while retaining `pyproject.toml` as dependency intent;
+- fixed the frontend developer/CI baseline at Node 22 via `.nvmrc` and retained `workspace/package-lock.json` as the npm resolution authority;
+- replaced the one-shot lock bootstrap with a permanent Ubuntu + Windows reproducibility gate covering `uv lock --check`, frozen environment sync, dependency consistency, Windows `npm ci`, frontend typecheck, unit tests and production build;
+- retained Python 3.12/3.13 as compatibility coverage rather than competing environment authorities;
+- kept the official MT5 SDK, broker capability evidence and all mutation authority outside ENG-0, and advanced the current development stage to `US-S0`.
+
 ## 2026-09-01 — Historical v1.0 release closure (H0)
 
 - received and recorded a real local HW-1.0-RS acceptance with `accepted=true`, browser `passed`, `contract_valid=true` and reserve non-consumption;

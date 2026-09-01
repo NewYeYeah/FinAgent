@@ -45,9 +45,6 @@ Current spread/slippage samples may not represent historical or stressed executi
 ### Agent cost / instability
 LLM provider/model changes can alter candidate output, latency and cost. Agent experiments bind model/provider/prompt identity and use repeated runs rather than one anecdotal result.
 
-### Dependency/runtime drift
-Python currently expresses dependency intent more strongly than fully resolved environment identity. ENG-0 must close this before long-lived U.S. evidence depends on changing transitive graphs.
-
 ## P2 — deployment hardening
 
 - secure secret isolation and broker credential handling;

@@ -4,9 +4,9 @@ planning_document = "docs/development/current-plan.md"
 
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
-current_stage = "ENG-0"
+current_stage = "US-S0"
 current_stage_status = "in_progress"
-next_stage = "US-S0"
+next_stage = "US-C0"
 
 [release.ashare_historical_v1]
 status = "accepted"
