@@ -5,7 +5,7 @@ planning_document = "docs/development/current-plan.md"
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
 current_stage = "MT5-P0"
-current_stage_status = "in_progress"
+current_stage_status = "awaiting_local_terminal_probe"
 next_stage = "US-I0"
 
 [release.ashare_historical_v1]
@@ -99,10 +99,14 @@ focused_ci = ".github/workflows/us-c0-intraday-contracts.yml"
 
 [stage.mt5_p0]
 status = "in_progress"
-read_only_contracts = false
-import_safe_adapter = false
-synthetic_probe_regression = false
+read_only_contracts = true
+import_safe_adapter = true
+synthetic_probe_regression = true
 local_terminal_probe = false
+expected_python_package = "MetaTrader5"
+expected_python_package_version = "5.0.6147"
+probe_script = "scripts/probe_mt5_readonly.py"
+focused_ci = ".github/workflows/mt5-p0-readonly.yml"
 mutation_authority = false
 
 [documentation]
