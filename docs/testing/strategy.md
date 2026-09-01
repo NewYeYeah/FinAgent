@@ -19,17 +19,42 @@ Large/private/local datasets, real LLM providers, official MT5 terminal/broker d
 ### L4 — release / operational gate
 A release or authority transition binds the exact accepted Git/data/config/environment/evidence identities. Passing a lower layer never implies a higher authority.
 
-## 2. Standard merge gate
+## 2. Standard merge gate and CI routing
 
-Core merge gates normally include:
+FinAgent uses two CI lanes rather than making every pull request wait for every historical/compatibility surface.
+
+### Pull-request fast lane
+
+A PR must run the checks that can directly invalidate the changed surface:
 
 ```text
-pytest for changed core/subsystem scope
-Ruff critical checks
-focused mypy (strict for new modules)
+Python 3.11 repository integration pytest
+project-wide critical Ruff checks
+stage/subsystem focused pytest
+focused Ruff + strict mypy for new modules
 compile/import smoke where relevant
-package/dependency consistency
+docs/release/source gates only when their paths change
 ```
+
+Historical focused workflows use PR path filters. For example, A2.6 and the historical Research UI do not block a U.S. minute/calendar PR unless their own code/test/dependency paths changed.
+
+Pure documentation PRs may skip the generic Python package test workflow when the documentation-governance workflow owns the changed surface.
+
+### Main integration / compatibility lane
+
+After merge, every push to `main` retains the broader compatibility safety net:
+
+```text
+Python 3.11 / 3.12 / 3.13 full pytest matrix
+Windows Python 3.11 full pytest
+historical A2.6 regression
+historical Research UI regression
+coverage floor
+historical targeted lint/mypy surfaces
+package build + dependency consistency
+```
+
+This separation reduces PR queue/merge latency without deleting compatibility or historical-release regression coverage. A focused PR gate must not be removed merely because the main lane exists; main regression is a backstop, not a substitute for changed-surface validation.
 
 Frontend changes normally include:
 
@@ -60,7 +85,7 @@ The frontend developer/CI baseline is Node 22 unless a later explicit environmen
 - `npm ci` from `workspace/package-lock.json`;
 - frontend typecheck, unit tests and production build.
 
-The existing Python 3.11/3.12/3.13 matrix remains compatibility coverage over declared `pyproject.toml` ranges. It does not create a second resolution authority and does not replace the locked Python 3.11 baseline. Existing package CI continues to run `python -m pip check`; the reproducibility gate additionally checks the frozen uv environment.
+The Python 3.11/3.12/3.13 matrix remains compatibility coverage over declared `pyproject.toml` ranges, but it runs in the main integration lane rather than blocking every PR. It does not create a second resolution authority and does not replace the locked Python 3.11 baseline. Package/dependency consistency is likewise retained on main integration; the reproducibility gate additionally checks the frozen uv environment.
 
 ENG-0 does not install the official `MetaTrader5` SDK. SDK optional-dependency/import-safety and real terminal evidence are governed by `MT5-P0`.
 
@@ -74,7 +99,7 @@ US-S0/US-D3 tests must separate:
 - corporate-action and symbol-lifecycle limitations;
 - independent/broker reconciliation.
 
-A source may be technically readable and still be `REFERENCE_ONLY` or `REJECTED`.
+A source may be technically readable and still be `REFERENCE_ONLY` or `REJECTED`. A locally admitted `REFERENCE_ONLY` source remains limited to the explicitly accepted scope and cleaning policy.
 
 ## 5. Agent experiment acceptance
 
