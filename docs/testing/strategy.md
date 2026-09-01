@@ -19,17 +19,58 @@ Large/private/local datasets, real LLM providers, official MT5 terminal/broker d
 ### L4 — release / operational gate
 A release or authority transition binds the exact accepted Git/data/config/environment/evidence identities. Passing a lower layer never implies a higher authority.
 
-## 2. Standard merge gate
+## 2. Standard merge gate and CI routing
 
-Core merge gates normally include:
+FinAgent uses two CI lanes rather than making every pull request wait for every historical/compatibility surface.
+
+### Pull-request fast lane
+
+A PR must run checks that can directly invalidate the changed surface:
 
 ```text
-pytest for changed core/subsystem scope
-Ruff critical checks
-focused mypy (strict for new modules)
+Python 3.11 cross-layer core integration smoke
+project-wide critical Ruff checks
+stage/subsystem focused pytest
+focused Ruff + strict mypy for new modules
 compile/import smoke where relevant
-package/dependency consistency
+docs/release/source gates only when their paths change
 ```
+
+The generic PR smoke deliberately does **not** execute the entire repository. Changed subsystems own deeper validation through path-scoped focused workflows. For example, U.S. minute changes run the U.S. minute/source gates; A2.6 and historical Research UI changes run their own gates.
+
+Historical focused workflows use PR path filters. A2.6 and the historical Research UI therefore do not block a U.S. minute/calendar PR unless their own code/test/dependency/workflow paths changed.
+
+Pure documentation PRs may skip the generic Python package workflow when documentation governance owns the changed surface.
+
+### Main integration / compatibility lane
+
+After merge, every push to `main` retains the broader active-code safety net:
+
+```text
+Python 3.11 / 3.12 / 3.13 active-suite pytest matrix
+Windows Python 3.11 active-suite pytest
+historical A2.6 regression
+historical Research UI regression
+coverage floor over the active suite
+historical targeted lint/mypy surfaces
+package build + dependency consistency
+```
+
+This separation reduces PR queue/merge latency without deleting compatibility or currently relevant historical-surface regression coverage. A focused PR gate must not be removed merely because the main lane exists; the main regression is a backstop, not a substitute for changed-surface validation.
+
+### Frozen Historical release reproduction is not the active suite
+
+A-share Historical v1.0 has its own immutable release/tag/evidence boundary. The following tests reproduce historical A-C4/A-C5 assumptions and are intentionally excluded from the generic active-suite pytest/coverage lane:
+
+```text
+tests/test_initial_requirement_compliance_ac4.py
+tests/test_ashare_historical_v1_freeze_ac5.py
+tests/test_ashare_historical_v1_freeze_lineage.py
+```
+
+They depend on historical plan references and/or historical Git lineage that are no longer part of the active DOC-0 tree. They remain release-reproduction material and are exercised only by the dedicated Historical workflows/release procedure with the history depth and artifacts that those contracts require. Their failure under a shallow generic checkout is not treated as a current U.S./MT5 product regression.
+
+Do not silently delete or rewrite frozen release evidence merely to make the active suite green. If the Historical release itself must be re-verified, use its dedicated release procedure and exact historical identities.
 
 Frontend changes normally include:
 
@@ -60,7 +101,7 @@ The frontend developer/CI baseline is Node 22 unless a later explicit environmen
 - `npm ci` from `workspace/package-lock.json`;
 - frontend typecheck, unit tests and production build.
 
-The existing Python 3.11/3.12/3.13 matrix remains compatibility coverage over declared `pyproject.toml` ranges. It does not create a second resolution authority and does not replace the locked Python 3.11 baseline. Existing package CI continues to run `python -m pip check`; the reproducibility gate additionally checks the frozen uv environment.
+The Python 3.11/3.12/3.13 matrix remains compatibility coverage over declared `pyproject.toml` ranges, but it runs in the main integration lane rather than blocking every PR. It does not create a second resolution authority and does not replace the locked Python 3.11 baseline. Package/dependency consistency is likewise retained on main integration; the reproducibility gate additionally checks the frozen uv environment.
 
 ENG-0 does not install the official `MetaTrader5` SDK. SDK optional-dependency/import-safety and real terminal evidence are governed by `MT5-P0`.
 
@@ -74,7 +115,7 @@ US-S0/US-D3 tests must separate:
 - corporate-action and symbol-lifecycle limitations;
 - independent/broker reconciliation.
 
-A source may be technically readable and still be `REFERENCE_ONLY` or `REJECTED`.
+A source may be technically readable and still be `REFERENCE_ONLY` or `REJECTED`. A locally admitted `REFERENCE_ONLY` source remains limited to the explicitly accepted scope and cleaning policy.
 
 ## 5. Agent experiment acceptance
 

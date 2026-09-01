@@ -2,6 +2,16 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-01 — U.S. minute source/local admission closure (US-S0)
+
+- bound `mito0o852/OHLCV-1m` to immutable revision `776328445b7ac6e7815ef3a483e9c8ded1eb6d56` while retaining public-source authority as `REFERENCE_ONLY` and the local scope as `local_non_redistributed_research`;
+- inventoried the complete 1992-01 → 2026-03 local snapshot with no missing monthly partition and preserved inventory identity `us-minute-inventory-c2cbf682b456f97eb613ed65`;
+- replaced zero-defect gating with identity-bound deterministic cleaning: sparse invalid OHLC rows are quarantined, exact duplicates collapse, and ambiguous duplicate `(ticker,timestamp)` groups are removed wholesale rather than assigned an arbitrary winner;
+- diagnosed the 2026-03 conflict cluster as 392 ambiguous keys / 799 raw rows across 333 tickers and froze a maximum conflicting raw-row rate of `5e-5`;
+- accepted real local v3 certification `us-minute-certification-8e585c22fef175a2a4ce58ed` with `post_clean_conflicting_duplicate_key_count=0` and local admission `us-minute-local-admission-f9634ce117862410d2d00135`;
+- retained explicit limitations for unresolved public usage rights, publisher-declared upstream origin, session coverage, raw/split-unadjusted prices, missing embedded corporate actions and absent PIT security-master/lifecycle evidence;
+- advanced the current development stage to `US-C0` without implying Alpha, portfolio, PAPER, broker-mutation or live-capital acceptance.
+
 ## 2026-09-01 — Reproducible development baseline (ENG-0)
 
 - fixed the canonical Python developer baseline at 3.11 via `.python-version`, pinned uv 0.12.1 as the sole resolver, and committed `uv.lock` as the resolved Python environment authority while retaining `pyproject.toml` as dependency intent;
