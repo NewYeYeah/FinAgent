@@ -5,14 +5,18 @@ on:
     branches: [main]
     paths:
       - "src/finagent/research/us_baselines.py"
+      - "src/finagent/research/us_baseline_evaluation.py"
       - "tests/test_us_b0_baseline_contracts.py"
+      - "tests/test_us_b0_evaluation_core.py"
       - "docs/guides/us-b0-baselines.md"
       - ".github/workflows/us-b0-baseline-foundation.yml"
   push:
     branches: [main]
     paths:
       - "src/finagent/research/us_baselines.py"
+      - "src/finagent/research/us_baseline_evaluation.py"
       - "tests/test_us_b0_baseline_contracts.py"
+      - "tests/test_us_b0_evaluation_core.py"
       - "docs/guides/us-b0-baselines.md"
       - ".github/workflows/us-b0-baseline-foundation.yml"
 
@@ -35,11 +39,20 @@ jobs:
       - name: Reproduce locked development environment
         run: uv sync --frozen --extra dev
       - name: Baseline contract regression
-        run: uv run --frozen pytest -q tests/test_us_b0_baseline_contracts.py
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_us_b0_baseline_contracts.py \
+            tests/test_us_b0_evaluation_core.py
       - name: Strict static checks
         run: |
           uv run --frozen ruff check \
             src/finagent/research/us_baselines.py \
-            tests/test_us_b0_baseline_contracts.py
-          uv run --frozen mypy --strict src/finagent/research/us_baselines.py
-          uv run --frozen python -m py_compile src/finagent/research/us_baselines.py
+            src/finagent/research/us_baseline_evaluation.py \
+            tests/test_us_b0_baseline_contracts.py \
+            tests/test_us_b0_evaluation_core.py
+          uv run --frozen mypy --strict \
+            src/finagent/research/us_baselines.py \
+            src/finagent/research/us_baseline_evaluation.py
+          uv run --frozen python -m py_compile \
+            src/finagent/research/us_baselines.py \
+            src/finagent/research/us_baseline_evaluation.py
