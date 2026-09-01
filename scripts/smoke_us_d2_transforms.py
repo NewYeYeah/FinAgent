@@ -10,7 +10,6 @@ from pathlib import Path
 import duckdb
 
 from finagent.data.minute_store import (
-    DEFAULT_DUCKDB_EXECUTION_POLICY,
     DuckDBExecutionPolicy,
     DuckDBParquetMinuteStore,
     copy_plan_to_parquet,
@@ -217,7 +216,7 @@ def _label_summary(path: Path) -> tuple[int, int, int, int, int]:
         ).fetchone()
         if row is None:
             raise RuntimeError("label summary returned no row")
-        return tuple(int(value) for value in row)
+        return (int(row[0]), int(row[1]), int(row[2]), int(row[3]), int(row[4]))
     finally:
         connection.close()
 
