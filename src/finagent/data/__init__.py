@@ -70,6 +70,17 @@ from .market_bar_series import (
     write_market_bar_series,
 )
 from .store import SQLitePriceStore
+from .us_minute import (
+    HuggingFaceSnapshotLayout,
+    LocalMinuteCertification,
+    LocalMinuteFile,
+    LocalMinuteInventory,
+    LocalMinuteSampleCheck,
+    LocalResearchAdmission,
+    admit_local_non_redistributed_research,
+    certify_local_minute_snapshot,
+    inventory_monthly_parquet,
+)
 
 __all__ = [
     "AKSHARE_CAPABILITIES",
@@ -93,6 +104,7 @@ __all__ = [
     "DataFrequency",
     "FrozenLocalFile",
     "HiThinkMarketDataIngestor",
+    "HuggingFaceSnapshotLayout",
     "InMemoryPriceDataAdapter",
     "LocalAshareCertificationIssue",
     "LocalAshareCertificationReport",
@@ -104,6 +116,11 @@ __all__ = [
     "LocalAshareInferenceDataAdapter",
     "LocalAshareParquetDataAdapter",
     "LocalAshareSecurityMaster",
+    "LocalMinuteCertification",
+    "LocalMinuteFile",
+    "LocalMinuteInventory",
+    "LocalMinuteSampleCheck",
+    "LocalResearchAdmission",
     "MARKET_BAR_MANIFEST_SCHEMA",
     "MARKET_BAR_QUERY_SCHEMA",
     "MARKET_BAR_ROW_SCHEMA",
@@ -125,9 +142,12 @@ __all__ = [
     "SQLitePriceStore",
     "SupplementedAshareSecurityMaster",
     "TushareMarketDataIngestor",
+    "admit_local_non_redistributed_research",
     "ashare_session_spec",
+    "certify_local_minute_snapshot",
     "compare_provider_records",
     "create_local_ashare_frozen_manifest",
+    "inventory_monthly_parquet",
     "load_configured_market_data",
     "load_market_data_profile",
     "materialize_local_ashare_market_bar_rows",
