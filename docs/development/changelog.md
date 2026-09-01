@@ -2,6 +2,14 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-01 — U.S. minute Data Plane closure and sessionization start (US-D1 → US-D2)
+
+- accepted real local US-D1 smoke `minute-store-smoke-ac583e1435f96a227f460f00` over four seed assets with 129,398 rows and three routed monthly partitions under the frozen 512MB / 2-thread / 4GB DuckDB execution policy;
+- confirmed available-at partition routing across the year boundary, where a query beginning at 2026-01-01 correctly touched 2025-12 because the source event-time window is shifted back one minute;
+- accepted deterministic replay because primary and replay Parquet materializations shared content SHA-256 `dcfb8e623a024391a67551b3c870e152909551b06fb2ed11eedc4f424dd2a744` and materialization identity `minute-materialization-209027e1a1aa93b20184ad0e`;
+- closed US-D1 without introducing dense multi-year pandas/NumPy panels, redistribution of real source rows, session assumptions or adjusted-price semantics;
+- started US-D2 with a calendar-aware sessionization layer over the raw store, binding regular-session classification to accepted XNYS calendar `trading-calendar-03a9c29f566d6634aedbbbdc` and keeping extended-hours authority fail-closed until explicit pre/post-market boundaries exist.
+
 ## 2026-09-01 — MT5 read-only broker capability closure (MT5-P0)
 
 - accepted real MetaQuotes-Demo read-only capability assessment `mt5-p0-assessment-31cbb83d554010e791698384` over probe `mt5-capability-probe-db652a528408fda2dd3a606e`, with `accepted=true` and no blockers;
