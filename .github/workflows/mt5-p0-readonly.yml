@@ -6,7 +6,7 @@ on:
     paths:
       - "src/finagent/brokers/**"
       - "scripts/probe_mt5_readonly.py"
-      - "tests/test_mt5_p0_readonly_probe.py"
+      - "tests/test_mt5_p0_*.py"
       - "docs/status.toml"
       - "docs/guides/mt5-readonly-probe.md"
       - ".github/workflows/mt5-p0-readonly.yml"
@@ -15,7 +15,7 @@ on:
     paths:
       - "src/finagent/brokers/**"
       - "scripts/probe_mt5_readonly.py"
-      - "tests/test_mt5_p0_readonly_probe.py"
+      - "tests/test_mt5_p0_*.py"
       - "docs/status.toml"
       - "docs/guides/mt5-readonly-probe.md"
       - ".github/workflows/mt5-p0-readonly.yml"
@@ -38,14 +38,15 @@ jobs:
           version: "0.12.1"
       - name: Reproduce locked development environment
         run: uv sync --frozen --extra dev
-      - name: Read-only probe regression
-        run: uv run --frozen pytest -q tests/test_mt5_p0_readonly_probe.py
+      - name: Read-only probe and acceptance regression
+        run: uv run --frozen pytest -q tests/test_mt5_p0_readonly_probe.py tests/test_mt5_p0_acceptance.py
       - name: Strict static checks
         run: |
           uv run --frozen ruff check \
             src/finagent/brokers \
             scripts/probe_mt5_readonly.py \
-            tests/test_mt5_p0_readonly_probe.py
+            tests/test_mt5_p0_readonly_probe.py \
+            tests/test_mt5_p0_acceptance.py
           uv run --frozen mypy --strict src/finagent/brokers/mt5
           uv run --frozen python -m py_compile \
             src/finagent/brokers/__init__.py \
