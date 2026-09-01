@@ -21,6 +21,8 @@ def _run_spec(*, minimum_cross_section: int = 4) -> USBaselineRunSpec:
         engineering_universe_id="engineering-universe-test",
         denominator_id=denominator.denominator_id,
         minimum_cross_section=minimum_cross_section,
+        minimum_evaluated_periods=1,
+        minimum_ic_periods=1,
     )
 
 
@@ -38,8 +40,12 @@ def _period(
     reasons: tuple[str | None, ...] | None = None,
 ) -> tuple[USBaselineObservation, ...]:
     spec = _candidate(feature_id)
-    formation = datetime(2026, 3, 9, 14, 0, tzinfo=UTC) + timedelta(minutes=15 * period_index)
-    resolved_reasons = reasons or tuple(None if value is not None else "target_crosses_session" for value in labels)
+    formation = datetime(2026, 3, 9, 14, 0, tzinfo=UTC) + timedelta(
+        minutes=15 * period_index
+    )
+    resolved_reasons = reasons or tuple(
+        None if value is not None else "target_crosses_session" for value in labels
+    )
     rows = []
     for index, (feature, label, reason) in enumerate(
         zip(feature_values, labels, resolved_reasons, strict=True)
@@ -54,7 +60,9 @@ def _period(
                 eligible_at_formation=True,
                 feature_value=feature,
                 realized_label=label,
-                label_available_at=(formation + timedelta(minutes=60) if label is not None else None),
+                label_available_at=(
+                    formation + timedelta(minutes=60) if label is not None else None
+                ),
                 label_unavailable_reason=reason,
             )
         )
@@ -69,6 +77,12 @@ def test_run_spec_requires_certified_data_and_binds_denominator() -> None:
     assert spec.certification_outcome == "CERTIFIED_FOR_ENGINEERING_RESEARCH"
     assert spec.signal_interval == "15m"
     assert spec.label_name == "us_same_session_60m_simple_return_raw"
+    assert USBaselineRunSpec(
+        certification_report_id="cert",
+        certification_outcome="CERTIFIED_FOR_ENGINEERING_RESEARCH",
+        engineering_universe_id="universe",
+        denominator_id=denominator.denominator_id,
+    ).minimum_evaluated_periods == 20
 
     with pytest.raises(ValueError, match="accepted US-D3"):
         USBaselineRunSpec(
@@ -149,11 +163,15 @@ def test_all_cross_session_labels_are_expected_boundary_not_zero_filled() -> Non
 
     result = evaluate_us_baseline_candidate(candidate, boundary, run_spec=_run_spec())
 
-    assert result.valid
+    assert result.valid is False
     assert result.evaluated_periods == 0
     assert result.boundary_unrealized_periods == 1
     assert result.mean_gross_return is None
     assert result.mean_rank_ic is None
+    assert result.blockers == (
+        "insufficient_evaluated_periods:0<1",
+        "insufficient_ic_periods:0<1",
+    )
 
 
 def test_feature_missingness_changes_coverage_not_formation_eligibility() -> None:
@@ -205,7 +223,7 @@ def test_turnover_is_deterministic_across_formation_periods() -> None:
     assert result.mean_gross_traded_weight == pytest.approx(1.5)
 
 
-def test_full_denominator_is_retained_even_when_candidate_has_no_observations() -> None:
+def test_full_denominator_retains_and_marks_missing_candidates_invalid() -> None:
     denominator = canonical_us_baseline_denominator()
     run_spec = _run_spec()
     first = denominator.candidates[0]
@@ -225,12 +243,32 @@ def test_full_denominator_is_retained_even_when_candidate_has_no_observations() 
     assert len(report.candidates) == 8
     assert report.denominator_id == denominator.denominator_id
     assert report.candidates[0].observation_count == 4
+    assert report.candidates[0].valid
     assert all(item.observation_count == 0 for item in report.candidates[1:])
+    assert all(not item.valid for item in report.candidates[1:])
+    assert report.valid_candidate_count == 1
     assert report.report_id == evaluate_us_baseline_denominator(
         denominator,
         {first.feature_id: rows},
         run_spec=run_spec,
     ).report_id
+
+
+def test_duplicate_asset_formation_time_fails_closed() -> None:
+    feature_id = "manual_momentum_4bar"
+    candidate = _candidate(feature_id)
+    rows = list(
+        _period(
+            feature_id,
+            period_index=0,
+            feature_values=(-2.0, -1.0, 1.0, 2.0),
+            labels=(-0.04, -0.02, 0.02, 0.04),
+        )
+    )
+    rows.append(rows[0])
+
+    with pytest.raises(ValueError, match="duplicate/non-increasing"):
+        evaluate_us_baseline_candidate(candidate, rows, run_spec=_run_spec())
 
 
 def test_observation_requires_forward_label_to_mature_after_formation() -> None:
