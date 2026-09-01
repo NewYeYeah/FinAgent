@@ -1,0 +1,51 @@
+name: us-d3-minute-certification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/data/us_minute/research_certification.py"
+      - "scripts/certify_us_minute_research.py"
+      - "tests/test_us_d3_research_certification.py"
+      - ".github/workflows/us-d3-minute-certification.yml"
+      - "docs/status.toml"
+      - "docs/guides/data.md"
+  push:
+    branches: [main]
+    paths:
+      - "src/finagent/data/us_minute/research_certification.py"
+      - "scripts/certify_us_minute_research.py"
+      - "tests/test_us_d3_research_certification.py"
+      - ".github/workflows/us-d3-minute-certification.yml"
+      - "docs/status.toml"
+      - "docs/guides/data.md"
+
+jobs:
+  certification-contracts:
+    name: US-D3 evidence-bound minute certification
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Certification regression
+        run: uv run --frozen pytest -q tests/test_us_d3_research_certification.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/data/us_minute/research_certification.py \
+            scripts/certify_us_minute_research.py \
+            tests/test_us_d3_research_certification.py
+          uv run --frozen mypy --strict \
+            src/finagent/data/us_minute/research_certification.py \
+            scripts/certify_us_minute_research.py
+          uv run --frozen python -m py_compile \
+            src/finagent/data/us_minute/research_certification.py \
+            scripts/certify_us_minute_research.py
