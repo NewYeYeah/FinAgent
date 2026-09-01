@@ -1,0 +1,57 @@
+name: us-d2-label-materialization
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/data/minute_transform/labeling.py"
+      - "src/finagent/data/minute_transform/__init__.py"
+      - "src/finagent/data/minute_store/materialize.py"
+      - "tests/test_us_d2_label_materialization.py"
+      - "docs/status.toml"
+      - "docs/guides/us-minute-labels.md"
+      - ".github/workflows/us-d2-label-materialization.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/finagent/data/minute_transform/labeling.py"
+      - "src/finagent/data/minute_transform/__init__.py"
+      - "src/finagent/data/minute_store/materialize.py"
+      - "tests/test_us_d2_label_materialization.py"
+      - "docs/status.toml"
+      - "docs/guides/us-minute-labels.md"
+      - ".github/workflows/us-d2-label-materialization.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  labels:
+    name: US-D2 exact same-session label materialization
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Label materialization regression
+        run: uv run --frozen pytest -q tests/test_us_d2_label_materialization.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/data/minute_transform/labeling.py \
+            src/finagent/data/minute_transform/__init__.py \
+            src/finagent/data/minute_store/materialize.py \
+            tests/test_us_d2_label_materialization.py
+          uv run --frozen mypy --strict \
+            src/finagent/data/minute_transform/labeling.py \
+            src/finagent/data/minute_store/materialize.py
+          uv run --frozen python -m py_compile \
+            src/finagent/data/minute_transform/labeling.py \
+            src/finagent/data/minute_store/materialize.py
