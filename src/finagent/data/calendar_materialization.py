@@ -3,11 +3,12 @@ from __future__ import annotations
 import hashlib
 import importlib
 import json
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from importlib import metadata
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 from finagent.domain.trading_calendar import TradingCalendarEvidence, TradingSession
 
@@ -141,8 +142,12 @@ class TradingCalendarMaterializationReport:
     def coverage_boundary_passed(self) -> bool:
         grace = timedelta(days=7)
         return (
-            self.spec.requested_start <= self.evidence.coverage_start <= self.spec.requested_start + grace
-            and self.spec.requested_end - grace <= self.evidence.coverage_end <= self.spec.requested_end
+            self.spec.requested_start
+            <= self.evidence.coverage_start
+            <= self.spec.requested_start + grace
+            and self.spec.requested_end - grace
+            <= self.evidence.coverage_end
+            <= self.spec.requested_end
         )
 
     @property
@@ -217,9 +222,15 @@ def materialize_calendar_evidence_from_rows(
     )
 
 
-def validate_xnys_2026_anchors(
+def validate_xnys_research_anchors(
     evidence: TradingCalendarEvidence,
 ) -> tuple[CalendarAnchorCheck, ...]:
+    """Validate a few high-information NYSE anchors inside the admitted data range.
+
+    The dataset ends at 2026-03-31, so holiday/half-day anchors deliberately use
+    2025 dates while DST anchors exercise March 2026.
+    """
+
     def session_clock(
         session_date: date,
         expected_open: datetime,
@@ -238,6 +249,23 @@ def validate_xnys_2026_anchors(
         )
         return CalendarAnchorCheck(check_id, passed, detail)
 
+    independence_day_2025 = CalendarAnchorCheck(
+        "xnys-independence-day-2025",
+        evidence.covers(date(2025, 7, 4)) and not evidence.is_session(date(2025, 7, 4)),
+        "2025-07-04 must be absent as the NYSE Independence Day closure",
+    )
+    thanksgiving_half_day_2025 = session_clock(
+        date(2025, 11, 28),
+        datetime(2025, 11, 28, 14, 30, tzinfo=UTC),
+        datetime(2025, 11, 28, 18, 0, tzinfo=UTC),
+        "xnys-thanksgiving-half-day-2025",
+    )
+    half_day = evidence.session(date(2025, 11, 28))
+    half_day_flag = CalendarAnchorCheck(
+        "xnys-thanksgiving-half-day-flag-2025",
+        half_day is not None and half_day.is_half_day,
+        "2025-11-28 must be classified as a 210-minute half-day session",
+    )
     dst_before = session_clock(
         date(2026, 3, 6),
         datetime(2026, 3, 6, 14, 30, tzinfo=UTC),
@@ -250,25 +278,13 @@ def validate_xnys_2026_anchors(
         datetime(2026, 3, 9, 20, 0, tzinfo=UTC),
         "xnys-dst-after-2026",
     )
-    independence_observed = CalendarAnchorCheck(
-        "xnys-independence-observed-2026",
-        evidence.covers(date(2026, 7, 3)) and not evidence.is_session(date(2026, 7, 3)),
-        "2026-07-03 must be absent as the observed Independence Day closure",
+    return (
+        independence_day_2025,
+        thanksgiving_half_day_2025,
+        half_day_flag,
+        dst_before,
+        dst_after,
     )
-    half_day = evidence.session(date(2026, 11, 27))
-    thanksgiving_half_day = CalendarAnchorCheck(
-        "xnys-thanksgiving-half-day-2026",
-        (
-            half_day is not None
-            and half_day.open_at.astimezone(UTC)
-            == datetime(2026, 11, 27, 14, 30, tzinfo=UTC)
-            and half_day.close_at.astimezone(UTC)
-            == datetime(2026, 11, 27, 18, 0, tzinfo=UTC)
-            and half_day.is_half_day
-        ),
-        "2026-11-27 must materialize as the 09:30-13:00 ET half-day session",
-    )
-    return (dst_before, dst_after, independence_observed, thanksgiving_half_day)
 
 
 def materialize_xnys_exchange_calendars(
@@ -320,6 +336,6 @@ def materialize_xnys_exchange_calendars(
         spec=spec,
         evidence=evidence,
         observed_package_version=observed_version,
-        anchor_checks=validate_xnys_2026_anchors(evidence),
+        anchor_checks=validate_xnys_research_anchors(evidence),
         materialized_at=materialized_at or datetime.now(UTC),
     )
