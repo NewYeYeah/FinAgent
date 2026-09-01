@@ -4,13 +4,22 @@ planning_document = "docs/development/current-plan.md"
 
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
-current_stage = "H0"
-current_stage_status = "awaiting_real_local_acceptance"
-next_stage = "ENG-0"
+current_stage = "ENG-0"
+current_stage_status = "in_progress"
+next_stage = "US-S0"
 
 [release.ashare_historical_v1]
-status = "frozen_pending_post_freeze_smoke"
-tag = ""
+status = "accepted"
+tag = "finagent-ashare-historical-v1.0"
+tag_target = "fdea75e79122fa3d617c9862a4ee09db471b04cf"
+freeze_id = "ashare-historical-v1-76ba98983c1ffc6efb4b0f9a16acd5192eb7dd6c"
+smoke_id = "historical-workbench-rs-7ad4e7bdfa86b3551da62c6691934933bc312c73"
+contract_valid = true
+browser_status = "passed"
+production_reserve_consumed = false
+research_outcome = "NO_ROBUST_FACTOR_FAMILY"
+local_acceptance_attested = true
+accepted_at = "2026-09-01"
 release_document = "docs/releases/ashare-historical-v1.md"
 
 [documentation]

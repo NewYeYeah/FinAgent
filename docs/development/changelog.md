@@ -2,6 +2,14 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-01 — Historical v1.0 release closure (H0)
+
+- received and recorded a real local HW-1.0-RS acceptance with `accepted=true`, browser `passed`, `contract_valid=true` and reserve non-consumption;
+- bound the accepted release summary to freeze identity `ashare-historical-v1-76ba98983c1ffc6efb4b0f9a16acd5192eb7dd6c` and smoke identity `historical-workbench-rs-7ad4e7bdfa86b3551da62c6691934933bc312c73`;
+- retained the reviewed `NO_ROBUST_FACTOR_FAMILY` outcome without fabricating strategy/portfolio evidence;
+- closed A-share Historical v1.0 and advanced the current development stage to `ENG-0`;
+- registered `finagent-ashare-historical-v1.0` as the release tag over the pre-ENG-0 closure baseline.
+
 ## 2026-09-01 — Documentation authority reset (DOC-0)
 
 - replaced multiple versioned current plans/roadmaps with one stable `docs/development/current-plan.md`;
@@ -9,7 +17,8 @@ This file records **meaningful completed milestones**, not per-PR implementation
 - consolidated active architecture, testing and user guides around current truth rather than phase chronology;
 - consolidated A-C4/A-C5/HW historical-release instructions into the A-share Historical v1.0 release record;
 - removed stage-specific changelog/completion/API-contract documents from the active tree; their detailed history remains in Git/PRs;
-- added documentation-governance checks, CI and PR documentation-impact rules.
+- added documentation-governance checks, CI and PR documentation-impact rules;
+- added a repository-native onboarding/documentation skill for new humans and Agents.
 
 ## 2026-08-31 — A-share Historical v1.0 freeze and post-freeze hardening
 

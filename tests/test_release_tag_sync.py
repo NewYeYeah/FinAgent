@@ -1,0 +1,52 @@
+from __future__ import annotations
+
+import subprocess
+from pathlib import Path
+
+from scripts.sync_release_tags import load_release_tags, sync_release_tags
+
+
+def _git(root: Path, *args: str) -> str:
+    completed = subprocess.run(
+        ["git", *args],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return completed.stdout.strip()
+
+
+def test_release_tag_sync_creates_and_verifies_expected_target(tmp_path: Path) -> None:
+    root = tmp_path / "repo"
+    (root / "docs").mkdir(parents=True)
+    _git(root, "init")
+    _git(root, "config", "user.email", "release@example.invalid")
+    _git(root, "config", "user.name", "Release Test")
+    (root / "seed.txt").write_text("seed\n", encoding="utf-8")
+    _git(root, "add", ".")
+    _git(root, "commit", "-m", "seed")
+    target = _git(root, "rev-parse", "HEAD")
+    (root / "docs/status.toml").write_text(
+        "\n".join(
+            [
+                '[release.demo]',
+                'status = "accepted"',
+                'tag = "demo-v1"',
+                f'tag_target = "{target}"',
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    specs = load_release_tags(root)
+    assert len(specs) == 1
+    assert specs[0].target == target
+    assert sync_release_tags(root, apply=True, push=False) == (
+        f"created demo-v1 -> {target}",
+    )
+    assert _git(root, "rev-list", "-n", "1", "demo-v1") == target
+    assert sync_release_tags(root, apply=False, push=False) == (
+        f"verified demo-v1 -> {target}",
+    )

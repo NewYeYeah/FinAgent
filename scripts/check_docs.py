@@ -20,6 +20,7 @@ FORBIDDEN_DEVELOPMENT_PATTERNS = (
 )
 
 LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
 def fail(errors: list[str], message: str) -> None:
@@ -138,6 +139,27 @@ def check_release_ref(errors: list[str], status: dict[str, object]) -> None:
     path = str(ashare.get("release_document", "")).strip()
     if path and not (ROOT / path).is_file():
         fail(errors, f"release_document does not exist: {path}")
+    if ashare.get("status") == "accepted":
+        required = (
+            "tag",
+            "tag_target",
+            "freeze_id",
+            "smoke_id",
+            "research_outcome",
+            "accepted_at",
+        )
+        for key in required:
+            if not str(ashare.get(key, "")).strip():
+                fail(errors, f"accepted A-share release missing {key}")
+        target = str(ashare.get("tag_target", "")).strip().lower()
+        if target and not SHA_RE.fullmatch(target):
+            fail(errors, "accepted A-share release tag_target must be a 40-char Git SHA")
+        if ashare.get("contract_valid") is not True:
+            fail(errors, "accepted A-share release must record contract_valid=true")
+        if ashare.get("browser_status") != "passed":
+            fail(errors, "accepted A-share release must record browser_status=passed")
+        if ashare.get("production_reserve_consumed") is not False:
+            fail(errors, "accepted A-share release must record reserve non-consumption")
 
 
 def main() -> int:
