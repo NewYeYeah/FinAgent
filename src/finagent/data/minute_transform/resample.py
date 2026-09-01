@@ -161,7 +161,7 @@ def _require_divisible_sessions(
     if not durations:
         raise ValueError("resampling query does not intersect a materialized trading session")
     non_divisible = sorted(
-        set(minutes for minutes in durations if minutes % spec.interval_minutes != 0)
+        {minutes for minutes in durations if minutes % spec.interval_minutes != 0}
     )
     if non_divisible:
         rendered = ",".join(str(value) for value in non_divisible)
