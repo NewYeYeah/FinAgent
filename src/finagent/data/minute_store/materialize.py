@@ -8,6 +8,12 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
+from .execution import (
+    DEFAULT_DUCKDB_EXECUTION_POLICY,
+    DuckDBExecutionPolicy,
+    DuckDBExecutionSettings,
+    configure_duckdb_connection,
+)
 from .query import MinuteQueryPlan
 
 
@@ -37,6 +43,24 @@ def _sql_string(value: str) -> str:
 
 def _quoted_identifier(value: str) -> str:
     return '"' + value.replace('"', '""') + '"'
+
+
+def _connect(
+    policy: DuckDBExecutionPolicy,
+    *,
+    temp_directory: str | Path | None,
+) -> tuple[Any, DuckDBExecutionSettings]:
+    connection = _duckdb().connect(database=":memory:")
+    try:
+        settings = configure_duckdb_connection(
+            connection,
+            policy,
+            temp_directory=temp_directory,
+        )
+    except Exception:
+        connection.close()
+        raise
+    return connection, settings
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,8 +98,23 @@ class MinuteMaterialization:
         }
 
 
-def count_plan_rows(plan: MinuteQueryPlan) -> int:
-    connection = _duckdb().connect(database=":memory:")
+def inspect_execution_settings(
+    *,
+    policy: DuckDBExecutionPolicy = DEFAULT_DUCKDB_EXECUTION_POLICY,
+    temp_directory: str | Path | None = None,
+) -> DuckDBExecutionSettings:
+    connection, settings = _connect(policy, temp_directory=temp_directory)
+    connection.close()
+    return settings
+
+
+def count_plan_rows(
+    plan: MinuteQueryPlan,
+    *,
+    policy: DuckDBExecutionPolicy = DEFAULT_DUCKDB_EXECUTION_POLICY,
+    temp_directory: str | Path | None = None,
+) -> int:
+    connection, _settings = _connect(policy, temp_directory=temp_directory)
     try:
         row = connection.execute(f"SELECT COUNT(*) FROM ({plan.sql}) AS bounded_query").fetchone()
         if row is None:
@@ -89,6 +128,8 @@ def fetch_plan_rows(
     plan: MinuteQueryPlan,
     *,
     limit: int = 1000,
+    policy: DuckDBExecutionPolicy = DEFAULT_DUCKDB_EXECUTION_POLICY,
+    temp_directory: str | Path | None = None,
 ) -> tuple[dict[str, object], ...]:
     """Fetch a bounded Python preview without requiring DuckDB's optional pytz bridge.
 
@@ -109,7 +150,7 @@ def fetch_plan_rows(
         else:
             projections.append(identifier)
 
-    connection = _duckdb().connect(database=":memory:")
+    connection, _settings = _connect(policy, temp_directory=temp_directory)
     try:
         cursor = connection.execute(
             "SELECT "
@@ -139,6 +180,8 @@ def copy_plan_to_parquet(
     output: str | Path,
     *,
     overwrite: bool = False,
+    policy: DuckDBExecutionPolicy = DEFAULT_DUCKDB_EXECUTION_POLICY,
+    temp_directory: str | Path | None = None,
 ) -> MinuteMaterialization:
     output_path = Path(output).expanduser().resolve()
     if output_path.exists() and not overwrite:
@@ -147,7 +190,7 @@ def copy_plan_to_parquet(
     if output_path.exists():
         output_path.unlink()
 
-    connection = _duckdb().connect(database=":memory:")
+    connection, _settings = _connect(policy, temp_directory=temp_directory)
     try:
         connection.execute(
             f"COPY ({plan.sql}) TO {_sql_string(output_path.as_posix())} "
