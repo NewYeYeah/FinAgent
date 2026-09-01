@@ -1,0 +1,51 @@
+name: us-d2-sessionization
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/data/minute_transform/**"
+      - "src/finagent/data/minute_store/materialize.py"
+      - "tests/test_us_d2_sessionization.py"
+      - "tests/fixtures/us_minute/sessionization_edge_cases.csv"
+      - "docs/status.toml"
+      - "docs/guides/us-minute-sessionization.md"
+      - ".github/workflows/us-d2-sessionization.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/finagent/data/minute_transform/**"
+      - "src/finagent/data/minute_store/materialize.py"
+      - "tests/test_us_d2_sessionization.py"
+      - "tests/fixtures/us_minute/sessionization_edge_cases.csv"
+      - "docs/status.toml"
+      - "docs/guides/us-minute-sessionization.md"
+      - ".github/workflows/us-d2-sessionization.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  sessionization:
+    name: US-D2 calendar-aware minute sessionization
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Sessionization regression
+        run: uv run --frozen pytest -q tests/test_us_d2_sessionization.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/data/minute_transform \
+            tests/test_us_d2_sessionization.py
+          uv run --frozen mypy --strict src/finagent/data/minute_transform
+          uv run --frozen python -m py_compile src/finagent/data/minute_transform/*.py
