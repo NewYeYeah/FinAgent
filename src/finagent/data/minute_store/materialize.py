@@ -152,12 +152,13 @@ def fetch_plan_rows(
 
     DuckDB keeps TIMESTAMPTZ/DATE authoritative inside SQL and Parquet. Only this
     interactive Python boundary casts temporal columns to ISO text before `fetchall`,
-    then reconstructs standard-library datetime/date objects.
+    then reconstructs standard-library datetime/date objects. Transformed session
+    clocks are handled through the same boundary as event/availability clocks.
     """
 
     if not 1 <= limit <= 100_000:
         raise ValueError("fetch limit must be in 1..100000")
-    temporal_datetime = {"event_time", "available_at"}
+    temporal_datetime = {"event_time", "available_at", "session_open", "session_close"}
     temporal_date = {"session_date"}
     projections: list[str] = []
     for column in plan.output_columns:
