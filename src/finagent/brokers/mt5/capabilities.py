@@ -114,7 +114,14 @@ class MT5SymbolSpec:
     def __post_init__(self) -> None:
         object.__setattr__(self, "symbol", require_non_empty(self.symbol, "symbol"))
         object.__setattr__(self, "path", self.path.strip())
-        for name in ("trade_mode", "trade_calc_mode", "digits", "swap_mode", "filling_mode", "order_mode"):
+        for name in (
+            "trade_mode",
+            "trade_calc_mode",
+            "digits",
+            "swap_mode",
+            "filling_mode",
+            "order_mode",
+        ):
             if int(getattr(self, name)) < 0:
                 raise ValueError(f"{name} must be >= 0")
         for name in (
@@ -202,20 +209,34 @@ class MT5HistoryCapability:
         object.__setattr__(self, "requested_bar_end", end)
         if self.m1_bar_count < 0 or self.tick_count < 0:
             raise ValueError("history counts must be >= 0")
-        for name in ("m1_first_at", "m1_last_at", "requested_tick_start", "requested_tick_end", "tick_first_at", "tick_last_at"):
+        for name in (
+            "m1_first_at",
+            "m1_last_at",
+            "requested_tick_start",
+            "requested_tick_end",
+            "tick_first_at",
+            "tick_last_at",
+        ):
             value = getattr(self, name)
             if value is not None:
                 object.__setattr__(self, name, require_aware_datetime(value, name))
-        if self.m1_bar_count == 0 and (self.m1_first_at is not None or self.m1_last_at is not None):
+        if self.m1_bar_count == 0 and (
+            self.m1_first_at is not None or self.m1_last_at is not None
+        ):
             raise ValueError("zero M1 bars cannot carry first/last timestamps")
         if self.m1_bar_count > 0 and (self.m1_first_at is None or self.m1_last_at is None):
             raise ValueError("non-zero M1 bars require first/last timestamps")
         if (self.requested_tick_start is None) != (self.requested_tick_end is None):
             raise ValueError("tick request start/end must be both set or both omitted")
-        if self.requested_tick_start is not None and self.requested_tick_end is not None:
-            if self.requested_tick_end <= self.requested_tick_start:
-                raise ValueError("requested_tick_end must be later than requested_tick_start")
-        if self.tick_count == 0 and (self.tick_first_at is not None or self.tick_last_at is not None):
+        if (
+            self.requested_tick_start is not None
+            and self.requested_tick_end is not None
+            and self.requested_tick_end <= self.requested_tick_start
+        ):
+            raise ValueError("requested_tick_end must be later than requested_tick_start")
+        if self.tick_count == 0 and (
+            self.tick_first_at is not None or self.tick_last_at is not None
+        ):
             raise ValueError("zero ticks cannot carry first/last timestamps")
         if self.tick_count > 0 and (self.tick_first_at is None or self.tick_last_at is None):
             raise ValueError("non-zero ticks require first/last timestamps")
@@ -231,13 +252,29 @@ class MT5HistoryCapability:
             "requested_bar_start": self.requested_bar_start.astimezone(UTC).isoformat(),
             "requested_bar_end": self.requested_bar_end.astimezone(UTC).isoformat(),
             "m1_bar_count": self.m1_bar_count,
-            "m1_first_at": self.m1_first_at.astimezone(UTC).isoformat() if self.m1_first_at else None,
-            "m1_last_at": self.m1_last_at.astimezone(UTC).isoformat() if self.m1_last_at else None,
-            "requested_tick_start": self.requested_tick_start.astimezone(UTC).isoformat() if self.requested_tick_start else None,
-            "requested_tick_end": self.requested_tick_end.astimezone(UTC).isoformat() if self.requested_tick_end else None,
+            "m1_first_at": (
+                self.m1_first_at.astimezone(UTC).isoformat() if self.m1_first_at else None
+            ),
+            "m1_last_at": (
+                self.m1_last_at.astimezone(UTC).isoformat() if self.m1_last_at else None
+            ),
+            "requested_tick_start": (
+                self.requested_tick_start.astimezone(UTC).isoformat()
+                if self.requested_tick_start
+                else None
+            ),
+            "requested_tick_end": (
+                self.requested_tick_end.astimezone(UTC).isoformat()
+                if self.requested_tick_end
+                else None
+            ),
             "tick_count": self.tick_count,
-            "tick_first_at": self.tick_first_at.astimezone(UTC).isoformat() if self.tick_first_at else None,
-            "tick_last_at": self.tick_last_at.astimezone(UTC).isoformat() if self.tick_last_at else None,
+            "tick_first_at": (
+                self.tick_first_at.astimezone(UTC).isoformat() if self.tick_first_at else None
+            ),
+            "tick_last_at": (
+                self.tick_last_at.astimezone(UTC).isoformat() if self.tick_last_at else None
+            ),
         }
         if include_id:
             payload["history_id"] = self.history_id
@@ -294,7 +331,11 @@ class MT5CapabilityProbeReport:
     schema_version: str = "finagent.mt5-capability-probe-report.v1"
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "probed_at", require_aware_datetime(self.probed_at, "probed_at"))
+        object.__setattr__(
+            self,
+            "probed_at",
+            require_aware_datetime(self.probed_at, "probed_at"),
+        )
         object.__setattr__(self, "symbol_group", self.symbol_group.strip())
         if not self.read_only:
             raise ValueError("MT5-P0 report must be read_only=true")
