@@ -36,7 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Run a bounded, replayable US-D1 query against the admitted local OHLCV-1m corpus "
-            "under an explicit DuckDB memory/thread policy."
+            "under explicit DuckDB memory/thread/temp-spill limits."
         )
     )
     parser.add_argument("root", type=Path)
@@ -45,6 +45,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--end", type=_aware_datetime, required=True)
     parser.add_argument("--memory-limit", default="512MB")
     parser.add_argument("--threads", type=int, default=2)
+    parser.add_argument(
+        "--allow-temp-spill",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Allow bounded DuckDB disk spill; use --no-allow-temp-spill to force 0B.",
+    )
+    parser.add_argument(
+        "--max-temp-directory-size",
+        default="4GB",
+        help="Maximum DuckDB spill size when temp spill is enabled.",
+    )
     parser.add_argument(
         "--temp-directory",
         type=Path,
@@ -92,12 +103,14 @@ def main() -> int:
     execution_policy = DuckDBExecutionPolicy(
         memory_limit=args.memory_limit,
         threads=args.threads,
-        allow_temp_spill=True,
+        allow_temp_spill=args.allow_temp_spill,
+        max_temp_directory_size=args.max_temp_directory_size,
         preserve_insertion_order=False,
     )
+    temp_directory = args.temp_directory if execution_policy.allow_temp_spill else None
     execution_settings = inspect_execution_settings(
         policy=execution_policy,
-        temp_directory=args.temp_directory,
+        temp_directory=temp_directory,
     )
     manifest = manifest_from_huggingface_snapshot(
         args.root,
@@ -124,7 +137,7 @@ def main() -> int:
         args.output,
         overwrite=True,
         policy=execution_policy,
-        temp_directory=args.temp_directory,
+        temp_directory=temp_directory,
     )
     actual_rows = primary.row_count
 
@@ -139,7 +152,7 @@ def main() -> int:
             replay_output,
             overwrite=True,
             policy=execution_policy,
-            temp_directory=args.temp_directory,
+            temp_directory=temp_directory,
         )
         replay_match = (
             replay.row_count == primary.row_count
@@ -152,18 +165,16 @@ def main() -> int:
             plan,
             limit=args.preview_rows,
             policy=execution_policy,
-            temp_directory=args.temp_directory,
+            temp_directory=temp_directory,
         )
         if args.preview_rows
         else ()
     )
-    # If replay is disabled, keep an independent count path available as a diagnostic
-    # cross-check without forcing it into the default two-materialization smoke.
     if not args.verify_replay:
         actual_rows = count_plan_rows(
             plan,
             policy=execution_policy,
-            temp_directory=args.temp_directory,
+            temp_directory=temp_directory,
         )
 
     report = MinuteStoreSmokeReport(
