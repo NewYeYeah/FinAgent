@@ -5,7 +5,7 @@ planning_document = "docs/development/current-plan.md"
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
 current_stage = "US-D2"
-current_stage_status = "resampling_implemented_labels_next"
+current_stage_status = "labels_implemented_corporate_actions_next"
 next_stage = "US-D3"
 
 [release.ashare_historical_v1]
@@ -260,8 +260,25 @@ resample_60m_implemented = false
 resampling_focused_ci = ".github/workflows/us-d2-resampling.yml"
 resampling_focused_ci_passed = true
 transform_preview_session_clocks_supported = true
-label_materialization_status = "pending_next_increment"
-corporate_action_transform_status = "pending"
+label_materialization_status = "implemented"
+canonical_label_name = "us_same_session_60m_simple_return_raw"
+label_materialization_spec_schema = "finagent.label-materialization-spec.v1"
+label_query_plan_schema = "finagent.label-query-plan.v1"
+label_series_evidence_schema = "finagent.label-series-evidence.v1"
+canonical_label_metric = "simple_return"
+canonical_label_horizon = 60
+canonical_label_horizon_unit = "trading_minutes"
+canonical_label_allow_cross_session = false
+canonical_label_price_basis = "raw"
+canonical_label_availability_policy = "available_at"
+label_source_interval = "1m"
+label_source_price_field = "close"
+label_target_match_policy = "exact_same_session_minute_offset"
+label_preserve_unavailable_rows = true
+label_unavailable_reasons = ["target_crosses_session", "target_minute_missing"]
+label_focused_ci = ".github/workflows/us-d2-label-materialization.yml"
+label_focused_ci_passed = true
+corporate_action_transform_status = "pending_next_increment"
 stage_exit_gate_passed = false
 
 [documentation]
