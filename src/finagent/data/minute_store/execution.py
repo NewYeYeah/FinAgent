@@ -10,6 +10,7 @@ from typing import Any
 from finagent.domain._validation import require_non_empty
 
 _MEMORY_LIMIT_RE = re.compile(r"^[1-9][0-9]*(?:\.[0-9]+)?(?:KB|MB|GB|TB|KiB|MiB|GiB|TiB)$")
+_TEMP_LIMIT_RE = re.compile(r"^(?:0|[1-9][0-9]*(?:\.[0-9]+)?)(?:B|KB|MB|GB|TB|KiB|MiB|GiB|TiB)$")
 
 
 def _canonical_hash(payload: dict[str, object], *, prefix: str) -> str:
@@ -26,40 +27,46 @@ def _sql_string(value: str) -> str:
     return "'" + value.replace("'", "''") + "'"
 
 
-def _setting_bool(value: object) -> bool:
-    if isinstance(value, bool):
-        return value
-    rendered = str(value).strip().lower()
-    if rendered in {"true", "1", "yes", "on"}:
-        return True
-    if rendered in {"false", "0", "no", "off"}:
-        return False
-    raise ValueError(f"unexpected DuckDB boolean setting value: {value!r}")
-
-
 @dataclass(frozen=True, slots=True)
 class DuckDBExecutionPolicy:
     """Engine-resource bounds for out-of-core minute queries.
 
     Local directory paths are deliberately excluded from policy identity. The policy
-    binds whether temporary spill is allowed, not where one workstation stores it.
+    binds whether temporary spill is allowed and the maximum spill capacity, not where
+    one workstation stores it.
     """
 
     memory_limit: str = "512MB"
     threads: int = 2
     allow_temp_spill: bool = True
+    max_temp_directory_size: str = "4GB"
     preserve_insertion_order: bool = False
-    schema_version: str = "finagent.duckdb-execution-policy.v1"
+    schema_version: str = "finagent.duckdb-execution-policy.v2"
 
     def __post_init__(self) -> None:
         memory_limit = require_non_empty(self.memory_limit, "memory_limit")
+        max_temp_directory_size = require_non_empty(
+            self.max_temp_directory_size,
+            "max_temp_directory_size",
+        )
         if _MEMORY_LIMIT_RE.fullmatch(memory_limit) is None:
             raise ValueError(
                 "memory_limit must be a positive DuckDB size such as 256MB, 1GB or 2GiB"
             )
+        if _TEMP_LIMIT_RE.fullmatch(max_temp_directory_size) is None:
+            raise ValueError(
+                "max_temp_directory_size must be a DuckDB size such as 0B, 1GB or 4GiB"
+            )
+        if not self.allow_temp_spill and max_temp_directory_size != "0B":
+            max_temp_directory_size = "0B"
+        if self.allow_temp_spill and max_temp_directory_size == "0B":
+            raise ValueError(
+                "max_temp_directory_size must be positive when allow_temp_spill=true"
+            )
         if not 1 <= self.threads <= 32:
             raise ValueError("threads must be in 1..32")
         object.__setattr__(self, "memory_limit", memory_limit)
+        object.__setattr__(self, "max_temp_directory_size", max_temp_directory_size)
 
     @property
     def policy_id(self) -> str:
@@ -71,6 +78,7 @@ class DuckDBExecutionPolicy:
             "memory_limit": self.memory_limit,
             "threads": self.threads,
             "allow_temp_spill": self.allow_temp_spill,
+            "max_temp_directory_size": self.max_temp_directory_size,
             "preserve_insertion_order": self.preserve_insertion_order,
         }
         if include_id:
@@ -87,8 +95,10 @@ class DuckDBExecutionSettings:
     observed_memory_limit: str
     observed_threads: int
     observed_preserve_insertion_order: bool
+    observed_max_temp_directory_size: str
     temp_spill_enabled: bool
-    schema_version: str = "finagent.duckdb-execution-settings.v1"
+    temp_directory_configured: bool
+    schema_version: str = "finagent.duckdb-execution-settings.v2"
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -97,7 +107,9 @@ class DuckDBExecutionSettings:
             "observed_memory_limit": self.observed_memory_limit,
             "observed_threads": self.observed_threads,
             "observed_preserve_insertion_order": self.observed_preserve_insertion_order,
+            "observed_max_temp_directory_size": self.observed_max_temp_directory_size,
             "temp_spill_enabled": self.temp_spill_enabled,
+            "temp_directory_configured": self.temp_directory_configured,
         }
 
 
@@ -109,33 +121,49 @@ def configure_duckdb_connection(
 ) -> DuckDBExecutionSettings:
     """Apply and read back the resource policy on one DuckDB connection."""
 
+    if temp_directory is not None and not policy.allow_temp_spill:
+        raise ValueError("temp_directory supplied while allow_temp_spill=false")
+
     connection.execute(f"SET memory_limit = {_sql_string(policy.memory_limit)}")
     connection.execute(f"SET threads = {policy.threads}")
     connection.execute(
         "SET preserve_insertion_order = "
         + ("true" if policy.preserve_insertion_order else "false")
     )
+    connection.execute(
+        "SET max_temp_directory_size = "
+        + _sql_string(policy.max_temp_directory_size)
+    )
 
-    spill_enabled = policy.allow_temp_spill
+    temp_directory_configured = False
     if temp_directory is not None:
-        if not policy.allow_temp_spill:
-            raise ValueError("temp_directory supplied while allow_temp_spill=false")
         directory = Path(temp_directory).expanduser().resolve()
         directory.mkdir(parents=True, exist_ok=True)
         connection.execute(f"SET temp_directory = {_sql_string(directory.as_posix())}")
+        temp_directory_configured = True
 
     memory_row = connection.execute("SELECT current_setting('memory_limit')").fetchone()
     threads_row = connection.execute("SELECT current_setting('threads')").fetchone()
     insertion_row = connection.execute(
         "SELECT current_setting('preserve_insertion_order')"
     ).fetchone()
-    if memory_row is None or threads_row is None or insertion_row is None:
+    temp_size_row = connection.execute(
+        "SELECT current_setting('max_temp_directory_size')"
+    ).fetchone()
+    if (
+        memory_row is None
+        or threads_row is None
+        or insertion_row is None
+        or temp_size_row is None
+    ):
         raise RuntimeError("DuckDB execution settings could not be read back")
 
     return DuckDBExecutionSettings(
         policy_id=policy.policy_id,
         observed_memory_limit=str(memory_row[0]),
         observed_threads=int(threads_row[0]),
-        observed_preserve_insertion_order=_setting_bool(insertion_row[0]),
-        temp_spill_enabled=spill_enabled,
+        observed_preserve_insertion_order=bool(insertion_row[0]),
+        observed_max_temp_directory_size=str(temp_size_row[0]),
+        temp_spill_enabled=policy.allow_temp_spill,
+        temp_directory_configured=temp_directory_configured,
     )
