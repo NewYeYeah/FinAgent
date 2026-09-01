@@ -6,8 +6,8 @@ from types import SimpleNamespace
 import pytest
 
 from finagent.brokers.mt5 import (
-    MT5ReadOnlyClientProtocol,
     MetaTrader5ReadOnlyClient,
+    MT5ReadOnlyClientProtocol,
     probe_mt5_capabilities,
     run_mt5_readonly_probe,
 )
