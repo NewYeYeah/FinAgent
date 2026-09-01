@@ -197,7 +197,9 @@ class MT5HistoryCapability:
     tick_count: int = 0
     tick_first_at: datetime | None = None
     tick_last_at: datetime | None = None
-    schema_version: str = "finagent.mt5-history-capability.v1"
+    tick_window_m1_bar_count: int = 0
+    tick_window_basis: str = "not_requested"
+    schema_version: str = "finagent.mt5-history-capability.v2"
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "symbol", require_non_empty(self.symbol, "symbol"))
@@ -207,7 +209,7 @@ class MT5HistoryCapability:
             raise ValueError("requested_bar_end must be later than requested_bar_start")
         object.__setattr__(self, "requested_bar_start", start)
         object.__setattr__(self, "requested_bar_end", end)
-        if self.m1_bar_count < 0 or self.tick_count < 0:
+        if self.m1_bar_count < 0 or self.tick_count < 0 or self.tick_window_m1_bar_count < 0:
             raise ValueError("history counts must be >= 0")
         for name in (
             "m1_first_at",
@@ -234,6 +236,21 @@ class MT5HistoryCapability:
             and self.requested_tick_end <= self.requested_tick_start
         ):
             raise ValueError("requested_tick_end must be later than requested_tick_start")
+        basis = self.tick_window_basis.strip()
+        if basis not in {"not_requested", "explicit", "derived_from_m1_tail"}:
+            raise ValueError(f"unsupported tick_window_basis {basis!r}")
+        object.__setattr__(self, "tick_window_basis", basis)
+        tick_requested = self.requested_tick_start is not None
+        if not tick_requested and (
+            self.tick_count != 0
+            or self.tick_first_at is not None
+            or self.tick_last_at is not None
+            or self.tick_window_m1_bar_count != 0
+            or basis != "not_requested"
+        ):
+            raise ValueError("tick evidence cannot exist without a requested tick window")
+        if tick_requested and basis == "not_requested":
+            raise ValueError("requested tick window requires an explicit basis")
         if self.tick_count == 0 and (
             self.tick_first_at is not None or self.tick_last_at is not None
         ):
@@ -268,6 +285,8 @@ class MT5HistoryCapability:
                 if self.requested_tick_end
                 else None
             ),
+            "tick_window_basis": self.tick_window_basis,
+            "tick_window_m1_bar_count": self.tick_window_m1_bar_count,
             "tick_count": self.tick_count,
             "tick_first_at": (
                 self.tick_first_at.astimezone(UTC).isoformat() if self.tick_first_at else None
@@ -328,7 +347,7 @@ class MT5CapabilityProbeReport:
     symbol_group: str = ""
     read_only: bool = True
     mutation_authority: bool = False
-    schema_version: str = "finagent.mt5-capability-probe-report.v1"
+    schema_version: str = "finagent.mt5-capability-probe-report.v2"
 
     def __post_init__(self) -> None:
         object.__setattr__(
