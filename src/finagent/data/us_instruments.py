@@ -28,13 +28,13 @@ def _canonical_hash(payload: dict[str, object], *, prefix: str) -> str:
 
 def _mapping(value: object, field_name: str) -> Mapping[str, object]:
     if not isinstance(value, Mapping):
-        raise ValueError(f"{field_name} must be a mapping")
+        raise TypeError(f"{field_name} must be a mapping")
     return value
 
 
 def _sequence(value: object, field_name: str) -> Sequence[object]:
     if isinstance(value, (str, bytes, bytearray)) or not isinstance(value, Sequence):
-        raise ValueError(f"{field_name} must be a sequence")
+        raise TypeError(f"{field_name} must be a sequence")
     return value
 
 
