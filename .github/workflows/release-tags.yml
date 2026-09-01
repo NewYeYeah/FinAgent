@@ -6,6 +6,7 @@ on:
     paths:
       - "docs/status.toml"
       - "scripts/sync_release_tags.py"
+      - "tests/test_release_tag_sync.py"
       - ".github/workflows/release-tags.yml"
   pull_request:
     branches: [main]
@@ -29,6 +30,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Install test dependency
+        run: python -m pip install "pytest>=8.3,<10"
       - name: Release tag regression
         run: python -m pytest -q tests/test_release_tag_sync.py
       - name: Configure release tag identity
