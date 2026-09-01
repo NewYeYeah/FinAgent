@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from datetime import UTC, datetime
 from typing import Any
 
@@ -39,40 +39,50 @@ def _field(value: object, name: str, default: object = None) -> object:
 def _rows(value: object) -> tuple[object, ...]:
     if value is None:
         return ()
-    if isinstance(value, (str, bytes, bytearray, Mapping)):
-        raise TypeError("MT5 row collection must be iterable rows, not scalar/mapping")
-    try:
-        return tuple(iter(value))  # type: ignore[arg-type]
-    except TypeError as exc:
-        raise TypeError(f"MT5 row collection is not iterable: {type(value)!r}") from exc
+    if isinstance(value, (str, bytes, bytearray, Mapping)) or not isinstance(value, Iterable):
+        raise TypeError("MT5 row collection must be an iterable of rows")
+    return tuple(value)
+
+
+def _scalar_item(value: object) -> object:
+    item = getattr(value, "item", None)
+    if callable(item):
+        return item()
+    return value
 
 
 def _integer(value: object, default: int = 0) -> int:
     if value is None:
         return default
-    return int(value)
+    scalar = _scalar_item(value)
+    if isinstance(scalar, (bool, int, float, str, bytes, bytearray)):
+        return int(scalar)
+    raise TypeError(f"MT5 integer field has unsupported type {type(value)!r}")
 
 
 def _number(value: object, default: float = 0.0) -> float:
     if value is None:
         return default
-    return float(value)
+    scalar = _scalar_item(value)
+    if isinstance(scalar, (bool, int, float, str, bytes, bytearray)):
+        return float(scalar)
+    raise TypeError(f"MT5 numeric field has unsupported type {type(value)!r}")
 
 
 def _text(value: object, default: str = "") -> str:
     if value is None:
         return default
-    return str(value)
+    return str(_scalar_item(value))
 
 
 def _unix_timestamp(value: object) -> datetime:
-    return datetime.fromtimestamp(int(value), tz=UTC)
+    return datetime.fromtimestamp(_integer(value), tz=UTC)
 
 
 def _tick_timestamp(row: object) -> datetime:
     time_msc = _field(row, "time_msc")
     if time_msc is not None:
-        return datetime.fromtimestamp(int(time_msc) / 1000.0, tz=UTC)
+        return datetime.fromtimestamp(_integer(time_msc) / 1000.0, tz=UTC)
     time_value = _field(row, "time")
     if time_value is None:
         raise ValueError("MT5 tick row has no time/time_msc")
@@ -207,8 +217,12 @@ def probe_mt5_capabilities(
     observed_at = probed_at or datetime.now(UTC)
     if observed_at.tzinfo is None or observed_at.utcoffset() is None:
         raise ValueError("probed_at must be timezone-aware")
-    normalized_history = tuple(dict.fromkeys(item.strip() for item in history_symbols if item.strip()))
-    normalized_spread = tuple(dict.fromkeys(item.strip() for item in spread_symbols if item.strip()))
+    normalized_history = tuple(
+        dict.fromkeys(item.strip() for item in history_symbols if item.strip())
+    )
+    normalized_spread = tuple(
+        dict.fromkeys(item.strip() for item in spread_symbols if item.strip())
+    )
     if normalized_history and (bar_start is None or bar_end is None):
         raise ValueError("history_symbols require bar_start and bar_end")
     if (tick_start is None) != (tick_end is None):
@@ -217,7 +231,12 @@ def probe_mt5_capabilities(
         raise ValueError("tick history window requires at least one history symbol")
 
     terminal = _terminal_capability(client, client.terminal_info(), client.account_info())
-    symbols = tuple(sorted((_symbol_spec(item) for item in _rows(client.symbols_get(symbol_group))), key=lambda item: item.symbol))
+    symbols = tuple(
+        sorted(
+            (_symbol_spec(item) for item in _rows(client.symbols_get(symbol_group))),
+            key=lambda item: item.symbol,
+        )
+    )
     point_by_symbol = {item.symbol: item.point for item in symbols}
 
     history: list[MT5HistoryCapability] = []
