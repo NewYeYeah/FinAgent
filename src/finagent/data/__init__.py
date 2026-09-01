@@ -9,6 +9,7 @@ from .ashare_supplemental import (
     AshareSuspensionPeriod,
 )
 from .ashare_supplemental_master import SupplementedAshareSecurityMaster
+from .capabilities import AdapterCapabilities
 from .ingestion import (
     AKSHARE_CAPABILITIES,
     ALPACA_CAPABILITIES,
@@ -69,6 +70,7 @@ from .market_bar_series import (
     materialize_local_ashare_market_bar_rows,
     write_market_bar_series,
 )
+from .query import MarketDataField, MarketDataQuery, MarketDataView, SessionPolicy
 from .store import SQLitePriceStore
 from .us_minute import (
     DEFAULT_MINUTE_CLEANING_POLICY,
@@ -96,6 +98,7 @@ __all__ = [
     "HITHINK_CAPABILITIES",
     "TUSHARE_15000_CAPABILITIES",
     "AKShareMarketDataIngestor",
+    "AdapterCapabilities",
     "AlpacaMarketDataIngestor",
     "AshareBarFrequency",
     "AshareBarRecord",
@@ -137,10 +140,13 @@ __all__ = [
     "MARKET_BAR_ROW_SCHEMA",
     "MarketBarSeriesEvidence",
     "MarketBarSeriesManifest",
+    "MarketDataField",
     "MarketDataManifest",
     "MarketDataProfile",
     "MarketDataPullRequest",
     "MarketDataQualityReport",
+    "MarketDataQuery",
+    "MarketDataView",
     "MarketRegion",
     "MaterializedMarketData",
     "MinuteDataCleaningPolicy",
@@ -153,6 +159,7 @@ __all__ = [
     "ResearchDataRequirement",
     "SQLitePriceDataAdapter",
     "SQLitePriceStore",
+    "SessionPolicy",
     "SupplementedAshareSecurityMaster",
     "TushareMarketDataIngestor",
     "admit_local_non_redistributed_research",

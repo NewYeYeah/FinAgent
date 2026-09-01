@@ -5,7 +5,7 @@ planning_document = "docs/development/current-plan.md"
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
 current_stage = "US-C0"
-current_stage_status = "in_progress"
+current_stage_status = "contracts_implemented_calendar_materialization_pending"
 next_stage = "MT5-P0"
 
 [release.ashare_historical_v1]
@@ -69,11 +69,14 @@ authority_config = "configs/us_source_authority/mito0o852_ohlcv_1m.toml"
 
 [stage.us_c0]
 contracts_frozen = false
+trading_calendar_contract = true
 trading_calendar_evidence = false
-label_spec = false
-corporate_action_event = false
-market_data_query = false
-adapter_capabilities = false
+calendar_materialization_status = "pending_exact_xnys_schedule"
+label_spec = true
+corporate_action_event = true
+market_data_query = true
+adapter_capabilities = true
+focused_ci = ".github/workflows/us-c0-intraday-contracts.yml"
 
 [documentation]
 governance_version = "1.1"
