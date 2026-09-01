@@ -21,8 +21,7 @@ CLEANING_ID = "us-minute-cleaning-stack-a0d745a4a75d25a63e3a8244"
 
 
 def _aware_datetime(value: str) -> datetime:
-    rendered = value.strip().replace("Z", "+00:00")
-    parsed = datetime.fromisoformat(rendered)
+    parsed = datetime.fromisoformat(value.strip())
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise argparse.ArgumentTypeError("timestamps must be timezone-aware ISO-8601 values")
     return parsed.astimezone(UTC)
