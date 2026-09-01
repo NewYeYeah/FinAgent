@@ -7,6 +7,7 @@ on:
       - "src/finagent/data/us_minute/**"
       - "scripts/certify_us_minute_snapshot.py"
       - "tests/test_us_minute_local_snapshot.py"
+      - "tests/test_us_minute_cleaning_policy.py"
       - "configs/us_source_authority/mito0o852_ohlcv_1m.toml"
       - ".github/workflows/us-minute-local-certification.yml"
   push:
@@ -15,6 +16,7 @@ on:
       - "src/finagent/data/us_minute/**"
       - "scripts/certify_us_minute_snapshot.py"
       - "tests/test_us_minute_local_snapshot.py"
+      - "tests/test_us_minute_cleaning_policy.py"
       - "configs/us_source_authority/mito0o852_ohlcv_1m.toml"
       - ".github/workflows/us-minute-local-certification.yml"
 
@@ -37,9 +39,12 @@ jobs:
       - name: Reproduce locked development environment
         run: uv sync --frozen --extra dev
       - name: Synthetic local snapshot regression
-        run: uv run --frozen pytest -q tests/test_us_minute_local_snapshot.py
+        run: >-
+          uv run --frozen pytest -q
+          tests/test_us_minute_local_snapshot.py
+          tests/test_us_minute_cleaning_policy.py
       - name: Static checks
         run: |
-          uv run --frozen ruff check src/finagent/data/us_minute scripts/certify_us_minute_snapshot.py tests/test_us_minute_local_snapshot.py
+          uv run --frozen ruff check src/finagent/data/us_minute scripts/certify_us_minute_snapshot.py tests/test_us_minute_local_snapshot.py tests/test_us_minute_cleaning_policy.py
           uv run --frozen mypy src/finagent/data/us_minute
           uv run --frozen python -m py_compile src/finagent/data/us_minute/*.py scripts/certify_us_minute_snapshot.py

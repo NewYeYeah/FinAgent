@@ -5,7 +5,7 @@ planning_document = "docs/development/current-plan.md"
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
 current_stage = "US-S0"
-current_stage_status = "awaiting_local_snapshot_certification"
+current_stage_status = "awaiting_local_snapshot_recertification"
 next_stage = "US-C0"
 
 [release.ashare_historical_v1]
@@ -30,8 +30,12 @@ source_publication_authority = "reference_only"
 source_publication_blocking_issue_count = 3
 local_snapshot_download_attested = true
 local_research_scope = "local_non_redistributed_research"
-local_certification_status = "awaiting_operator_run"
+local_certification_status = "rerun_required_cleaning_policy_v1"
 local_certification_script = "scripts/certify_us_minute_snapshot.py"
+cleaning_policy_schema = "finagent.us-minute-cleaning-policy.v1"
+previous_certification_id = "us-minute-certification-ab39dd4da1af36c974a43fad"
+observed_inventory_id = "us-minute-inventory-c2cbf682b456f97eb613ed65"
+previous_certification_passed = false
 authority_config = "configs/us_source_authority/mito0o852_ohlcv_1m.toml"
 
 [documentation]
