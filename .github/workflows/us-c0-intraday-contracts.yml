@@ -1,0 +1,71 @@
+name: us-c0-intraday-contracts
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/domain/trading_calendar.py"
+      - "src/finagent/domain/labels.py"
+      - "src/finagent/domain/corporate_actions.py"
+      - "src/finagent/data/query.py"
+      - "src/finagent/data/capabilities.py"
+      - "src/finagent/data/__init__.py"
+      - "tests/test_us_c0_intraday_contracts.py"
+      - "docs/status.toml"
+      - "docs/guides/data.md"
+      - ".github/workflows/us-c0-intraday-contracts.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/finagent/domain/trading_calendar.py"
+      - "src/finagent/domain/labels.py"
+      - "src/finagent/domain/corporate_actions.py"
+      - "src/finagent/data/query.py"
+      - "src/finagent/data/capabilities.py"
+      - "src/finagent/data/__init__.py"
+      - "tests/test_us_c0_intraday_contracts.py"
+      - "docs/status.toml"
+      - "docs/guides/data.md"
+      - ".github/workflows/us-c0-intraday-contracts.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  intraday-contracts:
+    name: US-C0 intraday core contracts
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Contract regression
+        run: uv run --frozen pytest -q tests/test_us_c0_intraday_contracts.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/domain/trading_calendar.py \
+            src/finagent/domain/labels.py \
+            src/finagent/domain/corporate_actions.py \
+            src/finagent/data/query.py \
+            src/finagent/data/capabilities.py \
+            tests/test_us_c0_intraday_contracts.py
+          uv run --frozen mypy --strict \
+            src/finagent/domain/trading_calendar.py \
+            src/finagent/domain/labels.py \
+            src/finagent/domain/corporate_actions.py \
+            src/finagent/data/query.py \
+            src/finagent/data/capabilities.py
+          uv run --frozen python -m py_compile \
+            src/finagent/domain/trading_calendar.py \
+            src/finagent/domain/labels.py \
+            src/finagent/domain/corporate_actions.py \
+            src/finagent/data/query.py \
+            src/finagent/data/capabilities.py
