@@ -63,7 +63,7 @@ class MinuteStoreSmokeReport:
     replay_materialization: MinuteMaterialization | None
     replay_match: bool | None
     ran_at: datetime
-    schema_version: str = "finagent.minute-store-smoke-report.v1"
+    schema_version: str = "finagent.minute-store-smoke-report.v2"
 
     def __post_init__(self) -> None:
         if self.actual_rows < 0:
@@ -72,6 +72,15 @@ class MinuteStoreSmokeReport:
             raise ValueError("ran_at must be timezone-aware")
         if self.execution_settings.policy_id != self.execution_policy.policy_id:
             raise ValueError("execution settings do not bind the supplied execution policy")
+        if self.execution_settings.observed_threads != self.execution_policy.threads:
+            raise ValueError("observed DuckDB thread count does not match execution policy")
+        if (
+            self.execution_settings.observed_preserve_insertion_order
+            != self.execution_policy.preserve_insertion_order
+        ):
+            raise ValueError("observed insertion-order policy does not match execution policy")
+        if self.execution_settings.temp_spill_enabled != self.execution_policy.allow_temp_spill:
+            raise ValueError("observed temp-spill state does not match execution policy")
         if self.primary_materialization is not None:
             if self.primary_materialization.plan_id != self.plan.plan_id:
                 raise ValueError("primary materialization does not bind the smoke plan")
