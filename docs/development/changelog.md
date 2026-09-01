@@ -2,6 +2,15 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-01 — MT5 read-only broker capability closure (MT5-P0)
+
+- accepted real MetaQuotes-Demo read-only capability assessment `mt5-p0-assessment-31cbb83d554010e791698384` over probe `mt5-capability-probe-db652a528408fda2dd3a606e`, with `accepted=true` and no blockers;
+- measured 12,455 broker symbols, including 11,517 currently tradable symbols, and preserved MSFT/NVDA/AMD/INTC as the first representative engineering seed without granting any order or position mutation authority;
+- corrected tick-history evidence semantics so one bounded capability probe is anchored to actually observed M1 activity instead of assuming exchange-clock availability for every representative symbol;
+- established that the MSFT M1-anchored 60-bar probe window returned no historical ticks and retained this as `history:MSFT:tick_history_unavailable_in_observed_m1_window`, rather than fabricating tick support or treating a measured broker limitation as an adapter failure;
+- retained `terminal:automated_trading_not_allowed` as a downstream Demo/PAPER limitation while keeping MT5-P0 valid as a read-only measurement stage;
+- advanced the current stage to US-I0, where research and broker identities must be mapped explicitly before the engineering universe is frozen.
+
 ## 2026-09-01 — U.S. intraday core-contract closure (US-C0)
 
 - froze provider-neutral `TradingCalendarEvidence`, `LabelSpec`, `CorporateActionEvent`, bounded/lazy `MarketDataQuery` / `MarketDataView`, and FinAgent-only `AdapterCapabilities` before the minute Data Plane is allowed to invent source-specific semantics;
@@ -40,10 +49,10 @@ This file records **meaningful completed milestones**, not per-PR implementation
 
 - replaced multiple versioned current plans/roadmaps with one stable `docs/development/current-plan.md`;
 - made `docs/status.toml` the only current-stage authority;
-- consolidated active architecture, testing and user guides around current truth rather than phase chronology;
+- consolidated active architecture/testing/guides around current truth rather than phase chronology;
 - consolidated A-C4/A-C5/HW historical-release instructions into the A-share Historical v1.0 release record;
 - removed stage-specific changelog/completion/API-contract documents from the active tree; their detailed history remains in Git/PRs;
-- added documentation-governance checks, CI and PR documentation-impact rules;
+- added documentation-governance checks, CI and PR template documentation-impact rules;
 - added a repository-native onboarding/documentation skill for new humans and Agents.
 
 ## 2026-08-31 — A-share Historical v1.0 freeze and post-freeze hardening
