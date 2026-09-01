@@ -5,7 +5,7 @@ planning_document = "docs/development/current-plan.md"
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
 current_stage = "US-S0"
-current_stage_status = "in_progress"
+current_stage_status = "awaiting_local_snapshot_certification"
 next_stage = "US-C0"
 
 [release.ashare_historical_v1]
@@ -26,9 +26,13 @@ release_document = "docs/releases/ashare-historical-v1.md"
 research_source_selected = false
 reviewed_candidate = "hf-mito0o852-ohlcv-1m"
 reviewed_revision = "776328445b7ac6e7815ef3a483e9c8ded1eb6d56"
-candidate_authority = "reference_only"
+source_publication_authority = "reference_only"
+source_publication_blocking_issue_count = 3
+local_snapshot_download_attested = true
+local_research_scope = "local_non_redistributed_research"
+local_certification_status = "awaiting_operator_run"
+local_certification_script = "scripts/certify_us_minute_snapshot.py"
 authority_config = "configs/us_source_authority/mito0o852_ohlcv_1m.toml"
-blocking_issue_count = 6
 
 [documentation]
 governance_version = "1.1"

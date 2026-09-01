@@ -1,0 +1,45 @@
+name: us-minute-local-certification
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/data/us_minute/**"
+      - "scripts/certify_us_minute_snapshot.py"
+      - "tests/test_us_minute_local_snapshot.py"
+      - "configs/us_source_authority/mito0o852_ohlcv_1m.toml"
+      - ".github/workflows/us-minute-local-certification.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/finagent/data/us_minute/**"
+      - "scripts/certify_us_minute_snapshot.py"
+      - "tests/test_us_minute_local_snapshot.py"
+      - "configs/us_source_authority/mito0o852_ohlcv_1m.toml"
+      - ".github/workflows/us-minute-local-certification.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  local-minute-contract:
+    name: Local OHLCV-1m admission contract
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Synthetic local snapshot regression
+        run: uv run --frozen pytest -q tests/test_us_minute_local_snapshot.py
+      - name: Static checks
+        run: |
+          uv run --frozen ruff check src/finagent/data/us_minute scripts/certify_us_minute_snapshot.py tests/test_us_minute_local_snapshot.py
+          uv run --frozen mypy src/finagent/data/us_minute
+          uv run --frozen python -m py_compile src/finagent/data/us_minute/*.py scripts/certify_us_minute_snapshot.py

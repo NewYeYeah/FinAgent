@@ -83,15 +83,23 @@ def _accepted_rights() -> DatasetUsageRightsRecord:
     )
 
 
-def test_current_huggingface_candidate_is_reference_only() -> None:
+def test_current_huggingface_candidate_is_reference_only_with_resolved_intraday_semantics() -> None:
     review = load_dataset_authority_config(CONFIG)
     bundle = review.bundle
 
     assert bundle.decision.status is DatasetAuthorityStatus.REFERENCE_ONLY
     assert bundle.provenance.revision.value == "776328445b7ac6e7815ef3a483e9c8ded1eb6d56"
-    assert "usage_rights:unresolved" in bundle.decision.blocking_issues
-    assert "price_adjustment:unknown" in bundle.decision.blocking_issues
-    assert "corporate_actions:unknown" in bundle.decision.blocking_issues
+    assert bundle.provenance.price_adjustment is PriceAdjustmentStatus.RAW
+    assert bundle.provenance.corporate_actions is CorporateActionStatus.NOT_PROVIDED
+    assert (
+        bundle.provenance.symbol_lifecycle
+        is SymbolLifecycleStatus.HISTORICAL_SYMBOLS_WITHOUT_LIFECYCLE
+    )
+    assert bundle.decision.blocking_issues == (
+        "upstream_origin:declared_only",
+        "usage_rights:unresolved",
+        "session_coverage:unknown",
+    )
     with pytest.raises(PermissionError, match="reference_only"):
         bundle.require_research_authority()
 
