@@ -4,6 +4,7 @@ import hashlib
 import importlib
 import json
 from dataclasses import dataclass
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -32,6 +33,10 @@ def _duckdb() -> Any:
 
 def _sql_string(value: str) -> str:
     return "'" + value.replace("'", "''") + "'"
+
+
+def _quoted_identifier(value: str) -> str:
+    return '"' + value.replace('"', '""') + '"'
 
 
 @dataclass(frozen=True, slots=True)
@@ -85,13 +90,46 @@ def fetch_plan_rows(
     *,
     limit: int = 1000,
 ) -> tuple[dict[str, object], ...]:
+    """Fetch a bounded Python preview without requiring DuckDB's optional pytz bridge.
+
+    DuckDB keeps TIMESTAMPTZ/DATE authoritative inside SQL and Parquet. Only this
+    interactive Python boundary casts temporal columns to ISO text before `fetchall`,
+    then reconstructs standard-library datetime/date objects.
+    """
+
     if not 1 <= limit <= 100_000:
         raise ValueError("fetch limit must be in 1..100000")
+    temporal_datetime = {"event_time", "available_at"}
+    temporal_date = {"session_date"}
+    projections: list[str] = []
+    for column in plan.output_columns:
+        identifier = _quoted_identifier(column)
+        if column in temporal_datetime or column in temporal_date:
+            projections.append(f"CAST({identifier} AS VARCHAR) AS {identifier}")
+        else:
+            projections.append(identifier)
+
     connection = _duckdb().connect(database=":memory:")
     try:
-        cursor = connection.execute(f"SELECT * FROM ({plan.sql}) AS bounded_query LIMIT {limit}")
+        cursor = connection.execute(
+            "SELECT "
+            + ", ".join(projections)
+            + f" FROM ({plan.sql}) AS bounded_query LIMIT {limit}"
+        )
         columns = tuple(str(item[0]) for item in cursor.description)
-        return tuple(dict(zip(columns, row, strict=True)) for row in cursor.fetchall())
+        converted: list[dict[str, object]] = []
+        for raw_row in cursor.fetchall():
+            row = dict(zip(columns, raw_row, strict=True))
+            for column in temporal_datetime:
+                value = row.get(column)
+                if value is not None:
+                    row[column] = datetime.fromisoformat(str(value))
+            for column in temporal_date:
+                value = row.get(column)
+                if value is not None:
+                    row[column] = date.fromisoformat(str(value))
+            converted.append(row)
+        return tuple(converted)
     finally:
         connection.close()
 
