@@ -1,0 +1,64 @@
+name: us-d1-minute-data-plane
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/data/minute_store/**"
+      - "src/finagent/data/us_minute/quarantine.py"
+      - "scripts/export_us_minute_dev_sample.py"
+      - "scripts/smoke_us_d1_minute_store.py"
+      - "tests/test_us_d1_minute_store.py"
+      - "tests/fixtures/us_minute/**"
+      - "docs/status.toml"
+      - "docs/guides/us-minute-data-plane.md"
+      - ".github/workflows/us-d1-minute-data-plane.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/finagent/data/minute_store/**"
+      - "src/finagent/data/us_minute/quarantine.py"
+      - "scripts/export_us_minute_dev_sample.py"
+      - "scripts/smoke_us_d1_minute_store.py"
+      - "tests/test_us_d1_minute_store.py"
+      - "tests/fixtures/us_minute/**"
+      - "docs/status.toml"
+      - "docs/guides/us-minute-data-plane.md"
+      - ".github/workflows/us-d1-minute-data-plane.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  data-plane:
+    name: US-D1 bounded DuckDB/Parquet data plane
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Synthetic Parquet data-plane regression
+        run: uv run --frozen pytest -q tests/test_us_d1_minute_store.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/data/minute_store \
+            src/finagent/data/us_minute/quarantine.py \
+            scripts/export_us_minute_dev_sample.py \
+            scripts/smoke_us_d1_minute_store.py \
+            tests/test_us_d1_minute_store.py
+          uv run --frozen mypy --strict \
+            src/finagent/data/minute_store \
+            scripts/export_us_minute_dev_sample.py \
+            scripts/smoke_us_d1_minute_store.py
+          uv run --frozen python -m py_compile \
+            src/finagent/data/minute_store/*.py \
+            scripts/export_us_minute_dev_sample.py \
+            scripts/smoke_us_d1_minute_store.py
