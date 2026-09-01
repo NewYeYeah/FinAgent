@@ -137,6 +137,7 @@ class MinuteStoreSmokeReport:
             "smoke_policy": self.smoke_policy.to_dict(),
             "execution_policy": self.execution_policy.to_dict(),
             "execution_settings": self.execution_settings.to_dict(),
+            "query": self.plan.query.to_dict(),
             "plan": self.plan.to_dict(),
             "asset_count": len(self.plan.query.assets),
             "partition_count": len(self.plan.partition_months),
