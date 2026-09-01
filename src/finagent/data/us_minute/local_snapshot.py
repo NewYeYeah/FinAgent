@@ -4,9 +4,10 @@ import hashlib
 import json
 import re
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, time
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from finagent.data.provenance import (
     DatasetAuthorityBundle,
@@ -15,6 +16,11 @@ from finagent.data.provenance import (
 )
 
 _MONTH_RE = re.compile(r"^ohlcv_(\d{4})-(\d{2})\.parquet$")
+_NEW_YORK = ZoneInfo("America/New_York")
+_PREMARKET_OPEN = time(4, 0)
+_REGULAR_OPEN = time(9, 30)
+_REGULAR_CLOSE = time(16, 0)
+_AFTER_HOURS_CLOSE = time(20, 0)
 
 
 def _canonical_hash(payload: dict[str, object], *, prefix: str) -> str:
@@ -332,6 +338,36 @@ def _sample_files(
     return tuple(inventory.files[index] for index in dict.fromkeys(indices))
 
 
+def _session_counts(connection: Any, path_literal: str) -> tuple[int, int]:
+    """Classify sampled rows by New York clock without DuckDB's optional pytz bridge.
+
+    DuckDB reduces the data to one UTC-minute bucket plus its row count, so Python
+    only receives at most ~45k rows per sampled month. Standard-library zoneinfo
+    then supplies DST-correct local clock classification on every supported OS.
+    """
+
+    minute_buckets = connection.execute(
+        f"""
+        SELECT
+            CAST(FLOOR(epoch(timestamp) / 60) AS BIGINT) AS epoch_minute,
+            COUNT(*) AS row_count
+        FROM read_parquet({path_literal})
+        GROUP BY 1
+        """
+    ).fetchall()
+    outside_regular = 0
+    outside_0400_2000 = 0
+    for epoch_minute, row_count in minute_buckets:
+        utc_dt = datetime.fromtimestamp(int(epoch_minute) * 60, tz=UTC)
+        local_clock = utc_dt.astimezone(_NEW_YORK).time().replace(tzinfo=None)
+        count = int(row_count)
+        if local_clock < _REGULAR_OPEN or local_clock >= _REGULAR_CLOSE:
+            outside_regular += count
+        if local_clock < _PREMARKET_OPEN or local_clock >= _AFTER_HOURS_CLOSE:
+            outside_0400_2000 += count
+    return outside_regular, outside_0400_2000
+
+
 def certify_local_minute_snapshot(
     root: str | Path,
     *,
@@ -346,85 +382,71 @@ def certify_local_minute_snapshot(
     duckdb = _duckdb()
     connection = duckdb.connect(database=":memory:")
 
-    first_path = _quote_path(inventory.files[0].path)
-    description = connection.execute(
-        f"DESCRIBE SELECT * FROM read_parquet({first_path})"
-    ).fetchall()
-    schema = tuple((str(row[0]), str(row[1])) for row in description)
+    try:
+        first_path = _quote_path(inventory.files[0].path)
+        description = connection.execute(
+            f"DESCRIBE SELECT * FROM read_parquet({first_path})"
+        ).fetchall()
+        schema = tuple((str(row[0]), str(row[1])) for row in description)
 
-    checks: list[LocalMinuteSampleCheck] = []
-    for item in _sample_files(inventory, sample_months):
-        path_literal = _quote_path(item.path)
-        query = f"""
-            WITH base AS (
+        checks: list[LocalMinuteSampleCheck] = []
+        for item in _sample_files(inventory, sample_months):
+            path_literal = _quote_path(item.path)
+            query = f"""
+                WITH base AS (
+                    SELECT timestamp, open, high, low, close, volume, ticker
+                    FROM read_parquet({path_literal})
+                ),
+                duplicate_keys AS (
+                    SELECT COUNT(*) AS duplicate_key_count
+                    FROM (
+                        SELECT ticker, timestamp
+                        FROM base
+                        GROUP BY ticker, timestamp
+                        HAVING COUNT(*) > 1
+                    )
+                )
                 SELECT
-                    timestamp,
-                    open,
-                    high,
-                    low,
-                    close,
-                    volume,
-                    ticker,
-                    CAST(timezone('America/New_York', timestamp) AS TIME) AS et_time
-                FROM read_parquet({path_literal})
-            ),
-            duplicate_keys AS (
-                SELECT COUNT(*) AS duplicate_key_count
-                FROM (
-                    SELECT ticker, timestamp
-                    FROM base
-                    GROUP BY ticker, timestamp
-                    HAVING COUNT(*) > 1
+                    COUNT(*) AS row_count,
+                    COUNT(DISTINCT ticker) AS ticker_count,
+                    MIN(epoch(timestamp)) AS min_epoch,
+                    MAX(epoch(timestamp)) AS max_epoch,
+                    (SELECT duplicate_key_count FROM duplicate_keys) AS duplicate_key_count,
+                    SUM(
+                        CASE
+                            WHEN open IS NULL OR high IS NULL OR low IS NULL OR close IS NULL
+                              OR open <= 0 OR high <= 0 OR low <= 0 OR close <= 0
+                              OR high < GREATEST(open, low, close)
+                              OR low > LEAST(open, high, close)
+                            THEN 1 ELSE 0
+                        END
+                    ) AS invalid_ohlc_count,
+                    SUM(CASE WHEN volume IS NULL OR volume < 0 THEN 1 ELSE 0 END)
+                        AS negative_volume_count
+                FROM base
+            """
+            row = connection.execute(query).fetchone()
+            assert row is not None
+            outside_regular, outside_0400_2000 = _session_counts(connection, path_literal)
+            min_timestamp = datetime.fromtimestamp(float(row[2]), tz=UTC).isoformat()
+            max_timestamp = datetime.fromtimestamp(float(row[3]), tz=UTC).isoformat()
+            checks.append(
+                LocalMinuteSampleCheck(
+                    month=item.month,
+                    row_count=int(row[0]),
+                    ticker_count=int(row[1]),
+                    min_timestamp=min_timestamp,
+                    max_timestamp=max_timestamp,
+                    duplicate_key_count=int(row[4]),
+                    invalid_ohlc_count=int(row[5] or 0),
+                    negative_volume_count=int(row[6] or 0),
+                    outside_regular_hours_count=outside_regular,
+                    outside_0400_2000_count=outside_0400_2000,
                 )
             )
-            SELECT
-                COUNT(*) AS row_count,
-                COUNT(DISTINCT ticker) AS ticker_count,
-                MIN(timestamp) AS min_timestamp,
-                MAX(timestamp) AS max_timestamp,
-                (SELECT duplicate_key_count FROM duplicate_keys) AS duplicate_key_count,
-                SUM(
-                    CASE
-                        WHEN open IS NULL OR high IS NULL OR low IS NULL OR close IS NULL
-                          OR open <= 0 OR high <= 0 OR low <= 0 OR close <= 0
-                          OR high < GREATEST(open, low, close)
-                          OR low > LEAST(open, high, close)
-                        THEN 1 ELSE 0
-                    END
-                ) AS invalid_ohlc_count,
-                SUM(CASE WHEN volume IS NULL OR volume < 0 THEN 1 ELSE 0 END)
-                    AS negative_volume_count,
-                SUM(
-                    CASE
-                        WHEN et_time < TIME '09:30:00' OR et_time >= TIME '16:00:00'
-                        THEN 1 ELSE 0
-                    END
-                ) AS outside_regular_hours_count,
-                SUM(
-                    CASE
-                        WHEN et_time < TIME '04:00:00' OR et_time >= TIME '20:00:00'
-                        THEN 1 ELSE 0
-                    END
-                ) AS outside_0400_2000_count
-            FROM base
-        """
-        row = connection.execute(query).fetchone()
-        assert row is not None
-        checks.append(
-            LocalMinuteSampleCheck(
-                month=item.month,
-                row_count=int(row[0]),
-                ticker_count=int(row[1]),
-                min_timestamp=str(row[2]),
-                max_timestamp=str(row[3]),
-                duplicate_key_count=int(row[4]),
-                invalid_ohlc_count=int(row[5] or 0),
-                negative_volume_count=int(row[6] or 0),
-                outside_regular_hours_count=int(row[7] or 0),
-                outside_0400_2000_count=int(row[8] or 0),
-            )
-        )
-    connection.close()
+    finally:
+        connection.close()
+
     return LocalMinuteCertification(
         revision=layout.revision,
         inventory_id=inventory.inventory_id,
