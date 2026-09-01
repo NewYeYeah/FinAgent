@@ -40,6 +40,33 @@ ResearchDataset
 
 US-S0 must decide exact revision, provenance, usage rights, timestamp/adjustment/action/lifecycle semantics before a source is authoritative.
 
+### Source-authority review
+
+Source authority is represented by `finagent.data.provenance`. A review binds:
+
+```text
+DatasetSourceCandidate
+DatasetRevision
+DatasetProvenanceRecord
+DatasetUsageRightsRecord
+DatasetAuthorityDecision
+DatasetAuthorityBundle
+```
+
+`DatasetAuthorityBundle.require_research_authority()` is the fail-closed boundary for downstream authoritative research. `REFERENCE_ONLY` and `REJECTED` candidates cannot cross it.
+
+Review a repository candidate without downloading the bulk corpus:
+
+```bash
+uv run --frozen python scripts/review_us_source_authority.py \
+  configs/us_source_authority/mito0o852_ohlcv_1m.toml \
+  --output reports/us_source_authority/mito0o852_ohlcv_1m.json
+```
+
+The initial `mito0o852/OHLCV-1m` review is deliberately `REFERENCE_ONLY`. Its immutable Hugging Face revision and published schema/time convention are recorded, but research authority remains blocked while upstream-origin verification, usage rights, session coverage, price-adjustment, corporate-action and symbol-lifecycle semantics are unresolved. Do not treat the dataset title, size or README origin statement as a research license or data-quality certification.
+
+Adding another candidate means adding a new authority config/evidence review; it does not modify this candidate's immutable revision or silently replace its decision.
+
 ## Time semantics
 
 All authoritative timestamps are timezone-aware. `event_time` is the represented market event; `available_at` is the PIT observation clock. U.S. sessions use materialized/versioned trading-calendar evidence including DST/holidays/half-days.

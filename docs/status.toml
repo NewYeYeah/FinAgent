@@ -22,6 +22,14 @@ local_acceptance_attested = true
 accepted_at = "2026-09-01"
 release_document = "docs/releases/ashare-historical-v1.md"
 
+[stage.us_s0]
+research_source_selected = false
+reviewed_candidate = "hf-mito0o852-ohlcv-1m"
+reviewed_revision = "776328445b7ac6e7815ef3a483e9c8ded1eb6d56"
+candidate_authority = "reference_only"
+authority_config = "configs/us_source_authority/mito0o852_ohlcv_1m.toml"
+blocking_issue_count = 6
+
 [documentation]
 governance_version = "1.1"
 active_plan_count = 1

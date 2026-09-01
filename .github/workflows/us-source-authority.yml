@@ -1,0 +1,71 @@
+name: us-source-authority
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/data/provenance/**"
+      - "configs/us_source_authority/**"
+      - "scripts/review_us_source_authority.py"
+      - "tests/test_us_source_authority.py"
+      - "docs/guides/data.md"
+      - "docs/status.toml"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/us-source-authority.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/finagent/data/provenance/**"
+      - "configs/us_source_authority/**"
+      - "scripts/review_us_source_authority.py"
+      - "tests/test_us_source_authority.py"
+      - "docs/guides/data.md"
+      - "docs/status.toml"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/us-source-authority.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  authority-contract:
+    name: US-S0 source authority contract
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Unit and authority regression
+        run: uv run --frozen pytest -q tests/test_us_source_authority.py
+      - name: Static checks for new authority surface
+        run: |
+          uv run --frozen ruff check src/finagent/data/provenance scripts/review_us_source_authority.py tests/test_us_source_authority.py
+          uv run --frozen mypy src/finagent/data/provenance
+          uv run --frozen python -m py_compile src/finagent/data/provenance/*.py scripts/review_us_source_authority.py
+      - name: Materialize reviewed candidate authority record
+        run: |
+          mkdir -p reports/us_source_authority
+          uv run --frozen python scripts/review_us_source_authority.py \
+            configs/us_source_authority/mito0o852_ohlcv_1m.toml \
+            --output reports/us_source_authority/mito0o852_ohlcv_1m.json
+      - name: Fail closed if reference candidate is promoted
+        run: |
+          uv run --frozen python - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(
+              Path("reports/us_source_authority/mito0o852_ohlcv_1m.json").read_text()
+          )
+          assert payload["decision"]["status"] == "reference_only"
+          assert "usage_rights:unresolved" in payload["decision"]["blocking_issues"]
+          PY
