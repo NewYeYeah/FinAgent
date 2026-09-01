@@ -92,7 +92,9 @@ def _rank_weights(feature_values: Mapping[str, float]) -> dict[str, float]:
 
 def _turnover(previous: Mapping[str, float], current: Mapping[str, float]) -> tuple[float, float]:
     assets = set(previous).union(current)
-    gross_traded = sum(abs(current.get(asset, 0.0) - previous.get(asset, 0.0)) for asset in assets)
+    gross_traded = sum(
+        abs(current.get(asset, 0.0) - previous.get(asset, 0.0)) for asset in assets
+    )
     return 0.5 * gross_traded, gross_traded
 
 
@@ -105,6 +107,8 @@ class USBaselineRunSpec:
     label_name: str = "us_same_session_60m_simple_return_raw"
     signal_interval: str = "15m"
     minimum_cross_section: int = 10
+    minimum_evaluated_periods: int = 20
+    minimum_ic_periods: int = 20
     fail_on_partial_realized_label: bool = True
     schema_version: str = "finagent.us-baseline-run-spec.v1"
 
@@ -129,6 +133,8 @@ class USBaselineRunSpec:
             raise ValueError("US-B0 v1 requires the frozen same-session 60m RAW label")
         if self.minimum_cross_section < 2:
             raise ValueError("minimum_cross_section must be >= 2")
+        if self.minimum_evaluated_periods < 1 or self.minimum_ic_periods < 1:
+            raise ValueError("minimum evaluated/IC periods must be >= 1")
         if not self.fail_on_partial_realized_label:
             raise ValueError("US-B0 v1 fails closed on partially missing realized labels")
 
@@ -146,6 +152,8 @@ class USBaselineRunSpec:
             "label_name": self.label_name,
             "signal_interval": self.signal_interval,
             "minimum_cross_section": self.minimum_cross_section,
+            "minimum_evaluated_periods": self.minimum_evaluated_periods,
+            "minimum_ic_periods": self.minimum_ic_periods,
             "fail_on_partial_realized_label": self.fail_on_partial_realized_label,
         }
         if include_id:
@@ -225,7 +233,10 @@ class USBaselineCandidateEvidence:
 
     @property
     def evidence_id(self) -> str:
-        return _canonical_hash(self.to_dict(include_id=False), prefix="us-baseline-candidate-evidence")
+        return _canonical_hash(
+            self.to_dict(include_id=False),
+            prefix="us-baseline-candidate-evidence",
+        )
 
     def to_dict(self, *, include_id: bool = True) -> dict[str, object]:
         payload: dict[str, object] = {
@@ -276,12 +287,17 @@ class USBaselineEvaluationReport:
     def blockers(self) -> tuple[str, ...]:
         values: list[str] = []
         for item in self.candidates:
-            values.extend(f"candidate:{item.feature_id}:{blocker}" for blocker in item.blockers)
+            values.extend(
+                f"candidate:{item.feature_id}:{blocker}" for blocker in item.blockers
+            )
         return tuple(values)
 
     @property
     def report_id(self) -> str:
-        return _canonical_hash(self.to_dict(include_id=False), prefix="us-baseline-evaluation")
+        return _canonical_hash(
+            self.to_dict(include_id=False),
+            prefix="us-baseline-evaluation",
+        )
 
     def to_dict(self, *, include_id: bool = True) -> dict[str, object]:
         payload: dict[str, object] = {
@@ -299,6 +315,19 @@ class USBaselineEvaluationReport:
         return payload
 
 
+def _validate_observation_order(rows: Sequence[USBaselineObservation]) -> None:
+    by_asset: dict[str, list[USBaselineObservation]] = defaultdict(list)
+    for row in rows:
+        by_asset[row.asset].append(row)
+    for asset, asset_rows in by_asset.items():
+        ordered = sorted(asset_rows, key=lambda item: item.feature_available_at)
+        for left, right in pairwise(ordered):
+            if right.feature_available_at <= left.feature_available_at:
+                raise ValueError(
+                    f"duplicate/non-increasing formation time for asset {asset!r}"
+                )
+
+
 def evaluate_us_baseline_candidate(
     spec: USBaselineFeatureSpec,
     observations: Sequence[USBaselineObservation],
@@ -306,8 +335,12 @@ def evaluate_us_baseline_candidate(
     run_spec: USBaselineRunSpec,
 ) -> USBaselineCandidateEvidence:
     rows = tuple(observations)
-    if any(row.feature_id != spec.feature_id or row.feature_spec_id != spec.spec_id for row in rows):
+    if any(
+        row.feature_id != spec.feature_id or row.feature_spec_id != spec.spec_id
+        for row in rows
+    ):
         raise ValueError("observation feature identity mismatch")
+    _validate_observation_order(rows)
     ordered = sorted(rows, key=lambda item: (item.feature_available_at, item.asset))
     groups: dict[datetime, list[USBaselineObservation]] = defaultdict(list)
     for row in ordered:
@@ -359,11 +392,23 @@ def evaluate_us_baseline_candidate(
         rank_ic = _correlation(feature_ranks, label_ranks)
         if rank_ic is not None:
             rank_ics.append(rank_ic)
-        gross_returns.append(sum(weights[asset] * realized_by_asset[asset] for asset in weights))
+        gross_returns.append(
+            sum(weights[asset] * realized_by_asset[asset] for asset in weights)
+        )
         one_way, gross_traded = _turnover(previous_weights, weights)
         turnovers.append(one_way)
         gross_traded_weights.append(gross_traded)
         previous_weights = weights
+
+    if len(gross_returns) < run_spec.minimum_evaluated_periods:
+        blockers.append(
+            "insufficient_evaluated_periods:"
+            f"{len(gross_returns)}<{run_spec.minimum_evaluated_periods}"
+        )
+    if len(rank_ics) < run_spec.minimum_ic_periods:
+        blockers.append(
+            f"insufficient_ic_periods:{len(rank_ics)}<{run_spec.minimum_ic_periods}"
+        )
 
     coverage = valid_feature_cells / eligible_cells if eligible_cells else 0.0
     return USBaselineCandidateEvidence(
