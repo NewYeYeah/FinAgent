@@ -30,6 +30,16 @@ def _canonical_hash(payload: dict[str, object], *, prefix: str) -> str:
     return f"{prefix}-{hashlib.sha256(encoded).hexdigest()[:24]}"
 
 
+def _sql_string(value: str) -> str:
+    return "'" + value.replace("'", "''") + "'"
+
+
+def _aware_utc(value: datetime, field_name: str) -> datetime:
+    if value.tzinfo is None or value.utcoffset() is None:
+        raise ValueError(f"{field_name} must be timezone-aware")
+    return value.astimezone(UTC)
+
+
 CONFLICT_TOLERANT_BASE_POLICY = MinuteDataCleaningPolicy(
     max_invalid_ohlc_rate=1e-6,
     max_exact_duplicate_extra_row_rate=1e-4,
@@ -190,14 +200,48 @@ def certify_local_minute_snapshot_with_conflict_quarantine(
     )
 
 
-def quarantined_clean_month_select_sql(path: str | Path) -> str:
-    """Canonical admitted read: clean rows plus whole-group conflict quarantine."""
+def quarantined_clean_month_select_sql(
+    path: str | Path,
+    *,
+    tickers: tuple[str, ...] = (),
+    start: datetime | None = None,
+    end: datetime | None = None,
+) -> str:
+    """Canonical admitted read with optional predicate pushdown.
 
-    literal = "'" + Path(path).as_posix().replace("'", "''") + "'"
+    The optional ticker/time bounds are applied inside the monthly `base` CTE before
+    duplicate classification. This is semantically safe because all rows for every
+    requested `(ticker, timestamp)` key remain present while avoiding a full-partition
+    conflict aggregation for small bounded research queries.
+    """
+
+    literal = _sql_string(Path(path).as_posix())
+    normalized_tickers = tuple(
+        sorted(dict.fromkeys(item.strip() for item in tickers if item.strip()))
+    )
+    if (start is None) != (end is None):
+        raise ValueError("bounded minute SQL requires both start and end or neither")
+
+    predicates: list[str] = []
+    if normalized_tickers:
+        rendered = ", ".join(_sql_string(item) for item in normalized_tickers)
+        predicates.append(f"ticker IN ({rendered})")
+    if start is not None and end is not None:
+        start_utc = _aware_utc(start, "start")
+        end_utc = _aware_utc(end, "end")
+        if end_utc <= start_utc:
+            raise ValueError("end must be later than start")
+        predicates.append(f"timestamp >= TIMESTAMPTZ {_sql_string(start_utc.isoformat())}")
+        predicates.append(f"timestamp < TIMESTAMPTZ {_sql_string(end_utc.isoformat())}")
+
+    base_where = ""
+    if predicates:
+        base_where = "\n            WHERE " + "\n              AND ".join(predicates)
+
     return f"""
         WITH base AS (
             SELECT timestamp, open, high, low, close, volume, ticker
-            FROM read_parquet({literal})
+            FROM read_parquet({literal}){base_where}
         ),
         conflicting_keys AS (
             SELECT ticker, timestamp
