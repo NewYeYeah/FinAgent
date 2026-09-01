@@ -31,7 +31,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Release tag regression
-        run: python tests/test_release_tag_sync.py
+        run: python -m unittest -q tests.test_release_tag_sync
       - name: Configure release tag identity
         if: github.event_name == 'push'
         run: |
