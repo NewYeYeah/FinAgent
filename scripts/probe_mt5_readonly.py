@@ -45,7 +45,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--history-symbol",
         action="append",
         default=[],
-        help="Broker symbol to probe for M1/tick history; repeatable",
+        help="Broker symbol to probe for M1 history; repeatable",
     )
     parser.add_argument("--bar-start", type=_aware_datetime)
     parser.add_argument("--bar-end", type=_aware_datetime)
@@ -62,8 +62,26 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         default=[],
         help=(
-            "Exact visible/tradable broker symbol required by the MT5-P0 acceptance policy; "
-            "repeatable. These symbols are automatically included in history and spread probes."
+            "Exact visible/tradable broker symbol required by MT5-P0; repeatable. "
+            "All representatives receive M1 and spread measurement."
+        ),
+    )
+    parser.add_argument(
+        "--p0-tick-symbol",
+        action="append",
+        default=[],
+        help=(
+            "Representative symbol used for the expensive historical tick capability probe; "
+            "repeatable. Defaults to the first P0 representative symbol."
+        ),
+    )
+    parser.add_argument(
+        "--p0-tick-window-minutes",
+        type=int,
+        default=60,
+        help=(
+            "When explicit --tick-start/--tick-end are omitted, derive this many minutes from "
+            "the tail of observed M1 history for each P0 tick probe symbol (default: 60)."
         ),
     )
     parser.add_argument(
@@ -103,11 +121,26 @@ def main() -> int:
         raise SystemExit("history probing requires both --bar-start and --bar-end")
     if (args.tick_start is None) != (args.tick_end is None):
         raise SystemExit("--tick-start and --tick-end must be supplied together")
-    if representative_symbols and (args.tick_start is None or args.tick_end is None):
-        raise SystemExit(
-            "--p0-representative-symbol requires --tick-start and --tick-end "
-            "so tick-history evidence is explicit"
-        )
+    if args.p0_tick_window_minutes < 1:
+        raise SystemExit("--p0-tick-window-minutes must be >= 1")
+    if args.p0_tick_symbol and not representative_symbols:
+        raise SystemExit("--p0-tick-symbol requires --p0-representative-symbol")
+
+    tick_probe_symbols: tuple[str, ...] = ()
+    auto_tick_window_minutes: int | None = None
+    if representative_symbols:
+        requested_tick_symbols = _unique_symbols(args.p0_tick_symbol)
+        tick_probe_symbols = requested_tick_symbols or (representative_symbols[0],)
+        unknown_tick_symbols = sorted(set(tick_probe_symbols) - set(representative_symbols))
+        if unknown_tick_symbols:
+            raise SystemExit(
+                "--p0-tick-symbol must also be a representative symbol: "
+                + ", ".join(unknown_tick_symbols)
+            )
+        if args.tick_start is None:
+            auto_tick_window_minutes = args.p0_tick_window_minutes
+    elif args.tick_start is not None:
+        tick_probe_symbols = history_symbols
 
     client = MetaTrader5ReadOnlyClient(
         expected_package_version=args.expected_package_version,
@@ -116,10 +149,12 @@ def main() -> int:
         client,
         symbol_group=args.symbol_group,
         history_symbols=history_symbols,
+        tick_history_symbols=tick_probe_symbols,
         bar_start=args.bar_start,
         bar_end=args.bar_end,
         tick_start=args.tick_start,
         tick_end=args.tick_end,
+        auto_tick_window_minutes=auto_tick_window_minutes,
         spread_symbols=spread_symbols,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -133,6 +168,7 @@ def main() -> int:
     if representative_symbols:
         policy = MT5P0AcceptancePolicy(
             representative_symbols=representative_symbols,
+            tick_probe_symbols=tick_probe_symbols,
             expected_package_version=args.expected_package_version,
         )
         assessment = assess_mt5_p0(report, policy)

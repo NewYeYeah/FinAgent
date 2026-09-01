@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from .capabilities import (
@@ -154,16 +154,35 @@ def _history_capability(
     *,
     bar_start: datetime,
     bar_end: datetime,
+    tick_requested: bool,
     tick_start: datetime | None,
     tick_end: datetime | None,
+    auto_tick_window_minutes: int | None,
 ) -> MT5HistoryCapability:
     rates = _rows(client.copy_rates_range(symbol, bar_start, bar_end))
-    m1_first = _unix_timestamp(_field(rates[0], "time")) if rates else None
-    m1_last = _unix_timestamp(_field(rates[-1], "time")) if rates else None
+    rate_times = tuple(_unix_timestamp(_field(row, "time")) for row in rates)
+    m1_first = rate_times[0] if rate_times else None
+    m1_last = rate_times[-1] if rate_times else None
 
+    actual_tick_start: datetime | None = None
+    actual_tick_end: datetime | None = None
+    tick_window_basis = "not_requested"
+    if tick_requested and tick_start is not None and tick_end is not None:
+        actual_tick_start = tick_start
+        actual_tick_end = tick_end
+        tick_window_basis = "explicit"
+    elif tick_requested and auto_tick_window_minutes is not None and rate_times:
+        actual_tick_end = rate_times[-1] + timedelta(minutes=1)
+        actual_tick_start = actual_tick_end - timedelta(minutes=auto_tick_window_minutes)
+        tick_window_basis = "derived_from_m1_tail"
+
+    tick_window_m1_bar_count = 0
     ticks: tuple[object, ...] = ()
-    if tick_start is not None and tick_end is not None:
-        ticks = _rows(client.copy_ticks_range(symbol, tick_start, tick_end))
+    if actual_tick_start is not None and actual_tick_end is not None:
+        tick_window_m1_bar_count = sum(
+            actual_tick_start <= item < actual_tick_end for item in rate_times
+        )
+        ticks = _rows(client.copy_ticks_range(symbol, actual_tick_start, actual_tick_end))
     tick_first = _tick_timestamp(ticks[0]) if ticks else None
     tick_last = _tick_timestamp(ticks[-1]) if ticks else None
     return MT5HistoryCapability(
@@ -173,11 +192,13 @@ def _history_capability(
         m1_bar_count=len(rates),
         m1_first_at=m1_first,
         m1_last_at=m1_last,
-        requested_tick_start=tick_start,
-        requested_tick_end=tick_end,
+        requested_tick_start=actual_tick_start,
+        requested_tick_end=actual_tick_end,
         tick_count=len(ticks),
         tick_first_at=tick_first,
         tick_last_at=tick_last,
+        tick_window_m1_bar_count=tick_window_m1_bar_count,
+        tick_window_basis=tick_window_basis,
     )
 
 
@@ -207,10 +228,12 @@ def probe_mt5_capabilities(
     *,
     symbol_group: str = "",
     history_symbols: tuple[str, ...] = (),
+    tick_history_symbols: tuple[str, ...] = (),
     bar_start: datetime | None = None,
     bar_end: datetime | None = None,
     tick_start: datetime | None = None,
     tick_end: datetime | None = None,
+    auto_tick_window_minutes: int | None = None,
     spread_symbols: tuple[str, ...] = (),
     probed_at: datetime | None = None,
 ) -> MT5CapabilityProbeReport:
@@ -220,6 +243,9 @@ def probe_mt5_capabilities(
     normalized_history = tuple(
         dict.fromkeys(item.strip() for item in history_symbols if item.strip())
     )
+    normalized_tick_history = tuple(
+        dict.fromkeys(item.strip() for item in tick_history_symbols if item.strip())
+    )
     normalized_spread = tuple(
         dict.fromkeys(item.strip() for item in spread_symbols if item.strip())
     )
@@ -227,8 +253,18 @@ def probe_mt5_capabilities(
         raise ValueError("history_symbols require bar_start and bar_end")
     if (tick_start is None) != (tick_end is None):
         raise ValueError("tick_start and tick_end must be both set or both omitted")
-    if (tick_start is not None or tick_end is not None) and not normalized_history:
+    if tick_start is not None and auto_tick_window_minutes is not None:
+        raise ValueError("explicit tick window and auto_tick_window_minutes are mutually exclusive")
+    if auto_tick_window_minutes is not None and auto_tick_window_minutes < 1:
+        raise ValueError("auto_tick_window_minutes must be >= 1")
+    if (tick_start is not None or auto_tick_window_minutes is not None) and not normalized_history:
         raise ValueError("tick history window requires at least one history symbol")
+    if not normalized_tick_history and tick_start is not None:
+        normalized_tick_history = normalized_history
+    if normalized_tick_history and not set(normalized_tick_history).issubset(normalized_history):
+        raise ValueError("tick_history_symbols must be a subset of history_symbols")
+    if normalized_tick_history and tick_start is None and auto_tick_window_minutes is None:
+        raise ValueError("tick_history_symbols require explicit or automatic tick window")
 
     terminal = _terminal_capability(client, client.terminal_info(), client.account_info())
     symbols = tuple(
@@ -242,6 +278,7 @@ def probe_mt5_capabilities(
     history: list[MT5HistoryCapability] = []
     if normalized_history:
         assert bar_start is not None and bar_end is not None
+        tick_targets = set(normalized_tick_history)
         for symbol in normalized_history:
             history.append(
                 _history_capability(
@@ -249,8 +286,10 @@ def probe_mt5_capabilities(
                     symbol,
                     bar_start=bar_start,
                     bar_end=bar_end,
+                    tick_requested=symbol in tick_targets,
                     tick_start=tick_start,
                     tick_end=tick_end,
+                    auto_tick_window_minutes=auto_tick_window_minutes,
                 )
             )
 

@@ -25,6 +25,7 @@ class FakeReadOnlyClient:
     def __init__(self) -> None:
         self.initialized = False
         self.shutdown_called = False
+        self.tick_requests: list[tuple[str, object, object]] = []
 
     def initialize(self) -> None:
         self.initialized = True
@@ -104,6 +105,7 @@ class FakeReadOnlyClient:
     def copy_ticks_range(self, symbol: str, date_from: object, date_to: object) -> object:
         assert symbol in {"AAPL", "MSFT"}
         assert date_from is not None and date_to is not None
+        self.tick_requests.append((symbol, date_from, date_to))
         return (
             {"time_msc": 1_772_980_200_100},
             {"time_msc": 1_772_980_200_900},
@@ -143,6 +145,7 @@ def test_probe_preserves_capabilities_without_account_or_path_secrets() -> None:
     assert report.tradable_symbol_count == 2
     assert report.history[0].m1_bar_count == 3
     assert report.history[0].tick_count == 2
+    assert report.history[0].tick_window_basis == "explicit"
     assert report.spread_samples[0].spread_points == pytest.approx(5.0)
     payload = report.to_dict()
     rendered = str(payload)
@@ -151,11 +154,49 @@ def test_probe_preserves_capabilities_without_account_or_path_secrets() -> None:
     assert payload["terminal"]["broker_server"] == "Broker-Demo"  # type: ignore[index]
 
 
+def test_auto_tick_window_is_derived_from_observed_m1_tail_for_selected_symbol() -> None:
+    client = FakeReadOnlyClient()
+    report = run_mt5_readonly_probe(
+        client,
+        history_symbols=("AAPL", "MSFT"),
+        tick_history_symbols=("AAPL",),
+        bar_start=_utc(2026, 3, 8, 13, 0),
+        bar_end=_utc(2026, 3, 8, 15, 0),
+        auto_tick_window_minutes=2,
+        probed_at=_utc(2026, 3, 8, 15, 1),
+    )
+
+    assert len(client.tick_requests) == 1
+    assert client.tick_requests[0][0] == "AAPL"
+    aapl, msft = report.history
+    assert aapl.tick_window_basis == "derived_from_m1_tail"
+    assert aapl.tick_window_m1_bar_count == 2
+    assert aapl.requested_tick_start == _utc(2026, 3, 8, 14, 31)
+    assert aapl.requested_tick_end == _utc(2026, 3, 8, 14, 33)
+    assert msft.tick_window_basis == "not_requested"
+    assert msft.requested_tick_start is None
+    assert msft.tick_count == 0
+
+
 def test_probe_rejects_unbounded_history_request() -> None:
     client = FakeReadOnlyClient()
     client.initialize()
     with pytest.raises(ValueError, match="require bar_start and bar_end"):
         probe_mt5_capabilities(client, history_symbols=("AAPL",))
+
+
+def test_probe_rejects_tick_target_outside_history_set() -> None:
+    client = FakeReadOnlyClient()
+    client.initialize()
+    with pytest.raises(ValueError, match="subset"):
+        probe_mt5_capabilities(
+            client,
+            history_symbols=("AAPL",),
+            tick_history_symbols=("MSFT",),
+            bar_start=_utc(2026, 3, 8, 13, 0),
+            bar_end=_utc(2026, 3, 8, 15, 0),
+            auto_tick_window_minutes=2,
+        )
 
 
 def test_official_client_fails_closed_on_package_version_mismatch() -> None:
