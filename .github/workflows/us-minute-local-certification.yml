@@ -10,6 +10,7 @@ on:
       - "tests/test_us_minute_local_snapshot.py"
       - "tests/test_us_minute_cleaning_policy.py"
       - "tests/test_us_minute_conflict_diagnostics.py"
+      - "tests/test_us_minute_conflict_quarantine.py"
       - "configs/us_source_authority/mito0o852_ohlcv_1m.toml"
       - ".github/workflows/us-minute-local-certification.yml"
   push:
@@ -21,6 +22,7 @@ on:
       - "tests/test_us_minute_local_snapshot.py"
       - "tests/test_us_minute_cleaning_policy.py"
       - "tests/test_us_minute_conflict_diagnostics.py"
+      - "tests/test_us_minute_conflict_quarantine.py"
       - "configs/us_source_authority/mito0o852_ohlcv_1m.toml"
       - ".github/workflows/us-minute-local-certification.yml"
 
@@ -48,8 +50,9 @@ jobs:
           tests/test_us_minute_local_snapshot.py
           tests/test_us_minute_cleaning_policy.py
           tests/test_us_minute_conflict_diagnostics.py
+          tests/test_us_minute_conflict_quarantine.py
       - name: Static checks
         run: |
-          uv run --frozen ruff check src/finagent/data/us_minute scripts/certify_us_minute_snapshot.py scripts/diagnose_us_minute_conflicts.py tests/test_us_minute_local_snapshot.py tests/test_us_minute_cleaning_policy.py tests/test_us_minute_conflict_diagnostics.py
+          uv run --frozen ruff check src/finagent/data/us_minute scripts/certify_us_minute_snapshot.py scripts/diagnose_us_minute_conflicts.py tests/test_us_minute_local_snapshot.py tests/test_us_minute_cleaning_policy.py tests/test_us_minute_conflict_diagnostics.py tests/test_us_minute_conflict_quarantine.py
           uv run --frozen mypy src/finagent/data/us_minute
           uv run --frozen python -m py_compile src/finagent/data/us_minute/*.py scripts/certify_us_minute_snapshot.py scripts/diagnose_us_minute_conflicts.py
