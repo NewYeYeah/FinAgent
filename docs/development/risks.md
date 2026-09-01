@@ -4,17 +4,14 @@ Only active/unresolved risks belong here. Resolved implementation history belong
 
 ## P0 — blocks research correctness or downstream authority
 
-### U.S. minute source provenance / usage rights
-A large public dataset is not automatically research authority. Exact revision, upstream origin, timestamp/adjustment/action semantics and usage rights must be resolved in US-S0 before bulk authoritative research.
-
 ### Intraday clock and calendar correctness
 DST, holidays, half-days, session boundaries, extended hours and bar timestamp convention can create leakage or incorrect resampling/labels. US-C0/US-D3 are blocking gates.
 
 ### Corporate-action and price-basis semantics
-Research and executable prices may have different authority. Split/dividend handling must be explicit and identity-bound; ambiguous source behavior narrows or rejects the research claim.
+The selected OHLCV-1m source is treated as raw/split-unadjusted intraday history. Split/dividend events are not embedded in the OHLCV rows. Research that spans action discontinuities must attach explicit action evidence/transform policy or exclude affected windows; silently treating raw intraday prices as a continuous adjusted series is forbidden.
 
 ### Survivorship / universe bias
-The present MT5 CFD intersection is an EngineeringUniverse, not a historical PIT universe. Formal market-wide Alpha claims require lifecycle/PIT evidence or an explicit limited interpretation.
+The minute corpus contains historical ticker observations but does not provide a point-in-time security master/lifecycle table. The present MT5 CFD intersection is also an EngineeringUniverse, not a historical PIT universe. Formal market-wide Alpha claims require lifecycle/PIT evidence or an explicit limited interpretation.
 
 ### Overlapping intraday labels / invalid inference
 Minute observations are serially dependent and forward horizons can overlap. Purging, HAC and block/session bootstrap must replace IID assumptions in formal research.
@@ -29,6 +26,12 @@ Listed equity bars and broker CFD instruments differ in contract size, volume un
 Internal order/position/account state must reconcile to broker order/deal history. Unknown drift, stale data or restart ambiguity must fail closed before external authority grows.
 
 ## P1 — record explicit limitation and continue only when the stage permits
+
+### U.S. minute source publication / redistribution rights
+The Hugging Face dataset README does not declare a license and the upstream Finnhub acquisition/redistribution chain is not independently verified. For FinAgent's current **local, non-redistributed research** scope this is recorded as a limitation rather than a blocker after an exact local snapshot passes certification. Any redistribution, hosted dataset publication or stronger public provenance claim requires a separate rights review.
+
+### Local minute snapshot integrity
+The local corpus is large enough that accidental partial downloads, wrong Hugging Face revisions or missing monthly partitions are plausible. The local certification gate binds the exact revision, inventories all monthly files and scans selected partitions before research admission.
 
 ### Minute Data Plane runtime and memory pressure
 Parquet scans are out-of-core but bounded research windows, feature matrices and inference may still exceed memory. Instrument scan/materialization budgets and profiling are required before scaling the universe.
