@@ -47,7 +47,7 @@ class DatasetAuthorityConfig:
 
 
 def _parse_datetime(value: object) -> datetime:
-    return datetime.fromisoformat(str(value).strip().replace("Z", "+00:00"))
+    return datetime.fromisoformat(str(value).strip())
 
 
 def load_dataset_authority_config(path: str | Path) -> DatasetAuthorityConfig:
