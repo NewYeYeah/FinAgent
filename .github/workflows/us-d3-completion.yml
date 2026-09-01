@@ -1,0 +1,82 @@
+name: us-d3-completion
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/data/us_minute/research_certification.py"
+      - "src/finagent/data/us_minute/reconciliation.py"
+      - "src/finagent/data/us_universe_finalization.py"
+      - "scripts/certify_us_minute_research.py"
+      - "scripts/probe_us_i0_candidate_quotes.py"
+      - "scripts/finalize_us_i0_engineering_universe.py"
+      - "scripts/reconcile_us_minute_mt5.py"
+      - "tests/test_us_d3_research_certification.py"
+      - "tests/test_us_d3_reference_reconciliation.py"
+      - "tests/test_us_i0_universe_finalization.py"
+      - "docs/status.toml"
+      - "docs/guides/us-d3-certification.md"
+      - ".github/workflows/us-d3-completion.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/finagent/data/us_minute/research_certification.py"
+      - "src/finagent/data/us_minute/reconciliation.py"
+      - "src/finagent/data/us_universe_finalization.py"
+      - "scripts/certify_us_minute_research.py"
+      - "scripts/probe_us_i0_candidate_quotes.py"
+      - "scripts/finalize_us_i0_engineering_universe.py"
+      - "scripts/reconcile_us_minute_mt5.py"
+      - "tests/test_us_d3_research_certification.py"
+      - "tests/test_us_d3_reference_reconciliation.py"
+      - "tests/test_us_i0_universe_finalization.py"
+      - "docs/status.toml"
+      - "docs/guides/us-d3-certification.md"
+      - ".github/workflows/us-d3-completion.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  us-d3-completion:
+    name: US-D3 evidence and reconciliation contracts
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: US-D3 regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_us_d3_research_certification.py \
+            tests/test_us_d3_reference_reconciliation.py \
+            tests/test_us_i0_universe_finalization.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/data/us_minute/reconciliation.py \
+            src/finagent/data/us_universe_finalization.py \
+            scripts/probe_us_i0_candidate_quotes.py \
+            scripts/finalize_us_i0_engineering_universe.py \
+            scripts/reconcile_us_minute_mt5.py \
+            tests/test_us_d3_reference_reconciliation.py \
+            tests/test_us_i0_universe_finalization.py
+          uv run --frozen mypy --strict \
+            src/finagent/data/us_minute/reconciliation.py \
+            src/finagent/data/us_universe_finalization.py \
+            scripts/probe_us_i0_candidate_quotes.py \
+            scripts/finalize_us_i0_engineering_universe.py \
+            scripts/reconcile_us_minute_mt5.py
+          uv run --frozen python -m py_compile \
+            src/finagent/data/us_minute/reconciliation.py \
+            src/finagent/data/us_universe_finalization.py \
+            scripts/probe_us_i0_candidate_quotes.py \
+            scripts/finalize_us_i0_engineering_universe.py \
+            scripts/reconcile_us_minute_mt5.py
