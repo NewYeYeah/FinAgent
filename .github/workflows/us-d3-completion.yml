@@ -7,12 +7,14 @@ on:
       - "src/finagent/data/us_minute/research_certification.py"
       - "src/finagent/data/us_minute/reconciliation.py"
       - "src/finagent/data/us_universe_finalization.py"
+      - "src/finagent/data/us_universe_finalization_v2.py"
       - "scripts/certify_us_minute_research.py"
       - "scripts/probe_us_i0_candidate_quotes.py"
       - "scripts/finalize_us_i0_engineering_universe.py"
       - "scripts/reconcile_us_minute_mt5.py"
       - "tests/test_us_d3_research_certification.py"
       - "tests/test_us_d3_reference_reconciliation.py"
+      - "tests/test_us_d3_quote_evidence_hardening.py"
       - "tests/test_us_i0_universe_finalization.py"
       - "docs/status.toml"
       - "docs/guides/us-d3-certification.md"
@@ -23,12 +25,14 @@ on:
       - "src/finagent/data/us_minute/research_certification.py"
       - "src/finagent/data/us_minute/reconciliation.py"
       - "src/finagent/data/us_universe_finalization.py"
+      - "src/finagent/data/us_universe_finalization_v2.py"
       - "scripts/certify_us_minute_research.py"
       - "scripts/probe_us_i0_candidate_quotes.py"
       - "scripts/finalize_us_i0_engineering_universe.py"
       - "scripts/reconcile_us_minute_mt5.py"
       - "tests/test_us_d3_research_certification.py"
       - "tests/test_us_d3_reference_reconciliation.py"
+      - "tests/test_us_d3_quote_evidence_hardening.py"
       - "tests/test_us_i0_universe_finalization.py"
       - "docs/status.toml"
       - "docs/guides/us-d3-certification.md"
@@ -57,26 +61,31 @@ jobs:
           uv run --frozen pytest -q \
             tests/test_us_d3_research_certification.py \
             tests/test_us_d3_reference_reconciliation.py \
+            tests/test_us_d3_quote_evidence_hardening.py \
             tests/test_us_i0_universe_finalization.py
       - name: Strict static checks
         run: |
           uv run --frozen ruff check \
             src/finagent/data/us_minute/reconciliation.py \
             src/finagent/data/us_universe_finalization.py \
+            src/finagent/data/us_universe_finalization_v2.py \
             scripts/probe_us_i0_candidate_quotes.py \
             scripts/finalize_us_i0_engineering_universe.py \
             scripts/reconcile_us_minute_mt5.py \
             tests/test_us_d3_reference_reconciliation.py \
+            tests/test_us_d3_quote_evidence_hardening.py \
             tests/test_us_i0_universe_finalization.py
           uv run --frozen mypy --strict \
             src/finagent/data/us_minute/reconciliation.py \
             src/finagent/data/us_universe_finalization.py \
+            src/finagent/data/us_universe_finalization_v2.py \
             scripts/probe_us_i0_candidate_quotes.py \
             scripts/finalize_us_i0_engineering_universe.py \
             scripts/reconcile_us_minute_mt5.py
           uv run --frozen python -m py_compile \
             src/finagent/data/us_minute/reconciliation.py \
             src/finagent/data/us_universe_finalization.py \
+            src/finagent/data/us_universe_finalization_v2.py \
             scripts/probe_us_i0_candidate_quotes.py \
             scripts/finalize_us_i0_engineering_universe.py \
             scripts/reconcile_us_minute_mt5.py
