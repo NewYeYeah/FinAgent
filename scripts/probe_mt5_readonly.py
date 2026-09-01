@@ -8,6 +8,8 @@ from pathlib import Path
 from finagent.brokers.mt5 import (
     RECOMMENDED_MT5_PACKAGE_VERSION,
     MetaTrader5ReadOnlyClient,
+    MT5P0AcceptancePolicy,
+    assess_mt5_p0,
     run_mt5_readonly_probe,
 )
 
@@ -56,19 +58,56 @@ def build_parser() -> argparse.ArgumentParser:
         help="Broker symbol for a current bid/ask spread sample; repeatable",
     )
     parser.add_argument(
+        "--p0-representative-symbol",
+        action="append",
+        default=[],
+        help=(
+            "Exact visible/tradable broker symbol required by the MT5-P0 acceptance policy; "
+            "repeatable. These symbols are automatically included in history and spread probes."
+        ),
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=Path("reports/mt5/mt5_p0_capability_probe.json"),
     )
+    parser.add_argument(
+        "--assessment-output",
+        type=Path,
+        help=(
+            "Optional MT5-P0 assessment JSON path. When representative symbols are supplied, "
+            "the default is <output-stem>_assessment.json."
+        ),
+    )
     return parser
+
+
+def _unique_symbols(*groups: list[str]) -> tuple[str, ...]:
+    return tuple(
+        dict.fromkeys(
+            item.strip()
+            for group in groups
+            for item in group
+            if item.strip()
+        )
+    )
 
 
 def main() -> int:
     args = build_parser().parse_args()
-    if args.history_symbol and (args.bar_start is None or args.bar_end is None):
-        raise SystemExit("--history-symbol requires both --bar-start and --bar-end")
+    representative_symbols = _unique_symbols(args.p0_representative_symbol)
+    history_symbols = _unique_symbols(args.history_symbol, args.p0_representative_symbol)
+    spread_symbols = _unique_symbols(args.spread_symbol, args.p0_representative_symbol)
+
+    if history_symbols and (args.bar_start is None or args.bar_end is None):
+        raise SystemExit("history probing requires both --bar-start and --bar-end")
     if (args.tick_start is None) != (args.tick_end is None):
         raise SystemExit("--tick-start and --tick-end must be supplied together")
+    if representative_symbols and (args.tick_start is None or args.tick_end is None):
+        raise SystemExit(
+            "--p0-representative-symbol requires --tick-start and --tick-end "
+            "so tick-history evidence is explicit"
+        )
 
     client = MetaTrader5ReadOnlyClient(
         expected_package_version=args.expected_package_version,
@@ -76,18 +115,45 @@ def main() -> int:
     report = run_mt5_readonly_probe(
         client,
         symbol_group=args.symbol_group,
-        history_symbols=tuple(args.history_symbol),
+        history_symbols=history_symbols,
         bar_start=args.bar_start,
         bar_end=args.bar_end,
         tick_start=args.tick_start,
         tick_end=args.tick_end,
-        spread_symbols=tuple(args.spread_symbol),
+        spread_symbols=spread_symbols,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(
         json.dumps(report.to_dict(), sort_keys=True, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
+
+    assessment = None
+    assessment_path = args.assessment_output
+    if representative_symbols:
+        policy = MT5P0AcceptancePolicy(
+            representative_symbols=representative_symbols,
+            expected_package_version=args.expected_package_version,
+        )
+        assessment = assess_mt5_p0(report, policy)
+        if assessment_path is None:
+            assessment_path = args.output.with_name(
+                f"{args.output.stem}_assessment.json"
+            )
+        assessment_path.parent.mkdir(parents=True, exist_ok=True)
+        assessment_path.write_text(
+            json.dumps(
+                {
+                    "policy": policy.to_dict(),
+                    "assessment": assessment.to_dict(),
+                },
+                sort_keys=True,
+                indent=2,
+                ensure_ascii=False,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
 
     summary = {
         "probe_id": report.probe_id,
@@ -103,9 +169,13 @@ def main() -> int:
         "spread_samples": [item.to_dict() for item in report.spread_samples],
         "read_only": report.read_only,
         "mutation_authority": report.mutation_authority,
+        "p0_assessment": assessment.to_dict() if assessment is not None else None,
         "output": str(args.output),
+        "assessment_output": str(assessment_path) if assessment_path else None,
     }
     print(json.dumps(summary, sort_keys=True, indent=2, ensure_ascii=False))
+    if assessment is not None and not assessment.accepted:
+        return 2
     return 0
 
 

@@ -1,3 +1,8 @@
+from .acceptance import (
+    MT5P0AcceptanceAssessment,
+    MT5P0AcceptancePolicy,
+    assess_mt5_p0,
+)
 from .capabilities import (
     MT5CapabilityProbeReport,
     MT5HistoryCapability,
@@ -16,11 +21,14 @@ __all__ = [
     "RECOMMENDED_MT5_PACKAGE_VERSION",
     "MT5CapabilityProbeReport",
     "MT5HistoryCapability",
+    "MT5P0AcceptanceAssessment",
+    "MT5P0AcceptancePolicy",
     "MT5ReadOnlyClientProtocol",
     "MT5SpreadSample",
     "MT5SymbolSpec",
     "MT5TerminalCapability",
     "MetaTrader5ReadOnlyClient",
+    "assess_mt5_p0",
     "probe_mt5_capabilities",
     "run_mt5_readonly_probe",
 ]
