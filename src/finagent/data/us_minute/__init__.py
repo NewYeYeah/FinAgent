@@ -8,6 +8,11 @@ from .cleaning import (
     certify_local_minute_research_snapshot,
     clean_month_select_sql,
 )
+from .diagnostics import (
+    DuplicateConflictExample,
+    LocalMinuteConflictDiagnostic,
+    diagnose_local_minute_conflicts,
+)
 from .local_snapshot import (
     HuggingFaceSnapshotLayout,
     LocalMinuteCertification,
@@ -22,8 +27,10 @@ from .local_snapshot import (
 
 __all__ = [
     "DEFAULT_MINUTE_CLEANING_POLICY",
+    "DuplicateConflictExample",
     "HuggingFaceSnapshotLayout",
     "LocalMinuteCertification",
+    "LocalMinuteConflictDiagnostic",
     "LocalMinuteFile",
     "LocalMinuteInventory",
     "LocalMinuteResearchAdmission",
@@ -37,5 +44,6 @@ __all__ = [
     "certify_local_minute_research_snapshot",
     "certify_local_minute_snapshot",
     "clean_month_select_sql",
+    "diagnose_local_minute_conflicts",
     "inventory_monthly_parquet",
 ]
