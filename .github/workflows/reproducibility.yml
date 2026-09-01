@@ -1,0 +1,101 @@
+name: reproducibility
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".python-version"
+      - ".nvmrc"
+      - "workspace/package.json"
+      - "workspace/package-lock.json"
+      - ".github/workflows/reproducibility.yml"
+  push:
+    branches: [main]
+    paths:
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".python-version"
+      - ".nvmrc"
+      - "workspace/package.json"
+      - "workspace/package-lock.json"
+      - ".github/workflows/reproducibility.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  ubuntu-python-lock:
+    name: Ubuntu Python 3.11 locked baseline
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.1"
+      - name: Verify declared baseline
+        shell: bash
+        run: |
+          test "$(tr -d '\r\n' < .python-version)" = "3.11"
+          uv --version
+          python --version
+      - name: Verify lock consistency
+        run: uv lock --check
+      - name: Reproduce locked core/research environment
+        run: uv sync --frozen --extra dev
+      - name: Verify installed dependency graph
+        run: uv pip check
+      - name: Import smoke
+        run: uv run --frozen python -c "import finagent, numpy, scipy; print('locked Python baseline import OK')"
+
+  windows-frontend-broker-prep:
+    name: Windows Python 3.11 + Node 22 baseline
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.1"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: workspace/package-lock.json
+      - name: Verify declared baselines
+        shell: pwsh
+        run: |
+          if ((Get-Content .python-version).Trim() -ne "3.11") { throw ".python-version must be 3.11" }
+          if ((Get-Content .nvmrc).Trim() -ne "22") { throw ".nvmrc must be 22" }
+          uv --version
+          python --version
+          node --version
+          npm --version
+      - name: Verify lock consistency
+        run: uv lock --check
+      - name: Reproduce locked Python environment
+        run: uv sync --frozen --extra dev
+      - name: Verify installed dependency graph
+        run: uv pip check
+      - name: Python import smoke
+        run: uv run --frozen python -c "import finagent, numpy, scipy; print('locked Windows Python baseline import OK')"
+      - name: Install frontend from package lock
+        working-directory: workspace
+        run: npm ci
+      - name: Type check frontend
+        working-directory: workspace
+        run: npm run typecheck
+      - name: Unit test frontend
+        working-directory: workspace
+        run: npm run test
+      - name: Production build frontend
+        working-directory: workspace
+        run: npm run build

@@ -17,7 +17,7 @@ FinAgent is an auditable Agent-assisted quantitative research framework. LLMs ma
 - a React/FastAPI Workbench with a GET-only Evidence Plane and separately governed local L0/L1 Control Plane;
 - provider-neutral market-data ingestion scaffolding, local Parquet/DuckDB support and U.S. reference ingestion.
 
-The A-share Historical v1.0 line is being closed as a historical release. New development then pivots to certified U.S. minute data, controlled Agent incremental-value experiments, broker-aware CFD historical validation, provider-neutral realtime contracts and MT5 demo/PAPER. Live-capital acceptance remains a separate human-governed milestone.
+A-share Historical v1.0 is preserved as the accepted historical release `finagent-ashare-historical-v1.0`. New development pivots to certified U.S. minute data, controlled Agent incremental-value experiments, broker-aware CFD historical validation, provider-neutral realtime contracts and MT5 demo/PAPER. Live-capital acceptance remains a separate human-governed milestone.
 
 ## Architecture
 
@@ -44,28 +44,30 @@ The Agent never owns final portfolio or broker authority. Evidence is immutable 
 
 ## Install
 
-Python 3.11+ is required.
+The canonical development baseline is Python 3.11 (`.python-version`) resolved by uv 0.12.1 into `uv.lock`. `pyproject.toml` remains dependency intent; the lock is the reproducible resolution authority.
 
 ```bash
-python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
-python -m pytest -q
+python -m pip install "uv==0.12.1"
+uv lock --check
+uv sync --frozen --extra dev
+uv pip check
+uv run --frozen python -m pytest -q
 ```
 
-Optional extras:
+Optional extras use the same lock, for example:
 
 ```bash
-python -m pip install -e ".[llm]"           # DeepSeek / OpenAI-compatible transport
-python -m pip install -e ".[us-market]"     # Alpaca reference provider
-python -m pip install -e ".[cn-free]"       # AKShare
-python -m pip install -e ".[a-share]"       # Tushare
-python -m pip install -e ".[local-parquet]" # DuckDB / local Parquet
-python -m pip install -e ".[observability]" # OTLP Agent traces
-python -m pip install -e ".[visualization]" # legacy read-only Streamlit viewer
-python -m pip install -e ".[workspace]"     # FastAPI / Uvicorn Workbench API
+uv sync --frozen --extra dev --extra llm
+uv sync --frozen --extra dev --extra us-market
+uv sync --frozen --extra dev --extra cn-free
+uv sync --frozen --extra dev --extra a-share
+uv sync --frozen --extra dev --extra local-parquet
+uv sync --frozen --extra dev --extra observability
+uv sync --frozen --extra dev --extra visualization
+uv sync --frozen --extra dev --extra workspace
 ```
 
-Frontend:
+Frontend uses Node 22 (`.nvmrc`) with `workspace/package-lock.json` as the npm resolution authority:
 
 ```bash
 cd workspace
@@ -74,6 +76,8 @@ npm run typecheck
 npm run test
 npm run build
 ```
+
+See [`docs/guides/getting-started.md`](docs/guides/getting-started.md) for the reproducible Ubuntu/Windows baseline and the MT5-prep boundary.
 
 ## Documentation
 
