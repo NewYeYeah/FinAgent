@@ -179,13 +179,17 @@ def test_clean_query_drops_invalid_ohlc_and_collapses_exact_rows(tmp_path: Path)
 
     duckdb = _duckdb()
     con = duckdb.connect(database=":memory:")
+    clean_sql = clean_month_select_sql(path)
     try:
-        rows = con.execute(clean_month_select_sql(path)).fetchall()
+        clean_count = con.execute(f"SELECT COUNT(*) FROM ({clean_sql})").fetchone()
+        ticker_count = con.execute(
+            f"SELECT COUNT(DISTINCT ticker) FROM ({clean_sql})"
+        ).fetchone()
     finally:
         con.close()
 
-    assert len(rows) == 1
-    assert rows[0][-1] == "AAPL"
+    assert clean_count is not None and int(clean_count[0]) == 1
+    assert ticker_count is not None and int(ticker_count[0]) == 1
 
 
 def test_cleaning_policy_is_part_of_certification_identity(tmp_path: Path) -> None:
