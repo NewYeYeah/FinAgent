@@ -7,7 +7,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from .local_snapshot import HuggingFaceSnapshotLayout, LocalMinuteInventory, inventory_monthly_parquet
+from .local_snapshot import (
+    HuggingFaceSnapshotLayout,
+    LocalMinuteInventory,
+    inventory_monthly_parquet,
+)
 
 
 def _canonical_hash(payload: dict[str, object], *, prefix: str) -> str:
