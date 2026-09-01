@@ -25,10 +25,10 @@ FinAgent uses two CI lanes rather than making every pull request wait for every 
 
 ### Pull-request fast lane
 
-A PR must run the checks that can directly invalidate the changed surface:
+A PR must run checks that can directly invalidate the changed surface:
 
 ```text
-Python 3.11 repository integration pytest
+Python 3.11 cross-layer core integration smoke
 project-wide critical Ruff checks
 stage/subsystem focused pytest
 focused Ruff + strict mypy for new modules
@@ -36,25 +36,41 @@ compile/import smoke where relevant
 docs/release/source gates only when their paths change
 ```
 
-Historical focused workflows use PR path filters. For example, A2.6 and the historical Research UI do not block a U.S. minute/calendar PR unless their own code/test/dependency paths changed.
+The generic PR smoke deliberately does **not** execute the entire repository. Changed subsystems own deeper validation through path-scoped focused workflows. For example, U.S. minute changes run the U.S. minute/source gates; A2.6 and historical Research UI changes run their own gates.
 
-Pure documentation PRs may skip the generic Python package test workflow when the documentation-governance workflow owns the changed surface.
+Historical focused workflows use PR path filters. A2.6 and the historical Research UI therefore do not block a U.S. minute/calendar PR unless their own code/test/dependency/workflow paths changed.
+
+Pure documentation PRs may skip the generic Python package workflow when documentation governance owns the changed surface.
 
 ### Main integration / compatibility lane
 
-After merge, every push to `main` retains the broader compatibility safety net:
+After merge, every push to `main` retains the broader active-code safety net:
 
 ```text
-Python 3.11 / 3.12 / 3.13 full pytest matrix
-Windows Python 3.11 full pytest
+Python 3.11 / 3.12 / 3.13 active-suite pytest matrix
+Windows Python 3.11 active-suite pytest
 historical A2.6 regression
 historical Research UI regression
-coverage floor
+coverage floor over the active suite
 historical targeted lint/mypy surfaces
 package build + dependency consistency
 ```
 
-This separation reduces PR queue/merge latency without deleting compatibility or historical-release regression coverage. A focused PR gate must not be removed merely because the main lane exists; main regression is a backstop, not a substitute for changed-surface validation.
+This separation reduces PR queue/merge latency without deleting compatibility or currently relevant historical-surface regression coverage. A focused PR gate must not be removed merely because the main lane exists; the main regression is a backstop, not a substitute for changed-surface validation.
+
+### Frozen Historical release reproduction is not the active suite
+
+A-share Historical v1.0 has its own immutable release/tag/evidence boundary. The following tests reproduce historical A-C4/A-C5 assumptions and are intentionally excluded from the generic active-suite pytest/coverage lane:
+
+```text
+tests/test_initial_requirement_compliance_ac4.py
+tests/test_ashare_historical_v1_freeze_ac5.py
+tests/test_ashare_historical_v1_freeze_lineage.py
+```
+
+They depend on historical plan references and/or historical Git lineage that are no longer part of the active DOC-0 tree. They remain release-reproduction material and are exercised only by the dedicated Historical workflows/release procedure with the history depth and artifacts that those contracts require. Their failure under a shallow generic checkout is not treated as a current U.S./MT5 product regression.
+
+Do not silently delete or rewrite frozen release evidence merely to make the active suite green. If the Historical release itself must be re-verified, use its dedicated release procedure and exact historical identities.
 
 Frontend changes normally include:
 
