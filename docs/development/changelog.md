@@ -2,6 +2,14 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-01 — U.S. intraday core-contract closure (US-C0)
+
+- froze provider-neutral `TradingCalendarEvidence`, `LabelSpec`, `CorporateActionEvent`, bounded/lazy `MarketDataQuery` / `MarketDataView`, and FinAgent-only `AdapterCapabilities` before the minute Data Plane is allowed to invent source-specific semantics;
+- materialized the exact XNYS research schedule with `exchange_calendars==4.13.2` for the requested 1992-01-01 → 2026-03-31 interval, yielding 8,622 sessions with coverage 1992-01-02 → 2026-03-31 and 75 half-day sessions;
+- accepted calendar evidence `trading-calendar-03a9c29f566d6634aedbbbdc` and materialization report `calendar-materialization-9cf62f5d9925477884cf9a56` after coverage, 2025 Independence Day, 2025 post-Thanksgiving half-day and 2026 DST anchors all passed;
+- retained the research calendar as content-addressed evidence rather than trusting a mutable library name, and kept research market-event semantics separate from account-mutating corporate-action processing;
+- advanced the current development stage to read-only `MT5-P0`; no order, position, account mutation, PAPER or live-capital authority was introduced.
+
 ## 2026-09-01 — U.S. minute source/local admission closure (US-S0)
 
 - bound `mito0o852/OHLCV-1m` to immutable revision `776328445b7ac6e7815ef3a483e9c8ded1eb6d56` while retaining public-source authority as `REFERENCE_ONLY` and the local scope as `local_non_redistributed_research`;
