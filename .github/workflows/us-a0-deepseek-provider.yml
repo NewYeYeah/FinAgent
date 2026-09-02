@@ -52,7 +52,6 @@ jobs:
         run: |
           uv run --frozen ruff check \
             src/finagent/research/us_agent_value_deepseek.py \
-            configs/llm.toml \
             scripts/freeze_us_a0_execution_plan.py \
             scripts/smoke_llm_profile.py \
             scripts/prepare_us_a0_agent_run.py \
