@@ -1,0 +1,56 @@
+name: us-a0-formal-financial-postrun
+
+on:
+  pull_request:
+    paths:
+      - "src/finagent/research/us_agent_value_formal_run_orchestration.py"
+      - "src/finagent/research/us_agent_value_formal_postrun.py"
+      - "scripts/orchestrate_us_a0_formal_run_evidence.py"
+      - "scripts/orchestrate_us_a0_formal_experiment.py"
+      - "scripts/orchestrate_us_a0_formal_gate_review.py"
+      - "tests/test_us_a0_formal_financial_postrun.py"
+      - "tests/test_us_a0_formal_orchestration.py"
+      - "tests/test_us_a0_gate.py"
+      - ".github/workflows/us-a0-formal-financial-postrun.yml"
+
+jobs:
+  formal-financial-postrun:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_us_a0_formal_financial_postrun.py \
+            tests/test_us_a0_formal_orchestration.py \
+            tests/test_us_a0_gate.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/research/us_agent_value_formal_run_orchestration.py \
+            src/finagent/research/us_agent_value_formal_postrun.py \
+            scripts/orchestrate_us_a0_formal_run_evidence.py \
+            scripts/orchestrate_us_a0_formal_experiment.py \
+            scripts/orchestrate_us_a0_formal_gate_review.py \
+            tests/test_us_a0_formal_financial_postrun.py
+          uv run --frozen mypy --strict \
+            src/finagent/research/us_agent_value_formal_run_orchestration.py \
+            src/finagent/research/us_agent_value_formal_postrun.py \
+            scripts/orchestrate_us_a0_formal_run_evidence.py \
+            scripts/orchestrate_us_a0_formal_experiment.py \
+            scripts/orchestrate_us_a0_formal_gate_review.py
+          uv run --frozen python -m py_compile \
+            src/finagent/research/us_agent_value_formal_run_orchestration.py \
+            src/finagent/research/us_agent_value_formal_postrun.py \
+            scripts/orchestrate_us_a0_formal_run_evidence.py \
+            scripts/orchestrate_us_a0_formal_experiment.py \
+            scripts/orchestrate_us_a0_formal_gate_review.py
