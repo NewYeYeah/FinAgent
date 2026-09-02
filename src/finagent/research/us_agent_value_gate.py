@@ -104,8 +104,8 @@ class USAgentValueGatePolicy:
             "failure_rate_noninferiority_tolerance",
             "meaningful_efficiency_advantage_margin",
         ):
-            value = float(getattr(self, field_name))
-            if not math.isfinite(value) or not 0.0 <= value <= 1.0:
+            numeric_value = float(getattr(self, field_name))
+            if not math.isfinite(numeric_value) or not 0.0 <= numeric_value <= 1.0:
                 raise ValueError(f"{field_name} must be finite and in [0,1]")
         if self.minimum_agent_novel_candidate_count < 1:
             raise ValueError("minimum_agent_novel_candidate_count must be positive")
@@ -263,8 +263,8 @@ class USAgentValueGateAssessment:
             "programmatic_failure_rate",
             "agent_failure_rate",
         ):
-            value = float(getattr(self, field_name))
-            if not 0.0 <= value <= 1.0:
+            numeric_value = float(getattr(self, field_name))
+            if not 0.0 <= numeric_value <= 1.0:
                 raise ValueError(f"{field_name} must be in [0,1]")
         if self.agent_novel_candidate_count < 0:
             raise ValueError("agent_novel_candidate_count must be non-negative")
@@ -527,19 +527,23 @@ def assess_us_a0_agent_value_gate(
         assert manual_secondary is not None
         assert programmatic_primary is not None
         assert programmatic_secondary is not None
-        quality_not_better = all(
-            (
-                agent.evaluation_links[index].best_worst_fold_rank_ic is None
-                or float(agent.evaluation_links[index].best_worst_fold_rank_ic)
-                <= max(float(manual_primary), programmatic_primary[index])
+        quality_not_better = True
+        for index, link in enumerate(agent.evaluation_links):
+            agent_primary_value = link.best_worst_fold_rank_ic
+            agent_secondary_value = link.best_mean_rank_ic
+            primary_better = (
+                agent_primary_value is not None
+                and float(agent_primary_value)
+                > max(float(manual_primary), programmatic_primary[index])
             )
-            and (
-                agent.evaluation_links[index].best_mean_rank_ic is None
-                or float(agent.evaluation_links[index].best_mean_rank_ic)
-                <= max(float(manual_secondary), programmatic_secondary[index])
+            secondary_better = (
+                agent_secondary_value is not None
+                and float(agent_secondary_value)
+                > max(float(manual_secondary), programmatic_secondary[index])
             )
-            for index in range(len(agent.evaluation_links))
-        )
+            if primary_better and secondary_better:
+                quality_not_better = False
+                break
 
     if positive_rule_passed:
         decision = (
