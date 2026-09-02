@@ -23,6 +23,9 @@ from finagent.research.us_agent_value_execution import (
     parse_candidate_generation_run,
     validate_us_a0_execution_plan,
 )
+from finagent.research.us_agent_value_gate_authority import (
+    require_us_a0_pilot_formal_progression_authority,
+)
 from finagent.research.us_agent_value_launch import validate_us_a0_pilot_launch_bundle
 from finagent.research.us_agent_value_orchestration import (
     USAgentValuePilotOrchestrationState,
@@ -68,9 +71,9 @@ def _write_once(path: Path, document: Mapping[str, object]) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Generate one preregistered US-A0 AGENT run through the shared FinAgent DeepSeek "
-            "provider stack. PILOT generation requires the frozen launch, runtime policy and "
-            "resume checkpoint. Existing research evidence is reused, never overwritten."
+            "Generate one preregistered US-A0 PILOT AGENT run through the shared FinAgent DeepSeek "
+            "provider stack. PILOT generation requires frozen launch/runtime/checkpoint evidence. "
+            "FORMAL generation is intentionally routed to the slot-resume-safe FORMAL orchestrator."
         )
     )
     parser.add_argument("--preregistration", type=Path, required=True)
@@ -79,6 +82,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--launch-bundle", type=Path, default=None)
     parser.add_argument("--runtime-policy", type=Path, default=None)
     parser.add_argument("--orchestration-checkpoint", type=Path, default=None)
+    parser.add_argument(
+        "--pilot-gate-review",
+        type=Path,
+        default=None,
+        help=(
+            "Required when a FORMAL preregistration is supplied, solely to verify progression "
+            "authority before this unsafe single-run path refuses and redirects to the FORMAL orchestrator."
+        ),
+    )
     parser.add_argument(
         "--checkpoint-output",
         type=Path,
@@ -118,6 +130,23 @@ def main() -> int:
         preregistration,
     )
 
+    status = _read_status(args.status)
+    if phase is USAgentValuePhase.FORMAL:
+        if args.pilot_gate_review is None:
+            raise SystemExit(
+                "FORMAL Agent generation requires --pilot-gate-review before any external provider path"
+            )
+        require_us_a0_pilot_formal_progression_authority(
+            status,
+            _read_json(args.pilot_gate_review),
+        )
+        raise SystemExit(
+            "FORMAL Agent generation is disabled in prepare_us_a0_agent_run.py; use "
+            "scripts/orchestrate_us_a0_formal_agent_generation.py for slot-level resume safety"
+        )
+    if args.pilot_gate_review is not None:
+        raise SystemExit("PILOT Agent generation must not consume --pilot-gate-review")
+
     agent_specs = tuple(
         spec
         for spec in execution_plan.run_specs
@@ -142,64 +171,59 @@ def main() -> int:
     if run_spec.prompt_template_id != US_A0_STRUCTURED_PROMPT_TEMPLATE_ID:
         raise SystemExit("AGENT run does not bind the canonical US-A0 structured prompt template")
 
-    runtime_policy = None
-    prepared_checkpoint = None
-    if phase is USAgentValuePhase.PILOT:
-        if any(
-            value is None
-            for value in (
-                args.gate_policy,
-                args.launch_bundle,
-                args.runtime_policy,
-                args.orchestration_checkpoint,
-            )
-        ):
-            raise SystemExit(
-                "PILOT AGENT generation requires --gate-policy, --launch-bundle, "
-                "--runtime-policy and --orchestration-checkpoint"
-            )
-        assert args.gate_policy is not None
-        assert args.launch_bundle is not None
-        assert args.runtime_policy is not None
-        assert args.orchestration_checkpoint is not None
-        gate_policy_document = _read_json(args.gate_policy)
-        launch_bundle_document = _read_json(args.launch_bundle)
-        launch_artifacts = validate_us_a0_pilot_launch_bundle(
-            launch_bundle_document,
-            preregistration_document=preregistration,
-            execution_plan_document=execution_plan_document,
-            gate_policy_document=gate_policy_document,
+    if any(
+        value is None
+        for value in (
+            args.gate_policy,
+            args.launch_bundle,
+            args.runtime_policy,
+            args.orchestration_checkpoint,
         )
-        if run_spec.run_spec_id not in launch_artifacts.launch_bundle.agent_run_spec_ids:
-            raise SystemExit("PILOT AGENT run spec is not authorized by the frozen launch bundle")
-        _, runtime_policy = validate_us_a0_deepseek_runtime_policy(
-            _read_json(args.runtime_policy),
-            profile=profile,
-            preregistration_document=preregistration,
-            execution_plan_document=execution_plan_document,
-            gate_policy_document=gate_policy_document,
-            launch_bundle_document=launch_bundle_document,
+    ):
+        raise SystemExit(
+            "PILOT AGENT generation requires --gate-policy, --launch-bundle, "
+            "--runtime-policy and --orchestration-checkpoint"
         )
-        prepared_checkpoint = parse_us_a0_pilot_orchestration_checkpoint(
-            _read_json(args.orchestration_checkpoint)
-        )
-        if prepared_checkpoint.state is not USAgentValuePilotOrchestrationState.PREPARED:
-            raise SystemExit("PILOT Agent generation requires a PREPARED orchestration checkpoint")
-        if prepared_checkpoint.launch_bundle_id != launch_artifacts.launch_bundle.launch_bundle_id:
-            raise SystemExit("PILOT orchestration checkpoint/launch identity mismatch")
-        if prepared_checkpoint.runtime_policy_id != runtime_policy.runtime_policy_id:
-            raise SystemExit("PILOT orchestration checkpoint/runtime-policy identity mismatch")
-        if prepared_checkpoint.agent_run_spec_id != run_spec.run_spec_id:
-            raise SystemExit("PILOT orchestration checkpoint/AGENT run-spec identity mismatch")
+    assert args.gate_policy is not None
+    assert args.launch_bundle is not None
+    assert args.runtime_policy is not None
+    assert args.orchestration_checkpoint is not None
+    gate_policy_document = _read_json(args.gate_policy)
+    launch_bundle_document = _read_json(args.launch_bundle)
+    launch_artifacts = validate_us_a0_pilot_launch_bundle(
+        launch_bundle_document,
+        preregistration_document=preregistration,
+        execution_plan_document=execution_plan_document,
+        gate_policy_document=gate_policy_document,
+    )
+    if run_spec.run_spec_id not in launch_artifacts.launch_bundle.agent_run_spec_ids:
+        raise SystemExit("PILOT AGENT run spec is not authorized by the frozen launch bundle")
+    _, runtime_policy = validate_us_a0_deepseek_runtime_policy(
+        _read_json(args.runtime_policy),
+        profile=profile,
+        preregistration_document=preregistration,
+        execution_plan_document=execution_plan_document,
+        gate_policy_document=gate_policy_document,
+        launch_bundle_document=launch_bundle_document,
+    )
+    prepared_checkpoint = parse_us_a0_pilot_orchestration_checkpoint(
+        _read_json(args.orchestration_checkpoint)
+    )
+    if prepared_checkpoint.state is not USAgentValuePilotOrchestrationState.PREPARED:
+        raise SystemExit("PILOT Agent generation requires a PREPARED orchestration checkpoint")
+    if prepared_checkpoint.launch_bundle_id != launch_artifacts.launch_bundle.launch_bundle_id:
+        raise SystemExit("PILOT orchestration checkpoint/launch identity mismatch")
+    if prepared_checkpoint.runtime_policy_id != runtime_policy.runtime_policy_id:
+        raise SystemExit("PILOT orchestration checkpoint/runtime-policy identity mismatch")
+    if prepared_checkpoint.agent_run_spec_id != run_spec.run_spec_id:
+        raise SystemExit("PILOT orchestration checkpoint/AGENT run-spec identity mismatch")
 
-    status = _read_status(args.status)
     require_us_a0_stage_authority(status)
 
     target = args.output.expanduser().resolve()
     checkpoint_target = args.checkpoint_output.expanduser().resolve()
 
-    if phase is USAgentValuePhase.PILOT and checkpoint_target.exists():
-        assert prepared_checkpoint is not None
+    if checkpoint_target.exists():
         completed_checkpoint = parse_us_a0_pilot_orchestration_checkpoint(
             _read_json(checkpoint_target)
         )
@@ -241,16 +265,11 @@ def main() -> int:
             secrets_path=(None if args.secrets is None else args.secrets.expanduser().resolve()),
         )
         call_store = SQLiteLLMCallStore(args.call_store.expanduser().resolve())
-        provider: StructuredAgentSlotProvider
-        if phase is USAgentValuePhase.PILOT:
-            assert runtime_policy is not None
-            provider = configured_runtime_bound_deepseek_provider(
-                configured,
-                runtime_policy=runtime_policy,
-                call_store=call_store,
-            )
-        else:
-            provider = configured_deepseek_structured_provider(configured, call_store=call_store)
+        provider: StructuredAgentSlotProvider = configured_runtime_bound_deepseek_provider(
+            configured,
+            runtime_policy=runtime_policy,
+            call_store=call_store,
+        )
         generation_run = build_authorized_agent_generation_run(
             protocol,
             execution_plan,
@@ -260,17 +279,12 @@ def main() -> int:
         _write_once(target, generation_run.to_dict())
         external_model_called = True
 
-    checkpoint_id: str | None = None
-    if phase is USAgentValuePhase.PILOT:
-        assert prepared_checkpoint is not None
-        completed_checkpoint = advance_us_a0_pilot_orchestration_checkpoint(
-            prepared_checkpoint,
-            state=USAgentValuePilotOrchestrationState.AGENT_GENERATED,
-            agent_generation_run_id=generation_run.run_id,
-        )
-        _write_once(checkpoint_target, completed_checkpoint.to_dict())
-        checkpoint_id = completed_checkpoint.checkpoint_id
-
+    completed_checkpoint = advance_us_a0_pilot_orchestration_checkpoint(
+        prepared_checkpoint,
+        state=USAgentValuePilotOrchestrationState.AGENT_GENERATED,
+        agent_generation_run_id=generation_run.run_id,
+    )
+    _write_once(checkpoint_target, completed_checkpoint.to_dict())
     print(
         json.dumps(
             {
@@ -281,12 +295,8 @@ def main() -> int:
                 "provider": generation_run.spec.provider_id,
                 "model": generation_run.spec.model_id,
                 "prompt_template_id": generation_run.spec.prompt_template_id,
-                "runtime_policy_id": (
-                    None if runtime_policy is None else runtime_policy.runtime_policy_id
-                ),
-                "max_output_tokens": (
-                    None if runtime_policy is None else runtime_policy.max_output_tokens
-                ),
+                "runtime_policy_id": runtime_policy.runtime_policy_id,
+                "max_output_tokens": runtime_policy.max_output_tokens,
                 "pricing_policy_id": DEEPSEEK_V4_PRICING_POLICY_ID,
                 "candidate_budget": generation_run.spec.candidate_budget,
                 "accepted_candidate_count": len(generation_run.accepted_candidates),
@@ -296,13 +306,13 @@ def main() -> int:
                 "usage": generation_run.usage.to_dict(),
                 "external_model_called": external_model_called,
                 "resumed": not external_model_called,
-                "checkpoint_id": checkpoint_id,
+                "checkpoint_id": completed_checkpoint.checkpoint_id,
                 "research_generation_evidence": True,
                 "stage_exit_authority": False,
                 "agent_value_gate_authority": False,
                 "alpha_authority": False,
                 "output": str(target),
-                "checkpoint_output": str(checkpoint_target) if checkpoint_id else None,
+                "checkpoint_output": str(checkpoint_target),
             },
             sort_keys=True,
             indent=2,
