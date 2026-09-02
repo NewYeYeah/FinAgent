@@ -12,15 +12,15 @@ from finagent.research.us_agent_value_execution import (
     parse_candidate_generation_run,
     validate_us_a0_execution_plan,
 )
+from finagent.research.us_agent_value_gate import (
+    USAgentValueGatePolicy,
+    validate_us_a0_agent_value_gate_policy,
+)
 from finagent.research.us_agent_value_generation import (
     CandidateGenerationRun,
     build_candidate_generation_run,
     deterministic_programmatic_proposal_slots,
     manual_proposal_slots,
-)
-from finagent.research.us_agent_value_gate import (
-    USAgentValueGatePolicy,
-    validate_us_a0_agent_value_gate_policy,
 )
 from finagent.research.us_agent_value_protocol import (
     USAgentValueArm,
