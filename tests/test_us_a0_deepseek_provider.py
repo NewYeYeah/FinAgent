@@ -66,7 +66,11 @@ class _QueueProvider:
         )
 
 
-def _configured(outputs: list[str], *, model: str = "deepseek-v4-flash") -> tuple[ConfiguredLLM, _QueueProvider]:
+def _configured(
+    outputs: list[str],
+    *,
+    model: str = "deepseek-v4-flash",
+) -> tuple[ConfiguredLLM, _QueueProvider]:
     provider = _QueueProvider(outputs, model=model)
     profile = LLMProfile(
         name="deepseek-test",
@@ -105,21 +109,23 @@ def _candidate_json(index: int) -> str:
     )
 
 
-def test_shared_llm_config_defaults_to_official_v4_flash_and_retains_pro() -> None:
+def test_shared_llm_config_retains_legacy_pro_default_and_adds_official_flash() -> None:
     config = Path("configs/llm.toml")
 
-    default = load_llm_profile(config)
+    historical_default = load_llm_profile(config)
+    flash = load_llm_profile(config, "deepseek_official_v4_flash")
     pro = load_llm_profile(config, "deepseek_official_v4_pro")
 
-    assert default.name == "deepseek_official_v4_flash"
-    assert default.provider == "deepseek"
-    assert default.model == "deepseek-v4-flash"
-    assert default.secret_id == "deepseek_official"
-    assert default.base_url == "https://api.deepseek.com"
-    assert default.thinking is True
-    assert default.reasoning_effort == "high"
+    assert historical_default.name == "deepseek_official_v4_pro"
+    assert historical_default.model == "deepseek-v4-pro"
+    assert flash.provider == "deepseek"
+    assert flash.model == "deepseek-v4-flash"
+    assert flash.secret_id == "deepseek_official"
+    assert flash.base_url == "https://api.deepseek.com"
+    assert flash.thinking is True
+    assert flash.reasoning_effort == "high"
     assert pro.model == "deepseek-v4-pro"
-    assert pro.secret_id == default.secret_id
+    assert pro.secret_id == flash.secret_id
 
 
 def test_deepseek_v4_pricing_uses_daily_peak_windows_including_weekends() -> None:
@@ -162,7 +168,9 @@ def test_deepseek_v4_cost_uses_cached_uncached_and_output_tokens() -> None:
         priced_at=datetime(2026, 8, 22, 2, 0, tzinfo=UTC),
     )
 
-    assert cost == pytest.approx((20 * 0.014 + 80 * 0.44 + 30 * 1.32) / 1_000_000)
+    assert cost == pytest.approx(
+        (20 * 0.014 + 80 * 0.44 + 30 * 1.32) / 1_000_000
+    )
 
 
 def test_a0_adapter_reuses_shared_provider_for_exact_pilot_budget() -> None:
@@ -188,7 +196,10 @@ def test_a0_adapter_reuses_shared_provider_for_exact_pilot_budget() -> None:
     assert run.usage.output_tokens == 320
     assert run.usage.cost_usd > 0
     assert all(request.model == "deepseek-v4-flash" for request in queue.requests)
-    assert all(request.metadata["prompt_template_id"] == US_A0_STRUCTURED_PROMPT_TEMPLATE_ID for request in queue.requests)
+    assert all(
+        request.metadata["prompt_template_id"] == US_A0_STRUCTURED_PROMPT_TEMPLATE_ID
+        for request in queue.requests
+    )
 
 
 def test_invalid_provider_json_consumes_slot_then_gets_one_repair(tmp_path: Path) -> None:
