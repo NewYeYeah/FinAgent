@@ -27,9 +27,9 @@ from finagent.data.minute_transform import (
 from finagent.data.query import MarketDataField, MarketDataQuery, SessionPolicy
 from finagent.domain.labels import AvailabilityPolicy, ResearchPriceBasis
 from finagent.domain.market_bars import BarInterval
+from finagent.research.us_baseline_authority import bind_current_us_b0_run_spec
 from finagent.research.us_baseline_materialization import (
     USBaselineInputPlan,
-    bind_us_b0_run_spec,
     build_us_baseline_input_plan,
     build_us_baseline_materialization_report,
     evaluate_materialized_us_baselines,
@@ -229,7 +229,7 @@ def main() -> int:
     denominator = canonical_us_baseline_denominator()
     certification = _read_mapping(args.certification.expanduser().resolve())
     universe = _read_mapping(args.engineering_universe.expanduser().resolve())
-    run_spec, assets = bind_us_b0_run_spec(
+    run_spec, assets = bind_current_us_b0_run_spec(
         certification,
         universe,
         denominator=denominator,
