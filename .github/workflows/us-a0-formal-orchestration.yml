@@ -1,0 +1,67 @@
+name: us-a0-formal-orchestration
+
+on:
+  pull_request:
+    paths:
+      - "src/finagent/research/us_agent_value_formal_*.py"
+      - "scripts/prepare_us_a0_formal_*.py"
+      - "scripts/freeze_us_a0_formal_*.py"
+      - "scripts/orchestrate_us_a0_formal_*.py"
+      - "scripts/prepare_us_a0_agent_run.py"
+      - "tests/test_us_a0_formal_orchestration.py"
+      - ".github/workflows/us-a0-formal-orchestration.yml"
+      - "docs/guides/us-a0-formal-orchestration.md"
+
+jobs:
+  formal-orchestration:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_us_a0_formal_orchestration.py \
+            tests/test_us_a0_runtime_orchestration.py \
+            tests/test_us_a0_gate.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/research/us_agent_value_formal_launch.py \
+            src/finagent/research/us_agent_value_formal_runtime.py \
+            src/finagent/research/us_agent_value_formal_generation.py \
+            src/finagent/research/us_agent_value_formal_provider.py \
+            scripts/prepare_us_a0_formal_launch.py \
+            scripts/freeze_us_a0_formal_runtime_policy.py \
+            scripts/prepare_us_a0_formal_orchestration.py \
+            scripts/orchestrate_us_a0_formal_agent_generation.py \
+            scripts/prepare_us_a0_agent_run.py \
+            tests/test_us_a0_formal_orchestration.py
+          uv run --frozen mypy --strict \
+            src/finagent/research/us_agent_value_formal_launch.py \
+            src/finagent/research/us_agent_value_formal_runtime.py \
+            src/finagent/research/us_agent_value_formal_generation.py \
+            src/finagent/research/us_agent_value_formal_provider.py \
+            scripts/prepare_us_a0_formal_launch.py \
+            scripts/freeze_us_a0_formal_runtime_policy.py \
+            scripts/prepare_us_a0_formal_orchestration.py \
+            scripts/orchestrate_us_a0_formal_agent_generation.py \
+            scripts/prepare_us_a0_agent_run.py
+          uv run --frozen python -m py_compile \
+            src/finagent/research/us_agent_value_formal_launch.py \
+            src/finagent/research/us_agent_value_formal_runtime.py \
+            src/finagent/research/us_agent_value_formal_generation.py \
+            src/finagent/research/us_agent_value_formal_provider.py \
+            scripts/prepare_us_a0_formal_launch.py \
+            scripts/freeze_us_a0_formal_runtime_policy.py \
+            scripts/prepare_us_a0_formal_orchestration.py \
+            scripts/orchestrate_us_a0_formal_agent_generation.py \
+            scripts/prepare_us_a0_agent_run.py
