@@ -36,6 +36,11 @@ from finagent.research.us_baseline_materialization import (
     materialize_us_baseline_observations,
     write_us_baseline_observation_artifact,
 )
+from finagent.research.us_baseline_walkforward import bind_us_b0_fold_execution_specs
+from finagent.research.us_baseline_walkforward_evidence import (
+    build_us_b0_fold_run_manifest,
+    validate_canonical_us_b0_protocol_document,
+)
 from finagent.research.us_baselines import canonical_us_baseline_denominator
 
 SOURCE_REVISION = "776328445b7ac6e7815ef3a483e9c8ded1eb6d56"
@@ -84,13 +89,6 @@ def _require_us_b0_stage_authority(status: Mapping[str, object]) -> None:
         raise SystemExit("status.stage.us_d3 must be accepted before formal US-B0 materialization")
     if us_d3.get("stage_exit_gate_passed") is not True:
         raise SystemExit("status.stage.us_d3.stage_exit_gate_passed must be true")
-
-
-def _aware(value: str) -> datetime:
-    parsed = datetime.fromisoformat(value.strip())
-    if parsed.tzinfo is None or parsed.utcoffset() is None:
-        raise argparse.ArgumentTypeError("timestamp must be timezone-aware ISO-8601")
-    return parsed
 
 
 def _sql_string(value: str) -> str:
@@ -155,17 +153,32 @@ def _exact_materialization_plan(
     )
 
 
+def _fold_path(base: Path, ordinal: int, filename: str) -> Path:
+    return base / f"fold_{ordinal:02d}" / filename
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Materialize the bounded US-B0 manual baseline denominator from the accepted "
-            "US-D3 certification and final EngineeringUniverse. This runner is cost-free, "
-            "non-Agent and has no factor-selection or Alpha authority."
+            "Materialize one exact preregistered US-B0 walk-forward fold from the accepted "
+            "US-D3 certification and final EngineeringUniverse. Arbitrary evaluation windows "
+            "are not accepted. This runner is cost-free, non-Agent and has no factor-selection "
+            "or Alpha authority."
         )
     )
     parser.add_argument("root", type=Path)
-    parser.add_argument("--start", type=_aware, required=True)
-    parser.add_argument("--end", type=_aware, required=True)
+    parser.add_argument(
+        "--fold-ordinal",
+        type=int,
+        choices=(1, 2, 3),
+        required=True,
+        help="Exact preregistered pilot fold ordinal; start/end are derived from the frozen protocol.",
+    )
+    parser.add_argument(
+        "--protocol",
+        type=Path,
+        default=Path("reports/us_b0/us_b0_pilot_walkforward_protocol.json"),
+    )
     parser.add_argument(
         "--status",
         type=Path,
@@ -194,37 +207,22 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("data/duckdb_temp/us_b0"),
     )
-    parser.add_argument(
-        "--input-output",
-        type=Path,
-        default=Path("data/us_b0/us_b0_baseline_inputs.parquet"),
-    )
-    parser.add_argument(
-        "--observation-output",
-        type=Path,
-        default=Path("data/us_b0/us_b0_baseline_observations.jsonl"),
-    )
-    parser.add_argument(
-        "--evaluation-output",
-        type=Path,
-        default=Path("reports/us_b0/us_b0_baseline_evaluation.json"),
-    )
-    parser.add_argument(
-        "--report-output",
-        type=Path,
-        default=Path("reports/us_b0/us_b0_baseline_materialization.json"),
-    )
+    parser.add_argument("--input-output", type=Path)
+    parser.add_argument("--observation-output", type=Path)
+    parser.add_argument("--evaluation-output", type=Path)
+    parser.add_argument("--report-output", type=Path)
+    parser.add_argument("--fold-manifest-output", type=Path)
     parser.add_argument("--overwrite", action="store_true")
     return parser
 
 
 def main() -> int:
     args = build_parser().parse_args()
-    if args.end <= args.start:
-        raise SystemExit("--end must be later than --start")
 
     status_path = args.status.expanduser().resolve()
     _require_us_b0_stage_authority(_read_status(status_path))
+    protocol_document = _read_mapping(args.protocol.expanduser().resolve())
+    protocol = validate_canonical_us_b0_protocol_document(protocol_document)
 
     denominator = canonical_us_baseline_denominator()
     certification = _read_mapping(args.certification.expanduser().resolve())
@@ -234,6 +232,10 @@ def main() -> int:
         universe,
         denominator=denominator,
     )
+    execution_specs = bind_us_b0_fold_execution_specs(protocol, run_spec)
+    execution_spec = execution_specs[args.fold_ordinal - 1]
+    start = execution_spec.evaluation_start
+    end = execution_spec.evaluation_end
 
     execution_policy = DuckDBExecutionPolicy(
         memory_limit=args.memory_limit,
@@ -258,10 +260,10 @@ def main() -> int:
     labels = SameSessionLabelStore(sessionized)
 
     resampled_plan, resampling_evidence = resampled.plan(
-        _bar_query(assets, start=args.start, end=args.end)
+        _bar_query(assets, start=start, end=end)
     )
     label_plan, label_evidence = labels.plan(
-        _label_query(assets, start=args.start, end=args.end),
+        _label_query(assets, start=start, end=end),
         canonical_same_session_60m_label_spec(),
     )
     input_plan = build_us_baseline_input_plan(
@@ -278,17 +280,40 @@ def main() -> int:
         temp_directory=args.temp_directory,
     )
     if joined_rows == 0:
-        raise SystemExit("US-B0 bounded input plan returned zero rows")
+        raise SystemExit("US-B0 frozen fold input plan returned zero rows")
     if joined_rows > MAX_JOINED_ROWS:
         raise SystemExit(
-            "US-B0 bounded input exceeds 100000 joined rows; materialize the preregistered "
-            "walk-forward folds separately rather than weakening the bounded Python boundary"
+            "US-B0 frozen fold exceeds 100000 joined rows; do not weaken the bounded Python "
+            "boundary or alter the preregistered split merely to obtain a pass"
         )
 
-    input_output = _writable(args.input_output, overwrite=args.overwrite)
-    observation_output = _writable(args.observation_output, overwrite=args.overwrite)
-    evaluation_output = _writable(args.evaluation_output, overwrite=args.overwrite)
-    report_output = _writable(args.report_output, overwrite=args.overwrite)
+    data_root = Path("data/us_b0/folds")
+    report_root = Path("reports/us_b0/folds")
+    input_output = _writable(
+        args.input_output
+        or _fold_path(data_root, args.fold_ordinal, "us_b0_baseline_inputs.parquet"),
+        overwrite=args.overwrite,
+    )
+    observation_output = _writable(
+        args.observation_output
+        or _fold_path(data_root, args.fold_ordinal, "us_b0_baseline_observations.jsonl"),
+        overwrite=args.overwrite,
+    )
+    evaluation_output = _writable(
+        args.evaluation_output
+        or _fold_path(report_root, args.fold_ordinal, "us_b0_baseline_evaluation.json"),
+        overwrite=args.overwrite,
+    )
+    report_output = _writable(
+        args.report_output
+        or _fold_path(report_root, args.fold_ordinal, "us_b0_baseline_materialization.json"),
+        overwrite=args.overwrite,
+    )
+    fold_manifest_output = _writable(
+        args.fold_manifest_output
+        or _fold_path(report_root, args.fold_ordinal, "us_b0_fold_run_manifest.json"),
+        overwrite=args.overwrite,
+    )
 
     input_materialization = copy_plan_to_parquet(
         input_plan,
@@ -335,8 +360,18 @@ def main() -> int:
         evaluation_report=evaluation,
         engineering_assets=assets,
     )
+    report_document = report.to_dict()
     report_output.write_text(
-        json.dumps(report.to_dict(), sort_keys=True, indent=2, ensure_ascii=False) + "\n",
+        json.dumps(report_document, sort_keys=True, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    fold_manifest = build_us_b0_fold_run_manifest(
+        execution_spec,
+        report_document,
+        evaluation,
+    )
+    fold_manifest_output.write_text(
+        json.dumps(fold_manifest.to_dict(), sort_keys=True, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
 
@@ -346,6 +381,13 @@ def main() -> int:
                 "report_id": report.report_id,
                 "passed": report.passed,
                 "blockers": list(report.blockers),
+                "protocol_id": protocol.protocol_id,
+                "fold_id": execution_spec.fold_id,
+                "fold_ordinal": execution_spec.fold_ordinal,
+                "fold_execution_spec_id": execution_spec.execution_spec_id,
+                "fold_start": start.isoformat(),
+                "fold_end": end.isoformat(),
+                "fold_manifest_id": fold_manifest.manifest_id,
                 "run_spec_id": run_spec.spec_id,
                 "certification_report_id": run_spec.certification_report_id,
                 "engineering_universe_id": run_spec.engineering_universe_id,
@@ -359,13 +401,14 @@ def main() -> int:
                 "stage_exit_authority": False,
                 "evaluation_output": str(evaluation_output),
                 "report_output": str(report_output),
+                "fold_manifest_output": str(fold_manifest_output),
             },
             sort_keys=True,
             indent=2,
             ensure_ascii=False,
         )
     )
-    return 0 if report.passed else 2
+    return 0 if report.passed and fold_manifest.passed else 2
 
 
 if __name__ == "__main__":
