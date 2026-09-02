@@ -1,0 +1,90 @@
+name: us-a0-controlled-experiment
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/research/us_agent_value_protocol.py"
+      - "src/finagent/research/us_agent_value_generation.py"
+      - "src/finagent/research/us_agent_value_experiment.py"
+      - "src/finagent/research/us_agent_value_comparison.py"
+      - "src/finagent/research/us_agent_value_authority.py"
+      - "scripts/freeze_us_a0_experiment_protocol.py"
+      - "tests/test_us_a0_protocol.py"
+      - "tests/test_us_a0_generation.py"
+      - "tests/test_us_a0_experiment.py"
+      - "tests/test_us_a0_comparison.py"
+      - "tests/test_us_a0_authority.py"
+      - "docs/guides/us-a0-agent-value-experiment.md"
+      - ".github/workflows/us-a0-controlled-experiment.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/finagent/research/us_agent_value_protocol.py"
+      - "src/finagent/research/us_agent_value_generation.py"
+      - "src/finagent/research/us_agent_value_experiment.py"
+      - "src/finagent/research/us_agent_value_comparison.py"
+      - "src/finagent/research/us_agent_value_authority.py"
+      - "scripts/freeze_us_a0_experiment_protocol.py"
+      - "tests/test_us_a0_protocol.py"
+      - "tests/test_us_a0_generation.py"
+      - "tests/test_us_a0_experiment.py"
+      - "tests/test_us_a0_comparison.py"
+      - "tests/test_us_a0_authority.py"
+      - "docs/guides/us-a0-agent-value-experiment.md"
+      - ".github/workflows/us-a0-controlled-experiment.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    name: US-A0 controlled experiment contracts
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_us_a0_protocol.py \
+            tests/test_us_a0_generation.py \
+            tests/test_us_a0_experiment.py \
+            tests/test_us_a0_comparison.py \
+            tests/test_us_a0_authority.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/research/us_agent_value_protocol.py \
+            src/finagent/research/us_agent_value_generation.py \
+            src/finagent/research/us_agent_value_experiment.py \
+            src/finagent/research/us_agent_value_comparison.py \
+            src/finagent/research/us_agent_value_authority.py \
+            scripts/freeze_us_a0_experiment_protocol.py \
+            tests/test_us_a0_protocol.py \
+            tests/test_us_a0_generation.py \
+            tests/test_us_a0_experiment.py \
+            tests/test_us_a0_comparison.py \
+            tests/test_us_a0_authority.py
+          uv run --frozen mypy --strict \
+            src/finagent/research/us_agent_value_protocol.py \
+            src/finagent/research/us_agent_value_generation.py \
+            src/finagent/research/us_agent_value_experiment.py \
+            src/finagent/research/us_agent_value_comparison.py \
+            src/finagent/research/us_agent_value_authority.py \
+            scripts/freeze_us_a0_experiment_protocol.py
+          uv run --frozen python -m py_compile \
+            src/finagent/research/us_agent_value_protocol.py \
+            src/finagent/research/us_agent_value_generation.py \
+            src/finagent/research/us_agent_value_experiment.py \
+            src/finagent/research/us_agent_value_comparison.py \
+            src/finagent/research/us_agent_value_authority.py \
+            scripts/freeze_us_a0_experiment_protocol.py
