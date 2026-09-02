@@ -437,8 +437,15 @@ def evaluate_us_r1_candidate_slice(
         if len(valid_rows) < policy.minimum_cross_section:
             insufficient_count += 1
             continue
-        feature = {row.asset: float(row.feature_value) for row in valid_rows}
-        labels = {row.asset: float(row.realized_label) for row in valid_rows if row.realized_label is not None}
+        feature: dict[str, float] = {}
+        labels: dict[str, float] = {}
+        for row in valid_rows:
+            feature_value = row.feature_value
+            realized_label = row.realized_label
+            if feature_value is None or realized_label is None:
+                raise RuntimeError("US-R1 validated metric row unexpectedly lacks a value")
+            feature[row.asset] = float(feature_value)
+            labels[row.asset] = float(realized_label)
         rank_ic = _spearman(feature, labels)
         if rank_ic is None:
             blockers.append(f"rank_ic_undefined:{formation_at.isoformat()}")
