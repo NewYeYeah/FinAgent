@@ -25,7 +25,6 @@ from finagent.research.us_agent_value_generation import CandidateGenerationRun
 from finagent.research.us_agent_value_protocol import (
     USAgentValueArm,
     USAgentValueExperimentProtocol,
-    USAgentValuePhase,
 )
 
 
@@ -86,15 +85,25 @@ def _float_or_none(value: object, field_name: str) -> float | None:
 
 
 def _strings(value: object, field_name: str) -> tuple[str, ...]:
-    return tuple(_text(item, f"{field_name}[]") for item in _sequence(value, field_name))
+    return tuple(
+        _text(item, f"{field_name}[]") for item in _sequence(value, field_name)
+    )
 
 
-def _require_false_authority(document: Mapping[str, object], field_name: str) -> None:
+def _require_false_authority(
+    document: Mapping[str, object],
+    field_name: str,
+) -> None:
     if _boolean(document.get(field_name), field_name):
         raise ValueError(f"US-A0 evidence cannot claim {field_name}")
 
 
-def _validate_candidate_aggregate(document: Mapping[str, object], index: int) -> None:
+def _validate_candidate_aggregate(
+    document: Mapping[str, object],
+    index: int,
+    *,
+    generation_run: CandidateGenerationRun,
+) -> tuple[bool, float | None, float | None]:
     prefix = f"run_evaluation.candidates[{index}]"
     if _text(document.get("schema_version"), f"{prefix}.schema_version") != (
         "finagent.us-agent-value-candidate-evaluation-aggregate.v1"
@@ -103,34 +112,70 @@ def _validate_candidate_aggregate(document: Mapping[str, object], index: int) ->
     claimed_id = _text(document.get("aggregate_id"), f"{prefix}.aggregate_id")
     payload = dict(document)
     del payload["aggregate_id"]
-    if claimed_id != _canonical_hash(payload, prefix="us-agent-value-candidate-evaluation"):
+    if claimed_id != _canonical_hash(
+        payload,
+        prefix="us-agent-value-candidate-evaluation",
+    ):
         raise ValueError("A0 candidate-evaluation aggregate content identity mismatch")
+
+    expected_candidate = generation_run.accepted_candidates[index]
+    expected_feature = expected_candidate.compile_feature_spec()
+    if _text(document.get("candidate_id"), f"{prefix}.candidate_id") != (
+        expected_candidate.candidate_id
+    ):
+        raise ValueError("A0 candidate aggregate/generation candidate identity mismatch")
+    if _text(document.get("feature_id"), f"{prefix}.feature_id") != (
+        expected_feature.feature_id
+    ):
+        raise ValueError("A0 candidate aggregate compiled feature identity mismatch")
+    if _text(document.get("feature_spec_id"), f"{prefix}.feature_spec_id") != (
+        expected_feature.spec_id
+    ):
+        raise ValueError("A0 candidate aggregate compiled feature-spec identity mismatch")
+
     fold_count = _integer(document.get("fold_count"), f"{prefix}.fold_count")
-    valid_fold_count = _integer(document.get("valid_fold_count"), f"{prefix}.valid_fold_count")
+    valid_fold_count = _integer(
+        document.get("valid_fold_count"),
+        f"{prefix}.valid_fold_count",
+    )
     if fold_count != 3 or not 0 <= valid_fold_count <= fold_count:
         raise ValueError("A0 candidate aggregate must bind exactly three frozen folds")
-    invalid_reasons = _strings(document.get("invalid_reasons", ()), f"{prefix}.invalid_reasons")
+    invalid_reasons = _strings(
+        document.get("invalid_reasons", ()),
+        f"{prefix}.invalid_reasons",
+    )
     expected_valid = valid_fold_count == fold_count and not invalid_reasons
     if _boolean(document.get("valid"), f"{prefix}.valid") is not expected_valid:
         raise ValueError("A0 candidate aggregate valid flag is inconsistent")
+
+    mean_rank_ic = _float_or_none(
+        document.get("mean_rank_ic"),
+        f"{prefix}.mean_rank_ic",
+    )
+    worst_fold_rank_ic = _float_or_none(
+        document.get("worst_fold_rank_ic"),
+        f"{prefix}.worst_fold_rank_ic",
+    )
     for metric in (
-        "mean_rank_ic",
-        "worst_fold_rank_ic",
         "mean_gross_return",
         "worst_fold_gross_return",
         "mean_one_way_turnover",
         "maximum_one_way_turnover",
     ):
         _float_or_none(document.get(metric), f"{prefix}.{metric}")
-    coverage = _float_or_none(document.get("mean_feature_coverage"), f"{prefix}.mean_feature_coverage")
+    coverage = _float_or_none(
+        document.get("mean_feature_coverage"),
+        f"{prefix}.mean_feature_coverage",
+    )
     if coverage is None or not 0.0 <= coverage <= 1.0:
         raise ValueError("A0 candidate aggregate feature coverage must be in [0,1]")
+    return expected_valid, mean_rank_ic, worst_fold_rank_ic
 
 
 def _validate_run_evaluation_document(
     document: Mapping[str, object],
     generation_run: CandidateGenerationRun,
-) -> tuple[str, str, tuple[str, ...]]:
+) -> tuple[str, str, tuple[str, ...], str]:
     if _text(document.get("schema_version"), "run_evaluation.schema_version") != (
         "finagent.us-agent-value-run-evaluation-report.v1"
     ):
@@ -140,11 +185,20 @@ def _validate_run_evaluation_document(
     del payload["report_id"]
     if claimed_id != _canonical_hash(payload, prefix="us-agent-value-run-evaluation"):
         raise ValueError("A0 run-evaluation report content identity mismatch")
-    if _text(document.get("generation_run_id"), "run_evaluation.generation_run_id") != (
-        generation_run.run_id
-    ):
+    evaluation_binding_id = _text(
+        document.get("evaluation_binding_id"),
+        "run_evaluation.evaluation_binding_id",
+    )
+    _text(document.get("denominator_id"), "run_evaluation.denominator_id")
+    _text(document.get("run_spec_id"), "run_evaluation.run_spec_id")
+    if _text(
+        document.get("generation_run_id"),
+        "run_evaluation.generation_run_id",
+    ) != generation_run.run_id:
         raise ValueError("A0 run-evaluation/generation-run identity mismatch")
-    if _text(document.get("arm"), "run_evaluation.arm") != generation_run.spec.arm.value:
+    if _text(document.get("arm"), "run_evaluation.arm") != (
+        generation_run.spec.arm.value
+    ):
         raise ValueError("A0 run-evaluation/search-arm mismatch")
 
     status = _text(document.get("status"), "run_evaluation.status")
@@ -154,46 +208,93 @@ def _validate_run_evaluation_document(
         document.get("evaluated_candidate_count"),
         "run_evaluation.evaluated_candidate_count",
     )
-    valid_count = _integer(document.get("valid_candidate_count"), "run_evaluation.valid_candidate_count")
+    valid_count = _integer(
+        document.get("valid_candidate_count"),
+        "run_evaluation.valid_candidate_count",
+    )
     if evaluated_count != len(generation_run.accepted_candidates):
-        raise ValueError("A0 evaluated candidate count differs from accepted generation candidates")
+        raise ValueError(
+            "A0 evaluated candidate count differs from accepted generation candidates"
+        )
     if not 0 <= valid_count <= evaluated_count:
         raise ValueError("A0 run-evaluation valid candidate count is invalid")
 
     candidate_documents = tuple(
         _mapping(raw, f"run_evaluation.candidates[{index}]")
-        for index, raw in enumerate(_sequence(document.get("candidates", ()), "run_evaluation.candidates"))
+        for index, raw in enumerate(
+            _sequence(document.get("candidates", ()), "run_evaluation.candidates")
+        )
     )
     if len(candidate_documents) != evaluated_count:
         raise ValueError("A0 run-evaluation candidate array count mismatch")
-    for index, candidate in enumerate(candidate_documents):
-        _validate_candidate_aggregate(candidate, index)
+    summaries = tuple(
+        _validate_candidate_aggregate(
+            candidate,
+            index,
+            generation_run=generation_run,
+        )
+        for index, candidate in enumerate(candidate_documents)
+    )
+    computed_valid_count = sum(valid for valid, _, _ in summaries)
+    if valid_count != computed_valid_count:
+        raise ValueError(
+            "A0 run-evaluation valid candidate count differs from candidate aggregates"
+        )
+
+    valid_mean_rank_ics = tuple(
+        float(mean_rank_ic)
+        for valid, mean_rank_ic, _ in summaries
+        if valid and mean_rank_ic is not None
+    )
+    valid_worst_rank_ics = tuple(
+        float(worst_rank_ic)
+        for valid, _, worst_rank_ic in summaries
+        if valid and worst_rank_ic is not None
+    )
+    expected_best_mean = max(valid_mean_rank_ics) if valid_mean_rank_ics else None
+    expected_best_worst = max(valid_worst_rank_ics) if valid_worst_rank_ics else None
+    if _float_or_none(
+        document.get("best_mean_rank_ic"),
+        "run_evaluation.best_mean_rank_ic",
+    ) != expected_best_mean:
+        raise ValueError("A0 run-evaluation best mean RankIC summary is inconsistent")
+    if _float_or_none(
+        document.get("best_worst_fold_rank_ic"),
+        "run_evaluation.best_worst_fold_rank_ic",
+    ) != expected_best_worst:
+        raise ValueError("A0 run-evaluation best worst-fold RankIC summary is inconsistent")
 
     fold_report_ids = _strings(
         document.get("fold_evaluation_report_ids", ()),
         "run_evaluation.fold_evaluation_report_ids",
     )
     if status == "NO_ACCEPTED_CANDIDATES":
-        if evaluated_count != 0 or valid_count != 0 or candidate_documents or fold_report_ids:
+        if evaluated_count != 0 or valid_count != 0 or candidate_documents:
             raise ValueError("NO_ACCEPTED_CANDIDATES run cannot carry financial evidence")
-        if document.get("best_mean_rank_ic") is not None or document.get("best_worst_fold_rank_ic") is not None:
-            raise ValueError("zero-candidate run cannot claim best RankIC metrics")
+        if fold_report_ids:
+            raise ValueError("NO_ACCEPTED_CANDIDATES run cannot carry fold evidence")
     else:
         if evaluated_count < 1:
             raise ValueError("EVALUATED run requires accepted candidates")
         if len(fold_report_ids) != 3 or len(set(fold_report_ids)) != 3:
-            raise ValueError("EVALUATED A0 run requires three unique fold-evaluation reports")
+            raise ValueError(
+                "EVALUATED A0 run requires three unique fold-evaluation reports"
+            )
 
-    if _boolean(document.get("evidence_complete"), "run_evaluation.evidence_complete") is not True:
+    if not _boolean(document.get("evidence_complete"), "run_evaluation.evidence_complete"):
         raise ValueError("A0 run-evaluation report must be evidence-complete")
-    if _boolean(
+    if not _boolean(
         document.get("candidate_invalidity_is_research_result_not_system_blocker"),
         "run_evaluation.candidate_invalidity_is_research_result_not_system_blocker",
-    ) is not True:
+    ):
         raise ValueError("A0 run-evaluation report changed candidate-invalidity semantics")
-    for field_name in ("stage_exit_authority", "agent_value_gate_authority", "alpha_authority"):
+    for field_name in (
+        "stage_exit_authority",
+        "agent_value_gate_authority",
+        "alpha_authority",
+    ):
         _require_false_authority(document, field_name)
-    return claimed_id, status, fold_report_ids
+    return claimed_id, status, fold_report_ids, evaluation_binding_id
 
 
 def _parse_evaluation_link(
@@ -204,7 +305,10 @@ def _parse_evaluation_link(
 ) -> RunEvaluationLink:
     blockers = _strings(document.get("blockers", ()), "evaluation_link.blockers")
     link = RunEvaluationLink(
-        generation_run_id=_text(document.get("generation_run_id"), "evaluation_link.generation_run_id"),
+        generation_run_id=_text(
+            document.get("generation_run_id"),
+            "evaluation_link.generation_run_id",
+        ),
         authoritative_evidence_id=_text(
             document.get("authoritative_evidence_id"),
             "evaluation_link.authoritative_evidence_id",
@@ -234,13 +338,39 @@ def _parse_evaluation_link(
     if link.authoritative_evidence_id != run_evaluation_report_id:
         raise ValueError("A0 evaluation link does not bind the run-evaluation report")
     scalar_pairs = (
-        (link.evaluated_candidate_count, _integer(run_evaluation_document.get("evaluated_candidate_count"), "run_evaluation.evaluated_candidate_count")),
-        (link.valid_candidate_count, _integer(run_evaluation_document.get("valid_candidate_count"), "run_evaluation.valid_candidate_count")),
-        (link.best_mean_rank_ic, _float_or_none(run_evaluation_document.get("best_mean_rank_ic"), "run_evaluation.best_mean_rank_ic")),
-        (link.best_worst_fold_rank_ic, _float_or_none(run_evaluation_document.get("best_worst_fold_rank_ic"), "run_evaluation.best_worst_fold_rank_ic")),
+        (
+            link.evaluated_candidate_count,
+            _integer(
+                run_evaluation_document.get("evaluated_candidate_count"),
+                "run_evaluation.evaluated_candidate_count",
+            ),
+        ),
+        (
+            link.valid_candidate_count,
+            _integer(
+                run_evaluation_document.get("valid_candidate_count"),
+                "run_evaluation.valid_candidate_count",
+            ),
+        ),
+        (
+            link.best_mean_rank_ic,
+            _float_or_none(
+                run_evaluation_document.get("best_mean_rank_ic"),
+                "run_evaluation.best_mean_rank_ic",
+            ),
+        ),
+        (
+            link.best_worst_fold_rank_ic,
+            _float_or_none(
+                run_evaluation_document.get("best_worst_fold_rank_ic"),
+                "run_evaluation.best_worst_fold_rank_ic",
+            ),
+        ),
     )
     if any(left != right for left, right in scalar_pairs):
-        raise ValueError("A0 evaluation-link metrics differ from authoritative run evaluation")
+        raise ValueError(
+            "A0 evaluation-link metrics differ from authoritative run evaluation"
+        )
     return link
 
 
@@ -258,38 +388,59 @@ def _validate_fold_materialization_manifest(
     claimed_id = _text(document.get("manifest_id"), "fold_manifest.manifest_id")
     payload = dict(document)
     del payload["manifest_id"]
-    if claimed_id != _canonical_hash(payload, prefix="us-agent-value-fold-materialization"):
+    if claimed_id != _canonical_hash(
+        payload,
+        prefix="us-agent-value-fold-materialization",
+    ):
         raise ValueError("A0 fold-materialization manifest content identity mismatch")
-    if _text(document.get("execution_plan_id"), "fold_manifest.execution_plan_id") != execution_plan.plan_id:
+    if _text(
+        document.get("execution_plan_id"),
+        "fold_manifest.execution_plan_id",
+    ) != execution_plan.plan_id:
         raise ValueError("A0 fold manifest/execution-plan identity mismatch")
-    if _text(document.get("preregistration_bundle_id"), "fold_manifest.preregistration_bundle_id") != (
-        execution_plan.preregistration_bundle_id
-    ):
+    if _text(
+        document.get("preregistration_bundle_id"),
+        "fold_manifest.preregistration_bundle_id",
+    ) != execution_plan.preregistration_bundle_id:
         raise ValueError("A0 fold manifest/preregistration identity mismatch")
-    if _text(document.get("generation_run_id"), "fold_manifest.generation_run_id") != generation_run.run_id:
+    if _text(
+        document.get("generation_run_id"),
+        "fold_manifest.generation_run_id",
+    ) != generation_run.run_id:
         raise ValueError("A0 fold manifest/generation-run identity mismatch")
-    if _text(document.get("evaluation_binding_id"), "fold_manifest.evaluation_binding_id") != (
-        evaluation_binding_id
-    ):
+    if _text(
+        document.get("evaluation_binding_id"),
+        "fold_manifest.evaluation_binding_id",
+    ) != evaluation_binding_id:
         raise ValueError("A0 fold manifest/evaluation-binding identity mismatch")
     ordinal = _integer(document.get("fold_ordinal"), "fold_manifest.fold_ordinal")
     if ordinal not in (1, 2, 3):
         raise ValueError("A0 fold manifest ordinal must be 1..3")
     if not _boolean(document.get("technical_passed"), "fold_manifest.technical_passed"):
         raise ValueError("A0 experiment assembly requires technically passing fold evidence")
-    if _strings(document.get("technical_blockers", ()), "fold_manifest.technical_blockers"):
+    if _strings(
+        document.get("technical_blockers", ()),
+        "fold_manifest.technical_blockers",
+    ):
         raise ValueError("technically passing A0 fold evidence cannot carry blockers")
-    if _boolean(
+    if not _boolean(
         document.get("candidate_invalidity_is_not_a_technical_blocker"),
         "fold_manifest.candidate_invalidity_is_not_a_technical_blocker",
-    ) is not True:
+    ):
         raise ValueError("A0 fold manifest changed candidate-invalidity semantics")
-    for field_name in ("stage_exit_authority", "agent_value_gate_authority", "alpha_authority"):
+    for field_name in (
+        "stage_exit_authority",
+        "agent_value_gate_authority",
+        "alpha_authority",
+    ):
         _require_false_authority(document, field_name)
     return (
         claimed_id,
         ordinal,
-        _text(document.get("fold_evaluation_report_id"), "fold_manifest.fold_evaluation_report_id"),
+        _text(
+            document.get("fold_evaluation_report_id"),
+            "fold_manifest.fold_evaluation_report_id",
+        ),
     )
 
 
@@ -326,7 +477,9 @@ class ParsedUSAgentValueRunEvidence:
             "run_evidence_manifest_id": self.run_evidence_manifest_id,
             "evaluation_binding_id": self.evaluation_binding_id,
             "predecessor_binding_id": self.predecessor_binding_id,
-            "fold_materialization_manifest_ids": list(self.fold_materialization_manifest_ids),
+            "fold_materialization_manifest_ids": list(
+                self.fold_materialization_manifest_ids
+            ),
             "technical_passed": True,
         }
 
@@ -341,7 +494,12 @@ def parse_us_a0_run_evidence_bundle(
     run_manifest_document: Mapping[str, object],
 ) -> ParsedUSAgentValueRunEvidence:
     generation_run = parse_candidate_generation_run(generation_document, execution_plan)
-    run_evaluation_report_id, run_status, fold_report_ids = _validate_run_evaluation_document(
+    (
+        run_evaluation_report_id,
+        run_status,
+        fold_report_ids,
+        run_evaluation_binding_id,
+    ) = _validate_run_evaluation_document(
         run_evaluation_document,
         generation_run,
     )
@@ -356,51 +514,87 @@ def parse_us_a0_run_evidence_bundle(
         "finagent.us-agent-value-run-evidence-manifest.v1"
     ):
         raise ValueError("unsupported A0 run-evidence manifest schema")
-    claimed_manifest_id = _text(run_manifest_document.get("manifest_id"), "run_manifest.manifest_id")
+    claimed_manifest_id = _text(
+        run_manifest_document.get("manifest_id"),
+        "run_manifest.manifest_id",
+    )
     payload = dict(run_manifest_document)
     del payload["manifest_id"]
-    if claimed_manifest_id != _canonical_hash(payload, prefix="us-agent-value-run-evidence"):
+    if claimed_manifest_id != _canonical_hash(
+        payload,
+        prefix="us-agent-value-run-evidence",
+    ):
         raise ValueError("A0 run-evidence manifest content identity mismatch")
-    if _text(run_manifest_document.get("execution_plan_id"), "run_manifest.execution_plan_id") != execution_plan.plan_id:
+    if _text(
+        run_manifest_document.get("execution_plan_id"),
+        "run_manifest.execution_plan_id",
+    ) != execution_plan.plan_id:
         raise ValueError("A0 run manifest/execution-plan identity mismatch")
-    if _text(run_manifest_document.get("preregistration_bundle_id"), "run_manifest.preregistration_bundle_id") != (
-        execution_plan.preregistration_bundle_id
-    ):
+    if _text(
+        run_manifest_document.get("preregistration_bundle_id"),
+        "run_manifest.preregistration_bundle_id",
+    ) != execution_plan.preregistration_bundle_id:
         raise ValueError("A0 run manifest/preregistration identity mismatch")
-    if _text(run_manifest_document.get("predecessor_binding_id"), "run_manifest.predecessor_binding_id") != predecessor.binding_id:
+    if _text(
+        run_manifest_document.get("predecessor_binding_id"),
+        "run_manifest.predecessor_binding_id",
+    ) != predecessor.binding_id:
         raise ValueError("A0 run manifest/predecessor identity mismatch")
-    if _text(run_manifest_document.get("generation_run_id"), "run_manifest.generation_run_id") != generation_run.run_id:
+    if _text(
+        run_manifest_document.get("generation_run_id"),
+        "run_manifest.generation_run_id",
+    ) != generation_run.run_id:
         raise ValueError("A0 run manifest/generation-run identity mismatch")
-    if _text(run_manifest_document.get("generation_run_spec_id"), "run_manifest.generation_run_spec_id") != (
-        generation_run.spec.run_spec_id
-    ):
+    if _text(
+        run_manifest_document.get("generation_run_spec_id"),
+        "run_manifest.generation_run_spec_id",
+    ) != generation_run.spec.run_spec_id:
         raise ValueError("A0 run manifest/generation-run-spec identity mismatch")
-    if _text(run_manifest_document.get("arm"), "run_manifest.arm") != generation_run.spec.arm.value:
+    if _text(run_manifest_document.get("arm"), "run_manifest.arm") != (
+        generation_run.spec.arm.value
+    ):
         raise ValueError("A0 run manifest/search-arm mismatch")
-    if _text(run_manifest_document.get("phase"), "run_manifest.phase") != generation_run.spec.phase.value:
+    if _text(run_manifest_document.get("phase"), "run_manifest.phase") != (
+        generation_run.spec.phase.value
+    ):
         raise ValueError("A0 run manifest/phase mismatch")
     evaluation_binding_id = _text(
         run_manifest_document.get("evaluation_binding_id"),
         "run_manifest.evaluation_binding_id",
     )
-    if _text(run_manifest_document.get("run_evaluation_report_id"), "run_manifest.run_evaluation_report_id") != (
-        run_evaluation_report_id
-    ):
+    if evaluation_binding_id != run_evaluation_binding_id:
+        raise ValueError("A0 run manifest/run-evaluation binding identity mismatch")
+    if _text(
+        run_manifest_document.get("run_evaluation_report_id"),
+        "run_manifest.run_evaluation_report_id",
+    ) != run_evaluation_report_id:
         raise ValueError("A0 run manifest/run-evaluation identity mismatch")
-    if _text(run_manifest_document.get("run_evaluation_link_id"), "run_manifest.run_evaluation_link_id") != (
-        evaluation_link.link_id
-    ):
+    if _text(
+        run_manifest_document.get("run_evaluation_link_id"),
+        "run_manifest.run_evaluation_link_id",
+    ) != evaluation_link.link_id:
         raise ValueError("A0 run manifest/evaluation-link identity mismatch")
-    if _text(run_manifest_document.get("run_evaluation_status"), "run_manifest.run_evaluation_status") != run_status:
+    if _text(
+        run_manifest_document.get("run_evaluation_status"),
+        "run_manifest.run_evaluation_status",
+    ) != run_status:
         raise ValueError("A0 run manifest/run-evaluation status mismatch")
-    if not _boolean(run_manifest_document.get("technical_passed"), "run_manifest.technical_passed"):
+    if not _boolean(
+        run_manifest_document.get("technical_passed"),
+        "run_manifest.technical_passed",
+    ):
         raise ValueError("A0 experiment assembly requires technically passing run evidence")
-    if _strings(run_manifest_document.get("technical_blockers", ()), "run_manifest.technical_blockers"):
+    if _strings(
+        run_manifest_document.get("technical_blockers", ()),
+        "run_manifest.technical_blockers",
+    ):
         raise ValueError("technically passing A0 run evidence cannot carry blockers")
-    if _boolean(
-        run_manifest_document.get("candidate_invalidity_is_research_result_not_system_blocker"),
+    if not _boolean(
+        run_manifest_document.get(
+            "candidate_invalidity_is_research_result_not_system_blocker"
+        ),
         "run_manifest.candidate_invalidity_is_research_result_not_system_blocker",
-    ) is not True:
+    ):
         raise ValueError("A0 run manifest changed candidate-invalidity semantics")
     for field_name in (
         "status_authority",
@@ -413,7 +607,10 @@ def parse_us_a0_run_evidence_bundle(
     raw_fold_manifests = tuple(
         _mapping(raw, f"run_manifest.fold_manifests[{index}]")
         for index, raw in enumerate(
-            _sequence(run_manifest_document.get("fold_manifests", ()), "run_manifest.fold_manifests")
+            _sequence(
+                run_manifest_document.get("fold_manifests", ()),
+                "run_manifest.fold_manifests",
+            )
         )
     )
     top_level_fold_manifest_ids = _strings(
@@ -443,7 +640,9 @@ def parse_us_a0_run_evidence_bundle(
         if tuple(parsed_ordinals) != (1, 2, 3):
             raise ValueError("A0 run manifest must preserve frozen fold order 1,2,3")
         if tuple(parsed_fold_report_ids) != fold_report_ids:
-            raise ValueError("A0 run manifest fold-evaluation IDs differ from run evaluation")
+            raise ValueError(
+                "A0 run manifest fold-evaluation IDs differ from run evaluation"
+            )
 
     return ParsedUSAgentValueRunEvidence(
         generation_run=generation_run,
@@ -506,7 +705,9 @@ class AgentValueExperimentEvidenceGraph:
             if len(values) != len(set(values)):
                 raise ValueError("A0 experiment evidence graph run identities must be unique")
         if self.ready_for_agent_value_gate_review and not self.evidence_complete:
-            raise ValueError("Agent-value review readiness requires complete experiment evidence")
+            raise ValueError(
+                "Agent-value review readiness requires complete experiment evidence"
+            )
 
     @property
     def graph_id(self) -> str:
@@ -529,7 +730,9 @@ class AgentValueExperimentEvidenceGraph:
             "run_evaluation_report_ids": list(self.run_evaluation_report_ids),
             "run_evaluation_link_ids": list(self.run_evaluation_link_ids),
             "evidence_complete": self.evidence_complete,
-            "ready_for_agent_value_gate_review": self.ready_for_agent_value_gate_review,
+            "ready_for_agent_value_gate_review": (
+                self.ready_for_agent_value_gate_review
+            ),
             "agent_value_gate_decision": "UNDECIDED_REQUIRES_SEPARATE_REVIEW",
             "scope": "content_addressed_three_arm_agent_value_experiment_evidence_graph",
             "status_authority": False,
@@ -554,31 +757,45 @@ def assemble_us_a0_experiment_evidence(
     AgentValueComparisonSnapshot,
     AgentValueExperimentEvidenceGraph,
 ]:
-    if execution_plan.protocol_id != protocol.protocol_id or execution_plan.phase is not protocol.phase:
-        raise ValueError("A0 experiment assembly execution-plan/protocol identity mismatch")
-    if execution_plan.preregistration_bundle_id.strip() == "":  # pragma: no cover - dataclass invariant
-        raise RuntimeError("execution plan lost preregistration identity")
+    if (
+        execution_plan.protocol_id != protocol.protocol_id
+        or execution_plan.phase is not protocol.phase
+    ):
+        raise ValueError(
+            "A0 experiment assembly execution-plan/protocol identity mismatch"
+        )
 
     by_spec_id: dict[str, ParsedUSAgentValueRunEvidence] = {}
     for item in run_evidence:
         if item.predecessor_binding_id != predecessor.binding_id:
             raise ValueError("A0 run evidence mixes predecessor identities")
         if item.run_spec_id in by_spec_id:
-            raise ValueError("duplicate A0 run evidence for one execution-plan run spec")
+            raise ValueError(
+                "duplicate A0 run evidence for one execution-plan run spec"
+            )
         by_spec_id[item.run_spec_id] = item
     expected_spec_ids = tuple(spec.run_spec_id for spec in execution_plan.run_specs)
     if set(by_spec_id) != set(expected_spec_ids):
         missing = sorted(set(expected_spec_ids).difference(by_spec_id))
         extra = sorted(set(by_spec_id).difference(expected_spec_ids))
-        raise ValueError(f"A0 experiment run-evidence set does not match execution plan; missing={missing}, extra={extra}")
+        raise ValueError(
+            "A0 experiment run-evidence set does not match execution plan; "
+            f"missing={missing}, extra={extra}"
+        )
     ordered = tuple(by_spec_id[spec_id] for spec_id in expected_spec_ids)
 
     arm_results: list[SearchArmResult] = []
     for arm in protocol.arms:
-        arm_items = tuple(item for item in ordered if item.generation_run.spec.arm is arm)
-        planned_specs = tuple(spec for spec in execution_plan.run_specs if spec.arm is arm)
+        arm_items = tuple(
+            item for item in ordered if item.generation_run.spec.arm is arm
+        )
+        planned_specs = tuple(
+            spec for spec in execution_plan.run_specs if spec.arm is arm
+        )
         if tuple(item.generation_run.spec for item in arm_items) != planned_specs:
-            raise ValueError(f"{arm.value} run evidence does not preserve execution-plan run order")
+            raise ValueError(
+                f"{arm.value} run evidence does not preserve execution-plan run order"
+            )
         arm_results.append(
             build_search_arm_result(
                 protocol,
@@ -606,10 +823,18 @@ def assemble_us_a0_experiment_evidence(
         comparison_snapshot_id=comparison.snapshot_id,
         arm_result_ids=tuple(result.result_id for result in arm_tuple),
         generation_run_ids=tuple(item.run_id for item in ordered),
-        run_evidence_manifest_ids=tuple(item.run_evidence_manifest_id for item in ordered),
-        run_evaluation_report_ids=tuple(item.run_evaluation_report_id for item in ordered),
-        run_evaluation_link_ids=tuple(item.evaluation_link.link_id for item in ordered),
+        run_evidence_manifest_ids=tuple(
+            item.run_evidence_manifest_id for item in ordered
+        ),
+        run_evaluation_report_ids=tuple(
+            item.run_evaluation_report_id for item in ordered
+        ),
+        run_evaluation_link_ids=tuple(
+            item.evaluation_link.link_id for item in ordered
+        ),
         evidence_complete=experiment.evidence_complete,
-        ready_for_agent_value_gate_review=experiment.ready_for_agent_value_gate_review,
+        ready_for_agent_value_gate_review=(
+            experiment.ready_for_agent_value_gate_review
+        ),
     )
     return arm_tuple, experiment, comparison, graph
