@@ -22,10 +22,7 @@ from finagent.research.us_agent_value_experiment import (
     build_search_arm_result,
 )
 from finagent.research.us_agent_value_generation import CandidateGenerationRun
-from finagent.research.us_agent_value_protocol import (
-    USAgentValueArm,
-    USAgentValueExperimentProtocol,
-)
+from finagent.research.us_agent_value_protocol import USAgentValueExperimentProtocol
 
 
 def _canonical_hash(payload: object, *, prefix: str) -> str:
