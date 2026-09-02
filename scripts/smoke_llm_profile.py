@@ -11,6 +11,10 @@ from finagent.research.us_agent_value_deepseek import (
     DEEPSEEK_V4_PRICING_POLICY_ID,
     estimate_deepseek_v4_cost_usd,
 )
+from finagent.research.us_agent_value_runtime import (
+    DEEPSEEK_V4_DEFAULT_MAX_OUTPUT_TOKENS,
+    DEEPSEEK_V4_MAX_OUTPUT_TOKENS,
+)
 
 _DEFAULT_SMOKE_PROFILE = "deepseek_official_v4_flash"
 
@@ -41,6 +45,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--secrets", type=Path, default=None)
     parser.add_argument(
+        "--max-output-tokens",
+        type=int,
+        default=DEEPSEEK_V4_DEFAULT_MAX_OUTPUT_TOKENS,
+        help=(
+            "Completion budget shared by DeepSeek reasoning_content and final content. "
+            "Default 65536; DeepSeek V4 current maximum is 384000."
+        ),
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=Path("reports/llm/llm_profile_smoke.json"),
@@ -51,6 +64,10 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = build_parser().parse_args()
+    if not 1 <= args.max_output_tokens <= DEEPSEEK_V4_MAX_OUTPUT_TOKENS:
+        raise SystemExit(
+            f"--max-output-tokens must be in [1,{DEEPSEEK_V4_MAX_OUTPUT_TOKENS}]"
+        )
     configured = load_configured_llm(
         args.config.expanduser().resolve(),
         profile_name=args.profile,
@@ -61,7 +78,7 @@ def main() -> int:
         model=configured.profile.model,
         instructions=(
             "Return only the requested tiny JSON capability acknowledgement. Do not include "
-            "explanatory prose or hidden reasoning."
+            "explanatory prose."
         ),
         input_text=json.dumps(
             {
@@ -80,9 +97,12 @@ def main() -> int:
             "required": ["ok", "capability"],
             "additionalProperties": False,
         },
-        max_output_tokens=256,
+        max_output_tokens=args.max_output_tokens,
         temperature=None,
-        metadata={"scope": "engineering_smoke_only"},
+        metadata={
+            "scope": "engineering_smoke_only",
+            "max_output_tokens": str(args.max_output_tokens),
+        },
     )
     response = configured.provider.complete(request)
     retrieved_at = datetime.now(UTC)
@@ -117,6 +137,7 @@ def main() -> int:
         "base_url": configured.profile.base_url,
         "thinking": configured.profile.thinking,
         "reasoning_effort": configured.profile.reasoning_effort,
+        "max_output_tokens": args.max_output_tokens,
         "retrieved_at": retrieved_at.isoformat(),
         "passed": True,
         "blockers": [],
@@ -132,6 +153,9 @@ def main() -> int:
         "provider_status": response.status,
         "provider_attempts": response.metadata.get("provider_attempts", "1"),
         "reasoning_tokens": response.metadata.get("reasoning_tokens", "0"),
+        "completion_budget_semantics": (
+            "reasoning_content_and_final_content_share_max_output_tokens"
+        ),
         "scope": "engineering_smoke_only_not_us_a0_generation_or_gate_evidence",
         "research_authority": False,
         "stage_exit_authority": False,
