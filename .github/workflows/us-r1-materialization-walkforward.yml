@@ -6,6 +6,7 @@ on:
       - "src/finagent/research/us_r1_walkforward.py"
       - "src/finagent/research/us_r1_materialization.py"
       - "src/finagent/research/us_r1_materialization_evidence.py"
+      - "src/finagent/research/us_r1_materialization_bundle.py"
       - "src/finagent/research/us_r1_handoff.py"
       - "scripts/freeze_us_r1_walk_forward.py"
       - "scripts/freeze_us_r1_feature_formation_policy.py"
@@ -46,6 +47,7 @@ jobs:
             src/finagent/research/us_r1_walkforward.py \
             src/finagent/research/us_r1_materialization.py \
             src/finagent/research/us_r1_materialization_evidence.py \
+            src/finagent/research/us_r1_materialization_bundle.py \
             src/finagent/research/us_r1_handoff.py \
             scripts/freeze_us_r1_walk_forward.py \
             scripts/freeze_us_r1_feature_formation_policy.py \
@@ -55,6 +57,7 @@ jobs:
             src/finagent/research/us_r1_walkforward.py \
             src/finagent/research/us_r1_materialization.py \
             src/finagent/research/us_r1_materialization_evidence.py \
+            src/finagent/research/us_r1_materialization_bundle.py \
             src/finagent/research/us_r1_handoff.py \
             scripts/freeze_us_r1_walk_forward.py \
             scripts/freeze_us_r1_feature_formation_policy.py \
@@ -64,6 +67,7 @@ jobs:
             src/finagent/research/us_r1_walkforward.py \
             src/finagent/research/us_r1_materialization.py \
             src/finagent/research/us_r1_materialization_evidence.py \
+            src/finagent/research/us_r1_materialization_bundle.py \
             src/finagent/research/us_r1_handoff.py \
             scripts/freeze_us_r1_walk_forward.py \
             scripts/freeze_us_r1_feature_formation_policy.py \
