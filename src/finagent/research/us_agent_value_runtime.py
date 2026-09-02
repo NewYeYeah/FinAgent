@@ -22,6 +22,7 @@ from finagent.research.us_agent_value_launch import (
     validate_us_a0_pilot_launch_bundle,
 )
 from finagent.research.us_agent_value_protocol import (
+    USAgentValueCandidateSpec,
     USAgentValueExperimentProtocol,
     USAgentValuePhase,
 )
@@ -253,7 +254,7 @@ class RuntimeBoundDeepSeekStructuredAgentSlotProvider(DeepSeekStructuredAgentSlo
         *,
         slot_index: int,
         attempt_index: int,
-        accepted_candidates: tuple,
+        accepted_candidates: tuple[USAgentValueCandidateSpec, ...],
         repair_reason: str | None,
     ) -> LLMRequest:
         request = super()._request(
