@@ -7,6 +7,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from finagent.domain.market_bars import BarInterval
+from finagent.research.us_r1_direction import (
+    USR1DirectionPreparationReport,
+    prepare_us_r1_direction_evidence,
+)
 from finagent.research.us_r1_evaluation_policy import USR1StatisticalEvaluationPolicy
 from finagent.research.us_r1_materialization import (
     USR1CandidateObservation,
@@ -26,7 +30,6 @@ from finagent.research.us_r1_statistics import (
     USR1DirectionEvidenceSet,
     USR1PeriodMetricArtifact,
     USR1PeriodMetricRecord,
-    build_us_r1_direction_evidence,
     build_us_r1_fold_statistics,
 )
 
@@ -131,8 +134,20 @@ class ReconstructedUSR1FoldStatistics:
 
 @dataclass(frozen=True, slots=True)
 class ReconstructedUSR1Statistics:
-    direction_evidence: USR1DirectionEvidenceSet
+    direction_preparation: USR1DirectionPreparationReport
+    direction_evidence: USR1DirectionEvidenceSet | None
     folds: tuple[ReconstructedUSR1FoldStatistics, ...]
+
+    @property
+    def technical_blockers(self) -> tuple[str, ...]:
+        values = list(self.direction_preparation.blockers)
+        values.extend(
+            blocker
+            for fold in self.folds
+            for item in fold.candidate_slices
+            for blocker in item.blockers
+        )
+        return tuple(dict.fromkeys(values))
 
 
 def reconstruct_us_r1_statistics(
@@ -147,7 +162,7 @@ def reconstruct_us_r1_statistics(
     if tuple(item.manifest.fold_ordinal for item in loaded_folds) != (1, 2, 3):
         raise ValueError("US-R1 reconstruction requires folds ordered 1,2,3")
     first = loaded_folds[0]
-    direction = build_us_r1_direction_evidence(
+    direction_preparation, direction_evidence = prepare_us_r1_direction_evidence(
         first.train_observations,
         denominator,
         fold_id=first.manifest.fold_id,
@@ -174,7 +189,8 @@ def reconstruct_us_r1_statistics(
             )
         )
     return ReconstructedUSR1Statistics(
-        direction_evidence=direction,
+        direction_preparation=direction_preparation,
+        direction_evidence=direction_evidence,
         folds=tuple(folds),
     )
 
