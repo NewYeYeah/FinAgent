@@ -7,11 +7,13 @@ on:
       - "src/finagent/brokers/mt5/continuous_quote_smoke.py"
       - "src/finagent/research/us_baseline_authority.py"
       - "src/finagent/research/us_baseline_walkforward.py"
+      - "src/finagent/research/us_baseline_walkforward_aggregate.py"
       - "scripts/smoke_mt5_continuous_quotes.py"
       - "scripts/freeze_us_b0_pilot_walkforward.py"
       - "tests/test_mt5_continuous_quote_smoke.py"
       - "tests/test_us_b0_authority.py"
       - "tests/test_us_b0_walkforward.py"
+      - "tests/test_us_b0_walkforward_aggregate.py"
       - "docs/guides/mt5-continuous-smoke-and-deferred-us-i0.md"
       - ".github/workflows/us-b0-preimplementation.yml"
   push:
@@ -20,11 +22,13 @@ on:
       - "src/finagent/brokers/mt5/continuous_quote_smoke.py"
       - "src/finagent/research/us_baseline_authority.py"
       - "src/finagent/research/us_baseline_walkforward.py"
+      - "src/finagent/research/us_baseline_walkforward_aggregate.py"
       - "scripts/smoke_mt5_continuous_quotes.py"
       - "scripts/freeze_us_b0_pilot_walkforward.py"
       - "tests/test_mt5_continuous_quote_smoke.py"
       - "tests/test_us_b0_authority.py"
       - "tests/test_us_b0_walkforward.py"
+      - "tests/test_us_b0_walkforward_aggregate.py"
       - "docs/guides/mt5-continuous-smoke-and-deferred-us-i0.md"
       - ".github/workflows/us-b0-preimplementation.yml"
 
@@ -51,27 +55,32 @@ jobs:
           uv run --frozen pytest -q \
             tests/test_mt5_continuous_quote_smoke.py \
             tests/test_us_b0_authority.py \
-            tests/test_us_b0_walkforward.py
+            tests/test_us_b0_walkforward.py \
+            tests/test_us_b0_walkforward_aggregate.py
       - name: Strict static checks
         run: |
           uv run --frozen ruff check \
             src/finagent/brokers/mt5/continuous_quote_smoke.py \
             src/finagent/research/us_baseline_authority.py \
             src/finagent/research/us_baseline_walkforward.py \
+            src/finagent/research/us_baseline_walkforward_aggregate.py \
             scripts/smoke_mt5_continuous_quotes.py \
             scripts/freeze_us_b0_pilot_walkforward.py \
             tests/test_mt5_continuous_quote_smoke.py \
             tests/test_us_b0_authority.py \
-            tests/test_us_b0_walkforward.py
+            tests/test_us_b0_walkforward.py \
+            tests/test_us_b0_walkforward_aggregate.py
           uv run --frozen mypy --strict \
             src/finagent/brokers/mt5/continuous_quote_smoke.py \
             src/finagent/research/us_baseline_authority.py \
             src/finagent/research/us_baseline_walkforward.py \
+            src/finagent/research/us_baseline_walkforward_aggregate.py \
             scripts/smoke_mt5_continuous_quotes.py \
             scripts/freeze_us_b0_pilot_walkforward.py
           uv run --frozen python -m py_compile \
             src/finagent/brokers/mt5/continuous_quote_smoke.py \
             src/finagent/research/us_baseline_authority.py \
             src/finagent/research/us_baseline_walkforward.py \
+            src/finagent/research/us_baseline_walkforward_aggregate.py \
             scripts/smoke_mt5_continuous_quotes.py \
             scripts/freeze_us_b0_pilot_walkforward.py
