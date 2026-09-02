@@ -23,6 +23,10 @@ from finagent.research.us_agent_value_gate import (
     finalize_us_a0_agent_value_gate_review,
     validate_us_a0_agent_value_gate_policy,
 )
+from finagent.research.us_agent_value_gate_authority import (
+    require_us_a0_pilot_formal_progression_authority,
+)
+from finagent.research.us_agent_value_protocol import USAgentValuePhase
 
 
 def _read_json(path: Path) -> Mapping[str, object]:
@@ -74,6 +78,15 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("reports/us_b0/us_b0_walkforward_evidence_graph.json"),
     )
+    parser.add_argument(
+        "--pilot-gate-review",
+        type=Path,
+        default=None,
+        help=(
+            "Required for FORMAL review. The exact PILOT review ID must already be accepted "
+            "in docs/status.toml and authorize PILOT_PROCEED_TO_FORMAL."
+        ),
+    )
     parser.add_argument("--reviewer-id", required=True)
     parser.add_argument("--review-notes", required=True)
     parser.add_argument(
@@ -102,6 +115,16 @@ def main() -> int:
     policy = validate_us_a0_agent_value_gate_policy(policy_document, protocol.phase)
 
     status = _read_status(args.status)
+    if protocol.phase is USAgentValuePhase.FORMAL:
+        if args.pilot_gate_review is None:
+            raise SystemExit("FORMAL Agent Value Gate review requires --pilot-gate-review")
+        require_us_a0_pilot_formal_progression_authority(
+            status,
+            _read_json(args.pilot_gate_review),
+        )
+    elif args.pilot_gate_review is not None:
+        raise SystemExit("PILOT Gate review must not consume --pilot-gate-review")
+
     predecessor_graph = _read_json(args.us_b0_evidence_graph)
     predecessor = bind_authorized_us_a0_predecessor(status, predecessor_graph, protocol)
 
