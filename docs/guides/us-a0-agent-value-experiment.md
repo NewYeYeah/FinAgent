@@ -24,6 +24,29 @@ project stage advanced through US-B0 to US-A0
 
 The current continuous-market FX smoke is engineering evidence only and cannot be supplied as an A0 predecessor.
 
+## Frozen preregistration identities
+
+The PILOT and FORMAL bundles were frozen before any real A0 result inspection. Their deterministic identities are now golden regression expectations:
+
+```text
+shared vocabulary
+us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4
+
+PILOT protocol
+us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03
+
+PILOT bundle
+us-agent-value-preregistration-9d592189de4ed0edf16e23c6
+
+FORMAL protocol
+us-agent-value-experiment-protocol-d214ae1745ebf76284ec1887
+
+FORMAL bundle
+us-agent-value-preregistration-06af38db5c1a22c2e8a3cd64
+```
+
+A future intentional protocol revision must create new identities. It may not silently mutate these frozen artifacts after results exist.
+
 ## Shared structural vocabulary
 
 All three arms propose from the same bounded grammar. No arm may emit executable Python, SQL, arbitrary expressions or hidden feature code.
@@ -126,7 +149,7 @@ Optional `parent_candidate_id` records explicit discovery evolution when a struc
 
 ## Evidence contracts
 
-The first A0 increment introduces:
+The A0 contract layer includes:
 
 ```text
 USAgentValuePrimitiveVocabulary
@@ -135,6 +158,11 @@ USAgentValueExperimentProtocol
 CandidateGenerationRunSpec
 CandidateGenerationEvent
 CandidateGenerationRun
+USAgentValueEvaluationDenominator
+USAgentValueEvaluationBinding
+USAgentValueFoldExecutionSpec
+USAgentValueFoldEvaluationReport
+USAgentValueRunEvaluationReport
 RunEvaluationLink
 SearchArmResult
 AgentValueExperiment
@@ -154,9 +182,44 @@ alpha_authority = false
 
 A later increment must bind a separately reviewed Agent Value Gate; no threshold is invented merely to make the current harness pass.
 
-## Freeze the preregistration artifact
+## Shared evaluation bridge
 
-This can be done before formal US-A0 execution because it does not consume research results.
+Every completed generation run is compiled into an A0-owned evaluation denominator containing only the run's final `VALID_UNIQUE` structural candidates. Invalid and duplicate slots remain visible in generation evidence and still consume the frozen trial budget; they are never replaced merely to obtain a full financial denominator.
+
+The evaluation binding copies the accepted US-B0 statistical and data authority into the A0 run:
+
+```text
+same US-D3 certification report
+same certification outcome
+same EngineeringUniverse
+same 15m signal clock
+same same-session 60m RAW label
+same minimum cross-section / evaluated-period / IC-period gates
+```
+
+Only the denominator identity changes to the content-addressed A0 generation-run denominator.
+
+Feature formation and label admission reuse the existing US-B0 materializer implementation. The A0 adapter does not construct or serialize a fake MANUAL denominator; the Python cast at this boundary exists only because the frozen B0 materializer's nominal annotation predates A0 and its runtime implementation consumes the shared `protocol` / `candidates` structural surface.
+
+Candidate statistics are evaluated through the same `evaluate_us_baseline_candidate()` core. A0 creates its own fold/run evidence schemas so the resulting reports do not falsely claim to be pre-Agent MANUAL baseline evidence.
+
+The experiment phase is an explicit content-addressed field on the evaluation binding and fold execution specs. A FORMAL run remains FORMAL even if invalid/duplicate generation leaves fewer than 16 accepted candidates; phase is never inferred from observed candidate count or performance.
+
+A run with zero accepted candidates is a valid experiment outcome:
+
+```text
+status = NO_ACCEPTED_CANDIDATES
+evaluated_candidate_count = 0
+valid_candidate_count = 0
+best_mean_rank_ic = null
+best_worst_fold_rank_ic = null
+```
+
+No synthetic financial observations are created to make such a run appear evaluable.
+
+Candidate-level statistical invalidity (for example insufficient IC periods) is also a research result. It reduces `valid_candidate_count`; it is not silently repaired and is not automatically promoted to a system-level experiment failure when the evidence itself is complete.
+
+## Freeze the preregistration artifact
 
 PILOT:
 
@@ -166,7 +229,7 @@ python scripts\freeze_us_a0_experiment_protocol.py `
   --output reports\us_a0\us_a0_pilot_preregistration.json
 ```
 
-FORMAL protocol can also be frozen independently:
+FORMAL:
 
 ```powershell
 python scripts\freeze_us_a0_experiment_protocol.py `
@@ -174,7 +237,7 @@ python scripts\freeze_us_a0_experiment_protocol.py `
   --output reports\us_a0\us_a0_formal_preregistration.json
 ```
 
-The bundles contain the exact vocabulary, experiment protocol and fixed MANUAL candidate grid. They have no project-status, stage-exit, Agent-value-gate or Alpha authority.
+The bundles contain the exact vocabulary, experiment protocol and fixed MANUAL candidate grid. They have no project-status, stage-exit, Agent-value-gate or Alpha authority. Future execution must validate the complete bundle content, not merely accept a caller-supplied protocol ID string.
 
 ## Formal predecessor
 
@@ -184,15 +247,15 @@ When US-B0 is eventually complete, A0 must bind the exact content-addressed:
 finagent.us-baseline-walk-forward-evidence-graph.v1
 ```
 
-The graph must be blocker-free, pass, report all eight US-B0 candidates valid and have `ready_for_us_a0_candidate=true`. A0 re-hashes the graph document before accepting the predecessor identity. This binding does not itself advance `docs/status.toml`; stage authority remains separate.
+The graph must be blocker-free, pass, report all eight US-B0 candidates valid and have `ready_for_us_a0_candidate=true`. A0 re-hashes the graph document before accepting the predecessor identity. Formal A0 also requires `docs/status.toml` to record the reviewed B0 graph/aggregate IDs and to have actually advanced to `current_stage=US-A0`.
 
 ## What remains after this increment
 
-The next A0 work after real US-B0 acceptance is:
+The evaluation contracts and synthetic bridge are implemented. The next execution-oriented A0 work after real US-B0 acceptance is:
 
-1. compile accepted structural candidates into arm-specific evaluation denominators;
-2. run every arm through the same frozen folds and evaluation semantics;
-3. build authoritative `RunEvaluationLink` values from those split-bound reports;
-4. calculate structural novelty/redundancy and generation-efficiency summaries;
-5. run PILOT and review whether the preregistered FORMAL experiment remains appropriate before any formal result inspection;
-6. conduct a separate Agent Value Gate review without conflating it with the later deployment Alpha Gate.
+1. add a formal fold materialization runner that consumes a validated preregistration bundle, accepted US-B0 predecessor/status authority and one content-addressed generation run;
+2. write per-run fold materialization/evaluation manifests without duplicating US-B0 statistical formulas;
+3. assemble authoritative `USAgentValueRunEvaluationReport` and `RunEvaluationLink` artifacts from the three frozen folds;
+4. execute PILOT MANUAL / PROGRAMMATIC / AGENT runs under the same accepted data and evidence path;
+5. calculate structural novelty/redundancy and generation-efficiency summaries;
+6. review PILOT before any FORMAL result inspection and conduct a separate Agent Value Gate review without conflating it with the later deployment Alpha Gate.
