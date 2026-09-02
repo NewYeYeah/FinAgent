@@ -6,9 +6,9 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import cast
 
-from finagent.data.us_universe_finalization_v2 import (
-    USUniverseFinalizationPolicyV2,
-    finalize_us_engineering_universe_v2,
+from finagent.data.us_universe_finalization_v3 import (
+    USUniverseFinalizationPolicyV3,
+    finalize_us_engineering_universe_v3,
 )
 
 
@@ -23,8 +23,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Freeze the final US-I0 20-30 name EngineeringUniverse from a deterministic "
-            "candidate report, fresh read-only quote evidence and a fresh read-only MT5 "
-            "inventory that records final Market Watch visibility/tradability."
+            "candidate report, broker-clock-normalized quote-probe v2 evidence and a fresh "
+            "read-only MT5 inventory. Quote freshness is re-assessed at finalization time."
         )
     )
     parser.add_argument("--candidate-report", type=Path, required=True)
@@ -46,13 +46,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--maximum-quote-age-seconds",
         type=int,
         default=900,
-        help="Maximum quote age at finalization time (default: 900 seconds).",
+        help="Maximum normalized quote age at finalization time (default: 900 seconds).",
     )
     parser.add_argument(
         "--maximum-future-quote-skew-seconds",
         type=int,
         default=60,
-        help="Maximum tolerated quote timestamp lead over local finalization time.",
+        help="Maximum tolerated normalized quote timestamp lead over UTC finalization time.",
     )
     parser.add_argument(
         "--attest-selected-exact-matches",
@@ -72,7 +72,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = build_parser().parse_args()
-    policy = USUniverseFinalizationPolicyV2(
+    policy = USUniverseFinalizationPolicyV3(
         target_count=args.target_count,
         minimum_count=args.minimum_count,
         maximum_count=args.maximum_count,
@@ -80,7 +80,7 @@ def main() -> int:
         maximum_quote_age_seconds=args.maximum_quote_age_seconds,
         maximum_future_quote_skew_seconds=args.maximum_future_quote_skew_seconds,
     )
-    report = finalize_us_engineering_universe_v2(
+    report = finalize_us_engineering_universe_v3(
         _read_mapping(args.candidate_report),
         _read_mapping(args.quote_probe),
         _read_mapping(args.mt5_inventory_probe),
@@ -97,6 +97,7 @@ def main() -> int:
         json.dumps(
             {
                 "report_id": report.report_id,
+                "schema_version": report.schema_version,
                 "policy_id": policy.policy_id,
                 "accepted": report.accepted,
                 "universe_id": report.universe_id,
@@ -109,6 +110,7 @@ def main() -> int:
                 "excluded_by_spread": list(report.excluded_by_spread),
                 "quote_evidence_id": report.quote_evidence.assessment_id,
                 "quote_evidence_passed": report.quote_evidence.passed,
+                "clock_evidence_id": report.quote_evidence.clock_evidence_id,
                 "blockers": list(report.blockers),
                 "output": str(output),
             },

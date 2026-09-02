@@ -4,14 +4,21 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - "src/finagent/brokers/mt5/clock.py"
+      - "src/finagent/brokers/mt5/__init__.py"
+      - "src/finagent/data/us_candidate_quotes_v2.py"
       - "src/finagent/data/us_minute/research_certification.py"
       - "src/finagent/data/us_minute/reconciliation.py"
       - "src/finagent/data/us_universe_finalization.py"
       - "src/finagent/data/us_universe_finalization_v2.py"
+      - "src/finagent/data/us_universe_finalization_v3.py"
       - "scripts/certify_us_minute_research.py"
       - "scripts/probe_us_i0_candidate_quotes.py"
       - "scripts/finalize_us_i0_engineering_universe.py"
       - "scripts/reconcile_us_minute_mt5.py"
+      - "tests/test_mt5_broker_clock.py"
+      - "tests/test_us_i0_quote_probe_v2.py"
+      - "tests/test_us_d3_quote_clock_normalization.py"
       - "tests/test_us_d3_research_certification.py"
       - "tests/test_us_d3_reference_reconciliation.py"
       - "tests/test_us_d3_quote_evidence_hardening.py"
@@ -22,14 +29,21 @@ on:
   push:
     branches: [main]
     paths:
+      - "src/finagent/brokers/mt5/clock.py"
+      - "src/finagent/brokers/mt5/__init__.py"
+      - "src/finagent/data/us_candidate_quotes_v2.py"
       - "src/finagent/data/us_minute/research_certification.py"
       - "src/finagent/data/us_minute/reconciliation.py"
       - "src/finagent/data/us_universe_finalization.py"
       - "src/finagent/data/us_universe_finalization_v2.py"
+      - "src/finagent/data/us_universe_finalization_v3.py"
       - "scripts/certify_us_minute_research.py"
       - "scripts/probe_us_i0_candidate_quotes.py"
       - "scripts/finalize_us_i0_engineering_universe.py"
       - "scripts/reconcile_us_minute_mt5.py"
+      - "tests/test_mt5_broker_clock.py"
+      - "tests/test_us_i0_quote_probe_v2.py"
+      - "tests/test_us_d3_quote_clock_normalization.py"
       - "tests/test_us_d3_research_certification.py"
       - "tests/test_us_d3_reference_reconciliation.py"
       - "tests/test_us_d3_quote_evidence_hardening.py"
@@ -59,6 +73,9 @@ jobs:
       - name: US-D3 regression
         run: |
           uv run --frozen pytest -q \
+            tests/test_mt5_broker_clock.py \
+            tests/test_us_i0_quote_probe_v2.py \
+            tests/test_us_d3_quote_clock_normalization.py \
             tests/test_us_d3_research_certification.py \
             tests/test_us_d3_reference_reconciliation.py \
             tests/test_us_d3_quote_evidence_hardening.py \
@@ -66,26 +83,38 @@ jobs:
       - name: Strict static checks
         run: |
           uv run --frozen ruff check \
+            src/finagent/brokers/mt5/clock.py \
+            src/finagent/brokers/mt5/__init__.py \
+            src/finagent/data/us_candidate_quotes_v2.py \
             src/finagent/data/us_minute/reconciliation.py \
             src/finagent/data/us_universe_finalization.py \
             src/finagent/data/us_universe_finalization_v2.py \
+            src/finagent/data/us_universe_finalization_v3.py \
             scripts/probe_us_i0_candidate_quotes.py \
             scripts/finalize_us_i0_engineering_universe.py \
             scripts/reconcile_us_minute_mt5.py \
+            tests/test_mt5_broker_clock.py \
+            tests/test_us_i0_quote_probe_v2.py \
+            tests/test_us_d3_quote_clock_normalization.py \
             tests/test_us_d3_reference_reconciliation.py \
             tests/test_us_d3_quote_evidence_hardening.py \
             tests/test_us_i0_universe_finalization.py
           uv run --frozen mypy --strict \
+            src/finagent/brokers/mt5/clock.py \
+            src/finagent/data/us_candidate_quotes_v2.py \
             src/finagent/data/us_minute/reconciliation.py \
             src/finagent/data/us_universe_finalization.py \
             src/finagent/data/us_universe_finalization_v2.py \
+            src/finagent/data/us_universe_finalization_v3.py \
             scripts/probe_us_i0_candidate_quotes.py \
             scripts/finalize_us_i0_engineering_universe.py \
             scripts/reconcile_us_minute_mt5.py
           uv run --frozen python -m py_compile \
-            src/finagent/data/us_minute/reconciliation.py \
+            src/finagent/brokers/mt5/clock.py \
+            src/finagent/data/us_candidate_quotes_v2.py \
             src/finagent/data/us_universe_finalization.py \
             src/finagent/data/us_universe_finalization_v2.py \
+            src/finagent/data/us_universe_finalization_v3.py \
             scripts/probe_us_i0_candidate_quotes.py \
             scripts/finalize_us_i0_engineering_universe.py \
             scripts/reconcile_us_minute_mt5.py
