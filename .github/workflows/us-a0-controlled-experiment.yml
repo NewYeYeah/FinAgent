@@ -13,11 +13,15 @@ on:
       - "src/finagent/research/us_agent_value_execution.py"
       - "src/finagent/research/us_agent_value_assembly.py"
       - "src/finagent/research/us_agent_value_provider.py"
+      - "src/finagent/research/us_agent_value_gate.py"
+      - "src/finagent/research/us_agent_value_gate_authority.py"
       - "scripts/freeze_us_a0_experiment_protocol.py"
       - "scripts/freeze_us_a0_execution_plan.py"
       - "scripts/prepare_us_a0_control_run.py"
       - "scripts/materialize_us_a0_run.py"
       - "scripts/assemble_us_a0_experiment.py"
+      - "scripts/freeze_us_a0_agent_value_gate_policy.py"
+      - "scripts/review_us_a0_agent_value_gate.py"
       - "tests/test_us_a0_protocol.py"
       - "tests/test_us_a0_generation.py"
       - "tests/test_us_a0_experiment.py"
@@ -27,7 +31,10 @@ on:
       - "tests/test_us_a0_execution.py"
       - "tests/test_us_a0_assembly.py"
       - "tests/test_us_a0_provider.py"
+      - "tests/test_us_a0_gate.py"
+      - "tests/test_us_a0_gate_authority.py"
       - "docs/guides/us-a0-agent-value-experiment.md"
+      - "docs/guides/us-a0-agent-value-gate.md"
       - ".github/workflows/us-a0-controlled-experiment.yml"
   push:
     branches: [main]
@@ -41,11 +48,15 @@ on:
       - "src/finagent/research/us_agent_value_execution.py"
       - "src/finagent/research/us_agent_value_assembly.py"
       - "src/finagent/research/us_agent_value_provider.py"
+      - "src/finagent/research/us_agent_value_gate.py"
+      - "src/finagent/research/us_agent_value_gate_authority.py"
       - "scripts/freeze_us_a0_experiment_protocol.py"
       - "scripts/freeze_us_a0_execution_plan.py"
       - "scripts/prepare_us_a0_control_run.py"
       - "scripts/materialize_us_a0_run.py"
       - "scripts/assemble_us_a0_experiment.py"
+      - "scripts/freeze_us_a0_agent_value_gate_policy.py"
+      - "scripts/review_us_a0_agent_value_gate.py"
       - "tests/test_us_a0_protocol.py"
       - "tests/test_us_a0_generation.py"
       - "tests/test_us_a0_experiment.py"
@@ -55,7 +66,10 @@ on:
       - "tests/test_us_a0_execution.py"
       - "tests/test_us_a0_assembly.py"
       - "tests/test_us_a0_provider.py"
+      - "tests/test_us_a0_gate.py"
+      - "tests/test_us_a0_gate_authority.py"
       - "docs/guides/us-a0-agent-value-experiment.md"
+      - "docs/guides/us-a0-agent-value-gate.md"
       - ".github/workflows/us-a0-controlled-experiment.yml"
 
 permissions:
@@ -87,7 +101,9 @@ jobs:
             tests/test_us_a0_evaluation_bridge.py \
             tests/test_us_a0_execution.py \
             tests/test_us_a0_assembly.py \
-            tests/test_us_a0_provider.py
+            tests/test_us_a0_provider.py \
+            tests/test_us_a0_gate.py \
+            tests/test_us_a0_gate_authority.py
       - name: Strict static checks
         run: |
           uv run --frozen ruff check \
@@ -100,11 +116,15 @@ jobs:
             src/finagent/research/us_agent_value_execution.py \
             src/finagent/research/us_agent_value_assembly.py \
             src/finagent/research/us_agent_value_provider.py \
+            src/finagent/research/us_agent_value_gate.py \
+            src/finagent/research/us_agent_value_gate_authority.py \
             scripts/freeze_us_a0_experiment_protocol.py \
             scripts/freeze_us_a0_execution_plan.py \
             scripts/prepare_us_a0_control_run.py \
             scripts/materialize_us_a0_run.py \
             scripts/assemble_us_a0_experiment.py \
+            scripts/freeze_us_a0_agent_value_gate_policy.py \
+            scripts/review_us_a0_agent_value_gate.py \
             tests/test_us_a0_protocol.py \
             tests/test_us_a0_generation.py \
             tests/test_us_a0_experiment.py \
@@ -113,7 +133,9 @@ jobs:
             tests/test_us_a0_evaluation_bridge.py \
             tests/test_us_a0_execution.py \
             tests/test_us_a0_assembly.py \
-            tests/test_us_a0_provider.py
+            tests/test_us_a0_provider.py \
+            tests/test_us_a0_gate.py \
+            tests/test_us_a0_gate_authority.py
           uv run --frozen mypy --strict \
             src/finagent/research/us_agent_value_protocol.py \
             src/finagent/research/us_agent_value_generation.py \
@@ -124,11 +146,15 @@ jobs:
             src/finagent/research/us_agent_value_execution.py \
             src/finagent/research/us_agent_value_assembly.py \
             src/finagent/research/us_agent_value_provider.py \
+            src/finagent/research/us_agent_value_gate.py \
+            src/finagent/research/us_agent_value_gate_authority.py \
             scripts/freeze_us_a0_experiment_protocol.py \
             scripts/freeze_us_a0_execution_plan.py \
             scripts/prepare_us_a0_control_run.py \
             scripts/materialize_us_a0_run.py \
-            scripts/assemble_us_a0_experiment.py
+            scripts/assemble_us_a0_experiment.py \
+            scripts/freeze_us_a0_agent_value_gate_policy.py \
+            scripts/review_us_a0_agent_value_gate.py
           uv run --frozen python -m py_compile \
             src/finagent/research/us_agent_value_protocol.py \
             src/finagent/research/us_agent_value_generation.py \
@@ -139,8 +165,12 @@ jobs:
             src/finagent/research/us_agent_value_execution.py \
             src/finagent/research/us_agent_value_assembly.py \
             src/finagent/research/us_agent_value_provider.py \
+            src/finagent/research/us_agent_value_gate.py \
+            src/finagent/research/us_agent_value_gate_authority.py \
             scripts/freeze_us_a0_experiment_protocol.py \
             scripts/freeze_us_a0_execution_plan.py \
             scripts/prepare_us_a0_control_run.py \
             scripts/materialize_us_a0_run.py \
-            scripts/assemble_us_a0_experiment.py
+            scripts/assemble_us_a0_experiment.py \
+            scripts/freeze_us_a0_agent_value_gate_policy.py \
+            scripts/review_us_a0_agent_value_gate.py
