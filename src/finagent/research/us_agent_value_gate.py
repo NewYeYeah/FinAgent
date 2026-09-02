@@ -360,6 +360,8 @@ def _validate_gate_lineage(
         raise ValueError("Agent Value Gate execution-plan/experiment identity mismatch")
     if evidence_graph.execution_plan_id != execution_plan.plan_id:
         raise ValueError("Agent Value Gate evidence graph/execution-plan identity mismatch")
+    if evidence_graph.preregistration_bundle_id != execution_plan.preregistration_bundle_id:
+        raise ValueError("Agent Value Gate evidence graph/preregistration identity mismatch")
     if evidence_graph.experiment_id != experiment.experiment_id:
         raise ValueError("Agent Value Gate evidence graph/experiment identity mismatch")
     if evidence_graph.comparison_snapshot_id != comparison.snapshot_id:
@@ -384,6 +386,25 @@ def _validate_gate_lineage(
         raise ValueError("Agent Value Gate comparison/AGENT result identity mismatch")
     if evidence_graph.arm_result_ids != tuple(result.result_id for result in experiment.arm_results):
         raise ValueError("Agent Value Gate evidence graph/arm-result identity mismatch")
+
+    expected_runs = tuple(
+        run
+        for result in experiment.arm_results
+        for run in result.generation_runs
+    )
+    expected_links = tuple(
+        link
+        for result in experiment.arm_results
+        for link in result.evaluation_links
+    )
+    if evidence_graph.generation_run_ids != tuple(run.run_id for run in expected_runs):
+        raise ValueError("Agent Value Gate evidence graph/generation-run identity mismatch")
+    if evidence_graph.run_evaluation_link_ids != tuple(link.link_id for link in expected_links):
+        raise ValueError("Agent Value Gate evidence graph/evaluation-link identity mismatch")
+    if evidence_graph.run_evaluation_report_ids != tuple(
+        link.authoritative_evidence_id for link in expected_links
+    ):
+        raise ValueError("Agent Value Gate evidence graph/run-evaluation identity mismatch")
 
     for arm, result in (
         (USAgentValueArm.MANUAL, manual),
@@ -631,14 +652,17 @@ class USAgentValueGateReview:
         allowed = {self.assessment.decision, USAgentValueGateDecision.INCONCLUSIVE}
         if self.decision not in allowed:
             raise ValueError("reviewer may accept the assessment or downgrade it to INCONCLUSIVE only")
-        if self.assessment.decision is USAgentValueGateDecision.INCONCLUSIVE:
-            if self.decision is not USAgentValueGateDecision.INCONCLUSIVE:
-                raise ValueError("INCONCLUSIVE machine assessment cannot be upgraded by review")
-        if self.decision is USAgentValueGateDecision.INCONCLUSIVE and (
-            self.assessment.decision is not USAgentValueGateDecision.INCONCLUSIVE
+        if (
+            self.assessment.decision is USAgentValueGateDecision.INCONCLUSIVE
+            and self.decision is not USAgentValueGateDecision.INCONCLUSIVE
         ):
-            if len(notes) < 20:
-                raise ValueError("downgrading to INCONCLUSIVE requires substantive review notes")
+            raise ValueError("INCONCLUSIVE machine assessment cannot be upgraded by review")
+        if (
+            self.decision is USAgentValueGateDecision.INCONCLUSIVE
+            and self.assessment.decision is not USAgentValueGateDecision.INCONCLUSIVE
+            and len(notes) < 20
+        ):
+            raise ValueError("downgrading to INCONCLUSIVE requires substantive review notes")
 
     @property
     def review_id(self) -> str:
@@ -752,6 +776,14 @@ def validate_pilot_gate_review_for_formal_progression(
         if document.get(field_name) is not False:
             raise ValueError(f"pilot gate review must keep {field_name}=false")
     attestations = document.get("attestations")
-    if not isinstance(attestations, dict) or not all(attestations.values()):
-        raise ValueError("formal A0 requires all PILOT gate-review attestations")
+    required_attestations = {
+        "thresholds_unchanged_after_result",
+        "evidence_lineage_verified",
+        "alpha_gate_is_separate",
+        "project_stage_authority_is_separate",
+    }
+    if not isinstance(attestations, dict) or set(attestations) != required_attestations:
+        raise ValueError("formal A0 requires the exact PILOT gate-review attestation set")
+    if any(attestations[key] is not True for key in required_attestations):
+        raise ValueError("formal A0 requires all PILOT gate-review attestations to be true")
     return claimed_review_id
