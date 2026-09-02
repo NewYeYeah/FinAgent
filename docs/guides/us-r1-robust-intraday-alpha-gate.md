@@ -11,7 +11,7 @@ US-R1 is the first U.S. stage that asks whether a structural factor family is ro
 
 A positive US-A0 review never implies alpha. A positive US-R1 review never implies executable or live-trading authority.
 
-`docs/status.toml` remains the sole project-stage authority. Protocol/walk-forward/Gate/formation-policy artifacts may be frozen before US-R1 is active, but formal R1 execution must fail closed unless `current_stage = "US-R1"` and the exact terminal A0 review/experiment/evidence graph are recorded as accepted.
+`docs/status.toml` remains the sole project-stage authority. Protocol/walk-forward/Gate/formation/evaluation-policy artifacts may be frozen before US-R1 is active, but formal R1 execution must fail closed unless `current_stage = "US-R1"` and the exact terminal A0 review/experiment/evidence graph are recorded as accepted.
 
 ## A0 → R1 candidate denominator
 
@@ -72,8 +72,6 @@ OOS evaluation
 
 The exact three OOS evaluation windows therefore remain the B0 frozen windows. The formal runner verifies the excluded gap against the exact materialized XNYS calendar and refuses the fold if it contains fewer than 120 regular-session trading minutes. In practice the frozen validation gaps are materially larger than this minimum.
 
-Direction selection is frozen as `train_15m_60m_rank_ic_sign_only`. OOS 5m/15m/30m and decay evidence cannot choose or flip direction after seeing evaluation results.
-
 ## Multi-frequency formation semantics
 
 The A0 candidate identity remains structural. US-R1 freezes this rule before results:
@@ -115,7 +113,26 @@ resampled query/evidence
 
 The joined Python boundary is capped at 100,000 rows per slice. Missing EngineeringUniverse assets, assets without any complete bar, missing label anchors, close-anchor drift or impossible target-availability clocks are technical blockers. These are not negative Alpha results.
 
-The candidate observation JSONL is content-addressed by SHA-256 and row count. Persisted slice evidence can be re-parsed so the input plan, Parquet materialization, observation artifact, diagnostics and slice IDs/counts/blockers must all agree.
+The candidate observation JSONL is content-addressed by SHA-256 and row count. Persisted slice evidence is re-parsed before inference so the input plan, Parquet materialization, observation artifact, diagnostics and slice IDs/counts/blockers must all agree.
+
+## Frozen statistical evaluation policy
+
+The period-statistics policy is a separate pre-result content-addressed contract. It fixes all choices that otherwise could become result-dependent degrees of freedom:
+
+- **direction source:** fold-1 TRAIN 15m/60m only;
+- **direction statistic:** mean cross-sectional RankIC;
+- **direction rule:** `+1` for non-negative TRAIN mean RankIC, `-1` otherwise;
+- **direction reuse:** the one frozen direction is applied to every OOS fold, frequency and decay horizon; OOS evidence may never flip direction;
+- **minimum cross-section:** 10 assets;
+- **minimum periods:** 20 TRAIN periods for direction and 20 OOS periods per fold/slice;
+- **quantiles:** five stable equal-count groups sorted by feature value and asset tie-break;
+- **long-short:** equal-weight top quintile minus equal-weight bottom quintile;
+- **turnover:** one-way half-L1 change in the long/short weight vector, reset at each session boundary;
+- **coverage:** valid feature+label cells divided by label-eligible cells for each evaluated period;
+- **boundary labels:** a period is skipped only when all feature-available cells are unavailable because the target crosses the session boundary;
+- **partial/non-boundary missing labels:** technical blocker, never silently dropped.
+
+Raw period metrics remain in the original factor sign. Direction normalization is applied only by the existing family-evidence builder after TRAIN direction is frozen. This prevents fold-specific or frequency-specific sign flipping.
 
 ## Statistical-kernel reuse from the A-share release
 
@@ -126,6 +143,36 @@ US-R1 intentionally reuses mature cross-market statistical primitives where the 
 - existing factor/candidate content-addressing conventions.
 
 It does **not** copy A-share daily defaults as U.S. authority. In particular, day-level bootstrap block sizes, historical A-share thresholds, and A-share universe assumptions are not US-R1 contracts. US-R1 adds a session-level intraday bootstrap and its own frozen thresholds.
+
+## Final inference evidence chain
+
+Once all three fold materialization manifests exist, `assemble_us_r1_alpha_evidence.py` performs no new market-data query. It replays the content-addressed observation JSONL and creates:
+
+```text
+fold-1 TRAIN 15m/60m
+        ↓
+DirectionEvidenceSet
+        ↓
+5 OOS slices × 3 folds
+        ↓
+period-level RankIC / quintile long-short / turnover / coverage / monotonicity
+        ↓
+3 FoldStatisticsReport + period-metric artifacts
+        ↓
+existing Newey-West/HAC + session-block bootstrap
+        ↓
+existing Holm/BH over exact frozen denominator
+        ↓
+FamilyEvidence
+        ↓
+existing deterministic Alpha Gate
+        ↓
+InferenceEvidenceGraph
+```
+
+The inference graph binds the exact three materialization manifests, direction evidence, three fold-statistics reports, three metric artifacts, family evidence and Alpha Gate assessment. It has no Alpha/stage/order/live authority by itself.
+
+The final review runner does not trust these summaries. It reloads all three materialized fold observation artifacts and reconstructs direction, period-metric bytes, fold reports, family evidence, multiplicity corrections, Gate assessment and graph. Persisted evidence must match the replay byte-for-byte/dictionary-for-dictionary before a reviewer can sign the Gate.
 
 ## Candidate robust evidence
 
@@ -177,11 +224,13 @@ Exactly three terminal families exist:
 
 All passing candidates are retained in the robust family. The Gate does not perform a performance-ranked top-K selection.
 
-## Independent review
+## Independent review and canonical review contract
 
 The deterministic assessment is followed by a review artifact. A reviewer may accept the machine terminal or conservatively downgrade it to `SYSTEM_FAILURE`; the reviewer may never upgrade a negative result to `ROBUST_FACTOR_FAMILY`.
 
-A completed review has `alpha_gate_authority=true`. Positive `alpha_authority=true` and `supports_us_x0_progression=true` occur only for `ROBUST_FACTOR_FAMILY`. A reviewed `NO_ROBUST_FACTOR_FAMILY` is an authoritative negative Alpha Gate result, not evidence that alpha exists.
+The authoritative review implementation is `finagent.research.us_r1_review`. Formal assembly/review orchestration must use this module. An earlier review class embedded in `us_r1_gate.py` is a legacy compatibility surface and is not the stage-review authority.
+
+A completed canonical review has `alpha_gate_authority=true`. `alpha_authority=true` and `supports_us_x0_progression=true` occur **only** for `ROBUST_FACTOR_FAMILY`. A reviewed `NO_ROBUST_FACTOR_FAMILY` is an authoritative negative Alpha Gate result with `alpha_authority=false`.
 
 Even a positive review keeps:
 
@@ -190,6 +239,8 @@ Even a positive review keeps:
 - `order_authority=false`;
 - `live_capital_authority=false`.
 
+The reviewed-evidence manifest binds the replayed inference graph, family evidence, deterministic assessment and independent review into the final R1 terminal artifact.
+
 ## Pre-result freeze commands
 
 These artifacts may be frozen before US-R1 becomes active because they consume no A0 result, market data, API secret or broker state:
@@ -197,24 +248,21 @@ These artifacts may be frozen before US-R1 becomes active because they consume n
 ```powershell
 python scripts\freeze_us_r1_protocol.py `
   --output reports\us_r1\us_r1_research_protocol.json
-```
 
-```powershell
 python scripts\freeze_us_r1_alpha_gate_policy.py `
   --output reports\us_r1\us_r1_alpha_gate_policy.json
-```
 
-```powershell
 python scripts\freeze_us_r1_walk_forward.py `
   --output reports\us_r1\us_r1_walk_forward.json
-```
 
-```powershell
 python scripts\freeze_us_r1_feature_formation_policy.py `
   --output reports\us_r1\us_r1_feature_formation_policy.json
+
+python scripts\freeze_us_r1_statistical_evaluation_policy.py `
+  --output reports\us_r1\us_r1_statistical_evaluation_policy.json
 ```
 
-## Formal handoff and fold execution
+## Formal handoff, materialization, inference and review
 
 Only after `docs/status.toml` actually enters US-R1 and records the exact accepted terminal A0 review/experiment/evidence graph should the candidate denominator be built:
 
@@ -230,7 +278,7 @@ python scripts\prepare_us_r1_candidate_denominator.py `
   --output reports\us_r1\us_r1_candidate_denominator.json
 ```
 
-Then materialize each of the three folds separately:
+Then materialize each fold:
 
 ```powershell
 python scripts\materialize_us_r1_fold.py `
@@ -241,6 +289,26 @@ python scripts\materialize_us_r1_fold.py `
 
 Repeat with `--fold-ordinal 2` and `3`.
 
-`materialize_us_r1_fold.py` is stage-gated before dataset discovery/DuckDB initialization. It creates observation evidence only; HAC/bootstrap/multiplicity/Alpha Gate assessment remain a later assembly step and are never computed inside the materializer.
+After all three fold manifests pass, assemble final inference without re-querying market data:
 
-Do not run formal R1 denominator/materialization commands until project authority actually reaches US-R1.
+```powershell
+python scripts\assemble_us_r1_alpha_evidence.py `
+  --a0-gate-review <terminal A0 Gate review JSON>
+```
+
+Then perform independent replay-bound review:
+
+```powershell
+python scripts\review_us_r1_alpha_gate.py `
+  --a0-gate-review <terminal A0 Gate review JSON> `
+  --reviewer-id <reviewer> `
+  --reviewed-at <timezone-aware ISO-8601> `
+  --review-notes <substantive notes> `
+  --attest-thresholds-unchanged `
+  --attest-evidence-lineage `
+  --attest-agent-value-separation `
+  --attest-execution-gate-separation `
+  --attest-live-capital-separation
+```
+
+All formal R1 commands remain stage-gated. Do not run denominator/materialization/inference/review until project authority actually reaches US-R1.
