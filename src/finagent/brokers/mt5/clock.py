@@ -29,8 +29,8 @@ def _aware_utc(value: datetime, field_name: str) -> datetime:
 def _snap_seconds(value: float, quantum: int) -> int:
     scaled = value / quantum
     if scaled >= 0:
-        return int(math.floor(scaled + 0.5)) * quantum
-    return int(math.ceil(scaled - 0.5)) * quantum
+        return math.floor(scaled + 0.5) * quantum
+    return math.ceil(scaled - 0.5) * quantum
 
 
 @dataclass(frozen=True, slots=True)
