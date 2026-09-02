@@ -1,0 +1,54 @@
+name: us-i0-simulation-universe
+
+on:
+  pull_request:
+    paths:
+      - "src/finagent/data/us_simulation_universe.py"
+      - "src/finagent/data/us_delayed_reference_quotes.py"
+      - "src/finagent/data/us_universe_finalization_v3.py"
+      - "scripts/freeze_us_i0_simulation_universe_policy.py"
+      - "scripts/finalize_us_i0_simulation_engineering_universe.py"
+      - "tests/test_us_i0_simulation_universe.py"
+      - "docs/guides/mt5-continuous-smoke-and-deferred-us-i0.md"
+      - "docs/development/current-plan.md"
+      - "docs/status.toml"
+      - ".github/workflows/us-i0-simulation-universe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  us-i0-simulation-universe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_us_i0_delayed_reference.py \
+            tests/test_us_i0_simulation_universe.py \
+            tests/test_us_i0_universe_finalization.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/data/us_simulation_universe.py \
+            scripts/freeze_us_i0_simulation_universe_policy.py \
+            scripts/finalize_us_i0_simulation_engineering_universe.py
+          uv run --frozen mypy --strict \
+            src/finagent/data/us_simulation_universe.py \
+            scripts/freeze_us_i0_simulation_universe_policy.py \
+            scripts/finalize_us_i0_simulation_engineering_universe.py
+          uv run --frozen python -m py_compile \
+            src/finagent/data/us_simulation_universe.py \
+            scripts/freeze_us_i0_simulation_universe_policy.py \
+            scripts/finalize_us_i0_simulation_engineering_universe.py
