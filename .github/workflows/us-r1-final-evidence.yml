@@ -6,6 +6,7 @@ on:
       - "src/finagent/research/us_r1_evaluation_policy.py"
       - "src/finagent/research/us_r1_observation_io.py"
       - "src/finagent/research/us_r1_statistics.py"
+      - "src/finagent/research/us_r1_direction.py"
       - "src/finagent/research/us_r1_pipeline.py"
       - "src/finagent/research/us_r1_final.py"
       - "src/finagent/research/us_r1_final_validation.py"
@@ -49,6 +50,7 @@ jobs:
             src/finagent/research/us_r1_evaluation_policy.py \
             src/finagent/research/us_r1_observation_io.py \
             src/finagent/research/us_r1_statistics.py \
+            src/finagent/research/us_r1_direction.py \
             src/finagent/research/us_r1_pipeline.py \
             src/finagent/research/us_r1_final.py \
             src/finagent/research/us_r1_final_validation.py \
@@ -60,6 +62,7 @@ jobs:
             src/finagent/research/us_r1_evaluation_policy.py \
             src/finagent/research/us_r1_observation_io.py \
             src/finagent/research/us_r1_statistics.py \
+            src/finagent/research/us_r1_direction.py \
             src/finagent/research/us_r1_pipeline.py \
             src/finagent/research/us_r1_final.py \
             src/finagent/research/us_r1_final_validation.py \
@@ -71,6 +74,7 @@ jobs:
             src/finagent/research/us_r1_evaluation_policy.py \
             src/finagent/research/us_r1_observation_io.py \
             src/finagent/research/us_r1_statistics.py \
+            src/finagent/research/us_r1_direction.py \
             src/finagent/research/us_r1_pipeline.py \
             src/finagent/research/us_r1_final.py \
             src/finagent/research/us_r1_final_validation.py \
