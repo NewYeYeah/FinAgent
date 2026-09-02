@@ -414,11 +414,16 @@ def finalize_us_engineering_universe_v3(
     )
     seeds = _required_seeds(candidate_document)
 
+    issue_by_symbol = quote_report.issue_by_symbol
     valid_at_probe = set(quote_report.valid_quote_symbols)
     fresh_rows: list[dict[str, object]] = []
     fresh_symbols: list[str] = []
-    stale_symbols: list[str] = []
-    future_symbols: list[str] = []
+    stale_symbols = [
+        symbol for symbol, reasons in issue_by_symbol.items() if "stale_quote" in reasons
+    ]
+    future_symbols = [
+        symbol for symbol, reasons in issue_by_symbol.items() if "future_quote" in reasons
+    ]
     for quote in quote_report.quotes:
         if quote.symbol not in valid_at_probe:
             continue

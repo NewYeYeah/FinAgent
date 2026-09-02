@@ -75,11 +75,14 @@ def _quote_report(
     count: int = 30,
     *,
     wide_symbol: str | None = None,
+    stale_symbols: frozenset[str] = frozenset(),
 ):
-    raw_time = NOW - timedelta(seconds=30) + timedelta(hours=3)
+    fresh_raw_time = NOW - timedelta(seconds=30) + timedelta(hours=3)
+    stale_raw_time = NOW - timedelta(hours=2) + timedelta(hours=3)
     ticks: dict[str, dict[str, object] | None] = {}
     retrieved: dict[str, datetime] = {}
     for symbol in _symbols(count):
+        raw_time = stale_raw_time if symbol in stale_symbols else fresh_raw_time
         ticks[symbol] = {
             "time_msc": int(raw_time.timestamp() * 1000),
             "time": int(raw_time.timestamp()),
@@ -192,6 +195,27 @@ def test_v3_rechecks_normalized_freshness_at_finalization_time() -> None:
     assert len(report.quote_evidence.stale_quote_symbols) == 30
     assert report.quote_evidence.future_quote_symbols == ()
     assert "quote_evidence:insufficient_fresh_quotes:0<20" in report.blockers
+
+
+def test_v3_preserves_probe_time_stale_symbols_in_final_assessment() -> None:
+    quote = _quote_report(stale_symbols=frozenset({"AMD", "INTC"}))
+    assert not quote.ready_for_finalization
+    assert quote.issue_by_symbol["AMD"] == ("stale_quote",)
+    assert quote.issue_by_symbol["INTC"] == ("stale_quote",)
+
+    report = finalize_us_engineering_universe_v3(
+        _candidate(),
+        quote.to_dict(),
+        _final_inventory(),
+        policy=_policy(),
+        operator_attested=True,
+        generated_at=NOW,
+    )
+
+    assert not report.accepted
+    assert set(report.quote_evidence.stale_quote_symbols) == {"AMD", "INTC"}
+    assert report.quote_evidence.future_quote_symbols == ()
+    assert set(report.to_dict()["excluded_by_quote_quality"]) == {"AMD", "INTC"}
 
 
 def test_v3_rejects_quote_probe_and_finalizer_freshness_policy_drift() -> None:
