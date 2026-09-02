@@ -11,10 +11,13 @@ on:
       - "src/finagent/research/us_agent_value_authority.py"
       - "src/finagent/research/us_agent_value_evaluation.py"
       - "src/finagent/research/us_agent_value_execution.py"
+      - "src/finagent/research/us_agent_value_assembly.py"
+      - "src/finagent/research/us_agent_value_provider.py"
       - "scripts/freeze_us_a0_experiment_protocol.py"
       - "scripts/freeze_us_a0_execution_plan.py"
       - "scripts/prepare_us_a0_control_run.py"
       - "scripts/materialize_us_a0_run.py"
+      - "scripts/assemble_us_a0_experiment.py"
       - "tests/test_us_a0_protocol.py"
       - "tests/test_us_a0_generation.py"
       - "tests/test_us_a0_experiment.py"
@@ -22,6 +25,8 @@ on:
       - "tests/test_us_a0_authority.py"
       - "tests/test_us_a0_evaluation_bridge.py"
       - "tests/test_us_a0_execution.py"
+      - "tests/test_us_a0_assembly.py"
+      - "tests/test_us_a0_provider.py"
       - "docs/guides/us-a0-agent-value-experiment.md"
       - ".github/workflows/us-a0-controlled-experiment.yml"
   push:
@@ -34,10 +39,13 @@ on:
       - "src/finagent/research/us_agent_value_authority.py"
       - "src/finagent/research/us_agent_value_evaluation.py"
       - "src/finagent/research/us_agent_value_execution.py"
+      - "src/finagent/research/us_agent_value_assembly.py"
+      - "src/finagent/research/us_agent_value_provider.py"
       - "scripts/freeze_us_a0_experiment_protocol.py"
       - "scripts/freeze_us_a0_execution_plan.py"
       - "scripts/prepare_us_a0_control_run.py"
       - "scripts/materialize_us_a0_run.py"
+      - "scripts/assemble_us_a0_experiment.py"
       - "tests/test_us_a0_protocol.py"
       - "tests/test_us_a0_generation.py"
       - "tests/test_us_a0_experiment.py"
@@ -45,6 +53,8 @@ on:
       - "tests/test_us_a0_authority.py"
       - "tests/test_us_a0_evaluation_bridge.py"
       - "tests/test_us_a0_execution.py"
+      - "tests/test_us_a0_assembly.py"
+      - "tests/test_us_a0_provider.py"
       - "docs/guides/us-a0-agent-value-experiment.md"
       - ".github/workflows/us-a0-controlled-experiment.yml"
 
@@ -75,7 +85,9 @@ jobs:
             tests/test_us_a0_comparison.py \
             tests/test_us_a0_authority.py \
             tests/test_us_a0_evaluation_bridge.py \
-            tests/test_us_a0_execution.py
+            tests/test_us_a0_execution.py \
+            tests/test_us_a0_assembly.py \
+            tests/test_us_a0_provider.py
       - name: Strict static checks
         run: |
           uv run --frozen ruff check \
@@ -86,17 +98,22 @@ jobs:
             src/finagent/research/us_agent_value_authority.py \
             src/finagent/research/us_agent_value_evaluation.py \
             src/finagent/research/us_agent_value_execution.py \
+            src/finagent/research/us_agent_value_assembly.py \
+            src/finagent/research/us_agent_value_provider.py \
             scripts/freeze_us_a0_experiment_protocol.py \
             scripts/freeze_us_a0_execution_plan.py \
             scripts/prepare_us_a0_control_run.py \
             scripts/materialize_us_a0_run.py \
+            scripts/assemble_us_a0_experiment.py \
             tests/test_us_a0_protocol.py \
             tests/test_us_a0_generation.py \
             tests/test_us_a0_experiment.py \
             tests/test_us_a0_comparison.py \
             tests/test_us_a0_authority.py \
             tests/test_us_a0_evaluation_bridge.py \
-            tests/test_us_a0_execution.py
+            tests/test_us_a0_execution.py \
+            tests/test_us_a0_assembly.py \
+            tests/test_us_a0_provider.py
           uv run --frozen mypy --strict \
             src/finagent/research/us_agent_value_protocol.py \
             src/finagent/research/us_agent_value_generation.py \
@@ -105,10 +122,13 @@ jobs:
             src/finagent/research/us_agent_value_authority.py \
             src/finagent/research/us_agent_value_evaluation.py \
             src/finagent/research/us_agent_value_execution.py \
+            src/finagent/research/us_agent_value_assembly.py \
+            src/finagent/research/us_agent_value_provider.py \
             scripts/freeze_us_a0_experiment_protocol.py \
             scripts/freeze_us_a0_execution_plan.py \
             scripts/prepare_us_a0_control_run.py \
-            scripts/materialize_us_a0_run.py
+            scripts/materialize_us_a0_run.py \
+            scripts/assemble_us_a0_experiment.py
           uv run --frozen python -m py_compile \
             src/finagent/research/us_agent_value_protocol.py \
             src/finagent/research/us_agent_value_generation.py \
@@ -117,7 +137,10 @@ jobs:
             src/finagent/research/us_agent_value_authority.py \
             src/finagent/research/us_agent_value_evaluation.py \
             src/finagent/research/us_agent_value_execution.py \
+            src/finagent/research/us_agent_value_assembly.py \
+            src/finagent/research/us_agent_value_provider.py \
             scripts/freeze_us_a0_experiment_protocol.py \
             scripts/freeze_us_a0_execution_plan.py \
             scripts/prepare_us_a0_control_run.py \
-            scripts/materialize_us_a0_run.py
+            scripts/materialize_us_a0_run.py \
+            scripts/assemble_us_a0_experiment.py
