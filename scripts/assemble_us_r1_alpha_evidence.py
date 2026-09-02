@@ -77,6 +77,15 @@ def _write_or_validate_bytes(path: Path, payload: bytes) -> None:
     target.write_bytes(payload)
 
 
+def _require_absent(path: Path) -> None:
+    target = path.expanduser().resolve()
+    if target.exists():
+        raise SystemExit(
+            "US-R1 direction preparation failed but stale direction evidence already exists: "
+            f"{target}"
+        )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
@@ -194,9 +203,17 @@ def main() -> int:
     output_root = args.output_root.expanduser().resolve()
     metric_root = args.metric_output_root.expanduser().resolve()
     _write_or_validate_json(
-        output_root / "us_r1_direction_evidence.json",
-        reconstructed.direction_evidence.to_dict(),
+        output_root / "us_r1_direction_preparation.json",
+        reconstructed.direction_preparation.to_dict(),
     )
+    direction_output = output_root / "us_r1_direction_evidence.json"
+    if reconstructed.direction_evidence is None:
+        _require_absent(direction_output)
+    else:
+        _write_or_validate_json(
+            direction_output,
+            reconstructed.direction_evidence.to_dict(),
+        )
 
     fold_reports: list[USR1FoldStatisticsReport] = []
     metric_artifacts: list[USR1PeriodMetricArtifact] = []
@@ -239,6 +256,7 @@ def main() -> int:
 
     artifacts = build_us_r1_final_inference_artifacts(
         denominator,
+        reconstructed.direction_preparation,
         reconstructed.direction_evidence,
         fold_records,
         fold_reports,
@@ -276,7 +294,14 @@ def main() -> int:
                 "terminal": artifacts.assessment.terminal.value,
                 "robust_candidate_ids": list(artifacts.assessment.robust_candidate_ids),
                 "technical_blockers": list(artifacts.assessment.technical_blockers),
-                "direction_evidence_id": reconstructed.direction_evidence.evidence_id,
+                "direction_preparation_report_id": (
+                    reconstructed.direction_preparation.report_id
+                ),
+                "direction_evidence_id": (
+                    None
+                    if reconstructed.direction_evidence is None
+                    else reconstructed.direction_evidence.evidence_id
+                ),
                 "fold_statistics_report_ids": [item.report_id for item in fold_reports],
                 "period_metric_artifact_ids": [item.artifact_id for item in metric_artifacts],
                 "market_data_read": False,
