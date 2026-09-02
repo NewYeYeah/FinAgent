@@ -155,8 +155,11 @@ USAgentValueFoldMaterializationManifest
 USAgentValueRunEvaluationReport
 RunEvaluationLink
 USAgentValueRunEvidenceManifest
+ParsedUSAgentValueRunEvidence
 SearchArmResult
 AgentValueExperiment
+AgentValueComparisonSnapshot
+AgentValueExperimentEvidenceGraph
 ```
 
 `RunEvaluationLink` links authoritative split-bound metrics rather than recomputing row-level statistics. `SearchArmResult` may derive generation-efficiency metrics and structural novelty from candidate IDs. `AgentValueExperiment` does not automatically declare a winner:
@@ -266,6 +269,22 @@ python scripts\prepare_us_a0_control_run.py `
 
 The PROGRAMMATIC candidate set is deterministic for the preauthorized seed. The generated-at timestamp is metadata and is retained in the content-addressed run evidence.
 
+## Provider-neutral structured AGENT seam
+
+`StructuredAgentSlotProvider` is the only provider-facing surface introduced at this stage. A concrete model integration may return only the already-frozen `ProposalSlot` structure. It cannot inject arbitrary feature code or change the experiment contract.
+
+Before generation, `build_authorized_agent_generation_run()` requires the selected run spec to exist in the frozen `USAgentValueExecutionPlan` and checks exact equality of:
+
+```text
+provider_id
+model_id
+prompt_template_id
+```
+
+The provider then supplies structured slots, and the existing `build_candidate_generation_run()` remains authoritative for slot count, candidate vocabulary, duplicate handling, repair limit, replacement prohibition and usage metadata. A provider adapter therefore cannot bypass the shared trial budget merely because it uses a different external API.
+
+No concrete provider API is bound in this layer. OpenAI, DeepSeek or a local model can be added later without changing the frozen A0 experiment schemas, provided the adapter implements this seam and the execution plan has preregistered its exact identities.
+
 ## Formal predecessor and financial runner
 
 A0 must bind the exact `finagent.us-baseline-walk-forward-evidence-graph.v1`. The graph must be blocker-free, pass, retain all eight valid US-B0 candidates, and match the B0 graph/aggregate IDs recorded in `docs/status.toml` after review. Formal financial execution additionally requires `current_stage=US-A0` and accepted US-B0 stage-exit authority.
@@ -305,13 +324,62 @@ Technical materialization blockers such as missing EngineeringUniverse assets, l
 
 A zero-accepted-candidate generation run does not query market data; it writes a complete `NO_ACCEPTED_CANDIDATES` run evaluation/link/manifest and exits successfully as a valid negative search result.
 
+## Assemble the exact three-arm experiment
+
+After every generation run authorized by the frozen execution plan has a complete run-evidence directory, the experiment can be assembled without re-reading market rows:
+
+```powershell
+python scripts\assemble_us_a0_experiment.py `
+  --preregistration reports\us_a0\us_a0_pilot_preregistration.json `
+  --execution-plan reports\us_a0\us_a0_pilot_execution_plan.json `
+  --generation-run reports\us_a0\generation\pilot_manual_01.json `
+  --generation-run reports\us_a0\generation\pilot_programmatic_01.json `
+  --generation-run reports\us_a0\generation\pilot_agent_01.json `
+  --us-b0-evidence-graph reports\us_b0\us_b0_walkforward_evidence_graph.json
+```
+
+FORMAL requires all seven frozen runs rather than merely a subset satisfying minimum run counts. The assembler rejects missing, extra, duplicate, re-ordered-within-arm or cross-predecessor evidence.
+
+For every run it re-hashes and cross-checks generation-run, run-evaluation, evaluation-link, run-manifest and nested fold-manifest evidence. Content hashes are treated as identities rather than signatures: the parser also derives candidate IDs and compiled feature IDs from generation evidence, recomputes valid-candidate count from candidate aggregates, and recomputes the best RankIC summaries from valid aggregate details. Re-hashing a semantically forged summary therefore does not make it authoritative.
+
+The assembler writes:
+
+```text
+reports/us_a0/experiment/
+  us_a0_manual_search_arm_result.json
+  us_a0_programmatic_search_arm_result.json
+  us_a0_agent_search_arm_result.json
+  us_a0_agent_value_experiment.json
+  us_a0_agent_value_comparison.json
+  us_a0_agent_value_evidence_graph.json
+```
+
+`AgentValueExperimentEvidenceGraph` links the exact execution plan, preregistration bundle, reviewed predecessor, every generation-run ID, every run-evidence manifest, every authoritative run-evaluation report/link, all three arm results, the structural comparison and the final experiment ID.
+
+Even when the graph reports:
+
+```text
+evidence_complete = true
+ready_for_agent_value_gate_review = true
+```
+
+it still reports:
+
+```text
+agent_value_gate_decision = UNDECIDED_REQUIRES_SEPARATE_REVIEW
+agent_value_gate_authority = false
+alpha_authority = false
+```
+
+Experiment assembly is therefore an evidence-completeness transition, not an automatic claim that the Agent adds value.
+
 ## Current remaining A0 work
 
-After this increment the controlled generation-to-financial-evidence path is implemented, but real execution is still blocked by project-stage authority. Remaining work is:
+After this increment the controlled path from preregistration through exact three-arm experiment evidence is implemented, but real execution remains blocked by project-stage authority. Remaining work is:
 
-1. implement the structured AGENT provider adapter that converts model output into the already-frozen proposal grammar and records usage metadata;
-2. add strict JSON parsers/assemblers for multiple completed run evidence manifests into `SearchArmResult` and the three-arm `AgentValueExperiment`;
-3. complete Issue #125 → MT5-D0 → US-D3 → real US-B0 folds and record accepted B0 evidence in status;
-4. advance to US-A0 and execute PILOT MANUAL / PROGRAMMATIC / AGENT runs under the exact execution plan;
-5. review PILOT before any FORMAL result inspection;
-6. conduct a separate Agent Value Gate review without conflating it with the later deployment Alpha Gate.
+1. add a concrete external-model adapter only after provider/model/prompt identities are intentionally selected and frozen in an execution plan;
+2. complete Issue #125 → MT5-D0 → US-D3 → real US-B0 folds and record accepted B0 evidence in status;
+3. advance to US-A0 and execute PILOT MANUAL / PROGRAMMATIC / AGENT runs under the exact execution plan;
+4. assemble the PILOT experiment evidence graph and review it before any FORMAL result inspection;
+5. freeze and conduct a separate Agent Value Gate review contract without changing the already-observed PILOT evidence;
+6. keep Agent Value Gate distinct from the later deployment Alpha Gate.
