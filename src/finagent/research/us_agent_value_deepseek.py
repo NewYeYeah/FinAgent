@@ -236,7 +236,7 @@ class DeepSeekStructuredAgentSlotProvider:
         except json.JSONDecodeError as exc:
             raise ValueError(f"invalid_json:{exc.msg}") from exc
         if not isinstance(payload, dict):
-            raise ValueError("structured_candidate_root_must_be_object")
+            raise TypeError("structured_candidate_root_must_be_object")
         if set(payload) != {"kind", "window_bars", "hypothesis_summary"}:
             raise ValueError("structured_candidate_fields_do_not_match_schema")
         kind = payload.get("kind")
@@ -245,7 +245,7 @@ class DeepSeekStructuredAgentSlotProvider:
         if not isinstance(kind, str) or not kind.strip():
             raise ValueError("structured_candidate_kind_must_be_string")
         if isinstance(window, bool) or not isinstance(window, int):
-            raise ValueError("structured_candidate_window_must_be_integer")
+            raise TypeError("structured_candidate_window_must_be_integer")
         if not isinstance(summary, str) or not summary.strip() or len(summary.strip()) > 280:
             raise ValueError("structured_candidate_hypothesis_must_be_1_to_280_chars")
         return kind, window, summary
@@ -270,7 +270,7 @@ class DeepSeekStructuredAgentSlotProvider:
         )
         try:
             kind, window, summary = self._parse_payload(response.output_text)
-        except ValueError as exc:
+        except (TypeError, ValueError) as exc:
             proposal = StructuredCandidateProposal(
                 kind="invalid_provider_output",
                 window_bars=1,
