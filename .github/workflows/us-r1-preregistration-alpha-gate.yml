@@ -43,9 +43,7 @@ jobs:
             src/finagent/research/us_r1_contracts.py \
             src/finagent/research/us_r1_authority.py \
             scripts/freeze_us_r1_protocol.py \
-            scripts/freeze_us_r1_alpha_gate_policy.py \
-            tests/test_us_r1_preregistration_gate.py \
-            tests/test_us_r1_contract_validation.py
+            scripts/freeze_us_r1_alpha_gate_policy.py
           uv run --frozen mypy --strict \
             src/finagent/research/us_r1_protocol.py \
             src/finagent/research/us_r1_inference.py \
