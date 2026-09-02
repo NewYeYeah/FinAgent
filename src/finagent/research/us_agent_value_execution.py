@@ -9,7 +9,6 @@ from datetime import datetime
 
 from finagent.research.us_agent_value_evaluation import (
     USAgentValueEvaluationBinding,
-    USAgentValueFoldEvaluationReport,
     USAgentValueRunEvaluationReport,
     USAgentValueRunEvaluationStatus,
     validate_us_a0_preregistration_bundle,
@@ -93,12 +92,6 @@ def _number(value: object, field_name: str) -> float:
     if not math.isfinite(result):
         raise ValueError(f"{field_name} must be finite")
     return result
-
-
-def _boolean(value: object, field_name: str) -> bool:
-    if not isinstance(value, bool):
-        raise TypeError(f"{field_name} must be boolean")
-    return value
 
 
 def _datetime(value: object, field_name: str) -> datetime:
@@ -516,6 +509,15 @@ class USAgentValueRunEvidenceManifest:
                 raise ValueError("A0 run evidence fold manifest order must be 1,2,3")
             if len({item.manifest_id for item in self.fold_manifests}) != 3:
                 raise ValueError("A0 run evidence fold manifest identities must be unique")
+            for item in self.fold_manifests:
+                if item.execution_plan_id != self.execution_plan_id:
+                    raise ValueError("fold/run evidence execution-plan identity mismatch")
+                if item.preregistration_bundle_id != self.preregistration_bundle_id:
+                    raise ValueError("fold/run evidence preregistration identity mismatch")
+                if item.generation_run_id != self.generation_run_id:
+                    raise ValueError("fold/run evidence generation-run identity mismatch")
+                if item.evaluation_binding_id != self.evaluation_binding_id:
+                    raise ValueError("fold/run evidence evaluation-binding identity mismatch")
         if canonical.phase is not self.phase:  # pragma: no cover - enum/canonical invariant
             raise RuntimeError("unexpected A0 phase identity")
 
@@ -569,8 +571,19 @@ def build_us_a0_run_evidence_manifest(
     run_evaluation: USAgentValueRunEvaluationReport,
     evaluation_link: RunEvaluationLink,
 ) -> USAgentValueRunEvidenceManifest:
+    authorized = execution_plan.run_spec(generation_run.spec.run_spec_id)
+    if authorized != generation_run.spec:
+        raise ValueError("run evidence generation spec is not execution-plan authorized")
+    if generation_run.spec.protocol_id != execution_plan.protocol_id:
+        raise ValueError("run evidence generation/execution-plan protocol mismatch")
+    if generation_run.spec.phase is not execution_plan.phase:
+        raise ValueError("run evidence generation/execution-plan phase mismatch")
     if generation_run.spec.run_spec_id != evaluation_binding.generation_run_spec_id:
         raise ValueError("run evidence generation/evaluation binding mismatch")
+    if evaluation_binding.protocol_id != execution_plan.protocol_id:
+        raise ValueError("run evidence evaluation/execution-plan protocol mismatch")
+    if evaluation_binding.phase is not execution_plan.phase:
+        raise ValueError("run evidence evaluation/execution-plan phase mismatch")
     if run_evaluation.generation_run_id != generation_run.run_id:
         raise ValueError("run evidence evaluation/generation identity mismatch")
     if evaluation_link.generation_run_id != generation_run.run_id:
