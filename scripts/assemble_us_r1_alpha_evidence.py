@@ -27,7 +27,11 @@ from finagent.research.us_r1_pipeline import (
     reconstruct_us_r1_statistics,
     serialize_us_r1_period_metric_records,
 )
-from finagent.research.us_r1_statistics import USR1FoldStatisticsReport
+from finagent.research.us_r1_statistics import (
+    USR1FoldStatisticsReport,
+    USR1PeriodMetricArtifact,
+    USR1PeriodMetricRecord,
+)
 from finagent.research.us_r1_walkforward import validate_us_r1_walk_forward_document
 
 
@@ -43,14 +47,19 @@ def _read_status(path: Path) -> Mapping[str, object]:
         return cast(Mapping[str, object], tomllib.load(handle))
 
 
-def _write_or_validate_json(path: Path, document: Mapping[str, object] | dict[str, object]) -> None:
+def _write_or_validate_json(
+    path: Path,
+    document: Mapping[str, object] | dict[str, object],
+) -> None:
     target = path.expanduser().resolve()
     target.parent.mkdir(parents=True, exist_ok=True)
     expected = dict(document)
     if target.exists():
         actual = json.loads(target.read_text(encoding="utf-8"))
         if actual != expected:
-            raise SystemExit(f"existing immutable US-R1 evidence differs from reconstruction: {target}")
+            raise SystemExit(
+                f"existing immutable US-R1 evidence differs from reconstruction: {target}"
+            )
         return
     target.write_text(
         json.dumps(expected, sort_keys=True, indent=2, ensure_ascii=False) + "\n",
@@ -126,8 +135,12 @@ def main() -> int:
             authority=authority,
         )
     )
-    research_protocol = validate_us_r1_protocol_document(dict(_read_mapping(args.research_protocol)))
-    walk_forward = validate_us_r1_walk_forward_document(dict(_read_mapping(args.walk_forward)))
+    research_protocol = validate_us_r1_protocol_document(
+        dict(_read_mapping(args.research_protocol))
+    )
+    walk_forward = validate_us_r1_walk_forward_document(
+        dict(_read_mapping(args.walk_forward))
+    )
     formation = canonical_us_r1_feature_formation_policy()
     if dict(_read_mapping(args.formation_policy)) != formation.to_dict():
         raise SystemExit("US-R1 feature-formation policy differs from canonical preregistration")
@@ -137,30 +150,43 @@ def main() -> int:
     alpha_gate_policy = validate_us_r1_alpha_gate_policy(
         dict(_read_mapping(args.alpha_gate_policy))
     )
-    denominator = parse_us_r1_candidate_denominator(_read_mapping(args.candidate_denominator))
+    denominator = parse_us_r1_candidate_denominator(
+        _read_mapping(args.candidate_denominator)
+    )
     if denominator.protocol_id != research_protocol.protocol_id:
         raise SystemExit("US-R1 denominator/research-protocol identity mismatch")
     if denominator.a0_gate_review_id != review_id:
         raise SystemExit("US-R1 denominator/A0 terminal review identity mismatch")
     if denominator.a0_experiment_id != review_experiment_id:
         raise SystemExit("US-R1 denominator/A0 experiment identity mismatch")
-    if denominator.a0_phase is not review_phase or denominator.a0_gate_decision is not review_decision:
+    if (
+        denominator.a0_phase is not review_phase
+        or denominator.a0_gate_decision is not review_decision
+    ):
         raise SystemExit("US-R1 denominator/A0 terminal phase or decision mismatch")
 
-    loaded = tuple(
+    loaded = (
         load_us_r1_fold_materialization(
-            fold_ordinal=ordinal,
+            fold_ordinal=1,
             report_root=args.fold_report_root,
             data_root=args.fold_data_root,
             denominator=denominator,
-        )
-        for ordinal in (1, 2, 3)
+        ),
+        load_us_r1_fold_materialization(
+            fold_ordinal=2,
+            report_root=args.fold_report_root,
+            data_root=args.fold_data_root,
+            denominator=denominator,
+        ),
+        load_us_r1_fold_materialization(
+            fold_ordinal=3,
+            report_root=args.fold_report_root,
+            data_root=args.fold_data_root,
+            denominator=denominator,
+        ),
     )
-    loaded_folds = cast(tuple[object, object, object], loaded)
-    # The cast above only establishes tuple cardinality for the strict type checker; the
-    # reconstruction function validates exact fold ordinals and concrete objects.
     reconstructed = reconstruct_us_r1_statistics(
-        cast(object, loaded_folds),
+        loaded,
         denominator,
         evaluation_policy,
     )
@@ -173,11 +199,15 @@ def main() -> int:
     )
 
     fold_reports: list[USR1FoldStatisticsReport] = []
-    metric_artifacts = []
-    fold_records = []
+    metric_artifacts: list[USR1PeriodMetricArtifact] = []
+    fold_records: list[tuple[USR1PeriodMetricRecord, ...]] = []
     for fold in reconstructed.folds:
         payload = serialize_us_r1_period_metric_records(fold.records)
-        metric_path = metric_root / f"fold_{fold.fold_ordinal:02d}" / "us_r1_period_metrics.jsonl"
+        metric_path = (
+            metric_root
+            / f"fold_{fold.fold_ordinal:02d}"
+            / "us_r1_period_metrics.jsonl"
+        )
         _write_or_validate_bytes(metric_path, payload)
         artifact = build_reconstructed_period_metric_artifact(
             fold,
@@ -218,12 +248,16 @@ def main() -> int:
         formation_policy_id=formation.policy_id,
         evaluation_policy=evaluation_policy,
         alpha_gate_policy=alpha_gate_policy,
-        fold_materialization_manifest_ids=cast(
-            tuple[str, str, str],
-            tuple(item.manifest.manifest_id for item in loaded),
+        fold_materialization_manifest_ids=(
+            loaded[0].manifest.manifest_id,
+            loaded[1].manifest.manifest_id,
+            loaded[2].manifest.manifest_id,
         ),
     )
-    _write_or_validate_json(output_root / "us_r1_family_evidence.json", artifacts.family.to_dict())
+    _write_or_validate_json(
+        output_root / "us_r1_family_evidence.json",
+        artifacts.family.to_dict(),
+    )
     _write_or_validate_json(
         output_root / "us_r1_alpha_gate_assessment.json",
         artifacts.assessment.to_dict(),
