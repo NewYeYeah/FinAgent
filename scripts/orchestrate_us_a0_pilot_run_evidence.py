@@ -17,9 +17,11 @@ from finagent.research.us_agent_value_assembly import (
 )
 from finagent.research.us_agent_value_authority import bind_authorized_us_a0_predecessor
 from finagent.research.us_agent_value_execution import (
+    USAgentValueExecutionPlan,
     parse_candidate_generation_run,
     validate_us_a0_execution_plan,
 )
+from finagent.research.us_agent_value_experiment import USAgentValuePredecessorBinding
 from finagent.research.us_agent_value_launch import (
     validate_us_a0_pilot_control_documents,
     validate_us_a0_pilot_launch_bundle,
@@ -78,16 +80,9 @@ def _parse_run_report(
     *,
     report_dir: Path,
     generation_document: Mapping[str, object],
-    execution_plan: object,
-    predecessor: object,
+    execution_plan: USAgentValueExecutionPlan,
+    predecessor: USAgentValuePredecessorBinding,
 ) -> ParsedUSAgentValueRunEvidence:
-    from finagent.research.us_agent_value_execution import USAgentValueExecutionPlan
-    from finagent.research.us_agent_value_experiment import USAgentValuePredecessorBinding
-
-    if not isinstance(execution_plan, USAgentValueExecutionPlan):
-        raise TypeError("execution_plan must be USAgentValueExecutionPlan")
-    if not isinstance(predecessor, USAgentValuePredecessorBinding):
-        raise TypeError("predecessor must be USAgentValuePredecessorBinding")
     evaluation, link, manifest = _run_report_documents(report_dir)
     return parse_us_a0_run_evidence_bundle(
         execution_plan=execution_plan,
@@ -105,38 +100,6 @@ def _require_supporting_data(parsed: ParsedUSAgentValueRunEvidence, data_dir: Pa
             "committed EVALUATED A0 run evidence is missing its canonical supporting data directory: "
             f"{data_dir}"
         )
-
-
-def _validate_intent_matches(
-    parsed: ParsedUSAgentValueRunEvidence,
-    intent_document: Mapping[str, object],
-) -> None:
-    intent = parse_us_a0_pilot_run_promotion_intent(intent_document)
-    expected = promotion_intent_from_parsed_evidence(
-        parsed,
-        execution_plan=parsed_execution_plan_placeholder(parsed),
-    )
-    if intent.run_spec_id != expected.run_spec_id:
-        raise ValueError("promotion intent/run-spec identity mismatch")
-    if intent.generation_run_id != expected.generation_run_id:
-        raise ValueError("promotion intent/generation-run identity mismatch")
-    if intent.run_evidence_manifest_id != expected.run_evidence_manifest_id:
-        raise ValueError("promotion intent/run-manifest identity mismatch")
-    if intent.run_evaluation_report_id != expected.run_evaluation_report_id:
-        raise ValueError("promotion intent/run-evaluation identity mismatch")
-    if intent.run_evaluation_link_id != expected.run_evaluation_link_id:
-        raise ValueError("promotion intent/evaluation-link identity mismatch")
-
-
-def parsed_execution_plan_placeholder(parsed: ParsedUSAgentValueRunEvidence) -> object:
-    """Never called for plan identity; retained only to keep intent comparison local."""
-    return _IntentPlanAdapter(parsed)
-
-
-class _IntentPlanAdapter:
-    def __init__(self, parsed: ParsedUSAgentValueRunEvidence) -> None:
-        self.plan_id = "unused"
-        self.parsed = parsed
 
 
 def _promotion_matches_parsed(
@@ -164,8 +127,8 @@ def _recover_or_promote(
     final_data_dir: Path,
     final_report_dir: Path,
     generation_document: Mapping[str, object],
-    execution_plan: object,
-    predecessor: object,
+    execution_plan: USAgentValueExecutionPlan,
+    predecessor: USAgentValuePredecessorBinding,
 ) -> ParsedUSAgentValueRunEvidence | None:
     intent_path = work_dir / "promotion_intent.json"
     if not intent_path.exists():
@@ -189,8 +152,7 @@ def _recover_or_promote(
         execution_plan=execution_plan,
         predecessor=predecessor,
     )
-    plan_id = str(getattr(execution_plan, "plan_id"))
-    _promotion_matches_parsed(intent_document, parsed, plan_id)
+    _promotion_matches_parsed(intent_document, parsed, execution_plan.plan_id)
     _require_supporting_data(parsed, final_data_dir)
     shutil.rmtree(work_dir, ignore_errors=True)
     return parsed
@@ -276,7 +238,11 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("reports/us_b0/us_b0_walkforward_evidence_graph.json"),
     )
-    parser.add_argument("--calendar", type=Path, default=Path("reports/us_calendar/xnys_1992_2026.json"))
+    parser.add_argument(
+        "--calendar",
+        type=Path,
+        default=Path("reports/us_calendar/xnys_1992_2026.json"),
+    )
     parser.add_argument(
         "--certification",
         type=Path,
@@ -481,11 +447,14 @@ def main() -> int:
                 execution_plan=execution_plan,
                 predecessor=predecessor,
             )
-            _promotion_matches_parsed(_read_json(work_dir / "promotion_intent.json"), parsed, execution_plan.plan_id)
+            _promotion_matches_parsed(
+                _read_json(work_dir / "promotion_intent.json"),
+                parsed,
+                execution_plan.plan_id,
+            )
             _require_supporting_data(parsed, final_data_dir)
             shutil.rmtree(work_dir, ignore_errors=True)
 
-        assert parsed is not None
         progress_path = progress_paths[run_order - 1]
         if progress_path.exists():
             progress = parse_us_a0_pilot_run_progress(_read_json(progress_path))
