@@ -1,0 +1,68 @@
+name: us-b0-preimplementation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/brokers/mt5/continuous_quote_smoke.py"
+      - "src/finagent/research/us_baseline_walkforward.py"
+      - "scripts/smoke_mt5_continuous_quotes.py"
+      - "scripts/freeze_us_b0_pilot_walkforward.py"
+      - "tests/test_mt5_continuous_quote_smoke.py"
+      - "tests/test_us_b0_walkforward.py"
+      - "docs/guides/mt5-continuous-smoke-and-deferred-us-i0.md"
+      - ".github/workflows/us-b0-preimplementation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/finagent/brokers/mt5/continuous_quote_smoke.py"
+      - "src/finagent/research/us_baseline_walkforward.py"
+      - "scripts/smoke_mt5_continuous_quotes.py"
+      - "scripts/freeze_us_b0_pilot_walkforward.py"
+      - "tests/test_mt5_continuous_quote_smoke.py"
+      - "tests/test_us_b0_walkforward.py"
+      - "docs/guides/mt5-continuous-smoke-and-deferred-us-i0.md"
+      - ".github/workflows/us-b0-preimplementation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  preimplementation:
+    name: US-B0 preimplementation and continuous MT5 smoke contracts
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_mt5_continuous_quote_smoke.py \
+            tests/test_us_b0_walkforward.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/brokers/mt5/continuous_quote_smoke.py \
+            src/finagent/research/us_baseline_walkforward.py \
+            scripts/smoke_mt5_continuous_quotes.py \
+            scripts/freeze_us_b0_pilot_walkforward.py \
+            tests/test_mt5_continuous_quote_smoke.py \
+            tests/test_us_b0_walkforward.py
+          uv run --frozen mypy --strict \
+            src/finagent/brokers/mt5/continuous_quote_smoke.py \
+            src/finagent/research/us_baseline_walkforward.py \
+            scripts/smoke_mt5_continuous_quotes.py \
+            scripts/freeze_us_b0_pilot_walkforward.py
+          uv run --frozen python -m py_compile \
+            src/finagent/brokers/mt5/continuous_quote_smoke.py \
+            src/finagent/research/us_baseline_walkforward.py \
+            scripts/smoke_mt5_continuous_quotes.py \
+            scripts/freeze_us_b0_pilot_walkforward.py
