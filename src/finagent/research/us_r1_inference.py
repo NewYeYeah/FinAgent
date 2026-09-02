@@ -206,7 +206,7 @@ def session_block_bootstrap_mean_test(
         return 1.0, value, value
     count = session_means.size
     block = min(block_sessions, count)
-    blocks_needed = int(math.ceil(count / block))
+    blocks_needed = math.ceil(count / block)
     rng = np.random.default_rng(seed)
     starts = rng.integers(0, count, size=(samples, blocks_needed), endpoint=False)
     offsets = np.arange(block, dtype=int)
