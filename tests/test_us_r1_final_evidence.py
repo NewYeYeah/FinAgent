@@ -13,6 +13,7 @@ from finagent.research.us_agent_value_protocol import (
     USAgentValuePhase,
     canonical_us_a0_manual_candidates,
 )
+from finagent.research.us_r1_direction import USR1DirectionPreparationReport
 from finagent.research.us_r1_evaluation_policy import (
     canonical_us_r1_statistical_evaluation_policy,
 )
@@ -108,6 +109,46 @@ def _observations(
                 )
             )
     return tuple(rows)
+
+
+def _train_statistics(
+    *,
+    candidate_id: str,
+    blockers: tuple[str, ...] = (),
+) -> USR1CandidateSliceStatistics:
+    return USR1CandidateSliceStatistics(
+        candidate_id=candidate_id,
+        role=USR1ObservationRole.TRAIN,
+        signal_interval=BarInterval.MINUTE_15,
+        label_horizon_trading_minutes=60,
+        period_count=0 if blockers else 24,
+        boundary_unrealized_period_count=0,
+        insufficient_cross_section_period_count=0,
+        mean_raw_rank_ic=None if blockers else 0.03,
+        blockers=blockers,
+    )
+
+
+def _direction_preparation(
+    denominator: USR1CandidateDenominator,
+    *,
+    blockers: tuple[str, ...] = (),
+) -> USR1DirectionPreparationReport:
+    candidate_id = denominator.candidates[0].candidate.candidate_id
+    return USR1DirectionPreparationReport(
+        denominator_id=denominator.denominator_id,
+        evaluation_policy_id=canonical_us_r1_statistical_evaluation_policy().policy_id,
+        source_fold_id="fold-01",
+        source_fold_manifest_id="materialization-01",
+        candidate_train_statistics=(
+            _train_statistics(candidate_id=candidate_id, blockers=blockers),
+        ),
+        blockers=(
+            ()
+            if not blockers
+            else tuple(f"candidate:{candidate_id}:{item}" for item in blockers)
+        ),
+    )
 
 
 def test_statistical_policy_freezes_train_only_direction_and_quintiles() -> None:
@@ -239,30 +280,18 @@ def _metric_records(
     return tuple(records)
 
 
-def test_final_family_uses_existing_hac_bootstrap_multiplicity_and_gate() -> None:
-    denominator = _denominator()
+def _fold_reports_and_artifacts(
+    denominator: USR1CandidateDenominator,
+    fold_records: tuple[
+        tuple[USR1PeriodMetricRecord, ...],
+        tuple[USR1PeriodMetricRecord, ...],
+        tuple[USR1PeriodMetricRecord, ...],
+    ],
+    *,
+    blocker: str | None = None,
+) -> tuple[tuple[USR1FoldStatisticsReport, ...], tuple[USR1PeriodMetricArtifact, ...]]:
     candidate_id = denominator.candidates[0].candidate.candidate_id
     policy = canonical_us_r1_statistical_evaluation_policy()
-    direction_item = USR1CandidateDirectionEvidence(
-        candidate_id=candidate_id,
-        evaluation_policy_id=policy.policy_id,
-        source_fold_id="fold-01",
-        source_fold_manifest_id="materialization-01",
-        train_statistics_id="train-statistics-01",
-        train_period_count=24,
-        train_mean_rank_ic=0.03,
-        direction=1,
-    )
-    direction = USR1DirectionEvidenceSet(
-        denominator_id=denominator.denominator_id,
-        evaluation_policy_id=policy.policy_id,
-        source_fold_id="fold-01",
-        source_fold_manifest_id="materialization-01",
-        candidates=(direction_item,),
-    )
-    fold_records = tuple(
-        _metric_records(index, f"fold-0{index}") for index in (1, 2, 3)
-    )
     reports: list[USR1FoldStatisticsReport] = []
     artifacts: list[USR1PeriodMetricArtifact] = []
     for index, records in enumerate(fold_records, start=1):
@@ -276,7 +305,7 @@ def test_final_family_uses_existing_hac_bootstrap_multiplicity_and_gate() -> Non
                 boundary_unrealized_period_count=0,
                 insufficient_cross_section_period_count=0,
                 mean_raw_rank_ic=0.035,
-                blockers=(),
+                blockers=((blocker,) if blocker is not None and index == 1 else ()),
             )
             for interval, horizon in (
                 (BarInterval.MINUTE_5, 60),
@@ -295,20 +324,54 @@ def test_final_family_uses_existing_hac_bootstrap_multiplicity_and_gate() -> Non
             content_sha256=(str(index) * 64),
             output_filename="us_r1_period_metrics.jsonl",
         )
-        report = USR1FoldStatisticsReport(
-            fold_id=f"fold-0{index}",
-            fold_ordinal=index,
-            fold_materialization_manifest_id=f"materialization-0{index}",
-            denominator_id=denominator.denominator_id,
-            evaluation_policy_id=policy.policy_id,
-            period_metric_artifact_id=artifact.artifact_id,
-            candidate_slices=slice_stats,
+        reports.append(
+            USR1FoldStatisticsReport(
+                fold_id=f"fold-0{index}",
+                fold_ordinal=index,
+                fold_materialization_manifest_id=f"materialization-0{index}",
+                denominator_id=denominator.denominator_id,
+                evaluation_policy_id=policy.policy_id,
+                period_metric_artifact_id=artifact.artifact_id,
+                candidate_slices=slice_stats,
+            )
         )
         artifacts.append(artifact)
-        reports.append(report)
+    return tuple(reports), tuple(artifacts)
+
+
+def test_final_family_uses_existing_hac_bootstrap_multiplicity_and_gate() -> None:
+    denominator = _denominator()
+    candidate_id = denominator.candidates[0].candidate.candidate_id
+    policy = canonical_us_r1_statistical_evaluation_policy()
+    train_statistics = _train_statistics(candidate_id=candidate_id)
+    preparation = _direction_preparation(denominator)
+    direction_item = USR1CandidateDirectionEvidence(
+        candidate_id=candidate_id,
+        evaluation_policy_id=policy.policy_id,
+        source_fold_id="fold-01",
+        source_fold_manifest_id="materialization-01",
+        train_statistics_id=train_statistics.statistics_id,
+        train_period_count=24,
+        train_mean_rank_ic=0.03,
+        direction=1,
+    )
+    direction = USR1DirectionEvidenceSet(
+        denominator_id=denominator.denominator_id,
+        evaluation_policy_id=policy.policy_id,
+        source_fold_id="fold-01",
+        source_fold_manifest_id="materialization-01",
+        candidates=(direction_item,),
+    )
+    fold_records = (
+        _metric_records(1, "fold-01"),
+        _metric_records(2, "fold-02"),
+        _metric_records(3, "fold-03"),
+    )
+    reports, artifacts = _fold_reports_and_artifacts(denominator, fold_records)
 
     result = build_us_r1_final_inference_artifacts(
         denominator,
+        preparation,
         direction,
         fold_records,
         reports,
@@ -330,6 +393,42 @@ def test_final_family_uses_existing_hac_bootstrap_multiplicity_and_gate() -> Non
     assert result.assessment.robust_candidate_ids == (candidate_id,)
     assert result.graph.alpha_gate_assessment_id == result.assessment.assessment_id
     assert result.graph.to_dict()["alpha_authority"] is False
+
+
+def test_pre_gate_technical_failure_skips_candidate_statistics_and_multiplicity() -> None:
+    denominator = _denominator()
+    policy = canonical_us_r1_statistical_evaluation_policy()
+    blocker = "insufficient_metric_periods:0<20"
+    preparation = _direction_preparation(denominator, blockers=(blocker,))
+    fold_records = (
+        _metric_records(1, "fold-01"),
+        _metric_records(2, "fold-02"),
+        _metric_records(3, "fold-03"),
+    )
+    reports, artifacts = _fold_reports_and_artifacts(denominator, fold_records)
+    result = build_us_r1_final_inference_artifacts(
+        denominator,
+        preparation,
+        None,
+        fold_records,
+        reports,
+        artifacts,
+        research_protocol_id=canonical_us_r1_research_protocol().protocol_id,
+        walk_forward_protocol_id=canonical_us_r1_walk_forward().protocol_id,
+        formation_policy_id="formation-policy-test",
+        evaluation_policy=policy,
+        alpha_gate_policy=canonical_us_r1_alpha_gate_policy(),
+        fold_materialization_manifest_ids=(
+            "materialization-01",
+            "materialization-02",
+            "materialization-03",
+        ),
+    )
+    assert result.assessment.terminal is USR1Terminal.SYSTEM_FAILURE
+    assert not result.family.candidates
+    assert not result.assessment.candidates
+    assert result.graph.direction_evidence_id is None
+    assert result.graph.technical_blockers
 
 
 def test_negative_review_is_gate_authoritative_but_has_no_alpha_authority() -> None:
