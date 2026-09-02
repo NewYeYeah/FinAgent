@@ -30,7 +30,10 @@ from finagent.research.us_agent_value_orchestration import (
     parse_us_a0_pilot_orchestration_checkpoint,
 )
 from finagent.research.us_agent_value_protocol import USAgentValueArm, USAgentValuePhase
-from finagent.research.us_agent_value_provider import build_authorized_agent_generation_run
+from finagent.research.us_agent_value_provider import (
+    StructuredAgentSlotProvider,
+    build_authorized_agent_generation_run,
+)
 from finagent.research.us_agent_value_runtime import (
     configured_runtime_bound_deepseek_provider,
     validate_us_a0_deepseek_runtime_policy,
@@ -238,6 +241,7 @@ def main() -> int:
             secrets_path=(None if args.secrets is None else args.secrets.expanduser().resolve()),
         )
         call_store = SQLiteLLMCallStore(args.call_store.expanduser().resolve())
+        provider: StructuredAgentSlotProvider
         if phase is USAgentValuePhase.PILOT:
             assert runtime_policy is not None
             provider = configured_runtime_bound_deepseek_provider(
