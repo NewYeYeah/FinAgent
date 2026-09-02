@@ -70,7 +70,7 @@ def _boolean(value: object, field_name: str) -> bool:
 
 
 def _parse_datetime(value: object, field_name: str) -> datetime:
-    parsed = datetime.fromisoformat(_text(value, field_name).replace("Z", "+00:00"))
+    parsed = datetime.fromisoformat(_text(value, field_name))
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise ValueError(f"{field_name} must be timezone-aware")
     return parsed.astimezone(UTC)
