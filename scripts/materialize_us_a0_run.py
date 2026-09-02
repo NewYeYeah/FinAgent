@@ -5,6 +5,7 @@ import json
 import tomllib
 from collections.abc import Mapping
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import cast
 
@@ -28,6 +29,7 @@ from finagent.domain.labels import AvailabilityPolicy, ResearchPriceBasis
 from finagent.domain.market_bars import BarInterval
 from finagent.research.us_agent_value_authority import bind_authorized_us_a0_predecessor
 from finagent.research.us_agent_value_evaluation import (
+    USAgentValueFoldEvaluationReport,
     aggregate_us_a0_run_evaluation,
     bind_us_a0_evaluation,
     bind_us_a0_fold_execution_specs,
@@ -47,6 +49,7 @@ from finagent.research.us_baseline_materialization import (
     build_us_baseline_input_plan,
     write_us_baseline_observation_artifact,
 )
+from finagent.research.us_baseline_walkforward import canonical_us_b0_pilot_walk_forward
 from finagent.research.us_baselines import canonical_us_baseline_denominator
 
 SOURCE_REVISION = "776328445b7ac6e7815ef3a483e9c8ded1eb6d56"
@@ -96,12 +99,17 @@ def _write_json(path: Path, payload: Mapping[str, object] | dict[str, object]) -
     )
 
 
-def _bar_query(assets: tuple[str, ...], *, start: object, end: object) -> MarketDataQuery:
+def _bar_query(
+    assets: tuple[str, ...],
+    *,
+    start: datetime,
+    end: datetime,
+) -> MarketDataQuery:
     return MarketDataQuery(
         market_id="XNYS",
         assets=assets,
-        start=start,  # type: ignore[arg-type]
-        end=end,  # type: ignore[arg-type]
+        start=start,
+        end=end,
         interval=BarInterval.MINUTE_15,
         fields=tuple(MarketDataField),
         session_policy=SessionPolicy.REGULAR,
@@ -110,12 +118,17 @@ def _bar_query(assets: tuple[str, ...], *, start: object, end: object) -> Market
     )
 
 
-def _label_query(assets: tuple[str, ...], *, start: object, end: object) -> MarketDataQuery:
+def _label_query(
+    assets: tuple[str, ...],
+    *,
+    start: datetime,
+    end: datetime,
+) -> MarketDataQuery:
     return MarketDataQuery(
         market_id="XNYS",
         assets=assets,
-        start=start,  # type: ignore[arg-type]
-        end=end,  # type: ignore[arg-type]
+        start=start,
+        end=end,
         interval=BarInterval.MINUTE_1,
         fields=(MarketDataField.CLOSE,),
         session_policy=SessionPolicy.REGULAR,
@@ -146,11 +159,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--preregistration", type=Path, required=True)
     parser.add_argument("--execution-plan", type=Path, required=True)
     parser.add_argument("--generation-run", type=Path, required=True)
-    parser.add_argument(
-        "--status",
-        type=Path,
-        default=Path("docs/status.toml"),
-    )
+    parser.add_argument("--status", type=Path, default=Path("docs/status.toml"))
     parser.add_argument(
         "--us-b0-evidence-graph",
         type=Path,
@@ -304,35 +313,22 @@ def main() -> int:
     labels = SameSessionLabelStore(sessionized)
 
     fold_manifests: list[USAgentValueFoldMaterializationManifest] = []
-    fold_reports = []
+    fold_reports: list[USAgentValueFoldEvaluationReport] = []
     execution_specs = bind_us_a0_fold_execution_specs(protocol, binding)
+    walk_forward = canonical_us_b0_pilot_walk_forward()
+    folds_by_ordinal = {item.ordinal: item for item in walk_forward.folds}
     for execution_spec in execution_specs:
+        fold = folds_by_ordinal[execution_spec.fold_ordinal]
         fold_name = f"fold_{execution_spec.fold_ordinal:02d}"
         fold_data_root = run_data_root / fold_name
         fold_report_root = run_report_root / fold_name
         fold_temp = args.temp_directory.expanduser().resolve() / generation_run.run_id / fold_name
-        start = next(
-            fold.evaluation_start
-            for fold in __import__(
-                "finagent.research.us_baseline_walkforward",
-                fromlist=["canonical_us_b0_pilot_walk_forward"],
-            ).canonical_us_b0_pilot_walk_forward().folds
-            if fold.ordinal == execution_spec.fold_ordinal
-        )
-        end = next(
-            fold.evaluation_end
-            for fold in __import__(
-                "finagent.research.us_baseline_walkforward",
-                fromlist=["canonical_us_b0_pilot_walk_forward"],
-            ).canonical_us_b0_pilot_walk_forward().folds
-            if fold.ordinal == execution_spec.fold_ordinal
-        )
 
         resampled_plan, resampling_evidence = resampled.plan(
-            _bar_query(assets, start=start, end=end)
+            _bar_query(assets, start=fold.evaluation_start, end=fold.evaluation_end)
         )
         label_plan, label_evidence = labels.plan(
-            _label_query(assets, start=start, end=end),
+            _label_query(assets, start=fold.evaluation_start, end=fold.evaluation_end),
             canonical_same_session_60m_label_spec(),
         )
         input_plan = build_us_baseline_input_plan(
@@ -429,11 +425,13 @@ def main() -> int:
             return 2
 
         fold_evaluation = evaluate_us_a0_fold(binding, execution_spec, observations)
-        fold_evaluation_output = _writable(
-            fold_report_root / "us_a0_fold_evaluation.json",
-            overwrite=args.overwrite,
+        _write_json(
+            _writable(
+                fold_report_root / "us_a0_fold_evaluation.json",
+                overwrite=args.overwrite,
+            ),
+            fold_evaluation.to_dict(),
         )
-        _write_json(fold_evaluation_output, fold_evaluation.to_dict())
         fold_manifest = USAgentValueFoldMaterializationManifest(
             execution_plan_id=execution_plan.plan_id,
             preregistration_bundle_id=execution_plan.preregistration_bundle_id,
