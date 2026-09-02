@@ -199,7 +199,10 @@ def validate_terminal_a0_review_document(
             USAgentValueGateDecision.INCONCLUSIVE,
         }:
             raise ValueError("US-R1 requires a terminal PILOT review or completed FORMAL review")
-        if _boolean(document.get("agent_value_gate_authority"), "gate_review.agent_value_gate_authority"):
+        if _boolean(
+            document.get("agent_value_gate_authority"),
+            "gate_review.agent_value_gate_authority",
+        ):
             raise ValueError("PILOT review cannot claim final Agent Value Gate authority")
     else:
         if decision not in {
@@ -284,7 +287,7 @@ def _validate_a0_experiment_document(
             raise ValueError("A0 experiment arm phase mismatch")
         if _text(arm_document.get("protocol_id"), "arm_result.protocol_id") != protocol.protocol_id:
             raise ValueError("A0 experiment arm protocol mismatch")
-        run_ids = tuple(
+        arm_run_ids = tuple(
             _text(item, "arm_result.generation_run_ids[]")
             for item in _sequence(
                 arm_document.get("generation_run_ids"), "arm_result.generation_run_ids"
@@ -297,9 +300,9 @@ def _validate_a0_experiment_document(
                 "arm_result.generation_run_spec_ids",
             )
         )
-        if len(run_ids) != len(spec_ids) or len(run_ids) < protocol.minimum_runs(arm):
+        if len(arm_run_ids) != len(spec_ids) or len(arm_run_ids) < protocol.minimum_runs(arm):
             raise ValueError("A0 experiment arm run denominator is incomplete")
-        parsed.append((arm, run_ids, spec_ids))
+        parsed.append((arm, arm_run_ids, spec_ids))
     return phase, tuple(parsed)
 
 
@@ -343,8 +346,8 @@ def build_authorized_us_r1_candidate_denominator_from_documents(
         raise ValueError("A0 generation-run documents differ from experiment denominator")
 
     ordered_runs: list[tuple[USAgentValueArm, CandidateGenerationRun]] = []
-    for arm, run_ids, spec_ids in arm_runs:
-        for index, run_id in enumerate(run_ids):
+    for arm, arm_run_ids, spec_ids in arm_runs:
+        for index, run_id in enumerate(arm_run_ids):
             run = by_id[run_id]
             if run.spec.run_spec_id != spec_ids[index]:
                 raise ValueError("A0 generation run-spec identity differs from experiment")
@@ -363,13 +366,13 @@ def build_authorized_us_r1_candidate_denominator_from_documents(
             if candidate_id not in provenance:
                 provenance[candidate_id] = (candidate, [], [])
                 order.append(candidate_id)
-            stored, arms, run_ids = provenance[candidate_id]
+            stored, arms, provenance_run_ids = provenance[candidate_id]
             if stored != candidate:
                 raise ValueError("A0 candidate structural identity collision during R1 handoff")
             if arm not in arms:
                 arms.append(arm)
-            if run.run_id not in run_ids:
-                run_ids.append(run.run_id)
+            if run.run_id not in provenance_run_ids:
+                provenance_run_ids.append(run.run_id)
 
     candidate_provenance = tuple(
         USR1CandidateProvenance(
