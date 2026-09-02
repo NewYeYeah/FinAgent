@@ -18,7 +18,11 @@ from finagent.research.us_r1_pipeline import (
     serialize_us_r1_period_metric_records,
 )
 from finagent.research.us_r1_protocol import USR1CandidateDenominator
-from finagent.research.us_r1_statistics import USR1FoldStatisticsReport
+from finagent.research.us_r1_statistics import (
+    USR1FoldStatisticsReport,
+    USR1PeriodMetricArtifact,
+    USR1PeriodMetricRecord,
+)
 
 
 def _read_mapping(path: Path) -> Mapping[str, object]:
@@ -26,7 +30,6 @@ def _read_mapping(path: Path) -> Mapping[str, object]:
     if not isinstance(loaded, Mapping):
         raise TypeError(f"JSON root must be an object: {path}")
     return loaded
-
 
 
 def validate_persisted_us_r1_final_evidence(
@@ -64,17 +67,27 @@ def validate_persisted_us_r1_final_evidence(
     reconstructed = reconstruct_us_r1_statistics(loaded, denominator, evaluation_policy)
     report_root = Path(final_report_root).expanduser().resolve()
     metric_root = Path(final_metric_root).expanduser().resolve()
-    if dict(_read_mapping(report_root / "us_r1_direction_evidence.json")) != (
-        reconstructed.direction_evidence.to_dict()
+    if dict(_read_mapping(report_root / "us_r1_direction_preparation.json")) != (
+        reconstructed.direction_preparation.to_dict()
     ):
+        raise ValueError("persisted US-R1 direction preparation differs from replay")
+    direction_path = report_root / "us_r1_direction_evidence.json"
+    if reconstructed.direction_evidence is None:
+        if direction_path.exists():
+            raise ValueError("persisted US-R1 direction evidence exists despite failed preparation")
+    elif dict(_read_mapping(direction_path)) != reconstructed.direction_evidence.to_dict():
         raise ValueError("persisted US-R1 direction evidence differs from replay")
 
     fold_reports: list[USR1FoldStatisticsReport] = []
-    metric_artifacts = []
-    fold_records = []
+    metric_artifacts: list[USR1PeriodMetricArtifact] = []
+    fold_records: list[tuple[USR1PeriodMetricRecord, ...]] = []
     for fold in reconstructed.folds:
         payload = serialize_us_r1_period_metric_records(fold.records)
-        metric_path = metric_root / f"fold_{fold.fold_ordinal:02d}" / "us_r1_period_metrics.jsonl"
+        metric_path = (
+            metric_root
+            / f"fold_{fold.fold_ordinal:02d}"
+            / "us_r1_period_metrics.jsonl"
+        )
         if metric_path.read_bytes() != payload:
             raise ValueError("persisted US-R1 period metrics differ from replay")
         artifact = build_reconstructed_period_metric_artifact(
@@ -93,7 +106,9 @@ def validate_persisted_us_r1_final_evidence(
             candidate_slices=fold.candidate_slices,
         )
         fold_dir = report_root / f"fold_{fold.fold_ordinal:02d}"
-        if dict(_read_mapping(fold_dir / "us_r1_period_metric_artifact.json")) != artifact.to_dict():
+        if dict(_read_mapping(fold_dir / "us_r1_period_metric_artifact.json")) != (
+            artifact.to_dict()
+        ):
             raise ValueError("persisted US-R1 period metric artifact differs from replay")
         if dict(_read_mapping(fold_dir / "us_r1_fold_statistics.json")) != report.to_dict():
             raise ValueError("persisted US-R1 fold statistics differ from replay")
@@ -104,6 +119,7 @@ def validate_persisted_us_r1_final_evidence(
     formation = canonical_us_r1_feature_formation_policy()
     artifacts = build_us_r1_final_inference_artifacts(
         denominator,
+        reconstructed.direction_preparation,
         reconstructed.direction_evidence,
         fold_records,
         fold_reports,
