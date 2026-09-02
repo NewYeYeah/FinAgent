@@ -71,8 +71,11 @@ def test_formal_a0_predecessor_requires_status_recorded_graph_identity() -> None
 
     assert binding.us_b0_evidence_graph_id == graph["graph_id"]
     drifted_status = _status(graph)
-    us_b0 = drifted_status["stage"]["us_b0"]  # type: ignore[index]
-    us_b0["walk_forward_evidence_graph_id"] = "different-reviewed-graph"  # type: ignore[index]
+    stage = drifted_status["stage"]
+    assert isinstance(stage, dict)
+    us_b0 = stage["us_b0"]
+    assert isinstance(us_b0, dict)
+    us_b0["walk_forward_evidence_graph_id"] = "different-reviewed-graph"
     with pytest.raises(ValueError, match="project-stage authority"):
         bind_authorized_us_a0_predecessor(drifted_status, graph, protocol)
 
