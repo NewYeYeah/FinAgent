@@ -11,7 +11,7 @@ US-R1 is the first U.S. stage that asks whether a structural factor family is ro
 
 A positive US-A0 review never implies alpha. A positive US-R1 review never implies executable or live-trading authority.
 
-`docs/status.toml` remains the sole project-stage authority. The protocol and Gate policy in this increment may be frozen before US-R1 is active, but formal R1 execution must fail closed unless `current_stage = "US-R1"` and the exact terminal A0 review/experiment/evidence graph are recorded as accepted.
+`docs/status.toml` remains the sole project-stage authority. Protocol/walk-forward/Gate/formation-policy artifacts may be frozen before US-R1 is active, but formal R1 execution must fail closed unless `current_stage = "US-R1"` and the exact terminal A0 review/experiment/evidence graph are recorded as accepted.
 
 ## A0 → R1 candidate denominator
 
@@ -27,6 +27,8 @@ Consequences:
 - `PILOT_PROCEED_TO_FORMAL` is not terminal and cannot start R1.
 - If FORMAL is completed, R1 uses the complete FORMAL seven-run union.
 - A negative Agent Value result may contract future Agent generation scope, but it does not delete Agent-origin candidates already present in the completed A0 denominator.
+
+The persisted handoff is strict: `prepare_us_r1_candidate_denominator.py` requires the A0 preregistration, ExecutionPlan, terminal experiment, terminal review, every generation-run document and the exact US-R1 stage authority. Generation runs are rehashed with the existing A0 parser and matched to the experiment's exact arm/run denominator before the structural union is formed.
 
 This prevents A0 performance from becoming an implicit pre-screen for R1 multiple testing.
 
@@ -53,6 +55,67 @@ Canonical v1:
 The HAC lag choices cover one full 60-minute overlapping-label horizon at each signal frequency. Purge and embargo also cover the full primary label horizon.
 
 Annualization is presentation-only. Intraday period counts are never treated as independent annualized sample size for inference.
+
+## Purged/embargoed walk-forward materialization
+
+US-R1 v1 reuses the already preregistered B0 calendar geometry instead of introducing a result-dependent split. Each B0 validation window becomes a completely excluded pre-evaluation gap:
+
+```text
+expanding train
+     ↓
+whole validation window excluded
+  ├─ at least 60 trading minutes purge
+  └─ at least 60 trading minutes embargo
+     ↓
+OOS evaluation
+```
+
+The exact three OOS evaluation windows therefore remain the B0 frozen windows. The formal runner verifies the excluded gap against the exact materialized XNYS calendar and refuses the fold if it contains fewer than 120 regular-session trading minutes. In practice the frozen validation gaps are materially larger than this minimum.
+
+Direction selection is frozen as `train_15m_60m_rank_ic_sign_only`. OOS 5m/15m/30m and decay evidence cannot choose or flip direction after seeing evaluation results.
+
+## Multi-frequency formation semantics
+
+The A0 candidate identity remains structural. US-R1 freezes this rule before results:
+
+> keep the same structural `window_bars` at 5m, 15m and 30m rather than re-optimizing or rescaling the window to preserve elapsed minutes.
+
+This deliberately tests whether the same structural relation survives a sampling-frequency perturbation. The implementation reuses the existing B0/A0 `evaluate_us_baseline_feature()` function; signal frequency is separate evidence metadata and is never hidden inside a second feature engine.
+
+All formation remains:
+
+- regular XNYS session only;
+- RAW prices;
+- `available_at` PIT clock;
+- same-session histories;
+- complete bars only.
+
+## Exact materialization slices
+
+Every fold must contain exactly six content-addressed slices in this order:
+
+1. TRAIN — 15m signal / 60m label;
+2. EVALUATION — 5m signal / 60m label;
+3. EVALUATION — 15m signal / 30m decay label;
+4. EVALUATION — 15m signal / 60m primary label;
+5. EVALUATION — 15m signal / 120m decay label;
+6. EVALUATION — 30m signal / 60m label.
+
+For each slice the runner binds:
+
+```text
+resampled query/evidence
++ same-session 1m label query/evidence
++ exact available_at join
++ bounded Parquet materialization
++ candidate observation JSONL
++ diagnostics
++ materialization-slice identity
+```
+
+The joined Python boundary is capped at 100,000 rows per slice. Missing EngineeringUniverse assets, assets without any complete bar, missing label anchors, close-anchor drift or impossible target-availability clocks are technical blockers. These are not negative Alpha results.
+
+The candidate observation JSONL is content-addressed by SHA-256 and row count. Persisted slice evidence can be re-parsed so the input plan, Parquet materialization, observation artifact, diagnostics and slice IDs/counts/blockers must all agree.
 
 ## Statistical-kernel reuse from the A-share release
 
@@ -129,7 +192,7 @@ Even a positive review keeps:
 
 ## Pre-result freeze commands
 
-These two artifacts may be frozen now because they consume no A0 result, market data, API secret or broker state:
+These artifacts may be frozen before US-R1 becomes active because they consume no A0 result, market data, API secret or broker state:
 
 ```powershell
 python scripts\freeze_us_r1_protocol.py `
@@ -141,4 +204,43 @@ python scripts\freeze_us_r1_alpha_gate_policy.py `
   --output reports\us_r1\us_r1_alpha_gate_policy.json
 ```
 
-Do not run formal R1 materialization until project authority actually reaches US-R1.
+```powershell
+python scripts\freeze_us_r1_walk_forward.py `
+  --output reports\us_r1\us_r1_walk_forward.json
+```
+
+```powershell
+python scripts\freeze_us_r1_feature_formation_policy.py `
+  --output reports\us_r1\us_r1_feature_formation_policy.json
+```
+
+## Formal handoff and fold execution
+
+Only after `docs/status.toml` actually enters US-R1 and records the exact accepted terminal A0 review/experiment/evidence graph should the candidate denominator be built:
+
+```powershell
+python scripts\prepare_us_r1_candidate_denominator.py `
+  --a0-preregistration <terminal A0 preregistration JSON> `
+  --a0-execution-plan <terminal A0 ExecutionPlan JSON> `
+  --a0-experiment <terminal A0 experiment JSON> `
+  --a0-gate-review <terminal A0 Gate review JSON> `
+  --generation-run <run-1.json> `
+  --generation-run <run-2.json> `
+  --generation-run <...all terminal phase runs...> `
+  --output reports\us_r1\us_r1_candidate_denominator.json
+```
+
+Then materialize each of the three folds separately:
+
+```powershell
+python scripts\materialize_us_r1_fold.py `
+  "D:\Data\datasets--mito0o852--OHLCV-1m" `
+  --fold-ordinal 1 `
+  --a0-gate-review <terminal A0 Gate review JSON>
+```
+
+Repeat with `--fold-ordinal 2` and `3`.
+
+`materialize_us_r1_fold.py` is stage-gated before dataset discovery/DuckDB initialization. It creates observation evidence only; HAC/bootstrap/multiplicity/Alpha Gate assessment remain a later assembly step and are never computed inside the materializer.
+
+Do not run formal R1 denominator/materialization commands until project authority actually reaches US-R1.

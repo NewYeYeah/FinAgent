@@ -1,0 +1,75 @@
+name: us-r1-materialization-walkforward
+
+on:
+  pull_request:
+    paths:
+      - "src/finagent/research/us_r1_walkforward.py"
+      - "src/finagent/research/us_r1_materialization.py"
+      - "src/finagent/research/us_r1_materialization_evidence.py"
+      - "src/finagent/research/us_r1_materialization_bundle.py"
+      - "src/finagent/research/us_r1_handoff.py"
+      - "scripts/freeze_us_r1_walk_forward.py"
+      - "scripts/freeze_us_r1_feature_formation_policy.py"
+      - "scripts/prepare_us_r1_candidate_denominator.py"
+      - "scripts/materialize_us_r1_fold.py"
+      - "tests/test_us_r1_walkforward_materialization.py"
+      - "docs/guides/us-r1-robust-intraday-alpha-gate.md"
+      - ".github/workflows/us-r1-materialization-walkforward.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  us-r1-materialization-walkforward:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_us_r1_walkforward_materialization.py \
+            tests/test_us_r1_preregistration_gate.py \
+            tests/test_us_r1_contract_validation.py \
+            tests/test_us_b0_materialization.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/research/us_r1_walkforward.py \
+            src/finagent/research/us_r1_materialization.py \
+            src/finagent/research/us_r1_materialization_evidence.py \
+            src/finagent/research/us_r1_materialization_bundle.py \
+            src/finagent/research/us_r1_handoff.py \
+            scripts/freeze_us_r1_walk_forward.py \
+            scripts/freeze_us_r1_feature_formation_policy.py \
+            scripts/prepare_us_r1_candidate_denominator.py \
+            scripts/materialize_us_r1_fold.py
+          uv run --frozen mypy --strict \
+            src/finagent/research/us_r1_walkforward.py \
+            src/finagent/research/us_r1_materialization.py \
+            src/finagent/research/us_r1_materialization_evidence.py \
+            src/finagent/research/us_r1_materialization_bundle.py \
+            src/finagent/research/us_r1_handoff.py \
+            scripts/freeze_us_r1_walk_forward.py \
+            scripts/freeze_us_r1_feature_formation_policy.py \
+            scripts/prepare_us_r1_candidate_denominator.py \
+            scripts/materialize_us_r1_fold.py
+          uv run --frozen python -m py_compile \
+            src/finagent/research/us_r1_walkforward.py \
+            src/finagent/research/us_r1_materialization.py \
+            src/finagent/research/us_r1_materialization_evidence.py \
+            src/finagent/research/us_r1_materialization_bundle.py \
+            src/finagent/research/us_r1_handoff.py \
+            scripts/freeze_us_r1_walk_forward.py \
+            scripts/freeze_us_r1_feature_formation_policy.py \
+            scripts/prepare_us_r1_candidate_denominator.py \
+            scripts/materialize_us_r1_fold.py

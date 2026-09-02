@@ -21,6 +21,14 @@ def validate_us_r1_research_protocol(
     return expected
 
 
+def validate_us_r1_protocol_document(
+    document: Mapping[str, object],
+) -> USR1ResearchProtocol:
+    """Compatibility name for formal runners that validate a persisted protocol document."""
+
+    return validate_us_r1_research_protocol(document)
+
+
 def validate_us_r1_alpha_gate_policy(
     document: Mapping[str, object],
 ) -> USR1AlphaGatePolicy:
