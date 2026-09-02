@@ -1,8 +1,21 @@
 [llm]
 # Public routing configuration only. Never place API keys in this file.
-default_profile = "deepseek_official_v4_pro"
+# V4-Flash is the default engineering/PILOT-development profile; V4-Pro remains
+# available explicitly for higher-cost comparative or later formal runs.
+default_profile = "deepseek_official_v4_flash"
 secrets_file = "~/.config/finagent/secrets.toml"
 enforce_private_secret_file = true
+
+[llm.profiles.deepseek_official_v4_flash]
+provider = "deepseek"
+base_url = "https://api.deepseek.com"
+model = "deepseek-v4-flash"
+secret_id = "deepseek_official"
+thinking = true
+reasoning_effort = "high"
+max_attempts = 3
+retry_backoff_seconds = 1.0
+timeout_seconds = 900.0
 
 [llm.profiles.deepseek_official_v4_pro]
 provider = "deepseek"
@@ -12,7 +25,7 @@ secret_id = "deepseek_official"
 thinking = true
 reasoning_effort = "high"
 # V4-Pro high-thinking calls can be long. These are transport/provider retries only;
-# generated-code conformance repair is configured separately by the A2 research job.
+# generated-content conformance repair is configured separately by the research layer.
 max_attempts = 3
 retry_backoff_seconds = 1.0
 timeout_seconds = 900.0
