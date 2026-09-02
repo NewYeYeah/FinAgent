@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from finagent.domain.market_bars import BarInterval
+from finagent.research.us_agent_value_gate import USAgentValueGateDecision
 from finagent.research.us_agent_value_protocol import (
     USAgentValueArm,
     USAgentValuePhase,
@@ -15,14 +16,13 @@ from finagent.research.us_agent_value_protocol import (
 from finagent.research.us_r1_evaluation_policy import (
     canonical_us_r1_statistical_evaluation_policy,
 )
-from finagent.research.us_r1_final import (
-    build_us_r1_final_inference_artifacts,
-)
+from finagent.research.us_r1_final import build_us_r1_final_inference_artifacts
 from finagent.research.us_r1_gate import (
     USR1AlphaGateAssessment,
     USR1CandidateGateAssessment,
     canonical_us_r1_alpha_gate_policy,
 )
+from finagent.research.us_r1_inference import USR1PeriodMetricPoint
 from finagent.research.us_r1_materialization import (
     USR1CandidateObservation,
     USR1ObservationArtifact,
@@ -47,7 +47,6 @@ from finagent.research.us_r1_statistics import (
     build_us_r1_direction_evidence,
     evaluate_us_r1_candidate_slice,
 )
-from finagent.research.us_r1_inference import USR1PeriodMetricPoint
 from finagent.research.us_r1_walkforward import canonical_us_r1_walk_forward
 
 
@@ -58,7 +57,7 @@ def _denominator() -> USR1CandidateDenominator:
         a0_phase=USAgentValuePhase.PILOT,
         a0_experiment_id="a0-experiment-final-test",
         a0_gate_review_id="a0-review-final-test",
-        a0_gate_decision="PILOT_DO_NOT_PROCEED_TO_FORMAL",  # type: ignore[arg-type]
+        a0_gate_decision=USAgentValueGateDecision.PILOT_DO_NOT_PROCEED_TO_FORMAL,
         agent_scope=USR1AgentScope.CONTRACTED,
         candidates=(
             USR1CandidateProvenance(
@@ -197,10 +196,15 @@ def test_partial_label_missing_is_technical_blocker() -> None:
         minimum_periods=20,
     )
     assert not statistics.passed
-    assert any("partial_or_nonboundary_label_missing" in item for item in statistics.blockers)
+    assert any(
+        "partial_or_nonboundary_label_missing" in item for item in statistics.blockers
+    )
 
 
-def _metric_records(fold_ordinal: int, fold_id: str) -> tuple[USR1PeriodMetricRecord, ...]:
+def _metric_records(
+    fold_ordinal: int,
+    fold_id: str,
+) -> tuple[USR1PeriodMetricRecord, ...]:
     candidate_id = _denominator().candidates[0].candidate.candidate_id
     records: list[USR1PeriodMetricRecord] = []
     start = datetime(2026, 2, 17, tzinfo=UTC) + timedelta(days=20 * (fold_ordinal - 1))
@@ -259,8 +263,8 @@ def test_final_family_uses_existing_hac_bootstrap_multiplicity_and_gate() -> Non
     fold_records = tuple(
         _metric_records(index, f"fold-0{index}") for index in (1, 2, 3)
     )
-    reports = []
-    artifacts = []
+    reports: list[USR1FoldStatisticsReport] = []
+    artifacts: list[USR1PeriodMetricArtifact] = []
     for index, records in enumerate(fold_records, start=1):
         slice_stats = tuple(
             USR1CandidateSliceStatistics(
