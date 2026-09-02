@@ -17,6 +17,7 @@ from finagent.research.us_agent_value_formal_postrun import (
     validate_us_a0_formal_gate_review_document,
 )
 from finagent.research.us_agent_value_formal_run_orchestration import (
+    USAgentValueFormalRunProgress,
     advance_us_a0_formal_run_progress,
     build_formal_run_evidence_complete_checkpoint,
     parse_us_a0_formal_run_progress,
