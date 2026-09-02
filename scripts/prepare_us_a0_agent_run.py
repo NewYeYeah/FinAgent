@@ -23,6 +23,8 @@ from finagent.research.us_agent_value_execution import validate_us_a0_execution_
 from finagent.research.us_agent_value_protocol import USAgentValueArm, USAgentValuePhase
 from finagent.research.us_agent_value_provider import build_authorized_agent_generation_run
 
+_DEFAULT_A0_LLM_PROFILE = "deepseek_official_v4_flash"
+
 
 def _read_json(path: Path) -> Mapping[str, object]:
     value = json.loads(path.expanduser().resolve().read_text(encoding="utf-8"))
@@ -48,7 +50,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--execution-plan", type=Path, required=True)
     parser.add_argument("--run-ordinal", type=int, default=1)
     parser.add_argument("--llm-config", type=Path, default=Path("configs/llm.toml"))
-    parser.add_argument("--llm-profile", default=None)
+    parser.add_argument(
+        "--llm-profile",
+        default=_DEFAULT_A0_LLM_PROFILE,
+        help="US-A0 testing defaults to official DeepSeek V4-Flash.",
+    )
     parser.add_argument("--secrets", type=Path, default=None)
     parser.add_argument("--status", type=Path, default=Path("docs/status.toml"))
     parser.add_argument(
