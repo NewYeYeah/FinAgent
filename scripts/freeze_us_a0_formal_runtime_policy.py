@@ -10,9 +10,9 @@ from typing import cast
 from finagent.agents.providers import load_llm_profile
 from finagent.research.us_agent_value_formal_launch import validate_us_a0_formal_launch_bundle
 from finagent.research.us_agent_value_formal_runtime import (
-    DEEPSEEK_V4_DEFAULT_MAX_OUTPUT_TOKENS,
     build_us_a0_formal_deepseek_runtime_policy,
 )
+from finagent.research.us_agent_value_runtime import DEEPSEEK_V4_DEFAULT_MAX_OUTPUT_TOKENS
 
 
 def _read_json(path: Path) -> Mapping[str, object]:
