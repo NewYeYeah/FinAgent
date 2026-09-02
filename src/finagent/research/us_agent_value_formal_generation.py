@@ -128,7 +128,13 @@ class USAgentValueFormalAgentAttemptEvidence:
     schema_version: str = "finagent.us-agent-value-formal-agent-attempt.v1"
 
     def __post_init__(self) -> None:
-        for name in ("execution_plan_id", "launch_bundle_id", "runtime_policy_id", "run_spec_id", "request_id"):
+        for name in (
+            "execution_plan_id",
+            "launch_bundle_id",
+            "runtime_policy_id",
+            "run_spec_id",
+            "request_id",
+        ):
             value = _text(getattr(self, name), name)
             object.__setattr__(self, name, value)
         if self.run_ordinal not in (1, 2, 3):
@@ -254,7 +260,9 @@ class USAgentValueFormalAgentSlotEvidence:
         return payload
 
 
-def parse_us_a0_formal_agent_attempt(document: Mapping[str, object]) -> USAgentValueFormalAgentAttemptEvidence:
+def parse_us_a0_formal_agent_attempt(
+    document: Mapping[str, object],
+) -> USAgentValueFormalAgentAttemptEvidence:
     attempt = USAgentValueFormalAgentAttemptEvidence(
         execution_plan_id=_text(document.get("execution_plan_id"), "attempt.execution_plan_id"),
         launch_bundle_id=_text(document.get("launch_bundle_id"), "attempt.launch_bundle_id"),
@@ -267,15 +275,21 @@ def parse_us_a0_formal_agent_attempt(document: Mapping[str, object]) -> USAgentV
         proposal=_parse_proposal(_mapping(document.get("proposal"), "attempt.proposal")),
         status=CandidateValidationStatus(_text(document.get("status"), "attempt.status")),
         candidate_id=_optional_text(document.get("candidate_id"), "attempt.candidate_id"),
-        classification_reason=_optional_text(document.get("classification_reason"), "attempt.classification_reason"),
-        provider_parse_error=_optional_text(document.get("provider_parse_error"), "attempt.provider_parse_error"),
+        classification_reason=_optional_text(
+            document.get("classification_reason"), "attempt.classification_reason"
+        ),
+        provider_parse_error=_optional_text(
+            document.get("provider_parse_error"), "attempt.provider_parse_error"
+        ),
     )
     if dict(document) != attempt.to_dict():
         raise ValueError("US-A0 FORMAL Agent attempt content identity mismatch")
     return attempt
 
 
-def parse_us_a0_formal_agent_slot(document: Mapping[str, object]) -> USAgentValueFormalAgentSlotEvidence:
+def parse_us_a0_formal_agent_slot(
+    document: Mapping[str, object],
+) -> USAgentValueFormalAgentSlotEvidence:
     repair_document = document.get("repair")
     slot = USAgentValueFormalAgentSlotEvidence(
         execution_plan_id=_text(document.get("execution_plan_id"), "slot.execution_plan_id"),
@@ -284,7 +298,9 @@ def parse_us_a0_formal_agent_slot(document: Mapping[str, object]) -> USAgentValu
         run_spec_id=_text(document.get("run_spec_id"), "slot.run_spec_id"),
         run_ordinal=_int(document.get("run_ordinal"), "slot.run_ordinal"),
         slot_index=_int(document.get("slot_index"), "slot.slot_index"),
-        initial=parse_us_a0_formal_agent_attempt(_mapping(document.get("initial"), "slot.initial")),
+        initial=parse_us_a0_formal_agent_attempt(
+            _mapping(document.get("initial"), "slot.initial")
+        ),
         repair=(
             None
             if repair_document is None
@@ -385,7 +401,12 @@ class USAgentValueFormalAgentRunProgress:
     schema_version: str = "finagent.us-agent-value-formal-agent-run-progress.v1"
 
     def __post_init__(self) -> None:
-        for name in ("execution_plan_id", "launch_bundle_id", "runtime_policy_id", "run_spec_id"):
+        for name in (
+            "execution_plan_id",
+            "launch_bundle_id",
+            "runtime_policy_id",
+            "run_spec_id",
+        ):
             object.__setattr__(self, name, _text(getattr(self, name), name))
         if self.run_ordinal not in (1, 2, 3):
             raise ValueError("FORMAL run progress ordinal must be 1, 2 or 3")
@@ -445,15 +466,14 @@ def advance_us_a0_formal_agent_run_progress(
     if execution_plan.run_spec(spec.run_spec_id) != spec:
         raise ValueError("FORMAL slot progress run spec is not ExecutionPlan-authorized")
     prior_ids = () if previous is None else previous.completed_slot_ids
-    if previous is not None:
-        if (
-            previous.execution_plan_id != execution_plan.plan_id
-            or previous.run_spec_id != spec.run_spec_id
-            or previous.run_ordinal != spec.run_ordinal
-            or previous.launch_bundle_id != slot.launch_bundle_id
-            or previous.runtime_policy_id != slot.runtime_policy_id
-        ):
-            raise ValueError("FORMAL slot progress identity drift")
+    if previous is not None and (
+        previous.execution_plan_id != execution_plan.plan_id
+        or previous.run_spec_id != spec.run_spec_id
+        or previous.run_ordinal != spec.run_ordinal
+        or previous.launch_bundle_id != slot.launch_bundle_id
+        or previous.runtime_policy_id != slot.runtime_policy_id
+    ):
+        raise ValueError("FORMAL slot progress identity drift")
     return USAgentValueFormalAgentRunProgress(
         execution_plan_id=execution_plan.plan_id,
         launch_bundle_id=slot.launch_bundle_id,
@@ -472,13 +492,19 @@ def parse_us_a0_formal_agent_run_progress(
     if any(not isinstance(item, str) for item in raw_slots):
         raise TypeError("FORMAL progress completed_slot_ids must contain strings")
     progress = USAgentValueFormalAgentRunProgress(
-        execution_plan_id=_text(document.get("execution_plan_id"), "formal_progress.execution_plan_id"),
+        execution_plan_id=_text(
+            document.get("execution_plan_id"), "formal_progress.execution_plan_id"
+        ),
         launch_bundle_id=_text(document.get("launch_bundle_id"), "formal_progress.launch_bundle_id"),
-        runtime_policy_id=_text(document.get("runtime_policy_id"), "formal_progress.runtime_policy_id"),
+        runtime_policy_id=_text(
+            document.get("runtime_policy_id"), "formal_progress.runtime_policy_id"
+        ),
         run_spec_id=_text(document.get("run_spec_id"), "formal_progress.run_spec_id"),
         run_ordinal=_int(document.get("run_ordinal"), "formal_progress.run_ordinal"),
         completed_slot_ids=tuple(str(item) for item in raw_slots),
-        previous_progress_id=_optional_text(document.get("previous_progress_id"), "formal_progress.previous_progress_id"),
+        previous_progress_id=_optional_text(
+            document.get("previous_progress_id"), "formal_progress.previous_progress_id"
+        ),
     )
     if dict(document) != progress.to_dict():
         raise ValueError("US-A0 FORMAL Agent run progress content identity mismatch")
