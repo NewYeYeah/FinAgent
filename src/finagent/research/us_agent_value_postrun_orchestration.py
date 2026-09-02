@@ -172,6 +172,12 @@ def build_us_a0_pilot_experiment_artifacts(
         raise ValueError("experiment assembly checkpoint/execution-plan identity mismatch")
     if run_progress.execution_plan_id != execution_plan.plan_id:
         raise ValueError("experiment assembly run-progress/execution-plan identity mismatch")
+    if run_progress.launch_bundle_id != run_checkpoint.launch_bundle_id:
+        raise ValueError("experiment assembly run-progress/launch identity mismatch")
+    if run_progress.runtime_policy_id != run_checkpoint.runtime_policy_id:
+        raise ValueError("experiment assembly run-progress/runtime-policy identity mismatch")
+    if run_progress.agent_generated_checkpoint_id != run_checkpoint.previous_checkpoint_id:
+        raise ValueError("experiment assembly run-progress/Agent checkpoint lineage mismatch")
     if run_progress.predecessor_binding_id != predecessor.binding_id:
         raise ValueError("experiment assembly run-progress/predecessor identity mismatch")
     if len(run_progress.completed_runs) != 3:
