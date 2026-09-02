@@ -43,6 +43,10 @@ from finagent.research.us_agent_value_execution import (
     parse_candidate_generation_run,
     validate_us_a0_execution_plan,
 )
+from finagent.research.us_agent_value_gate_authority import (
+    require_us_a0_pilot_formal_progression_authority,
+)
+from finagent.research.us_agent_value_protocol import USAgentValuePhase
 from finagent.research.us_baseline_authority import bind_current_us_b0_run_spec
 from finagent.research.us_baseline_materialization import (
     USBaselineInputPlan,
@@ -152,7 +156,8 @@ def build_parser() -> argparse.ArgumentParser:
             "Execute one preregistered US-A0 generation run through the same certified XNYS "
             "three-fold feature/label/statistical evaluator used by US-B0. Formal financial "
             "execution is fail-closed until docs/status.toml current_stage=US-A0 and reviewed "
-            "US-B0 predecessor identities are recorded."
+            "US-B0 predecessor identities are recorded. FORMAL additionally requires the exact "
+            "accepted PILOT Agent Value Gate review before any market-data query."
         )
     )
     parser.add_argument("root", type=Path)
@@ -164,6 +169,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--us-b0-evidence-graph",
         type=Path,
         default=Path("reports/us_b0/us_b0_walkforward_evidence_graph.json"),
+    )
+    parser.add_argument(
+        "--pilot-gate-review",
+        type=Path,
+        default=None,
+        help=(
+            "Required for FORMAL materialization. Its exact review ID must be accepted in "
+            "docs/status.toml and authorize PILOT_PROCEED_TO_FORMAL."
+        ),
     )
     parser.add_argument(
         "--calendar",
@@ -214,6 +228,16 @@ def main() -> int:
     generation_run = parse_candidate_generation_run(generation_document, execution_plan)
 
     status = _read_status(args.status.expanduser().resolve())
+    if protocol.phase is USAgentValuePhase.FORMAL:
+        if args.pilot_gate_review is None:
+            raise SystemExit("FORMAL A0 materialization requires --pilot-gate-review")
+        require_us_a0_pilot_formal_progression_authority(
+            status,
+            _read_mapping(args.pilot_gate_review.expanduser().resolve()),
+        )
+    elif args.pilot_gate_review is not None:
+        raise SystemExit("PILOT A0 materialization must not consume --pilot-gate-review")
+
     predecessor_graph = _read_mapping(args.us_b0_evidence_graph.expanduser().resolve())
     predecessor = bind_authorized_us_a0_predecessor(status, predecessor_graph, protocol)
 
