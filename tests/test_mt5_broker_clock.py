@@ -2,14 +2,11 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-import pytest
-
 from finagent.brokers.mt5.clock import (
     MT5BrokerClockObservation,
     build_mt5_broker_clock_evidence,
     mt5_broker_clock_evidence_from_document,
 )
-
 
 NOW = datetime(2026, 9, 2, 2, 34, tzinfo=UTC)
 
@@ -44,7 +41,7 @@ def test_clock_evidence_infers_observed_plus_three_hours_without_hardcoding() ->
 
     assert evidence.passed
     assert evidence.inferred_offset_seconds == 10_800
-    assert evidence.maximum_abs_residual_seconds == pytest.approx(3.0)
+    assert evidence.maximum_abs_residual_seconds == 3.0
     normalized = evidence.normalize_epoch_msc(
         int((NOW + timedelta(hours=3, seconds=15)).timestamp() * 1000)
     )
@@ -116,5 +113,9 @@ def test_clock_evidence_document_round_trip_verifies_content_identity() -> None:
 
     tampered = evidence.to_dict()
     tampered["inferred_offset_seconds"] = 7200
-    with pytest.raises(ValueError, match="evidence_id"):
+    try:
         mt5_broker_clock_evidence_from_document(tampered)
+    except ValueError as exc:
+        assert "evidence_id" in str(exc)
+    else:  # pragma: no cover - identity tampering must fail closed
+        raise AssertionError("tampered broker clock evidence unexpectedly passed")
