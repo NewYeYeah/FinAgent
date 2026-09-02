@@ -6,10 +6,10 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from finagent.domain.trading_calendar import TradingCalendarEvidence
+from finagent.research.us_agent_value_protocol import canonical_us_a0_primitive_vocabulary
 from finagent.research.us_baseline_walkforward import canonical_us_b0_pilot_walk_forward
 from finagent.research.us_r1_protocol import (
     USR1CandidateDenominator,
-    USR1ResearchProtocol,
     canonical_us_r1_research_protocol,
 )
 
@@ -285,6 +285,12 @@ def bind_us_r1_fold_execution_specs(
         raise ValueError("US-R1 walk-forward protocol drift")
     if denominator.protocol_id != research.protocol_id:
         raise ValueError("US-R1 denominator/research protocol identity mismatch")
+    vocabulary = canonical_us_a0_primitive_vocabulary()
+    for provenance in denominator.candidates:
+        candidate = provenance.candidate
+        expected = vocabulary.candidate(candidate.kind, candidate.window_bars)
+        if candidate != expected:
+            raise ValueError("US-R1 denominator contains candidate outside frozen A0 vocabulary")
     return tuple(
         USR1FoldExecutionSpec(
             walk_forward_protocol_id=walk_forward.protocol_id,
