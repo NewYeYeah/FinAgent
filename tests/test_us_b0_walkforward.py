@@ -89,10 +89,11 @@ def test_protocol_rejects_cross_fold_evaluation_gap() -> None:
 
 
 def test_fold_requires_timezone_aware_boundaries() -> None:
+    naive_start = datetime(2026, 1, 2, tzinfo=UTC).replace(tzinfo=None)
     with pytest.raises(ValueError, match="timezone-aware"):
         USBaselineWalkForwardFold(
             ordinal=1,
-            train_start=datetime(2026, 1, 2),
+            train_start=naive_start,
             train_end=datetime(2026, 2, 2, tzinfo=UTC),
             validation_start=datetime(2026, 2, 2, tzinfo=UTC),
             validation_end=datetime(2026, 2, 17, tzinfo=UTC),
