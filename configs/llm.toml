@@ -1,8 +1,8 @@
 [llm]
 # Public routing configuration only. Never place API keys in this file.
-# V4-Flash is the default engineering/PILOT-development profile; V4-Pro remains
-# available explicitly for higher-cost comparative or later formal runs.
-default_profile = "deepseek_official_v4_flash"
+# Keep the historical shared default stable for existing Agent/A-share callers.
+# US-A0 testing explicitly defaults to deepseek_official_v4_flash in its own scripts.
+default_profile = "deepseek_official_v4_pro"
 secrets_file = "~/.config/finagent/secrets.toml"
 enforce_private_secret_file = true
 
