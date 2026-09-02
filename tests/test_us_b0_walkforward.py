@@ -60,19 +60,31 @@ def test_fold_execution_specs_bind_protocol_and_formal_run_spec() -> None:
     assert specs[0].to_dict()["stage_exit_authority"] is False
 
 
-def test_walk_forward_rejects_overlapping_or_non_contiguous_evaluation_windows() -> None:
+def test_walk_forward_rejects_non_contiguous_fold_boundaries() -> None:
     protocol = canonical_us_b0_pilot_walk_forward()
-    first, second, third = protocol.folds
-    broken_second = replace(
-        second,
-        evaluation_start=datetime(2026, 3, 1, tzinfo=UTC),
-    )
+    _first, second, _third = protocol.folds
 
     with pytest.raises(ValueError, match="validation->evaluation"):
+        replace(
+            second,
+            evaluation_start=datetime(2026, 3, 1, tzinfo=UTC),
+        )
+
+
+def test_protocol_rejects_cross_fold_evaluation_gap() -> None:
+    protocol = canonical_us_b0_pilot_walk_forward()
+    first, second, third = protocol.folds
+    shifted_third = replace(
+        third,
+        train_end=datetime(2026, 3, 3, tzinfo=UTC),
+        validation_start=datetime(2026, 3, 3, tzinfo=UTC),
+    )
+
+    with pytest.raises(ValueError, match="previous validation end"):
         USBaselineWalkForwardProtocol(
             calendar_id=protocol.calendar_id,
             source_revision=protocol.source_revision,
-            folds=(first, broken_second, third),
+            folds=(first, second, shifted_third),
         )
 
 
