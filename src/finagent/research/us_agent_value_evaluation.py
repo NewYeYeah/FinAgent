@@ -125,22 +125,21 @@ def compile_us_a0_evaluation_denominator(
     if generation_run.spec.phase is not protocol.phase:
         raise ValueError("A0 generation run phase mismatch")
     accepted = generation_run.accepted_candidates
-    compiled = tuple(item.compile_feature_spec() for item in accepted)
-    baseline_protocol = USBaselineProtocol()
     return USAgentValueEvaluationDenominator(
         protocol_id=protocol.protocol_id,
         generation_run_id=generation_run.run_id,
         generation_run_spec_id=generation_run.spec.run_spec_id,
         arm=generation_run.spec.arm,
         candidate_ids=tuple(item.candidate_id for item in accepted),
-        protocol=baseline_protocol,
-        candidates=compiled,
+        protocol=USBaselineProtocol(),
+        candidates=tuple(item.compile_feature_spec() for item in accepted),
     )
 
 
 @dataclass(frozen=True, slots=True)
 class USAgentValueEvaluationBinding:
     protocol_id: str
+    phase: USAgentValuePhase
     predecessor_binding_id: str
     generation_run_id: str
     generation_run_spec_id: str
@@ -172,6 +171,9 @@ class USAgentValueEvaluationBinding:
             raise ValueError("A0 denominator/search-arm mismatch")
         if self.run_spec.denominator_id != self.denominator.denominator_id:
             raise ValueError("A0 baseline run-spec/denominator identity mismatch")
+        canonical = canonical_us_a0_experiment_protocol(self.phase)
+        if canonical.protocol_id != self.protocol_id:
+            raise ValueError("A0 evaluation binding phase/protocol identity mismatch")
 
     @property
     def binding_id(self) -> str:
@@ -184,6 +186,7 @@ class USAgentValueEvaluationBinding:
         payload: dict[str, object] = {
             "schema_version": self.schema_version,
             "protocol_id": self.protocol_id,
+            "phase": self.phase.value,
             "predecessor_binding_id": self.predecessor_binding_id,
             "generation_run_id": self.generation_run_id,
             "generation_run_spec_id": self.generation_run_spec_id,
@@ -231,6 +234,7 @@ def bind_us_a0_evaluation(
     )
     return USAgentValueEvaluationBinding(
         protocol_id=protocol.protocol_id,
+        phase=protocol.phase,
         predecessor_binding_id=predecessor.binding_id,
         generation_run_id=generation_run.run_id,
         generation_run_spec_id=generation_run.spec.run_spec_id,
@@ -245,6 +249,7 @@ def bind_us_a0_evaluation(
 class USAgentValueFoldExecutionSpec:
     evaluation_binding_id: str
     protocol_id: str
+    phase: USAgentValuePhase
     generation_run_id: str
     denominator_id: str
     run_spec_id: str
@@ -271,6 +276,9 @@ class USAgentValueFoldExecutionSpec:
             object.__setattr__(self, field_name, value)
         if self.fold_ordinal < 1:
             raise ValueError("fold_ordinal must be >= 1")
+        canonical = canonical_us_a0_experiment_protocol(self.phase)
+        if canonical.protocol_id != self.protocol_id:
+            raise ValueError("A0 fold execution phase/protocol identity mismatch")
 
     @property
     def execution_spec_id(self) -> str:
@@ -284,6 +292,7 @@ class USAgentValueFoldExecutionSpec:
             "schema_version": self.schema_version,
             "evaluation_binding_id": self.evaluation_binding_id,
             "protocol_id": self.protocol_id,
+            "phase": self.phase.value,
             "generation_run_id": self.generation_run_id,
             "denominator_id": self.denominator_id,
             "run_spec_id": self.run_spec_id,
@@ -305,7 +314,7 @@ def bind_us_a0_fold_execution_specs(
     protocol: USAgentValueExperimentProtocol,
     binding: USAgentValueEvaluationBinding,
 ) -> tuple[USAgentValueFoldExecutionSpec, ...]:
-    if binding.protocol_id != protocol.protocol_id:
+    if binding.protocol_id != protocol.protocol_id or binding.phase is not protocol.phase:
         raise ValueError("A0 evaluation binding/protocol identity mismatch")
     walk_forward = canonical_us_b0_pilot_walk_forward()
     if walk_forward.protocol_id != protocol.us_b0_walk_forward_protocol_id:
@@ -314,6 +323,7 @@ def bind_us_a0_fold_execution_specs(
         USAgentValueFoldExecutionSpec(
             evaluation_binding_id=binding.binding_id,
             protocol_id=protocol.protocol_id,
+            phase=protocol.phase,
             generation_run_id=binding.generation_run_id,
             denominator_id=binding.denominator.denominator_id,
             run_spec_id=binding.run_spec.spec_id,
@@ -335,11 +345,10 @@ def materialize_us_a0_observations(
     dict[str, tuple[USBaselineObservation, ...]],
     USBaselineMaterializationDiagnostics,
 ]:
-    """Reuse the exact US-B0 formation/label materializer without constructing MANUAL evidence.
+    """Reuse the exact US-B0 feature-formation and label-admission implementation.
 
-    The underlying implementation consumes only ``protocol``, ``candidates`` and their feature
-    semantics. The cast is a typing bridge only; the A0 denominator keeps its own content identity
-    and is never serialized or represented as a MANUAL US-B0 denominator.
+    The cast is strictly a typing bridge. No US-B0 MANUAL denominator is constructed or
+    serialized; the authoritative A0 denominator remains independently content-addressed.
     """
 
     baseline_view = cast(USBaselineCandidateDenominator, denominator)
@@ -633,14 +642,8 @@ def aggregate_us_a0_run_evaluation(
             candidates=(),
         )
 
-    execution_specs = bind_us_a0_fold_execution_specs(
-        canonical_us_a0_experiment_protocol(
-            USAgentValuePhase.PILOT
-            if binding.run_spec.signal_interval == "15m" and len(denominator.candidate_ids) <= 16
-            else USAgentValuePhase.FORMAL
-        ),
-        binding,
-    )
+    protocol = canonical_us_a0_experiment_protocol(binding.phase)
+    execution_specs = bind_us_a0_fold_execution_specs(protocol, binding)
     if len(fold_reports) != len(execution_specs):
         raise ValueError("A0 run aggregation requires all three frozen fold reports")
     for expected, report in zip(execution_specs, fold_reports, strict=True):
