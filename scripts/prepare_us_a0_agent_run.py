@@ -16,7 +16,6 @@ from finagent.research.us_agent_value_authority import require_us_a0_stage_autho
 from finagent.research.us_agent_value_deepseek import (
     DEEPSEEK_V4_PRICING_POLICY_ID,
     US_A0_STRUCTURED_PROMPT_TEMPLATE_ID,
-    configured_deepseek_structured_provider,
 )
 from finagent.research.us_agent_value_evaluation import validate_us_a0_preregistration_bundle
 from finagent.research.us_agent_value_execution import (
