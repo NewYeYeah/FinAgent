@@ -38,7 +38,7 @@ def test_pilot_walk_forward_is_deterministic_and_pre_result() -> None:
 def test_pilot_walk_forward_has_expanding_non_overlapping_evaluation_windows() -> None:
     protocol = canonical_us_b0_pilot_walk_forward()
 
-    for previous, current in zip(protocol.folds, protocol.folds[1:], strict=True):
+    for previous, current in zip(protocol.folds[:-1], protocol.folds[1:], strict=True):
         assert current.train_start == previous.train_start
         assert current.train_end == previous.validation_end
         assert current.validation_start == previous.evaluation_start
