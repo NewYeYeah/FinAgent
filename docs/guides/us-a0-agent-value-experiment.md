@@ -11,22 +11,22 @@ It does **not** ask whether any candidate is deployable. Agent Value Gate and Al
 
 ## Current authority boundary
 
-The repository may preregister US-A0 contracts while the project-stage authority still reports US-D3 and while US-B0 real-data evidence is pending. Formal Agent-value execution is not authorized until:
+The repository may preregister US-A0 contracts while the project-stage authority still reports US-D3 and while US-B0 real-data evidence is pending. Formal Agent-value financial execution is not authorized until:
 
 ```text
 US-I0 active-session acceptance completed
 MT5-D0 reconciliation accepted
 US-D3 accepted
 US-B0 real folds executed
-US-B0 split-bound evidence graph accepted
-project stage advanced through US-B0 to US-A0
+US-B0 split-bound evidence graph accepted and recorded in docs/status.toml
+project stage advanced through US-B0 to current_stage=US-A0
 ```
 
-The current continuous-market FX smoke is engineering evidence only and cannot be supplied as an A0 predecessor.
+The continuous-market FX smoke is engineering evidence only and cannot be supplied as an A0 predecessor.
 
 ## Frozen preregistration identities
 
-The PILOT and FORMAL bundles were frozen before any real A0 result inspection. Their deterministic identities are now golden regression expectations:
+The PILOT and FORMAL bundles were frozen before any real A0 result inspection. Their deterministic identities are golden regression expectations:
 
 ```text
 shared vocabulary
@@ -81,22 +81,16 @@ range_mean:                                                   1..13 bars
 close_location:                                               exactly 1 bar
 ```
 
-Input fields are derived from primitive kind, not chosen by the generator. The resulting structural space contains exactly 62 candidate formulas.
+Input fields are derived from primitive kind, not chosen by the generator. The structural space contains exactly 62 candidate formulas. Candidate identity is based on structural formula and vocabulary identity; wording does not create novelty.
 
-A candidate identity is based on its structural formula and vocabulary identity. Hypothesis wording is deliberately excluded, so an Agent cannot create artificial novelty by describing the same formula differently.
+## MANUAL arm and shared trial budget
 
-## MANUAL arm
+The MANUAL arm is frozen before A0 results exist:
 
-The MANUAL arm is frozen now, before A0 results exist.
-
-- first 8 formulas structurally reproduce the existing US-B0 MANUAL denominator;
+- first 8 formulas structurally reproduce the US-B0 MANUAL denominator;
 - PILOT uses a fixed 16-formula grid;
 - FORMAL uses a fixed 32-formula grid;
-- the additional formulas are a preregistered coverage grid over the same grammar, not performance-selected extensions.
-
-MANUAL cannot repair or replace a slot.
-
-## Shared trial budget and repair semantics
+- additional formulas are a preregistered coverage grid, not performance-selected extensions.
 
 Budget is per independent run:
 
@@ -114,11 +108,7 @@ PROGRAMMATIC     1      >=3
 AGENT            1      >=3
 ```
 
-For PROGRAMMATIC formal runs, seeds must be recorded and distinct. The initial PROGRAMMATIC generator is seeded uniform sampling without replacement from the exact 62-formula vocabulary.
-
-For every arm, a slot is the trial-budget unit. An invalid or duplicate initial proposal consumes that slot. At most one repair attempt is allowed inside the consumed slot. A repair does not create a new slot. Replacement slots are forbidden in v1.
-
-This prevents an Agent from obtaining a larger effective search budget through repeated retries.
+An invalid or duplicate initial proposal consumes its slot. At most one repair is allowed inside the consumed slot. Replacement slots are forbidden. This prevents retry count from silently expanding the Agent search budget.
 
 ## Agent metadata and reasoning boundary
 
@@ -132,7 +122,7 @@ generator_id
 run_ordinal
 ```
 
-Every Agent proposal or repair attempt records:
+Every Agent proposal/repair records:
 
 ```text
 llm_calls
@@ -143,18 +133,17 @@ cost_usd
 generated_at
 ```
 
-Stored proposal content is limited to structured formula fields and a short hypothesis summary. Hidden chain-of-thought is neither required nor stored.
-
-Optional `parent_candidate_id` records explicit discovery evolution when a structured proposal is derived from a previously accepted candidate. A parent must already have been accepted in that run.
+Stored proposal content is limited to structured formula fields and a short hypothesis summary. Hidden chain-of-thought is neither required nor stored. Optional `parent_candidate_id` may reference a candidate already accepted earlier in the same run.
 
 ## Evidence contracts
 
-The A0 contract layer includes:
+The A0 evidence path now includes:
 
 ```text
 USAgentValuePrimitiveVocabulary
 USAgentValueCandidateSpec
 USAgentValueExperimentProtocol
+USAgentValueExecutionPlan
 CandidateGenerationRunSpec
 CandidateGenerationEvent
 CandidateGenerationRun
@@ -162,17 +151,15 @@ USAgentValueEvaluationDenominator
 USAgentValueEvaluationBinding
 USAgentValueFoldExecutionSpec
 USAgentValueFoldEvaluationReport
+USAgentValueFoldMaterializationManifest
 USAgentValueRunEvaluationReport
 RunEvaluationLink
+USAgentValueRunEvidenceManifest
 SearchArmResult
 AgentValueExperiment
 ```
 
-`RunEvaluationLink` is intentionally a link/summary boundary. OOS RankIC or worst-fold metrics must come from authoritative split-bound evaluation evidence; the A0 experiment layer does not read row-level returns and recompute them.
-
-`SearchArmResult` may derive generation efficiency metrics such as valid-candidate, invalid, duplicate, repair and LLM-cost rates. Structural novelty is derived only from content-addressed candidate IDs.
-
-`AgentValueExperiment` does not automatically declare a winner. Even when all evidence is complete:
+`RunEvaluationLink` links authoritative split-bound metrics rather than recomputing row-level statistics. `SearchArmResult` may derive generation-efficiency metrics and structural novelty from candidate IDs. `AgentValueExperiment` does not automatically declare a winner:
 
 ```text
 agent_value_gate_decision = UNDECIDED_REQUIRES_SEPARATE_REVIEW
@@ -180,13 +167,11 @@ agent_value_gate_authority = false
 alpha_authority = false
 ```
 
-A later increment must bind a separately reviewed Agent Value Gate; no threshold is invented merely to make the current harness pass.
-
 ## Shared evaluation bridge
 
-Every completed generation run is compiled into an A0-owned evaluation denominator containing only the run's final `VALID_UNIQUE` structural candidates. Invalid and duplicate slots remain visible in generation evidence and still consume the frozen trial budget; they are never replaced merely to obtain a full financial denominator.
+Every completed generation run is compiled into an A0-owned evaluation denominator containing only final `VALID_UNIQUE` structural candidates. Invalid and duplicate slots remain visible in generation evidence and still consume trial budget; they are never replaced merely to obtain a full financial denominator.
 
-The evaluation binding copies the accepted US-B0 statistical and data authority into the A0 run:
+The evaluation binding copies accepted US-B0 authority and statistical gates:
 
 ```text
 same US-D3 certification report
@@ -197,15 +182,11 @@ same same-session 60m RAW label
 same minimum cross-section / evaluated-period / IC-period gates
 ```
 
-Only the denominator identity changes to the content-addressed A0 generation-run denominator.
+Only denominator identity changes. Feature formation and label admission reuse the US-B0 materializer implementation, and candidate statistics reuse `evaluate_us_baseline_candidate()`. A0 emits distinct A0 schemas rather than falsely serializing Agent results as pre-Agent MANUAL baseline evidence.
 
-Feature formation and label admission reuse the existing US-B0 materializer implementation. The A0 adapter does not construct or serialize a fake MANUAL denominator; the Python cast at this boundary exists only because the frozen B0 materializer's nominal annotation predates A0 and its runtime implementation consumes the shared `protocol` / `candidates` structural surface.
+The experiment phase is explicit and content-addressed. A FORMAL 32-slot run remains FORMAL even if generation leaves only one accepted candidate.
 
-Candidate statistics are evaluated through the same `evaluate_us_baseline_candidate()` core. A0 creates its own fold/run evidence schemas so the resulting reports do not falsely claim to be pre-Agent MANUAL baseline evidence.
-
-The experiment phase is an explicit content-addressed field on the evaluation binding and fold execution specs. A FORMAL run remains FORMAL even if invalid/duplicate generation leaves fewer than 16 accepted candidates; phase is never inferred from observed candidate count or performance.
-
-A run with zero accepted candidates is a valid experiment outcome:
+A run with zero accepted candidates is a valid experiment result:
 
 ```text
 status = NO_ACCEPTED_CANDIDATES
@@ -215,11 +196,9 @@ best_mean_rank_ic = null
 best_worst_fold_rank_ic = null
 ```
 
-No synthetic financial observations are created to make such a run appear evaluable.
+No synthetic financial observations are created. Candidate-level statistical invalidity is likewise a research result, not a technical-system blocker when the data/evidence path itself is complete.
 
-Candidate-level statistical invalidity (for example insufficient IC periods) is also a research result. It reduces `valid_candidate_count`; it is not silently repaired and is not automatically promoted to a system-level experiment failure when the evidence itself is complete.
-
-## Freeze the preregistration artifact
+## Freeze the experiment preregistration
 
 PILOT:
 
@@ -237,25 +216,102 @@ python scripts\freeze_us_a0_experiment_protocol.py `
   --output reports\us_a0\us_a0_formal_preregistration.json
 ```
 
-The bundles contain the exact vocabulary, experiment protocol and fixed MANUAL candidate grid. They have no project-status, stage-exit, Agent-value-gate or Alpha authority. Future execution must validate the complete bundle content, not merely accept a caller-supplied protocol ID string.
+The bundle freezes vocabulary, protocol and MANUAL grid. It does **not** choose the concrete random seeds or Agent model identity for a particular experiment execution.
 
-## Formal predecessor
+## Freeze the independent-run execution plan
 
-When US-B0 is eventually complete, A0 must bind the exact content-addressed:
+The second preregistration layer is `USAgentValueExecutionPlan`. It prevents seed/model/run cherry-picking by freezing every independent `CandidateGenerationRunSpec` before candidate generation or financial evaluation.
+
+If `--programmatic-seed` is omitted, the pre-result defaults are:
 
 ```text
-finagent.us-baseline-walk-forward-evidence-graph.v1
+PILOT   1729
+FORMAL  1729, 2718, 3141
 ```
 
-The graph must be blocker-free, pass, report all eight US-B0 candidates valid and have `ready_for_us_a0_candidate=true`. A0 re-hashes the graph document before accepting the predecessor identity. Formal A0 also requires `docs/status.toml` to record the reviewed B0 graph/aggregate IDs and to have actually advanced to `current_stage=US-A0`.
+PILOT example:
 
-## What remains after this increment
+```powershell
+python scripts\freeze_us_a0_execution_plan.py `
+  --preregistration reports\us_a0\us_a0_pilot_preregistration.json `
+  --agent-provider <PROVIDER_ID> `
+  --agent-model <MODEL_ID> `
+  --agent-prompt-template <PROMPT_TEMPLATE_ID> `
+  --output reports\us_a0\us_a0_pilot_execution_plan.json
+```
 
-The evaluation contracts and synthetic bridge are implemented. The next execution-oriented A0 work after real US-B0 acceptance is:
+FORMAL uses the FORMAL preregistration bundle and defaults to three PROGRAMMATIC seeds plus three AGENT independent run ordinals. PROGRAMMATIC and AGENT run counts must be equal and satisfy the frozen minimum; MANUAL remains exactly one canonical run.
 
-1. add a formal fold materialization runner that consumes a validated preregistration bundle, accepted US-B0 predecessor/status authority and one content-addressed generation run;
-2. write per-run fold materialization/evaluation manifests without duplicating US-B0 statistical formulas;
-3. assemble authoritative `USAgentValueRunEvaluationReport` and `RunEvaluationLink` artifacts from the three frozen folds;
-4. execute PILOT MANUAL / PROGRAMMATIC / AGENT runs under the same accepted data and evidence path;
-5. calculate structural novelty/redundancy and generation-efficiency summaries;
-6. review PILOT before any FORMAL result inspection and conduct a separate Agent Value Gate review without conflating it with the later deployment Alpha Gate.
+Changing a seed, provider, model, prompt identity or run count creates a new execution-plan ID. An evaluator may only accept a generation-run spec explicitly authorized by that exact plan.
+
+## Materialize deterministic control generation runs
+
+MANUAL and PROGRAMMATIC candidate-generation evidence can be produced without financial data or an LLM:
+
+```powershell
+python scripts\prepare_us_a0_control_run.py `
+  --preregistration reports\us_a0\us_a0_pilot_preregistration.json `
+  --execution-plan reports\us_a0\us_a0_pilot_execution_plan.json `
+  --arm manual `
+  --run-ordinal 1 `
+  --output reports\us_a0\generation\pilot_manual_01.json
+
+python scripts\prepare_us_a0_control_run.py `
+  --preregistration reports\us_a0\us_a0_pilot_preregistration.json `
+  --execution-plan reports\us_a0\us_a0_pilot_execution_plan.json `
+  --arm programmatic `
+  --run-ordinal 1 `
+  --output reports\us_a0\generation\pilot_programmatic_01.json
+```
+
+The PROGRAMMATIC candidate set is deterministic for the preauthorized seed. The generated-at timestamp is metadata and is retained in the content-addressed run evidence.
+
+## Formal predecessor and financial runner
+
+A0 must bind the exact `finagent.us-baseline-walk-forward-evidence-graph.v1`. The graph must be blocker-free, pass, retain all eight valid US-B0 candidates, and match the B0 graph/aggregate IDs recorded in `docs/status.toml` after review. Formal financial execution additionally requires `current_stage=US-A0` and accepted US-B0 stage-exit authority.
+
+Only after those conditions are true may one preregistered generation run be evaluated:
+
+```powershell
+python scripts\materialize_us_a0_run.py `
+  "D:\Data\datasets--mito0o852--OHLCV-1m" `
+  --preregistration reports\us_a0\us_a0_pilot_preregistration.json `
+  --execution-plan reports\us_a0\us_a0_pilot_execution_plan.json `
+  --generation-run reports\us_a0\generation\pilot_manual_01.json `
+  --us-b0-evidence-graph reports\us_b0\us_b0_walkforward_evidence_graph.json
+```
+
+The runner performs authority checks before any DuckDB query. For a nonempty generation run it executes exactly the three canonical US-B0 evaluation folds and writes, under `reports/us_a0/runs/<generation_run_id>/`:
+
+```text
+us_a0_evaluation_binding.json
+fold_01/
+  us_a0_input_plan.json
+  us_a0_input_materialization.json
+  us_a0_observation_artifact.json
+  us_a0_diagnostics.json
+  us_a0_fold_evaluation.json
+  us_a0_fold_materialization_manifest.json
+fold_02/...
+fold_03/...
+us_a0_run_evaluation.json
+us_a0_run_evaluation_link.json
+us_a0_run_evidence_manifest.json
+```
+
+Row-level Parquet/observation artifacts remain under `data/us_a0/runs/<generation_run_id>/`. Each fold retains the 100,000-row bounded Python guard.
+
+Technical materialization blockers such as missing EngineeringUniverse assets, label-anchor loss or close-anchor drift terminate fail-closed with exit code 2. Weak/negative RankIC or candidate statistical insufficiency remains candidate evidence and does not turn a technically complete experiment into a system failure.
+
+A zero-accepted-candidate generation run does not query market data; it writes a complete `NO_ACCEPTED_CANDIDATES` run evaluation/link/manifest and exits successfully as a valid negative search result.
+
+## Current remaining A0 work
+
+After this increment the controlled generation-to-financial-evidence path is implemented, but real execution is still blocked by project-stage authority. Remaining work is:
+
+1. implement the structured AGENT provider adapter that converts model output into the already-frozen proposal grammar and records usage metadata;
+2. add strict JSON parsers/assemblers for multiple completed run evidence manifests into `SearchArmResult` and the three-arm `AgentValueExperiment`;
+3. complete Issue #125 → MT5-D0 → US-D3 → real US-B0 folds and record accepted B0 evidence in status;
+4. advance to US-A0 and execute PILOT MANUAL / PROGRAMMATIC / AGENT runs under the exact execution plan;
+5. review PILOT before any FORMAL result inspection;
+6. conduct a separate Agent Value Gate review without conflating it with the later deployment Alpha Gate.
