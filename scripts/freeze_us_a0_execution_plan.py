@@ -16,6 +16,7 @@ _DEFAULT_SEEDS: dict[USAgentValuePhase, tuple[int, ...]] = {
     USAgentValuePhase.PILOT: (1729,),
     USAgentValuePhase.FORMAL: (1729, 2718, 3141),
 }
+_DEFAULT_A0_LLM_PROFILE = "deepseek_official_v4_flash"
 
 
 def _read_mapping(path: Path) -> Mapping[str, object]:
@@ -30,8 +31,8 @@ def build_parser() -> argparse.ArgumentParser:
         description=(
             "Freeze the exact US-A0 independent-run plan before candidate generation/evaluation. "
             "The plan binds PROGRAMMATIC seeds and AGENT provider/model/prompt identities and has "
-            "no stage-exit, Agent-value-gate or Alpha authority. By default provider/model identity "
-            "is read from the shared public LLM profile without loading API secrets."
+            "no stage-exit, Agent-value-gate or Alpha authority. Provider/model identity is read "
+            "from the shared public LLM profile without loading API secrets."
         )
     )
     parser.add_argument(
@@ -48,8 +49,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--llm-profile",
-        default=None,
-        help="Optional profile override; otherwise [llm].default_profile is used.",
+        default=_DEFAULT_A0_LLM_PROFILE,
+        help=(
+            "Shared LLM profile to freeze. US-A0 testing defaults to official V4-Flash without "
+            "changing the repository-wide historical default profile."
+        ),
     )
     parser.add_argument(
         "--agent-provider",
