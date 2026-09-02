@@ -9,6 +9,7 @@ on:
       - "scripts/freeze_us_i0_simulation_universe_policy.py"
       - "scripts/finalize_us_i0_simulation_engineering_universe.py"
       - "tests/test_us_i0_simulation_universe.py"
+      - "docs/guides/us-i0-simulation-universe.md"
       - "docs/guides/mt5-continuous-smoke-and-deferred-us-i0.md"
       - "docs/development/current-plan.md"
       - "docs/status.toml"
