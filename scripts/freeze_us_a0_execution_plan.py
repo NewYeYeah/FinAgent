@@ -6,6 +6,8 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import cast
 
+from finagent.agents.providers import load_llm_profile
+from finagent.research.us_agent_value_deepseek import US_A0_STRUCTURED_PROMPT_TEMPLATE_ID
 from finagent.research.us_agent_value_evaluation import validate_us_a0_preregistration_bundle
 from finagent.research.us_agent_value_execution import build_us_a0_execution_plan
 from finagent.research.us_agent_value_protocol import USAgentValuePhase
@@ -14,6 +16,7 @@ _DEFAULT_SEEDS: dict[USAgentValuePhase, tuple[int, ...]] = {
     USAgentValuePhase.PILOT: (1729,),
     USAgentValuePhase.FORMAL: (1729, 2718, 3141),
 }
+_DEFAULT_A0_LLM_PROFILE = "deepseek_official_v4_flash"
 
 
 def _read_mapping(path: Path) -> Mapping[str, object]:
@@ -28,7 +31,8 @@ def build_parser() -> argparse.ArgumentParser:
         description=(
             "Freeze the exact US-A0 independent-run plan before candidate generation/evaluation. "
             "The plan binds PROGRAMMATIC seeds and AGENT provider/model/prompt identities and has "
-            "no stage-exit, Agent-value-gate or Alpha authority."
+            "no stage-exit, Agent-value-gate or Alpha authority. Provider/model identity is read "
+            "from the shared public LLM profile without loading API secrets."
         )
     )
     parser.add_argument(
@@ -37,9 +41,34 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         help="Exact PILOT or FORMAL preregistration bundle frozen before results.",
     )
-    parser.add_argument("--agent-provider", required=True)
-    parser.add_argument("--agent-model", required=True)
-    parser.add_argument("--agent-prompt-template", required=True)
+    parser.add_argument(
+        "--llm-config",
+        type=Path,
+        default=Path("configs/llm.toml"),
+        help="Shared public LLM routing config. Secrets are not read by this freezer.",
+    )
+    parser.add_argument(
+        "--llm-profile",
+        default=_DEFAULT_A0_LLM_PROFILE,
+        help=(
+            "Shared LLM profile to freeze. US-A0 testing defaults to official V4-Flash without "
+            "changing the repository-wide historical default profile."
+        ),
+    )
+    parser.add_argument(
+        "--agent-provider",
+        default=None,
+        help="Optional explicit provider identity; when supplied it must match the LLM profile.",
+    )
+    parser.add_argument(
+        "--agent-model",
+        default=None,
+        help="Optional explicit model identity; when supplied it must match the LLM profile.",
+    )
+    parser.add_argument(
+        "--agent-prompt-template",
+        default=US_A0_STRUCTURED_PROMPT_TEMPLATE_ID,
+    )
     parser.add_argument(
         "--agent-generator-id",
         default="us_a0_structured_agent_generator_v1",
@@ -74,12 +103,28 @@ def main() -> int:
         if args.programmatic_seed is not None
         else _DEFAULT_SEEDS[phase]
     )
+
+    profile = load_llm_profile(
+        args.llm_config.expanduser().resolve(),
+        args.llm_profile,
+    )
+    if args.agent_provider is not None and args.agent_provider.strip() != profile.provider:
+        raise SystemExit(
+            "--agent-provider must match the selected shared LLM profile: "
+            f"{args.agent_provider!r} != {profile.provider!r}"
+        )
+    if args.agent_model is not None and args.agent_model.strip() != profile.model:
+        raise SystemExit(
+            "--agent-model must match the selected shared LLM profile: "
+            f"{args.agent_model!r} != {profile.model!r}"
+        )
+
     plan = build_us_a0_execution_plan(
         protocol,
         preregistration_bundle_id=str(preregistration["bundle_id"]),
         programmatic_seeds=seeds,
-        agent_provider_id=args.agent_provider,
-        agent_model_id=args.agent_model,
+        agent_provider_id=profile.provider,
+        agent_model_id=profile.model,
         agent_prompt_template_id=args.agent_prompt_template,
         agent_generator_id=args.agent_generator_id,
     )
@@ -102,6 +147,11 @@ def main() -> int:
                 "run_spec_count": len(plan.run_specs),
                 "run_spec_ids": [item.run_spec_id for item in plan.run_specs],
                 "programmatic_seeds": list(seeds),
+                "llm_profile": profile.name,
+                "agent_provider": profile.provider,
+                "agent_model": profile.model,
+                "agent_prompt_template": args.agent_prompt_template,
+                "secrets_loaded": False,
                 "agent_value_gate_authority": False,
                 "output": str(target),
             },
