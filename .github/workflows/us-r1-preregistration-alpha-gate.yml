@@ -1,0 +1,64 @@
+name: us-r1-preregistration-alpha-gate
+
+on:
+  pull_request:
+    paths:
+      - "src/finagent/research/us_r1_*.py"
+      - "scripts/freeze_us_r1_*.py"
+      - "tests/test_us_r1_*.py"
+      - "docs/guides/us-r1-robust-intraday-alpha-gate.md"
+      - ".github/workflows/us-r1-preregistration-alpha-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  us-r1-preregistration-alpha-gate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_us_r1_preregistration_gate.py \
+            tests/test_us_r1_contract_validation.py \
+            tests/test_us_a0_gate.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/research/us_r1_protocol.py \
+            src/finagent/research/us_r1_inference.py \
+            src/finagent/research/us_r1_gate.py \
+            src/finagent/research/us_r1_review.py \
+            src/finagent/research/us_r1_contracts.py \
+            src/finagent/research/us_r1_authority.py \
+            scripts/freeze_us_r1_protocol.py \
+            scripts/freeze_us_r1_alpha_gate_policy.py
+          uv run --frozen mypy --strict \
+            src/finagent/research/us_r1_protocol.py \
+            src/finagent/research/us_r1_inference.py \
+            src/finagent/research/us_r1_gate.py \
+            src/finagent/research/us_r1_review.py \
+            src/finagent/research/us_r1_contracts.py \
+            src/finagent/research/us_r1_authority.py \
+            scripts/freeze_us_r1_protocol.py \
+            scripts/freeze_us_r1_alpha_gate_policy.py
+          uv run --frozen python -m py_compile \
+            src/finagent/research/us_r1_protocol.py \
+            src/finagent/research/us_r1_inference.py \
+            src/finagent/research/us_r1_gate.py \
+            src/finagent/research/us_r1_review.py \
+            src/finagent/research/us_r1_contracts.py \
+            src/finagent/research/us_r1_authority.py \
+            scripts/freeze_us_r1_protocol.py \
+            scripts/freeze_us_r1_alpha_gate_policy.py
