@@ -20,6 +20,7 @@ from finagent.research.us_agent_value_deepseek import (
 )
 from finagent.research.us_agent_value_evaluation import validate_us_a0_preregistration_bundle
 from finagent.research.us_agent_value_execution import validate_us_a0_execution_plan
+from finagent.research.us_agent_value_launch import validate_us_a0_pilot_launch_bundle
 from finagent.research.us_agent_value_protocol import USAgentValueArm, USAgentValuePhase
 from finagent.research.us_agent_value_provider import build_authorized_agent_generation_run
 
@@ -42,12 +43,25 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Generate one preregistered US-A0 AGENT run through the shared FinAgent DeepSeek "
-            "provider stack. The external model is not called unless docs/status.toml already "
-            "authorizes current_stage=US-A0 with accepted US-B0 predecessor authority."
+            "provider stack. PILOT generation additionally requires the exact pre-result launch "
+            "bundle. The external model is not called unless docs/status.toml already authorizes "
+            "current_stage=US-A0 with accepted US-B0 predecessor authority."
         )
     )
     parser.add_argument("--preregistration", type=Path, required=True)
     parser.add_argument("--execution-plan", type=Path, required=True)
+    parser.add_argument(
+        "--gate-policy",
+        type=Path,
+        default=None,
+        help="Required for PILOT so the exact pre-result launch bundle can be validated.",
+    )
+    parser.add_argument(
+        "--launch-bundle",
+        type=Path,
+        default=None,
+        help="Required for PILOT; binds the Agent call to the frozen launch/control evidence.",
+    )
     parser.add_argument("--run-ordinal", type=int, default=1)
     parser.add_argument("--llm-config", type=Path, default=Path("configs/llm.toml"))
     parser.add_argument(
@@ -93,6 +107,18 @@ def main() -> int:
             f"ExecutionPlan must contain exactly one AGENT run with ordinal {args.run_ordinal}"
         )
     run_spec = agent_specs[0]
+
+    if phase is USAgentValuePhase.PILOT:
+        if args.gate_policy is None or args.launch_bundle is None:
+            raise SystemExit("PILOT AGENT generation requires --gate-policy and --launch-bundle")
+        launch_artifacts = validate_us_a0_pilot_launch_bundle(
+            _read_json(args.launch_bundle),
+            preregistration_document=preregistration,
+            execution_plan_document=execution_plan_document,
+            gate_policy_document=_read_json(args.gate_policy),
+        )
+        if run_spec.run_spec_id not in launch_artifacts.launch_bundle.agent_run_spec_ids:
+            raise SystemExit("PILOT AGENT run spec is not authorized by the frozen launch bundle")
 
     # Public model identity may be read before stage authority. Secrets/provider construction
     # intentionally happen only after the project-stage gate passes.
