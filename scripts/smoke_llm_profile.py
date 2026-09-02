@@ -12,6 +12,8 @@ from finagent.research.us_agent_value_deepseek import (
     estimate_deepseek_v4_cost_usd,
 )
 
+_DEFAULT_SMOKE_PROFILE = "deepseek_official_v4_flash"
+
 
 def _canonical_hash(payload: object, *, prefix: str) -> str:
     encoded = json.dumps(
@@ -32,7 +34,11 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
     parser.add_argument("--config", type=Path, default=Path("configs/llm.toml"))
-    parser.add_argument("--profile", default=None)
+    parser.add_argument(
+        "--profile",
+        default=_DEFAULT_SMOKE_PROFILE,
+        help="Engineering smoke defaults to official DeepSeek V4-Flash.",
+    )
     parser.add_argument("--secrets", type=Path, default=None)
     parser.add_argument(
         "--output",
@@ -75,7 +81,7 @@ def main() -> int:
             "additionalProperties": False,
         },
         max_output_tokens=256,
-        temperature=0.0,
+        temperature=None,
         metadata={"scope": "engineering_smoke_only"},
     )
     response = configured.provider.complete(request)
