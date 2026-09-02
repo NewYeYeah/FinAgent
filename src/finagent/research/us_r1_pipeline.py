@@ -17,12 +17,8 @@ from finagent.research.us_r1_materialization import (
     USR1FoldMaterializationManifest,
     USR1ObservationRole,
 )
-from finagent.research.us_r1_materialization_bundle import (
-    parse_us_r1_materialization_slice_bundle,
-)
-from finagent.research.us_r1_materialization_evidence import (
-    parse_us_r1_fold_materialization_manifest,
-)
+from finagent.research.us_r1_materialization_bundle import parse_us_r1_materialization_slice_bundle
+from finagent.research.us_r1_materialization_evidence import parse_us_r1_fold_materialization_manifest
 from finagent.research.us_r1_observation_io import read_us_r1_observation_file
 from finagent.research.us_r1_protocol import USR1CandidateDenominator
 from finagent.research.us_r1_statistics import (
