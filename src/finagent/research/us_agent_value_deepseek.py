@@ -5,7 +5,6 @@ import math
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import cast
 
 from finagent.agents.providers import (
     ConfiguredLLM,
@@ -25,7 +24,6 @@ from finagent.research.us_agent_value_protocol import (
     USAgentValueExperimentProtocol,
     canonical_us_a0_primitive_vocabulary,
 )
-from finagent.research.us_agent_value_provider import StructuredAgentSlotProvider
 from finagent.research.us_baselines import USBaselineFeatureKind
 
 US_A0_STRUCTURED_PROMPT_TEMPLATE_ID = "us-a0-structured-candidate-v1"
@@ -46,17 +44,20 @@ class DeepSeekV4TokenRates:
             "uncached_input_per_million_usd",
             "output_per_million_usd",
         ):
-            value = float(getattr(self, field_name))
-            if not math.isfinite(value) or value < 0:
+            rate = float(getattr(self, field_name))
+            if not math.isfinite(rate) or rate < 0:
                 raise ValueError(f"{field_name} must be finite and non-negative")
 
 
 def _is_deepseek_peak(at: datetime) -> bool:
+    """Return the frozen 2026-08-17 DeepSeek peak-window classification.
+
+    Official V4 pricing defines peak hours every day at 01:00-04:00 and 06:00-10:00 UTC;
+    all other hours are off-peak. There is deliberately no weekday exception.
+    """
+
     utc = at.astimezone(UTC)
-    if utc.weekday() >= 5:
-        return False
-    hour = utc.hour
-    return 1 <= hour < 4 or 6 <= hour < 10
+    return 1 <= utc.hour < 4 or 6 <= utc.hour < 10
 
 
 def deepseek_v4_token_rates(model: str, at: datetime) -> DeepSeekV4TokenRates:
@@ -109,13 +110,13 @@ class _ClassifiedProposal:
     reason: str | None
 
 
-class DeepSeekStructuredAgentSlotProvider(StructuredAgentSlotProvider):
+class DeepSeekStructuredAgentSlotProvider:
     """Adapt the shared FinAgent DeepSeek transport to the frozen US-A0 grammar.
 
-    This class deliberately reuses ``finagent.agents.providers`` from the earlier A-share
-    Agent work. It does not own API credentials, HTTP retries, JSON mode, token accounting,
-    or SDK construction. Its only responsibility is translating one preregistered A0 slot
-    into the already-frozen ``StructuredCandidateProposal`` contract.
+    The underlying ``finagent.agents.providers`` stack was built for the earlier A-share
+    Agent work and remains authoritative for API credentials, OpenAI-compatible transport,
+    retry/backoff, JSON response mode, token/cache/reasoning accounting and optional durable
+    LLM-call telemetry. This adapter owns only US-A0 structured-proposal translation.
     """
 
     def __init__(
@@ -152,7 +153,8 @@ class DeepSeekStructuredAgentSlotProvider(StructuredAgentSlotProvider):
     def prompt_template_id(self) -> str:
         return self._prompt_template_id
 
-    def _schema(self) -> Mapping[str, object]:
+    @staticmethod
+    def _schema() -> Mapping[str, object]:
         kinds = [kind.value for kind in USBaselineFeatureKind]
         return {
             "type": "object",
@@ -321,7 +323,7 @@ class DeepSeekStructuredAgentSlotProvider(StructuredAgentSlotProvider):
         request: LLMRequest,
         *,
         task_id: str,
-    ) -> tuple[StructuredCandidateProposal, str | None]:
+    ) -> tuple[LLMResponse, StructuredCandidateProposal, str | None]:
         try:
             response = self.configured_llm.provider.complete(request)
         except Exception as exc:
@@ -333,15 +335,30 @@ class DeepSeekStructuredAgentSlotProvider(StructuredAgentSlotProvider):
             response,
             generated_at=generated_at,
         )
-        if self.call_store is not None:
-            self.call_store.record_response(
-                task_id,
-                request,
-                response,
-                planning_valid=parse_error is None,
-                validation_error="" if parse_error is None else parse_error,
-            )
-        return proposal, parse_error
+        return response, proposal, parse_error
+
+    def _record_response(
+        self,
+        *,
+        task_id: str,
+        request: LLMRequest,
+        response: LLMResponse,
+        parse_error: str | None,
+        classification: _ClassifiedProposal,
+    ) -> None:
+        if self.call_store is None:
+            return
+        validation_error = parse_error or classification.reason or ""
+        self.call_store.record_response(
+            task_id,
+            request,
+            response,
+            planning_valid=(
+                parse_error is None
+                and classification.status is CandidateValidationStatus.VALID_UNIQUE
+            ),
+            validation_error=validation_error,
+        )
 
     def generate_slots(
         self,
@@ -372,8 +389,18 @@ class DeepSeekStructuredAgentSlotProvider(StructuredAgentSlotProvider):
                 repair_reason=None,
             )
             task_id = f"us-a0:{run_spec.run_spec_id}:slot:{slot_index}"
-            initial, parse_error = self._complete(initial_request, task_id=task_id)
+            initial_response, initial, parse_error = self._complete(
+                initial_request,
+                task_id=task_id,
+            )
             initial_result = self._classify(initial, accepted_ids)
+            self._record_response(
+                task_id=task_id,
+                request=initial_request,
+                response=initial_response,
+                parse_error=parse_error,
+                classification=initial_result,
+            )
             repair_reason = parse_error or initial_result.reason
             if initial_result.status is CandidateValidationStatus.VALID_UNIQUE:
                 assert initial_result.candidate is not None
@@ -390,8 +417,18 @@ class DeepSeekStructuredAgentSlotProvider(StructuredAgentSlotProvider):
                 accepted_candidates=tuple(accepted_candidates),
                 repair_reason=repair_reason or "structural_conformance_failure",
             )
-            repair, _ = self._complete(repair_request, task_id=task_id)
+            repair_response, repair, repair_parse_error = self._complete(
+                repair_request,
+                task_id=task_id,
+            )
             repair_result = self._classify(repair, accepted_ids)
+            self._record_response(
+                task_id=task_id,
+                request=repair_request,
+                response=repair_response,
+                parse_error=repair_parse_error,
+                classification=repair_result,
+            )
             if repair_result.status is CandidateValidationStatus.VALID_UNIQUE:
                 assert repair_result.candidate is not None
                 accepted_ids.add(repair_result.candidate.candidate_id)
