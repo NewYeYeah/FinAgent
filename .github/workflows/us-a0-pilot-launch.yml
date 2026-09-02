@@ -1,0 +1,62 @@
+name: us-a0-pilot-launch
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/research/us_agent_value_launch.py"
+      - "scripts/prepare_us_a0_pilot_launch.py"
+      - "scripts/check_us_a0_pilot_launch.py"
+      - "scripts/prepare_us_a0_agent_run.py"
+      - "tests/test_us_a0_launch.py"
+      - "docs/guides/us-a0-pilot-launch.md"
+      - ".github/workflows/us-a0-pilot-launch.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/finagent/research/us_agent_value_launch.py"
+      - "scripts/prepare_us_a0_pilot_launch.py"
+      - "scripts/check_us_a0_pilot_launch.py"
+      - "scripts/prepare_us_a0_agent_run.py"
+      - "tests/test_us_a0_launch.py"
+      - "docs/guides/us-a0-pilot-launch.md"
+      - ".github/workflows/us-a0-pilot-launch.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  launch-contract:
+    name: US-A0 PILOT launch contract
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused regression
+        run: uv run --frozen pytest -q tests/test_us_a0_launch.py tests/test_us_a0_execution.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/research/us_agent_value_launch.py \
+            scripts/prepare_us_a0_pilot_launch.py \
+            scripts/check_us_a0_pilot_launch.py \
+            scripts/prepare_us_a0_agent_run.py \
+            tests/test_us_a0_launch.py
+          uv run --frozen mypy --strict \
+            src/finagent/research/us_agent_value_launch.py \
+            scripts/prepare_us_a0_pilot_launch.py \
+            scripts/check_us_a0_pilot_launch.py \
+            scripts/prepare_us_a0_agent_run.py
+          uv run --frozen python -m py_compile \
+            src/finagent/research/us_agent_value_launch.py \
+            scripts/prepare_us_a0_pilot_launch.py \
+            scripts/check_us_a0_pilot_launch.py \
+            scripts/prepare_us_a0_agent_run.py
