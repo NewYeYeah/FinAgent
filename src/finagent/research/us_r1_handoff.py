@@ -9,13 +9,14 @@ from finagent.research.us_agent_value_execution import (
     parse_candidate_generation_run,
     validate_us_a0_execution_plan,
 )
-from finagent.research.us_agent_value_generation import CandidateGenerationRun
 from finagent.research.us_agent_value_gate import USAgentValueGateDecision
+from finagent.research.us_agent_value_generation import CandidateGenerationRun
 from finagent.research.us_agent_value_protocol import (
     USAgentValueArm,
     USAgentValueCandidateSpec,
     USAgentValuePhase,
     canonical_us_a0_experiment_protocol,
+    canonical_us_a0_primitive_vocabulary,
 )
 from finagent.research.us_baselines import USBaselineFeatureKind
 from finagent.research.us_r1_authority import USR1StageAuthority, require_us_r1_stage_authority
@@ -88,14 +89,11 @@ def _rehash_document(
 
 
 def _parse_candidate(document: Mapping[str, object]) -> USAgentValueCandidateSpec:
-    candidate = USAgentValueCandidateSpec(
-        vocabulary_id=_text(document.get("vocabulary_id"), "candidate.vocabulary_id"),
-        kind=USBaselineFeatureKind(_text(document.get("kind"), "candidate.kind")),
-        window_bars=_integer(document.get("window_bars"), "candidate.window_bars"),
-        input_fields=tuple(
-            _text(item, "candidate.input_fields[]")
-            for item in _sequence(document.get("input_fields"), "candidate.input_fields")
-        ),
+    vocabulary = canonical_us_a0_primitive_vocabulary()
+    kind = USBaselineFeatureKind(_text(document.get("kind"), "candidate.kind"))
+    candidate = vocabulary.candidate(
+        kind,
+        _integer(document.get("window_bars"), "candidate.window_bars"),
     )
     if dict(document) != candidate.to_dict():
         raise ValueError("US-R1 candidate structural content identity mismatch")
@@ -188,18 +186,33 @@ def validate_terminal_a0_review_document(
         raise ValueError("A0 evidence graph identity does not match US-R1 stage authority")
     if _text(assessment.get("phase"), "gate_review.assessment.phase") != phase.value:
         raise ValueError("A0 Gate review assessment phase mismatch")
+    assessment_decision = USAgentValueGateDecision(
+        _text(assessment.get("decision"), "gate_review.assessment.decision")
+    )
+    if decision not in {assessment_decision, USAgentValueGateDecision.INCONCLUSIVE}:
+        raise ValueError("A0 Gate review may only accept or conservatively downgrade assessment")
+    if assessment_decision is USAgentValueGateDecision.INCONCLUSIVE and decision is not assessment_decision:
+        raise ValueError("A0 INCONCLUSIVE assessment cannot be upgraded for US-R1 handoff")
     if phase is USAgentValuePhase.PILOT:
         if decision not in {
             USAgentValueGateDecision.PILOT_DO_NOT_PROCEED_TO_FORMAL,
             USAgentValueGateDecision.INCONCLUSIVE,
         }:
             raise ValueError("US-R1 requires a terminal PILOT review or completed FORMAL review")
-    elif decision not in {
-        USAgentValueGateDecision.FORMAL_INCREMENTAL_VALUE_SUPPORTED,
-        USAgentValueGateDecision.FORMAL_NO_INCREMENTAL_VALUE,
-        USAgentValueGateDecision.INCONCLUSIVE,
-    }:
-        raise ValueError("US-R1 FORMAL predecessor decision is not terminal")
+        if _boolean(document.get("agent_value_gate_authority"), "gate_review.agent_value_gate_authority"):
+            raise ValueError("PILOT review cannot claim final Agent Value Gate authority")
+    else:
+        if decision not in {
+            USAgentValueGateDecision.FORMAL_INCREMENTAL_VALUE_SUPPORTED,
+            USAgentValueGateDecision.FORMAL_NO_INCREMENTAL_VALUE,
+            USAgentValueGateDecision.INCONCLUSIVE,
+        }:
+            raise ValueError("US-R1 FORMAL predecessor decision is not terminal")
+        if not _boolean(
+            document.get("agent_value_gate_authority"),
+            "gate_review.agent_value_gate_authority",
+        ):
+            raise ValueError("completed FORMAL review must claim Agent Value Gate authority")
     attestations = _mapping(document.get("attestations"), "gate_review.attestations")
     required = {
         "thresholds_unchanged_after_result",
