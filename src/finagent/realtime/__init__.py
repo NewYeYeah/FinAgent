@@ -38,6 +38,20 @@ from finagent.realtime.sources import (
     ReplayPacingMode,
     StrategyFreshnessBudget,
 )
+from finagent.realtime.streaming_features import (
+    StreamingCrossSectionCoordinator,
+    StreamingCrossSectionSnapshot,
+    StreamingFeatureSnapshot,
+    StreamingUSBaselineFeatureEngine,
+)
+from finagent.realtime.streaming_research import (
+    StreamingResearchUpdate,
+    USBaselineStreamingAlgorithm,
+)
+from finagent.realtime.streaming_resample import (
+    StreamingBarAggregator,
+    StreamingResampledBar,
+)
 
 __all__ = [
     "AccountStatusEvent",
@@ -72,7 +86,15 @@ __all__ = [
     "ReplayScenario",
     "StrategyFreshnessBudget",
     "StreamingAlgorithm",
+    "StreamingBarAggregator",
+    "StreamingCrossSectionCoordinator",
+    "StreamingCrossSectionSnapshot",
+    "StreamingFeatureSnapshot",
+    "StreamingResearchUpdate",
+    "StreamingResampledBar",
+    "StreamingUSBaselineFeatureEngine",
     "TradeEvent",
+    "USBaselineStreamingAlgorithm",
     "realtime_event_from_dict",
     "rebuild_projection",
 ]
