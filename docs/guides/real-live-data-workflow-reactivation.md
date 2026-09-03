@@ -117,6 +117,40 @@ Acceptance checks:
 - no `symbol_select`, `order_send`, market-book subscription or mutation API is used;
 - all U.S.-market, execution, PAPER, stage-exit and live-capital authority flags remain false.
 
+### D1 workstation evidence — 2026-09-03 UTC
+
+The documented commands were executed against the logged-in
+`TradeMaxGlobal-Live` terminal during an active U.S. session. Package version
+`5.0.6147` and terminal build `6157` were observed.
+
+```text
+capability probe          mt5-capability-probe-d2b40bb3e6144eb269e26569
+realtime adapter report   mt5-realtime-adapter-5bab8c7d5d227bd8a8d0b305
+continuous quote smoke    mt5-continuous-quote-smoke-f1378ce1cd519161bd464179
+all-day preflight         mt5-simulation-all-day-preflight-84aa345d2fe008afcece9db5
+
+realtime events           1 connection + 3 quotes
+continuous quote pass     3 / 3
+preflight pass            true
+mutation calls            none
+```
+
+Five additional read-only realtime samples, spaced approximately two seconds
+apart, showed advancing quote timestamps for all three FX symbols. Normalized
+quote-age medians were `2.153 s` (`EURUSD`), `2.378 s` (`GBPUSD`) and `2.242 s`
+(`USDJPY`); the observed maxima were `2.593 s`, `5.442 s` and `4.209 s`.
+
+A separate 100-call local `symbol_info_tick()` diagnostic measured an
+approximately `0.009 ms` median Python-to-terminal call duration. This is local
+API/IPC timing, not network round-trip or exchange-feed delay. The advancing
+quote timestamps and low single-digit-second quote ages support a `CURRENT`
+engineering classification for this FX fixture; they do not classify the target
+U.S. symbols.
+
+This evidence closes D1 for the connected FX engineering fixture only. It does
+not advance `docs/status.toml` or provide U.S., PAPER, execution or live-capital
+authority.
+
 ## D1 quote soak
 
 After the one-shot probe passes, run the frozen current-quote smoke for the same FX fixture:
