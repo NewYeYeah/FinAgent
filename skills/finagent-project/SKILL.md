@@ -118,6 +118,7 @@ If source code, tests and current docs disagree, do not silently reconcile them.
 | What may the Agent do? | `architecture/decisions.md` + Agent source/tests |
 | How should I run/use something? | relevant `guides/` document |
 | How may FX be used during MT5/U.S. development? | `architecture/decisions.md` D24 → `guides/mt5-continuous-smoke-and-deferred-us-i0.md` |
+| Which realtime tasks actually require the U.S. session, and how should an active-session run be prepared? | `guides/realtime-development-validation.md` → relevant stage guide/source |
 | What does a test failure mean? | `testing/strategy.md` + failing test + runtime source |
 | What did Historical v1.0 prove? | `releases/ashare-historical-v1.md` |
 | Why was code changed historically? | aggregate changelog → Git/PR |
@@ -135,6 +136,7 @@ If source code, tests and current docs disagree, do not silently reconcile them.
 8. **No hidden reasoning persistence.** Store explicit hypotheses, artifacts, events and usage metadata, not model chain-of-thought.
 9. **No-alpha is a valid research terminal.** Never fabricate strategy/portfolio evidence to make a release appear populated.
 10. **MT5 feed regimes are not interchangeable.** A passing FX fixture proves only the asset/feed-invariant engineering behavior it actually exercised. It cannot satisfy U.S. universe, delayed-reference, reconciliation, US-D3, PAPER or live-broker evidence.
+11. **Realtime development is replay-first, broker-last.** Do not wait for a live interface to implement/test provider-neutral contracts, ReplayGateway, deterministic projections, restart behavior or evidence validators; reserve real-session/broker interaction for the smallest acceptance surface that actually requires it.
 
 ### 5.1 MT5 feed-regime protocol
 
@@ -166,6 +168,60 @@ Rules:
 
 When reviewing a generic quote test, ask whether it is truly transport-invariant or whether it accidentally assumes FX microstructure. A test that requires universal `last > 0`, universal volume semantics, or a 24x5 session model is not a valid generic MT5 test.
 
+### 5.2 Realtime dependency and active-session efficiency protocol
+
+Before scheduling or interpreting realtime work, classify it by dependency:
+
+```text
+D0 — offline/deterministic
+     source/tests/replay/content-ID/certification work; no broker required
+
+D1 — connected engineering
+     MT5 connection required; active U.S. ticks not required
+     Lane A may substitute only for explicitly feed-invariant plumbing
+
+D2 — U.S. active-session evidence capture
+     U.S. source/session behavior is part of the evidence identity
+     FX cannot substitute
+
+D3 — broker mutation/execution acceptance
+     demo/PAPER or live broker interaction is part of the final authority
+```
+
+Operational rules:
+
+1. **Spend the U.S. session only on D2 evidence.** Finish imports, type/static checks, focused regressions, policy freezing, output-path preparation and generic MT5 debugging before the exchange session.
+2. **Run Lane A before Lane B.** Use EURUSD/GBPUSD/USDJPY to fail early on terminal, transport, server, broker-clock, timestamp and quote-health problems; a Lane A pass does not prove U.S. evidence.
+3. **Prepare governed U.S. Market Watch state before the session.** Manually expose the intended candidate set and verify required seeds; never add `symbol_select()` to automate the governed boundary.
+4. **Respect delayed-source session timing.** For the observed roughly 900-second Lane B delay, do not interpret a wall-clock XNYS open as an immediately valid regular-session delayed anchor. Begin governed capture after `XNYS open + expected source delay + buffer`, using the accepted XNYS calendar rather than a hard-coded local clock.
+5. **Treat the raw v2 report as the scarce D2 capture.** Preserve current/live failure semantics such as `stale_quote`; do not widen the live freshness Gate. Derive the simulation delayed-reference report from the immutable raw artifact.
+6. **After a passing delayed assessment, collect inventory and finalize S2 promptly.** S2 inventory has a freshness bound; retain the 25/20/30 count policy, 50-bps delayed diagnostic spread and all required seeds.
+7. **Move MT5-D0 out of the live tick window.** The current U.S.-specific reconciliation uses accepted U.S. mappings plus MT5 historical M1 `copy_rates_range()` over a bound historical window. It still cannot use FX as a substitute, but it does not require currently progressing U.S. ticks.
+8. **Run S3 certification and independent review offline.** They are deterministic over captured S2/reconciliation/source/D1/D2 artifacts and should not consume the active-session window.
+9. **Historical research remains independent of realtime after US-D3.** US-B0, US-A0, US-R1 and US-X0/X1 consume certified historical/research evidence, not a continuously available live U.S. interface.
+10. **RT-R0/R1/R2 are replay-first and do not require broker acceptance.** Freeze typed events, implement ReplayGateway failure scenarios, build idempotent projections and prove restart reconstruction without waiting for MT5-M1.
+11. **Broker-facing final acceptance begins at MT5-M1.** MT5-M1 requires real market-gateway/source evidence for final acceptance; MT5-E1/O1 require demo/PAPER broker lifecycle evidence; replay remains useful preparation but cannot create broker authority.
+12. **RT-R3 consumes canonical projections, not direct MT5 truth.** Most UI work can run against replay; final accepted live presentation follows accepted M1/E1/O1 state/reconciliation semantics.
+13. **MT5-L0 remains separate human governance.** No Lane A/B, replay, historical, simulation or PAPER evidence auto-promotes to live-capital authority.
+
+Evidence reuse rules after a live capture:
+
+- documentation or presentation-only changes that do not alter authoritative content IDs do not require recapturing the market;
+- deterministic wrappers/orchestrators may reuse exact captured inputs if they only verify existing identities;
+- changing delayed-reference computation invalidates the delayed report and descendants, while raw provenance may remain reusable only when its own sampling/clock semantics are unchanged;
+- changing candidate identity, raw quote sampling/timestamp normalization, broker/server/feed lane or governed Market Watch set requires a new D2 capture;
+- changing S2 policy/computation invalidates S2 and descendants; do not keep an old S2 acceptance under new semantics;
+- when the affected upstream boundary is uncertain, fail closed and rerun the smallest evidence capture whose semantics actually changed.
+
+The practical conclusion is deliberately two-part:
+
+```text
+normal FinAgent development is not strictly dependent on a realtime U.S. interface
+stage/broker authority still requires the specific real-session or broker evidence named by its Gate
+```
+
+Use `docs/guides/realtime-development-validation.md` as the operator checklist for pre-session preparation, active-session capture and post-capture offline certification.
+
 ## 6. Stage implementation protocol
 
 When asked to implement the current or next stage:
@@ -177,8 +233,9 @@ When asked to implement the current or next stage:
 5. keep new modules strict-typed where practical and preserve provider/domain separation;
 6. add tests at the lowest useful layer plus the stage acceptance layer;
 7. run focused tests before broad regressions;
-8. update documentation according to the matrix below, not by creating a new stage document;
-9. advance `docs/status.toml` only when the entire Exit Gate is actually satisfied.
+8. for realtime/broker tasks, classify D0/D1/D2/D3 and move all possible validation out of scarce D2/D3 windows;
+9. update documentation according to the matrix below, not by creating a new stage document;
+10. advance `docs/status.toml` only when the entire Exit Gate is actually satisfied.
 
 A partial implementation may be merged without changing the current stage to complete.
 
@@ -265,6 +322,8 @@ Before approving a documentation change, verify:
 - [ ] provider/API capability is not confused with FinAgent adapter capability;
 - [ ] FX engineering smoke is not described or consumed as U.S. research/MT5-D0/US-D3/PAPER/live evidence;
 - [ ] delayed U.S. simulation evidence is not described as current executable-spread or target-broker authority;
+- [ ] realtime work is not described as globally blocked on live data when D0/D1 replay/engineering validation is sufficient;
+- [ ] replay evidence is not described as broker/PAPER/live readiness;
 - [ ] local Windows commands follow the Conda + PowerShell convention;
 - [ ] relative links resolve;
 - [ ] `python scripts/check_docs.py` passes.
@@ -294,5 +353,7 @@ Human-readable onboarding: `docs/guides/project-onboarding.md`.
 Documentation index: `docs/README.md`.
 
 MT5 feed-regime guide: `docs/guides/mt5-continuous-smoke-and-deferred-us-i0.md`.
+
+Realtime development / active-session workflow: `docs/guides/realtime-development-validation.md`.
 
 Current stage: `docs/status.toml`.

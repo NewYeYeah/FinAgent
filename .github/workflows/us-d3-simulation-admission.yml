@@ -5,15 +5,21 @@ on:
     paths:
       - "src/finagent/brokers/mt5/simulation_all_day_preflight.py"
       - "src/finagent/data/us_minute/simulation_certification.py"
+      - "src/finagent/data/us_minute/simulation_completion.py"
+      - "src/finagent/research/us_baseline_authority.py"
       - "scripts/smoke_mt5_simulation_all_day_preflight.py"
       - "scripts/freeze_us_d3_simulation_certification_policy.py"
       - "scripts/certify_us_d3_simulation_research.py"
       - "scripts/review_us_d3_simulation_certification.py"
+      - "scripts/assemble_us_d3_simulation_completion.py"
       - "tests/test_us_d3_simulation_admission.py"
+      - "tests/test_us_d3_completion.py"
+      - "tests/test_us_b0_authority.py"
       - "tests/test_us_i0_delayed_reference.py"
       - "tests/test_us_i0_simulation_universe.py"
       - "docs/guides/us-d3-simulation-admission.md"
       - "docs/guides/us-i0-simulation-universe.md"
+      - "docs/guides/realtime-development-validation.md"
       - "docs/status.toml"
       - ".github/workflows/us-d3-simulation-admission.yml"
   workflow_dispatch:
@@ -40,27 +46,39 @@ jobs:
           uv run --frozen pytest -q \
             tests/test_us_i0_delayed_reference.py \
             tests/test_us_i0_simulation_universe.py \
-            tests/test_us_d3_simulation_admission.py
+            tests/test_us_d3_simulation_admission.py \
+            tests/test_us_d3_completion.py \
+            tests/test_us_b0_authority.py
       - name: Strict static checks
         run: |
           uv run --frozen ruff check \
             src/finagent/brokers/mt5/simulation_all_day_preflight.py \
             src/finagent/data/us_minute/simulation_certification.py \
+            src/finagent/data/us_minute/simulation_completion.py \
+            src/finagent/research/us_baseline_authority.py \
             scripts/smoke_mt5_simulation_all_day_preflight.py \
             scripts/freeze_us_d3_simulation_certification_policy.py \
             scripts/certify_us_d3_simulation_research.py \
-            scripts/review_us_d3_simulation_certification.py
+            scripts/review_us_d3_simulation_certification.py \
+            scripts/assemble_us_d3_simulation_completion.py \
+            tests/test_us_d3_completion.py
           uv run --frozen mypy --strict \
             src/finagent/brokers/mt5/simulation_all_day_preflight.py \
             src/finagent/data/us_minute/simulation_certification.py \
+            src/finagent/data/us_minute/simulation_completion.py \
+            src/finagent/research/us_baseline_authority.py \
             scripts/smoke_mt5_simulation_all_day_preflight.py \
             scripts/freeze_us_d3_simulation_certification_policy.py \
             scripts/certify_us_d3_simulation_research.py \
-            scripts/review_us_d3_simulation_certification.py
+            scripts/review_us_d3_simulation_certification.py \
+            scripts/assemble_us_d3_simulation_completion.py
           uv run --frozen python -m py_compile \
             src/finagent/brokers/mt5/simulation_all_day_preflight.py \
             src/finagent/data/us_minute/simulation_certification.py \
+            src/finagent/data/us_minute/simulation_completion.py \
+            src/finagent/research/us_baseline_authority.py \
             scripts/smoke_mt5_simulation_all_day_preflight.py \
             scripts/freeze_us_d3_simulation_certification_policy.py \
             scripts/certify_us_d3_simulation_research.py \
-            scripts/review_us_d3_simulation_certification.py
+            scripts/review_us_d3_simulation_certification.py \
+            scripts/assemble_us_d3_simulation_completion.py

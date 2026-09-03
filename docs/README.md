@@ -17,6 +17,7 @@ New readers should begin with the [project onboarding guide](guides/project-onbo
 | What unresolved risks remain? | [`development/risks.md`](development/risks.md) |
 | How are tests and acceptance gates structured? | [`testing/strategy.md`](testing/strategy.md) |
 | How do I use the system? | [`guides/`](guides/) |
+| How should I prepare for a U.S. active-session evidence run, and which realtime work can be done offline? | [`guides/realtime-development-validation.md`](guides/realtime-development-validation.md) |
 | What exactly did a frozen release prove? | [`releases/`](releases/) |
 | What exactly changed in one implementation? | Git commit / pull-request history |
 
