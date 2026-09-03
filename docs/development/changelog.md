@@ -2,6 +2,16 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-03 — Streaming Source Harness v1 implementation closure
+
+- froze provider-neutral `MarketDataSource`, `MarketDataSubscription`, `FeedTimingProfile`, replay pacing and strategy-freshness contracts so algorithms do not depend directly on DuckDB or MetaTrader5 provider objects;
+- implemented bounded DuckDB batch streaming and `DatabaseReplaySource` over the admitted U.S. 1m Parquet Data Plane, preserving historical `event_time`, source `available_at`, deterministic delivery identity and truthful BarEvent-only semantics;
+- implemented FAST, realtime, accelerated and explicit step replay modes without changing canonical event identity, and wrapped the existing read-only MT5 quote adapter in the same source/subscription surface for FX/live engineering use;
+- implemented `AlgorithmRunner` so canonical projection/health state sees every event while strategy freshness gates decide independently whether an algorithm may act;
+- retained progressing delayed feeds as a first-class `DELAYED` mode: the canonical 900-second fixture produces a 960-second 1m-bar event age and is rejected by the frozen 60-second source-delay / 120-second event-age test budget without being mislabeled frozen or disconnected;
+- passed the dedicated 26-test source/realtime/MT5 regression, real temporary DuckDB/Parquet deterministic smoke, provider/mutation guards, Ruff, strict mypy, py_compile, US-D1 Data Plane, RT replay/projection and generic pytest/quality regressions;
+- retained `docs/status.toml` and all U.S./broker authority boundaries unchanged: replay/FX/delayed fixtures prove engineering behavior only and do not satisfy US-D3, current U.S. market-data, CFD microstructure, PAPER, execution or live-capital acceptance.
+
 ## 2026-09-01 — U.S. minute Data Plane closure and sessionization start (US-D1 → US-D2)
 
 - accepted real local US-D1 smoke `minute-store-smoke-ac583e1435f96a227f460f00` over four seed assets with 129,398 rows and three routed monthly partitions under the frozen 512MB / 2-thread / 4GB DuckDB execution policy;
