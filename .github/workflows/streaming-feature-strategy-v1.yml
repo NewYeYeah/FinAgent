@@ -1,0 +1,99 @@
+name: streaming-feature-strategy-v1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/realtime/streaming_resample.py"
+      - "src/finagent/realtime/streaming_features.py"
+      - "src/finagent/realtime/streaming_research.py"
+      - "src/finagent/realtime/__init__.py"
+      - "src/finagent/realtime/algorithm.py"
+      - "src/finagent/realtime/database_replay.py"
+      - "src/finagent/data/minute_transform/resample.py"
+      - "src/finagent/research/us_baselines.py"
+      - "scripts/smoke_streaming_feature_strategy.py"
+      - "tests/test_streaming_feature_strategy_v1.py"
+      - "docs/guides/realtime-source-development-model.md"
+      - ".github/workflows/streaming-feature-strategy-v1.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/finagent/realtime/streaming_resample.py"
+      - "src/finagent/realtime/streaming_features.py"
+      - "src/finagent/realtime/streaming_research.py"
+      - "src/finagent/realtime/__init__.py"
+      - "src/finagent/realtime/algorithm.py"
+      - "src/finagent/realtime/database_replay.py"
+      - "src/finagent/data/minute_transform/resample.py"
+      - "src/finagent/research/us_baselines.py"
+      - "scripts/smoke_streaming_feature_strategy.py"
+      - "tests/test_streaming_feature_strategy_v1.py"
+      - "docs/guides/realtime-source-development-model.md"
+      - ".github/workflows/streaming-feature-strategy-v1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  streaming-feature-strategy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused streaming feature integration regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_streaming_feature_strategy_v1.py \
+            tests/test_streaming_source_harness_v1.py \
+            tests/test_us_d2_resampling.py \
+            tests/test_us_b0_baseline_contracts.py \
+            tests/test_us_b0_evaluation_core.py
+      - name: Deterministic streaming feature smoke
+        run: uv run --frozen python scripts/smoke_streaming_feature_strategy.py
+      - name: Provider and authority boundary guard
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          provider_neutral = (
+              Path("src/finagent/realtime/streaming_resample.py"),
+              Path("src/finagent/realtime/streaming_features.py"),
+              Path("src/finagent/realtime/streaming_research.py"),
+          )
+          for path in provider_neutral:
+              text = path.read_text(encoding="utf-8").lower()
+              for forbidden in ("metatrader5", "database_replay", "mt5_source"):
+                  if forbidden in text:
+                      raise SystemExit(f"provider-specific dependency leaked into {path}: {forbidden}")
+              for mutation in ("order_send(", "symbol_select(", "market_book_add("):
+                  if mutation in text:
+                      raise SystemExit(f"broker mutation surface leaked into {path}: {mutation}")
+          PY
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/realtime/streaming_resample.py \
+            src/finagent/realtime/streaming_features.py \
+            src/finagent/realtime/streaming_research.py \
+            src/finagent/realtime/__init__.py \
+            scripts/smoke_streaming_feature_strategy.py \
+            tests/test_streaming_feature_strategy_v1.py
+          uv run --frozen mypy --strict \
+            src/finagent/realtime/streaming_resample.py \
+            src/finagent/realtime/streaming_features.py \
+            src/finagent/realtime/streaming_research.py \
+            scripts/smoke_streaming_feature_strategy.py
+          uv run --frozen python -m py_compile \
+            src/finagent/realtime/streaming_resample.py \
+            src/finagent/realtime/streaming_features.py \
+            src/finagent/realtime/streaming_research.py \
+            scripts/smoke_streaming_feature_strategy.py
