@@ -38,7 +38,7 @@ class USR1StatisticalEvaluationPolicy:
     long_short_semantics: str = "equal_weight_top_quantile_minus_bottom_quantile"
     turnover_semantics: str = "half_l1_long_short_weight_change_reset_at_session_boundary"
     boundary_label_policy: str = "skip_only_when_all_available_features_target_crosses_session"
-    partial_label_policy: str = "technical_blocker"
+    partial_label_policy: str = "omit_entire_formation_cross_section"
     schema_version: str = "finagent.us-r1-statistical-evaluation-policy.v1"
 
     def __post_init__(self) -> None:
@@ -76,8 +76,8 @@ class USR1StatisticalEvaluationPolicy:
             "skip_only_when_all_available_features_target_crosses_session"
         ):
             raise ValueError("US-R1 v1 boundary-label semantics are frozen")
-        if self.partial_label_policy != "technical_blocker":
-            raise ValueError("US-R1 v1 partial-label semantics are fail-closed")
+        if self.partial_label_policy != "omit_entire_formation_cross_section":
+            raise ValueError("US-R1 v1 partial-label semantics require symmetric complete cases")
 
     @property
     def policy_id(self) -> str:

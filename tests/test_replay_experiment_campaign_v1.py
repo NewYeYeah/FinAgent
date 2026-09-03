@@ -177,7 +177,9 @@ def test_replay_campaign_proves_exact_streaming_batch_parity(tmp_path: Path) -> 
         )
     )
 
-    assert report.passed
+    assert report.passed, tuple(
+        item.to_dict() for item in report.parity_checks if not item.equal
+    )
     assert report.blockers == ()
     assert len(report.batch_slices) == 5
     assert len(report.parity_checks) == 16

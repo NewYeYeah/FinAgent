@@ -11,8 +11,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Freeze US-R1 multi-frequency feature-formation semantics. Structural A0 "
-            "window_bars are preserved at 5m/15m/30m and evaluated by the existing B0/A0 "
-            "feature evaluator. No A0 result or market data is consumed."
+            "endpoint spans are converted from the 15m base interval to 5m/15m/30m and "
+            "evaluated by the existing B0/A0 feature evaluator. No A0 result or market "
+            "data is consumed."
         )
     )
     parser.add_argument(

@@ -26,7 +26,7 @@ from finagent.data.minute_transform import (
 from finagent.data.query import MarketDataField, MarketDataQuery, SessionPolicy
 from finagent.domain.labels import AvailabilityPolicy, ResearchPriceBasis
 from finagent.domain.market_bars import BarInterval
-from finagent.research.us_baseline_materialization import bind_us_b0_run_spec
+from finagent.research.us_baseline_authority import bind_current_us_b0_run_spec
 from finagent.research.us_baselines import canonical_us_baseline_denominator
 from finagent.research.us_r1_authority import require_us_r1_stage_authority
 from finagent.research.us_r1_contracts import validate_us_r1_protocol_document
@@ -258,7 +258,7 @@ def main() -> int:
 
     # Reuse the accepted B0 certification/universe parser solely for technical asset binding.
     # The returned B0 run-spec is deliberately not serialized into R1 evidence.
-    _technical_run_spec, assets = bind_us_b0_run_spec(
+    _technical_run_spec, assets = bind_current_us_b0_run_spec(
         _read_mapping(args.certification),
         _read_mapping(args.engineering_universe),
         denominator=canonical_us_baseline_denominator(),

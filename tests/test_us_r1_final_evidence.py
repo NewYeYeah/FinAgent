@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import UTC, datetime, timedelta
+import os
+import subprocess
+import sys
+from dataclasses import replace
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 
@@ -28,6 +32,7 @@ from finagent.research.us_r1_materialization import (
     USR1CandidateObservation,
     USR1ObservationArtifact,
     USR1ObservationRole,
+    compile_us_r1_feature_spec,
 )
 from finagent.research.us_r1_observation_io import read_us_r1_observation_file
 from finagent.research.us_r1_protocol import (
@@ -79,7 +84,7 @@ def _observations(
     reverse_label: bool = False,
 ) -> tuple[USR1CandidateObservation, ...]:
     candidate = _denominator().candidates[0].candidate
-    spec_id = candidate.compile_feature_spec().spec_id
+    spec_id = compile_us_r1_feature_spec(candidate, interval).spec_id
     start = datetime(2026, 1, 5, 14, 45, tzinfo=UTC)
     rows: list[USR1CandidateObservation] = []
     for period in range(periods):
@@ -199,7 +204,7 @@ def test_direction_is_frozen_from_train_even_when_oos_reverses() -> None:
     assert direction.direction(candidate_id) == 1
 
 
-def test_partial_label_missing_is_technical_blocker() -> None:
+def test_partial_label_missing_omits_same_entire_period_for_every_candidate() -> None:
     policy = canonical_us_r1_statistical_evaluation_policy()
     denominator = _denominator()
     candidate_id = denominator.candidates[0].candidate.candidate_id
@@ -227,7 +232,7 @@ def test_partial_label_missing_is_technical_blocker() -> None:
         label_available_at=None,
         label_unavailable_reason="target_minute_missing",
     )
-    statistics, _points = evaluate_us_r1_candidate_slice(
+    statistics, points = evaluate_us_r1_candidate_slice(
         rows,
         candidate_id=candidate_id,
         role=USR1ObservationRole.EVALUATION,
@@ -236,10 +241,10 @@ def test_partial_label_missing_is_technical_blocker() -> None:
         policy=policy,
         minimum_periods=20,
     )
-    assert not statistics.passed
-    assert any(
-        "partial_or_nonboundary_label_missing" in item for item in statistics.blockers
-    )
+    assert statistics.passed
+    assert len(points) == 23
+    assert statistics.partial_label_omitted_period_count == 1
+    assert statistics.blockers == ()
 
 
 def _metric_records(
@@ -497,8 +502,58 @@ def test_observation_file_parser_rehashes_bytes_and_candidate_identity(tmp_path)
     )
     parsed = read_us_r1_observation_file(path, artifact, denominator)
     assert parsed == (row,)
-    assert parsed[0].feature_spec_id == candidate.compile_feature_spec().spec_id
+    assert parsed[0].feature_spec_id == compile_us_r1_feature_spec(
+        candidate,
+        BarInterval.MINUTE_15,
+    ).spec_id
 
     path.write_bytes(payload.replace(b"0.0005", b"0.0006"))
     with pytest.raises(ValueError, match="SHA-256"):
         read_us_r1_observation_file(path, artifact, denominator)
+
+
+def test_observation_serialization_canonicalizes_equal_instants_to_utc() -> None:
+    row = _observations(
+        role=USR1ObservationRole.EVALUATION,
+        interval=BarInterval.MINUTE_15,
+        horizon=60,
+        periods=1,
+    )[0]
+    plus_eight = timezone(timedelta(hours=8))
+    shifted = replace(
+        row,
+        event_time=row.event_time.astimezone(plus_eight),
+        feature_available_at=row.feature_available_at.astimezone(plus_eight),
+        label_available_at=row.label_available_at.astimezone(
+            plus_eight
+        )
+        if row.label_available_at
+        else None,
+    )
+    document = shifted.to_dict()
+    assert document["event_time"] == row.event_time.isoformat()
+    assert document["feature_available_at"] == row.feature_available_at.isoformat()
+    assert document["label_available_at"] == row.label_available_at.isoformat()
+
+
+def test_turnover_is_byte_deterministic_across_python_hash_seeds() -> None:
+    script = (
+        "from finagent.research.us_r1_statistics import _one_way_turnover;"
+        "assets={f'A{i:03d}' for i in range(200)};"
+        "previous={asset:0.0 for asset in assets};"
+        "current={asset:(1e16 if asset=='A000' else 1.0) for asset in assets};"
+        "print(_one_way_turnover(previous,current).hex())"
+    )
+    results: list[str] = []
+    for seed in ("1", "2", "3"):
+        environment = os.environ.copy()
+        environment["PYTHONHASHSEED"] = seed
+        completed = subprocess.run(
+            [sys.executable, "-c", script],
+            check=True,
+            capture_output=True,
+            text=True,
+            env=environment,
+        )
+        results.append(completed.stdout.strip())
+    assert len(set(results)) == 1

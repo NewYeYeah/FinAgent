@@ -51,6 +51,8 @@ from finagent.research.us_r1_materialization import (
     USR1ObservationDiagnostics,
     USR1ObservationRole,
     canonical_us_r1_feature_formation_policy,
+    compile_us_r1_feature_spec,
+    effective_us_r1_window_bars,
     materialize_us_r1_candidate_observations,
 )
 from finagent.research.us_r1_materialization_evidence import (
@@ -512,8 +514,13 @@ def test_multifrequency_materialization_reuses_structural_feature_evaluator() ->
     assert observations
     assert all(item.signal_interval is BarInterval.MINUTE_5 for item in observations)
     assert any(item.feature_value is not None for item in observations)
-    expected_spec = denominator.candidates[0].candidate.compile_feature_spec().spec_id
+    candidate = denominator.candidates[0].candidate
+    expected_spec = compile_us_r1_feature_spec(candidate, BarInterval.MINUTE_5).spec_id
     assert {item.feature_spec_id for item in observations} == {expected_spec}
+    assert effective_us_r1_window_bars(candidate, BarInterval.MINUTE_15) == candidate.window_bars
+    assert effective_us_r1_window_bars(candidate, BarInterval.MINUTE_5) == (
+        1 + (candidate.window_bars - 1) * 3
+    )
 
     missing_rows = _joined_rows(assets=("AAA",))
     missing = validate_us_r1_input_rows(missing_rows, expected_assets=("AAA", "BBB"))
@@ -524,6 +531,32 @@ def test_multifrequency_materialization_reuses_structural_feature_evaluator() ->
     bad_time[0]["target_available_at"] = bad_time[0]["available_at"]
     with pytest.raises(ValueError, match="after feature formation"):
         validate_us_r1_input_rows(tuple(bad_time), expected_assets=("AAA", "BBB"))
+
+    missing_anchor = list(_joined_rows())
+    missing_anchor[0] = dict(missing_anchor[0])
+    missing_anchor[0]["label_row_present"] = False
+    missing_anchor[0]["label_available"] = None
+    missing_anchor[0]["source_available_at"] = None
+    missing_anchor[0]["source_price"] = None
+    missing_anchor[0]["target_available_at"] = None
+    missing_anchor[0]["label_value"] = None
+    missing_anchor[0]["unavailable_reason"] = None
+    assert validate_us_r1_input_rows(
+        tuple(missing_anchor), expected_assets=("AAA", "BBB")
+    ) == ()
+    _observations, missing_anchor_diagnostics = materialize_us_r1_candidate_observations(
+        tuple(missing_anchor),
+        denominator,
+        role=USR1ObservationRole.EVALUATION,
+        signal_interval=BarInterval.MINUTE_5,
+        label_horizon_trading_minutes=60,
+        expected_assets=("AAA", "BBB"),
+    )
+    assert missing_anchor_diagnostics.label_anchor_missing_count == 1
+    assert any(
+        item.startswith("label_anchor_missing:")
+        for item in missing_anchor_diagnostics.blockers
+    )
 
 
 def _slice(role: USR1ObservationRole, interval: BarInterval, horizon: int) -> USR1MaterializationSlice:

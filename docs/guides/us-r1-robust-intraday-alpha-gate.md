@@ -74,11 +74,45 @@ The exact three OOS evaluation windows therefore remain the B0 frozen windows. T
 
 ## Multi-frequency formation semantics
 
-The A0 candidate identity remains structural. US-R1 freezes this rule before results:
+The A0 candidate identity remains structural. The initial R1 v1 freeze used this rule:
 
-> keep the same structural `window_bars` at 5m, 15m and 30m rather than re-optimizing or rescaling the window to preserve elapsed minutes.
+> keep the same structural `window_bars` at 5m, 15m and 30m.
 
-This deliberately tests whether the same structural relation survives a sampling-frequency perturbation. The implementation reuses the existing B0/A0 `evaluate_us_baseline_feature()` function; signal frequency is separate evidence metadata and is never hidden inside a second feature engine.
+The complete v1 inference correctly terminated `SYSTEM_FAILURE`: candidates with
+10–13 bar windows had 0–18 usable 30m/60m periods because a regular XNYS session has
+only about 13 completed 30m bars and the 60m label removes the session tail. The rule
+also changed the economic lookback from, for example, 65 minutes at 5m to 390 minutes
+at 30m for the same 13-bar candidate. It therefore did not isolate frequency robustness
+and made part of the frozen denominator structurally unevaluable.
+
+R1 v2 preserves the approximate elapsed span between the first and last bar instead:
+
+```text
+effective_window_bars = 1 + ceil((A0_window_bars - 1) * 15 / target_interval_minutes)
+```
+
+The 15m primary specification is unchanged. The deterministic conversion is applied to
+every candidate at 5m and 30m before any v2 result is inspected. Candidate IDs, the full
+37-candidate multiplicity denominator, same-session restriction, minimum period count,
+folds and Alpha thresholds are unchanged. The existing B0/A0
+`evaluate_us_baseline_feature()` remains the only formula engine; R1 merely supplies a
+frequency-bound feature specification. The failed v1 evidence is retained and v2 reruns
+all folds rather than selectively repairing failed candidates.
+
+The first v2 final assembly also exposed a process-level replay defect in the
+implementation of one-way turnover: the mathematical sum iterated a Python
+`set`, so different hash seeds could change the last floating-point bits. This
+was not an Alpha-policy change. The implementation now sorts asset IDs and uses
+`math.fsum`; a cross-hash-seed regression test was added, the non-replayable v2
+final artifacts were retained separately, and all downstream statistics were
+regenerated from the unchanged v2 fold observations.
+
+The streaming/batch parity campaign then exposed a second representation-level
+issue: DuckDB returned the same absolute label clock using the host timezone,
+while the streaming path used UTC. R1 now canonicalizes every observation clock
+to UTC before serialization. All folds and downstream evidence were regenerated;
+period counts, omissions, family evidence and the deterministic assessment ID
+remained unchanged. The prior host-offset artifacts are retained separately.
 
 All formation remains:
 
@@ -130,7 +164,18 @@ The period-statistics policy is a separate pre-result content-addressed contract
 - **turnover:** one-way half-L1 change in the long/short weight vector, reset at each session boundary;
 - **coverage:** valid feature+label cells divided by label-eligible cells for each evaluated period;
 - **boundary labels:** a period is skipped only when all feature-available cells are unavailable because the target crosses the session boundary;
-- **partial/non-boundary missing labels:** technical blocker, never silently dropped.
+- **partial/non-boundary missing labels:** omit the entire formation cross-section for
+  every candidate in that slice and record the omission count; never fill a price,
+  delete only the missing asset, or reweight the remaining assets.
+
+This complete-case rule was frozen before any R1 result was produced. It is the same
+bounded response accepted at B0 for the known isolated same-source EEM target-minute
+gap. Keeping the older absolute blocker would make R1 deterministically fail on a
+known unavailable source repair rather than test robustness. The omission is global to
+the slice formation time, so even a candidate without an available feature for the
+affected asset loses the same period. Community/MT5 delayed data is not used to fill the
+research source, and the universe, folds, thresholds, directions and multiplicity
+denominator remain unchanged.
 
 Raw period metrics remain in the original factor sign. Direction normalization is applied only by the existing family-evidence builder after TRAIN direction is frozen. This prevents fold-specific or frequency-specific sign flipping.
 
@@ -312,3 +357,33 @@ python scripts\review_us_r1_alpha_gate.py `
 ```
 
 All formal R1 commands remain stage-gated. Do not run denominator/materialization/inference/review until project authority actually reaches US-R1.
+
+## 2026-09-04 formal closeout
+
+R1 completed with the authoritative reviewed terminal
+`NO_ROBUST_FACTOR_FAMILY`. The frozen 37-candidate denominator was evaluated in
+all three folds; each fold produced 6/6 required slices with no materialization
+blocker, and the minimum candidate/slice metric-period counts were 45, 50 and
+49. The bounded complete-case policy recorded 0, 37 and 185 candidate/slice
+period omissions respectively; each nonzero count is one common affected
+formation per candidate in the applicable slice, never a price fill or
+asset-specific reweight.
+
+Frozen identities:
+
+- formation policy: `us-r1-feature-formation-policy-096359410aa2a5d853272228`;
+- fold manifests: `us-r1-fold-materialization-52799b1ec6d739328307de95`,
+  `us-r1-fold-materialization-c2fffad6884c771ce49a2c28`, and
+  `us-r1-fold-materialization-fc7b20646f9b8c0ab08889a3`;
+- family evidence: `us-r1-family-evidence-2d2e4657e124fc5066b05a7d`;
+- deterministic assessment: `us-r1-alpha-gate-assessment-b17c29760e78a55906b3eac9`;
+- independent review: `us-r1-alpha-gate-review-eb56532850e3925100f43e43`;
+- reviewed manifest: `us-r1-reviewed-evidence-c01346b54fad55b0d181c0ed`.
+
+The final assessment has zero technical blockers and zero robust candidates.
+The review grants negative Alpha-Gate authority only:
+`alpha_gate_authority=true`, while `alpha_authority`, execution/order/live-capital
+authority and `supports_us_x0_progression` remain false. R1 is therefore closed,
+but the deployment branch stops before US-X0. Any continuation must be a newly
+preregistered research iteration rather than a post-result relaxation of this
+Gate.

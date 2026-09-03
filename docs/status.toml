@@ -5,8 +5,8 @@ planning_document = "docs/development/current-plan.md"
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
 current_stage = "US-R1"
-current_stage_status = "ready_for_candidate_denominator_handoff"
-next_stage = "US-X0"
+current_stage_status = "accepted_no_robust_factor_family_terminal"
+next_stage = "research iteration"
 
 [release.ashare_historical_v1]
 status = "accepted"
@@ -585,8 +585,9 @@ focused_test_status = "passed"
 next_action = "enter US-R1 with the complete PILOT three-run union and no new priority Agent complexity"
 
 [stage.us_r1]
-status = "ready_for_candidate_denominator_handoff"
+status = "accepted_no_robust_factor_family_terminal"
 started_at = "2026-09-04"
+accepted_at = "2026-09-04"
 a0_terminal_phase = "PILOT"
 a0_terminal_gate_decision = "PILOT_DO_NOT_PROCEED_TO_FORMAL"
 a0_terminal_gate_review_id = "us-agent-value-gate-review-7725562ec8f8e6a589f63e08"
@@ -597,10 +598,64 @@ candidate_denominator_prepared = true
 candidate_denominator_id = "us-r1-denominator-be5184ac3883b0799c00c5dc"
 candidate_denominator_count = 37
 candidate_denominator_performance_filter_applied = false
+research_protocol_id = "us-r1-protocol-451a26b7217b52cbb20d2449"
+walk_forward_protocol_id = "us-r1-walk-forward-bc5e8d07026b0ef1627002a1"
+statistical_evaluation_policy_id = "us-r1-statistical-evaluation-policy-59b2743189d62947a34fdbdb"
+alpha_gate_policy_id = "us-r1-alpha-gate-policy-92c02d52e0b6227daaf8da4c"
+initial_formation_policy_id = "us-r1-feature-formation-policy-d025d4f6fefbd42c9b139e79"
+initial_formation_policy_terminal = "SYSTEM_FAILURE"
+initial_formation_policy_failure_reason = "same structural bar count changed elapsed lookback across frequencies and made long-window 30m candidates structurally unevaluable"
+initial_formation_policy_archive = "reports/us_r1/superseded_v1_system_failure_20260904"
+formation_policy_amendment = "elapsed_time_equivalent_endpoint_span_ceil"
+formation_policy_amendment_reason = "isolate frequency robustness while preserving each A0 candidate's 15m endpoint span; no result-dependent candidate, fold, threshold, minimum-period or multiplicity change"
+feature_formation_policy_id = "us-r1-feature-formation-policy-096359410aa2a5d853272228"
+fold_materialization_manifest_ids = [
+  "us-r1-fold-materialization-52799b1ec6d739328307de95",
+  "us-r1-fold-materialization-c2fffad6884c771ce49a2c28",
+  "us-r1-fold-materialization-fc7b20646f9b8c0ab08889a3",
+]
+fold_slice_counts = [6, 6, 6]
+fold_verified_gap_trading_minutes = [3900, 3510, 3900]
+fold_materialization_blocker_counts = [0, 0, 0]
+fold_statistics_report_ids = [
+  "us-r1-fold-statistics-88658c6577488d49e0bd1780",
+  "us-r1-fold-statistics-57012d2daf7930edf786ef26",
+  "us-r1-fold-statistics-c34b8cda420bc99e097f6b9b",
+]
+fold_minimum_metric_period_counts = [45, 50, 49]
+partial_label_policy = "omit_entire_formation_cross_section"
+partial_label_policy_reason = "bounded complete-case response to the accepted same-source EEM target-minute gap; all candidates lose the same affected formation and no price is filled or asset reweighted"
+fold_partial_label_omitted_candidate_slice_period_counts = [0, 37, 185]
+direction_preparation_report_id = "us-r1-direction-preparation-04fd8ed5f9ef57c6c806f551"
+direction_evidence_id = "us-r1-direction-set-a3767b20fec5fbbc19abba6d"
+period_metric_artifact_ids = [
+  "us-r1-period-metrics-eabaa5ad8a01e6f9f7a84a4f",
+  "us-r1-period-metrics-bafe06114b9bec9fae6e3017",
+  "us-r1-period-metrics-52f9d04f85ea87d48f5d8a5b",
+]
+turnover_determinism_fix = "canonical_asset_sort_plus_math_fsum"
+turnover_determinism_fix_reason = "independent replay exposed Python hash-seed-dependent floating summation; the mathematical one-way-turnover definition and all Gate thresholds remain unchanged"
+nonreplayable_v2_archive = "reports/us_r1/superseded_v2_nondeterministic_turnover_20260904"
+timestamp_canonicalization = "UTC_iso8601_for_all_r1_observation_clocks"
+timestamp_canonicalization_reason = "streaming/batch parity exposed equal instants serialized with host-dependent offsets; UTC changes only representation and leaves samples, values, boundaries and the final assessment unchanged"
+noncanonical_timezone_archive = "reports/us_r1/superseded_v2_noncanonical_timezone_20260904"
+family_evidence_id = "us-r1-family-evidence-2d2e4657e124fc5066b05a7d"
+alpha_gate_assessment_id = "us-r1-alpha-gate-assessment-b17c29760e78a55906b3eac9"
+inference_graph_id = "us-r1-inference-graph-e046766caec2c08580036f2d"
+alpha_gate_review_id = "us-r1-alpha-gate-review-eb56532850e3925100f43e43"
+alpha_gate_reviewed_at = "2026-09-04T06:18:00+08:00"
+reviewed_evidence_manifest_id = "us-r1-reviewed-evidence-c01346b54fad55b0d181c0ed"
+terminal = "NO_ROBUST_FACTOR_FAMILY"
+technical_blocker_count = 0
+robust_candidate_count = 0
+alpha_gate_authority = true
 alpha_authority = false
 execution_authority = false
-stage_exit_gate_passed = false
-next_action = "freeze and execute the preregistered US-R1 robust walk-forward and Alpha Gate"
+order_authority = false
+live_capital_authority = false
+supports_us_x0_progression = false
+stage_exit_gate_passed = true
+next_action = "preregister a new research iteration; do not progress to US-X0 without a later reviewed ROBUST_FACTOR_FAMILY terminal"
 
 [documentation]
 governance_version = "1.1"

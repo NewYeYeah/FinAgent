@@ -101,8 +101,8 @@ def _quantile_portfolio(
 
 
 def _one_way_turnover(previous: Mapping[str, float], current: Mapping[str, float]) -> float:
-    assets = set(previous).union(current)
-    return 0.5 * sum(
+    assets = sorted(set(previous).union(current))
+    return 0.5 * math.fsum(
         abs(current.get(asset, 0.0) - previous.get(asset, 0.0)) for asset in assets
     )
 
@@ -118,7 +118,12 @@ class USR1CandidateSliceStatistics:
     insufficient_cross_section_period_count: int
     mean_raw_rank_ic: float | None
     blockers: tuple[str, ...]
+    partial_label_omitted_period_count: int = 0
     schema_version: str = "finagent.us-r1-candidate-slice-statistics.v1"
+
+    def __post_init__(self) -> None:
+        if self.partial_label_omitted_period_count < 0:
+            raise ValueError("partial_label_omitted_period_count must be non-negative")
 
     @property
     def passed(self) -> bool:
@@ -147,6 +152,10 @@ class USR1CandidateSliceStatistics:
             "passed": self.passed,
             "blockers": list(self.blockers),
         }
+        if self.partial_label_omitted_period_count:
+            payload["partial_label_omitted_period_count"] = (
+                self.partial_label_omitted_period_count
+            )
         if include_id:
             payload["statistics_id"] = self.statistics_id
         return payload
@@ -395,6 +404,22 @@ def evaluate_us_r1_candidate_slice(
     policy: USR1StatisticalEvaluationPolicy,
     minimum_periods: int,
 ) -> tuple[USR1CandidateSliceStatistics, tuple[USR1PeriodMetricPoint, ...]]:
+    # Label availability is invariant across candidates.  Determine partial
+    # formations from the complete slice before selecting one candidate so the
+    # same period is omitted from every candidate, including candidates whose
+    # feature happens to be unavailable for the affected asset.
+    all_groups: dict[datetime, list[USR1CandidateObservation]] = defaultdict(list)
+    for observation in observations:
+        all_groups[observation.feature_available_at].append(observation)
+    partial_label_formations = {
+        formation_at
+        for formation_at, period_rows in all_groups.items()
+        if any(
+            row.realized_label is None
+            and row.label_unavailable_reason != "target_crosses_session"
+            for row in period_rows
+        )
+    }
     rows = tuple(row for row in observations if row.candidate_id == candidate_id)
     if any(
         row.role is not role
@@ -409,12 +434,16 @@ def evaluate_us_r1_candidate_slice(
     points: list[USR1PeriodMetricPoint] = []
     blockers: list[str] = []
     boundary_count = 0
+    partial_label_omitted_count = 0
     insufficient_count = 0
     previous_session: str | None = None
     previous_weights: dict[str, float] = {}
 
     for formation_at in sorted(groups):
         period_rows = groups[formation_at]
+        if formation_at in partial_label_formations:
+            partial_label_omitted_count += 1
+            continue
         session_ids = {row.session_id for row in period_rows}
         if len(session_ids) != 1:
             blockers.append(f"mixed_session_id:{formation_at.isoformat()}")
@@ -431,7 +460,10 @@ def evaluate_us_r1_candidate_slice(
             ):
                 boundary_count += 1
                 continue
-            blockers.append(f"partial_or_nonboundary_label_missing:{formation_at.isoformat()}")
+            # The canonical complete-case policy should have classified every
+            # non-boundary missing label above.  Retain this defensive blocker
+            # for malformed/internally inconsistent observations.
+            blockers.append(f"unclassified_missing_label:{formation_at.isoformat()}")
             continue
         valid_rows = feature_rows
         if len(valid_rows) < policy.minimum_cross_section:
@@ -490,6 +522,7 @@ def evaluate_us_r1_candidate_slice(
             None if not points else float(np.mean([point.rank_ic for point in points]))
         ),
         blockers=tuple(dict.fromkeys(blockers)),
+        partial_label_omitted_period_count=partial_label_omitted_count,
     )
     return statistics, tuple(points)
 
