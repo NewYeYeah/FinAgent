@@ -1,0 +1,66 @@
+name: us-d3-simulation-admission
+
+on:
+  pull_request:
+    paths:
+      - "src/finagent/brokers/mt5/simulation_all_day_preflight.py"
+      - "src/finagent/data/us_minute/simulation_certification.py"
+      - "scripts/smoke_mt5_simulation_all_day_preflight.py"
+      - "scripts/freeze_us_d3_simulation_certification_policy.py"
+      - "scripts/certify_us_d3_simulation_research.py"
+      - "scripts/review_us_d3_simulation_certification.py"
+      - "tests/test_us_d3_simulation_admission.py"
+      - "tests/test_us_i0_delayed_reference.py"
+      - "tests/test_us_i0_simulation_universe.py"
+      - "docs/guides/us-d3-simulation-admission.md"
+      - "docs/guides/us-i0-simulation-universe.md"
+      - "docs/status.toml"
+      - ".github/workflows/us-d3-simulation-admission.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  us-d3-simulation-admission:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_us_i0_delayed_reference.py \
+            tests/test_us_i0_simulation_universe.py \
+            tests/test_us_d3_simulation_admission.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/brokers/mt5/simulation_all_day_preflight.py \
+            src/finagent/data/us_minute/simulation_certification.py \
+            scripts/smoke_mt5_simulation_all_day_preflight.py \
+            scripts/freeze_us_d3_simulation_certification_policy.py \
+            scripts/certify_us_d3_simulation_research.py \
+            scripts/review_us_d3_simulation_certification.py
+          uv run --frozen mypy --strict \
+            src/finagent/brokers/mt5/simulation_all_day_preflight.py \
+            src/finagent/data/us_minute/simulation_certification.py \
+            scripts/smoke_mt5_simulation_all_day_preflight.py \
+            scripts/freeze_us_d3_simulation_certification_policy.py \
+            scripts/certify_us_d3_simulation_research.py \
+            scripts/review_us_d3_simulation_certification.py
+          uv run --frozen python -m py_compile \
+            src/finagent/brokers/mt5/simulation_all_day_preflight.py \
+            src/finagent/data/us_minute/simulation_certification.py \
+            scripts/smoke_mt5_simulation_all_day_preflight.py \
+            scripts/freeze_us_d3_simulation_certification_policy.py \
+            scripts/certify_us_d3_simulation_research.py \
+            scripts/review_us_d3_simulation_certification.py
