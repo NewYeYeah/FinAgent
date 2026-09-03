@@ -119,6 +119,7 @@ If source code, tests and current docs disagree, do not silently reconcile them.
 | How should I run/use something? | relevant `guides/` document |
 | How may FX be used during MT5/U.S. development? | `architecture/decisions.md` D24 → `guides/mt5-continuous-smoke-and-deferred-us-i0.md` |
 | Which realtime tasks actually require the U.S. session, and how should an active-session run be prepared? | `guides/realtime-development-validation.md` → relevant stage guide/source |
+| Which source should algorithms/realtime development use, and how must delayed feeds be handled? | `guides/realtime-source-development-model.md` → RT/MT5 source + algorithm-runner tests |
 | What does a test failure mean? | `testing/strategy.md` + failing test + runtime source |
 | What did Historical v1.0 prove? | `releases/ashare-historical-v1.md` |
 | Why was code changed historically? | aggregate changelog → Git/PR |
@@ -137,6 +138,8 @@ If source code, tests and current docs disagree, do not silently reconcile them.
 9. **No-alpha is a valid research terminal.** Never fabricate strategy/portfolio evidence to make a release appear populated.
 10. **MT5 feed regimes are not interchangeable.** A passing FX fixture proves only the asset/feed-invariant engineering behavior it actually exercised. It cannot satisfy U.S. universe, delayed-reference, reconciliation, US-D3, PAPER or live-broker evidence.
 11. **Realtime development is replay-first, broker-last.** Do not wait for a live interface to implement/test provider-neutral contracts, ReplayGateway, deterministic projections, restart behavior or evidence validators; reserve real-session/broker interaction for the smallest acceptance surface that actually requires it.
+12. **Source substitution is by canonical contract, not by market identity.** Algorithms must consume canonical events/state through a provider-neutral source/subscription boundary. Use local U.S. database replay for market/algorithm semantics, FX live for connected transport/runtime semantics, and target U.S. CFD only for final broker/source freeze.
+13. **Delayed feeds are a supported degraded mode, not “bad current data.”** Preserve measured/declared delay through `event_time`/`received_at` and health/freshness state. If delay exceeds a strategy decision budget, fail closed or downgrade the strategy; never relabel delayed observations as current.
 
 ### 5.1 MT5 feed-regime protocol
 
@@ -150,8 +153,18 @@ Lane A — FX continuous/near-continuous fixture
 Lane B — MetaQuotes-Demo delayed U.S. equity reference
     authority: simulation EngineeringUniverse / delayed-reference evidence only
 
-Lane C — future target-broker current U.S. equity/CFD feed
-    authority: separately admitted broker-specific PAPER/live-current evidence
+Lane C — future target-broker U.S. equity/CFD feed
+    authority: separately admitted broker-specific source/PAPER evidence
+    timing class: CURRENT, DELAYED or UNKNOWN must be measured/frozen; never assumed
+```
+
+Development source roles are orthogonal to those authority lanes:
+
+```text
+DEV-REPLAY — certified/local U.S. historical DB -> paced canonical BarEvent stream
+DEV-LIVE   — FX live -> real MT5 transport/runtime stream
+DEGRADED   — delayed U.S./future delayed broker source -> structural delay/freshness tests
+FINAL      — target U.S. CFD -> broker/server/account/source/execution freeze
 ```
 
 Rules:
@@ -162,6 +175,9 @@ Rules:
 - the continuous FX preflight must remain outside the U.S. certification denominator;
 - delayed U.S. quotes may support only the authority carried by the simulation policy/report and never current executable spread, current liquidity, target-broker account, order or live-capital authority;
 - future broker/server/account evidence is a new admission chain; never auto-promote Lane A or Lane B identities into Lane C;
+- do not discard Lane B because development can proceed with FX/replay: keep it as the canonical structural delayed-feed/degraded-mode case; a future delayed-only broker should reuse the same semantics, not a special workaround;
+- a target broker may be admitted as interface-compatible while still classified delayed-only; current-market strategy authority remains false when the measured delay exceeds its freshness/decision budget;
+- never manufacture QuoteEvent bid/ask/tick history from OHLCV-only database rows; database replay emits only source-supported event types;
 - governed US-I0 symbol visibility remains an operator boundary: do not add `symbol_select()` to force Market Watch state;
 - preserve frozen S2 and MT5-D0 thresholds; do not weaken quote age, delayed anchor, minimum universe count, 50-bps delayed diagnostic spread, seed retention, overlap or offset thresholds to obtain a pass;
 - where MT5 exposes them, prefer preserving `subscription_delay`, `chart_mode`, `trade_exemode`, `ticks_bookdepth` and related symbol/server identity fields in capability evidence; absence of these fields must not be filled by inference.
@@ -221,6 +237,32 @@ stage/broker authority still requires the specific real-session or broker eviden
 ```
 
 Use `docs/guides/realtime-development-validation.md` as the operator checklist for pre-session preparation, active-session capture and post-capture offline certification.
+
+### 5.3 Algorithm streaming-source protocol
+
+Normal algorithm/runtime development should use one subscription contract with interchangeable sources:
+
+```text
+DatabaseReplaySource  -> canonical BarEvent / source-supported events
+MT5 FX live source    -> canonical QuoteEvent / BarEvent / ConnectionEvent
+MT5 delayed source    -> same canonical events + explicit delay/freshness state
+MT5 target CFD source -> same canonical events + broker/source freeze identity
+```
+
+Rules:
+
+1. The algorithm must not import/use DuckDB or MetaTrader5 provider objects directly.
+2. Preserve market chronology: historical replay changes delivery pacing, not `event_time`.
+3. Provide 1x, accelerated, as-fast-as-possible and step replay modes; deterministic mode must reproduce event/state identities.
+4. Maintain a feed timing profile with measured/declared delay, latency/jitter/freshness metadata and source identity.
+5. Test delayed delivery separately from stale/frozen data. A progressing 900-second delayed feed is structurally different from a disconnected or non-progressing feed.
+6. Compare effective source delay with the strategy’s decision/freshness budget before allowing signal/execution use.
+7. Use FX to validate live transport/runtime only; use U.S. historical replay for U.S. algorithm/cross-sectional behavior; use target U.S. CFD for final broker/source semantics.
+8. Keep final source capability honest: `CURRENT`, `DELAYED`, `REPLAY` or `UNKNOWN` are distinct states.
+9. Provider/source switching must happen outside algorithm logic. The same `AlgorithmRunner`/feature/state path should process replay and live sources.
+10. Final CFD freeze should be a differential acceptance: compare canonical contract/state behavior between replay/FX-hardened implementation and the target broker, then freeze only broker/source-specific differences.
+
+See `docs/guides/realtime-source-development-model.md` for the development model and next implementation increment.
 
 ## 6. Stage implementation protocol
 
@@ -322,6 +364,9 @@ Before approving a documentation change, verify:
 - [ ] provider/API capability is not confused with FinAgent adapter capability;
 - [ ] FX engineering smoke is not described or consumed as U.S. research/MT5-D0/US-D3/PAPER/live evidence;
 - [ ] delayed U.S. simulation evidence is not described as current executable-spread or target-broker authority;
+- [ ] delayed-feed compatibility is not removed merely because FX/database replay are the normal development sources;
+- [ ] database replay does not invent bid/ask/tick/order-book data absent from the historical source;
+- [ ] algorithms are provider-neutral and do not branch on DuckDB/MT5 source implementations;
 - [ ] realtime work is not described as globally blocked on live data when D0/D1 replay/engineering validation is sufficient;
 - [ ] replay evidence is not described as broker/PAPER/live readiness;
 - [ ] local Windows commands follow the Conda + PowerShell convention;
@@ -355,5 +400,7 @@ Documentation index: `docs/README.md`.
 MT5 feed-regime guide: `docs/guides/mt5-continuous-smoke-and-deferred-us-i0.md`.
 
 Realtime development / active-session workflow: `docs/guides/realtime-development-validation.md`.
+
+Realtime source / database replay / delayed-feed model: `docs/guides/realtime-source-development-model.md`.
 
 Current stage: `docs/status.toml`.

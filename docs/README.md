@@ -18,6 +18,7 @@ New readers should begin with the [project onboarding guide](guides/project-onbo
 | How are tests and acceptance gates structured? | [`testing/strategy.md`](testing/strategy.md) |
 | How do I use the system? | [`guides/`](guides/) |
 | How should I prepare for a U.S. active-session evidence run, and which realtime work can be done offline? | [`guides/realtime-development-validation.md`](guides/realtime-development-validation.md) |
+| Which source should realtime/algorithm development use, and how are delayed feeds handled? | [`guides/realtime-source-development-model.md`](guides/realtime-source-development-model.md) |
 | What exactly did a frozen release prove? | [`releases/`](releases/) |
 | What exactly changed in one implementation? | Git commit / pull-request history |
 

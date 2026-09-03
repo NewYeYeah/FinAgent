@@ -107,6 +107,43 @@ Keep deterministic synchronous historical execution separate from asynchronous b
 ### 2.12 Live Workbench is last
 Do not build live dashboards before the canonical event/state/reconciliation semantics they would display are accepted.
 
+### 2.13 Three-source realtime development model; delayed feeds are a first-class degraded mode
+FinAgent development uses three complementary market-data roles rather than treating one temporary broker feed as the universal development source:
+
+```text
+DEV-REPLAY   certified/local U.S. historical database -> paced canonical BarEvent stream
+             purpose: algorithm, feature, portfolio and stateful streaming development
+
+DEV-LIVE     FX (EURUSD / GBPUSD / USDJPY) -> real connected MT5 QuoteEvent stream
+             purpose: transport, clock, polling, reconnect, freshness and runtime integration
+
+FINAL-FREEZE target-broker U.S. CFD -> broker-specific current/delayed source + execution evidence
+             purpose: final symbol/contract/feed/execution/reconciliation freeze
+```
+
+The observed MetaQuotes-Demo delayed U.S. equity feed remains a required **degraded/delayed-feed compatibility profile**, not a discarded anomaly. FinAgent must preserve and test structural delay behavior because a future target broker may expose only polling or delayed market-data APIs.
+
+A source capability is therefore classified explicitly rather than inferred from ticker shape:
+
+```text
+CURRENT
+DELAYED
+REPLAY
+UNKNOWN
+```
+
+Rules:
+- algorithms consume provider-neutral canonical events/state, never MT5/DuckDB objects directly;
+- `event_time` remains source/market time and `received_at` remains delivery time; replay may pace delivery but must not rewrite market chronology;
+- delay/freshness is data, not a hidden adapter assumption: measured/declared source delay propagates into health/state and strategy admissibility;
+- a delayed source may pass transport/interface compatibility while failing a strategy freshness budget; this is an intentional terminal, not a reason to relabel the quote as current;
+- 1m OHLCV may generate truthful `BarEvent` replay only; it must not synthesize authoritative bid/ask/tick/order-book history that the source never contained;
+- FX validates only asset/feed-invariant runtime behavior. It does not become U.S. research or CFD microstructure evidence;
+- the current Lane B delayed U.S. evidence chain remains governed by its frozen policies/Issue until an explicit later governance change; normal implementation work must not be blocked on collecting it;
+- final target-broker U.S. CFD acceptance rebinds broker/server/account/symbol/contract/source identities. If that broker is delayed-only, the previously tested degraded mode is used and current-market strategy authority remains unavailable unless another admitted current source exists.
+
+This is a source-substitution architecture, not a market-substitution claim.
+
 ---
 
 # 3. DOC-0 — Documentation Authority Reset
@@ -557,6 +594,17 @@ Create the data gate that must pass before robust Agent or Alpha research.
 **Lifecycle:** symbol mapping and survivorship/PIT limitations stated explicitly.  
 **Reconciliation:** sampled comparison with independent/broker references produces a report, not silent replacement.
 
+## Development/source boundary
+US-D3 research certification and normal implementation progress are separated from the temporary availability of one current U.S. broker API:
+
+- certified local U.S. history may be emitted through a paced database replay source to validate the exact streaming path used by algorithms;
+- FX may validate connected source-invariant MT5 plumbing, but cannot itself satisfy U.S. research/reconciliation authority;
+- the existing delayed U.S. Lane B path remains a governed structural-delay/degraded-feed evidence chain and is not weakened or silently replaced;
+- no delayed source is promoted to current market-data authority merely because the algorithm interface works;
+- final U.S. CFD broker/source semantics remain a later broker-specific freeze.
+
+The current formal US-D3 evidence requirements remain whatever `docs/status.toml`, the frozen policies and their active issue/evidence chain require; this planning clarification changes the development dependency model, not accepted evidence retroactively.
+
 ## Outcomes
 ```text
 CERTIFIED_FOR_ENGINEERING_RESEARCH
@@ -765,6 +813,32 @@ restart from persisted event/state checkpoint
 
 Replay fixtures are authoritative for contract tests, not evidence of broker readiness.
 
+## Streaming-source development extension
+The next implementation increment turns replay from a pre-built event tuple into the same subscription surface used by live sources:
+
+```text
+RealtimeMarketDataSource / MarketEventSource
+FeedTimingProfile
+DatabaseReplaySource        # DuckDB/Parquet -> paced BarEvent
+MT5RealtimeSource           # FX during development; U.S. CFD at final freeze
+AlgorithmSubscription
+AlgorithmRunner
+```
+
+Required replay modes:
+
+```text
+1x realtime pace
+accelerated pace (for example 60x)
+as-fast-as-possible deterministic regression
+step/debug mode
+explicit delayed delivery profile
+```
+
+The database source preserves historical `event_time` and assigns delivery/`received_at` according to the replay clock/profile. The same algorithm runner must be able to consume database replay, FX live and target-CFD live/delayed streams without provider-specific strategy branches.
+
+Delay is tested structurally through a `FeedTimingProfile`/equivalent contract. A strategy declares or derives a maximum admissible freshness/decision budget; a source whose effective delay exceeds that budget is rejected/degraded even if connectivity is healthy.
+
 ---
 
 # 21. RT-R2 — Projection / State Store
@@ -789,9 +863,13 @@ State transitions are idempotent/replayable and retain source event identities. 
 # 22. MT5-M1 — Read-only Market Gateway and Source Reconciliation
 
 ## Goal
-Normalize official MT5 historical/realtime bar/tick data into realtime contracts and persist differences from the historical research source.
+Normalize official MT5 historical/realtime bar/tick data into realtime contracts, classify the observed feed timing capability, and persist differences from the historical research source.
 
 Do not select “the better source” silently. Reconciliation records timestamp/session/OHLC/volume/instrument differences and classifies expected CFD-vs-equity differences separately from data-quality failures.
+
+Final source admission records whether the bound target source is `CURRENT`, `DELAYED` or `UNKNOWN` under a frozen timing/freshness policy. A delayed-only target may prove adapter/runtime compatibility but does not create current-market authority. Strategy activation must compare the measured source delay/freshness against the strategy decision budget and fail closed when the source is too old.
+
+Development should first prove the identical canonical interface with FX live and database replay; target U.S. CFD is reserved for the smallest broker/source-specific freeze surface.
 
 ---
 
@@ -887,7 +965,7 @@ US-B0  deterministic baselines
 US-A0  Agent controlled experiment evidence
 US-R1  robust intraday Alpha Gate
 US-X0/X1 only if Alpha passes
-RT-R0/R1/R2
+RT-R0/R1/R2 + streaming-source harness (database replay / FX live / delayed profile)
 MT5-M1/E1/O1
 RT-R3
 MT5-L0 separate live-capital plan
