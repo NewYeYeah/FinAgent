@@ -178,7 +178,7 @@ def test_all_event_types_round_trip_through_strict_json_parser() -> None:
 def test_serialization_rejects_tampered_event_identity() -> None:
     document = _base_events()[0].to_dict()
     payload = dict(document["payload"])  # type: ignore[arg-type]
-    payload["bid"] = 999.0
+    payload["bid"] = 99.9
     document["payload"] = payload
     with pytest.raises(ValueError, match="content identity"):
         realtime_event_from_dict(document)
