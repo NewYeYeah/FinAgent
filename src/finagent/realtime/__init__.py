@@ -44,13 +44,13 @@ from finagent.realtime.streaming_features import (
     StreamingFeatureSnapshot,
     StreamingUSBaselineFeatureEngine,
 )
-from finagent.realtime.streaming_research import (
-    StreamingResearchUpdate,
-    USBaselineStreamingAlgorithm,
-)
 from finagent.realtime.streaming_resample import (
     StreamingBarAggregator,
     StreamingResampledBar,
+)
+from finagent.realtime.streaming_research import (
+    StreamingResearchUpdate,
+    USBaselineStreamingAlgorithm,
 )
 
 __all__ = [
@@ -90,8 +90,8 @@ __all__ = [
     "StreamingCrossSectionCoordinator",
     "StreamingCrossSectionSnapshot",
     "StreamingFeatureSnapshot",
-    "StreamingResearchUpdate",
     "StreamingResampledBar",
+    "StreamingResearchUpdate",
     "StreamingUSBaselineFeatureEngine",
     "TradeEvent",
     "USBaselineStreamingAlgorithm",
