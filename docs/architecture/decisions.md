@@ -70,3 +70,23 @@ Realtime UI is built after event contracts, replay, state projection, read-only 
 
 ## D23 — Documentation uses single authority
 `docs/status.toml` owns current stage; `docs/development/current-plan.md` is the only active plan. Historical implementation detail belongs to Git/PR history and release snapshots.
+
+## D24 — MT5 feed regimes are separate evidence authorities
+MT5 transport capability, asset class and market-data entitlement are different facts. A roughly 15-minute quote delay is treated as a server/feed/subscription property observed for a bound symbol regime, not as an intrinsic `MetaTrader5` Python API delay and not as a universal property of stocks or CFDs.
+
+FinAgent permanently separates three lanes:
+
+```text
+FX continuous/near-continuous fixture
+    -> transport / broker-clock / current bid-ask engineering smoke only
+
+MetaQuotes-Demo delayed U.S. equity reference
+    -> simulation EngineeringUniverse / delayed-reference evidence only
+
+future target-broker current U.S. equity/CFD feed
+    -> separately re-admitted broker-specific PAPER/live-current evidence
+```
+
+Evidence never auto-promotes between lanes. EURUSD/GBPUSD/USDJPY smoke cannot satisfy US-I0, U.S. MT5-D0, US-D3, PAPER or live-broker evidence. Delayed U.S. equity evidence cannot claim current executable spread, current liquidity, target-broker account readiness, order authority or live-capital authority. A future broker/server/account must repeat broker-specific admission.
+
+Where MT5 exposes them, feed/symbol capability evidence should preserve fields such as subscription delay, chart price mode, trade execution mode and market-book depth together with server/symbol identity. These fields enrich the evidence fingerprint; they do not weaken existing timing, universe, spread, reconciliation or stage gates.
