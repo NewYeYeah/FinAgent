@@ -69,6 +69,12 @@ def _finite(value: float, field_name: str) -> float:
     return rendered
 
 
+def _number(value: object, field_name: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        raise TypeError(f"{field_name} must be numeric")
+    return float(value)
+
+
 class OrderCommandPort(Protocol):
     def submit(
         self,
@@ -200,8 +206,8 @@ class MT5PaperOrderCommand:
             client_order_id=str(document.get("client_order_id", "")),
             symbol=str(document.get("symbol", "")),
             side=OrderSide(str(document.get("side", ""))),
-            lots=float(document.get("lots", 0.0)),
-            contract_size=float(document.get("contract_size", 0.0)),
+            lots=_number(document.get("lots", 0.0), "lots"),
+            contract_size=_number(document.get("contract_size", 0.0), "contract_size"),
             created_at=datetime.fromisoformat(str(document.get("created_at", ""))),
         )
         stored_id = document.get("command_id")
@@ -1097,7 +1103,7 @@ class MT5PaperReplayBroker(OrderCommandPort, BrokerEventSource, BrokerQueryPort)
                 broker._incidents.append(incident)
                 broker._kill_switch_halted = incident.incident_type == "KILL_SWITCH_TRIPPED"
             elif record_type == "equity":
-                broker._equity = _finite(float(document.get("equity", 0.0)), "equity")
+                broker._equity = _finite(_number(document.get("equity", 0.0), "equity"), "equity")
             else:
                 raise ValueError(f"unsupported MT5 paper journal record type: {record_type}")
             broker._journal.append(dict(raw))
@@ -1175,7 +1181,10 @@ def reconcile_mt5_paper_projection(
         if str(projected_payload.get("broker_order_id")) != str(actual.broker_order_id):
             issues.append(f"order:{client_order_id}:broker_order_id_mismatch")
         try:
-            projected_filled = float(projected_payload.get("filled_lots", 0.0))
+            projected_filled = _number(
+                projected_payload.get("filled_lots", 0.0),
+                "projection.filled_lots",
+            )
         except (TypeError, ValueError):
             issues.append(f"order:{client_order_id}:filled_lots_unavailable")
         else:
@@ -1207,7 +1216,10 @@ def reconcile_mt5_paper_projection(
             unknown = True
         else:
             try:
-                projected_equity = float(account_payload.get("equity", 0.0))
+                projected_equity = _number(
+                    account_payload.get("equity", 0.0),
+                    "projection.equity",
+                )
             except (TypeError, ValueError):
                 issues.append("account:equity_unavailable")
                 unknown = True
