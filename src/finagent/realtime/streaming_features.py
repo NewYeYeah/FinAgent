@@ -5,14 +5,14 @@ import json
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
+from finagent.realtime.streaming_resample import StreamingResampledBar
 from finagent.research.us_baselines import (
+    USBaselineBar,
     USBaselineCandidateDenominator,
     USBaselineFeatureEvaluation,
-    USBaselineBar,
     canonical_us_baseline_denominator,
     evaluate_us_baseline_feature,
 )
-from finagent.realtime.streaming_resample import StreamingResampledBar
 
 
 def _canonical_hash(payload: object, *, prefix: str) -> str:
