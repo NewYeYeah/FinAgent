@@ -1,0 +1,33 @@
+name: fix-streaming-source-import
+
+on:
+  push:
+    branches: [rt-streaming-source-harness-v1]
+    paths:
+      - "scripts/_fix_streaming_source_import.py"
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rt-streaming-source-harness-v1
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Fix import order
+        run: python scripts/_fix_streaming_source_import.py
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/finagent/realtime/sources.py
+          git diff --cached --exit-code && exit 0
+          git commit -m "Fix streaming source import ordering"
+          git push origin HEAD:rt-streaming-source-harness-v1
