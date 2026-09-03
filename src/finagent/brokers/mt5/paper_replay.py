@@ -3,11 +3,12 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
-from typing import Mapping, Protocol
+from typing import Protocol
 
 from finagent.realtime.events import (
     AccountStatusEvent,
@@ -649,10 +650,14 @@ class MT5PaperReplayBroker(OrderCommandPort, BrokerEventSource, BrokerQueryPort)
                     "client_order_id conflict: same client identity has different command content"
                 )
             return ()
-        self._record_command(command)
-        self._contract_size_by_symbol.setdefault(command.symbol, command.contract_size)
-        if self._contract_size_by_symbol[command.symbol] != command.contract_size:
+        existing_contract_size = self._contract_size_by_symbol.get(command.symbol)
+        if (
+            existing_contract_size is not None
+            and existing_contract_size != command.contract_size
+        ):
             raise ValueError("contract_size changed for one symbol inside the PAPER session")
+        self._contract_size_by_symbol[command.symbol] = command.contract_size
+        self._record_command(command)
         blocker = self._command_blocker(command, at=timestamp)
         if blocker is not None:
             return self._reject_new_command(
@@ -721,18 +726,6 @@ class MT5PaperReplayBroker(OrderCommandPort, BrokerEventSource, BrokerQueryPort)
         fill_price = _positive(price, "price")
         fill_commission = _non_negative(commission, "commission")
         timestamp = _aware(at, "at")
-        record = self._orders.get(order_id)
-        if record is None:
-            raise KeyError(order_id)
-        if record.status in {
-            OrderLifecycleStatus.REJECTED,
-            OrderLifecycleStatus.CANCELLED,
-            OrderLifecycleStatus.EXPIRED,
-            OrderLifecycleStatus.FILLED,
-        }:
-            raise ValueError("cannot fill a terminal order")
-        if fill_lots > record.remaining_lots + 1e-12:
-            raise ValueError("fill exceeds remaining order quantity")
         existing_deal = self._deals.get(deal_id)
         if existing_deal is not None:
             expected = (
@@ -745,6 +738,18 @@ class MT5PaperReplayBroker(OrderCommandPort, BrokerEventSource, BrokerQueryPort)
             if expected != candidate:
                 raise ValueError("broker_deal_id conflict: deal identity has different content")
             return ()
+        record = self._orders.get(order_id)
+        if record is None:
+            raise KeyError(order_id)
+        if record.status in {
+            OrderLifecycleStatus.REJECTED,
+            OrderLifecycleStatus.CANCELLED,
+            OrderLifecycleStatus.EXPIRED,
+            OrderLifecycleStatus.FILLED,
+        }:
+            raise ValueError("cannot fill a terminal order")
+        if fill_lots > record.remaining_lots + 1e-12:
+            raise ValueError("fill exceeds remaining order quantity")
 
         trade = TradeEvent(
             source=self._policy.source,
