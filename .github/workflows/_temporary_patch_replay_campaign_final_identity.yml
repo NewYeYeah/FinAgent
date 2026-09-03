@@ -1,0 +1,31 @@
+name: temporary-patch-replay-campaign-final-identity
+
+on:
+  push:
+    branches: [rt-replay-experiment-campaign-v1]
+    paths:
+      - "scripts/_patch_replay_campaign_final_identity.py"
+      - ".github/workflows/_temporary_patch_replay_campaign_final_identity.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rt-replay-experiment-campaign-v1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python scripts/_patch_replay_campaign_final_identity.py
+      - name: Commit final campaign identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/development/changelog.md
+          git diff --cached --quiet && exit 0
+          git commit -m "Record final replay campaign smoke identity"
+          git push origin HEAD:rt-replay-experiment-campaign-v1
