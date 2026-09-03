@@ -25,6 +25,7 @@ from finagent.realtime import (
     MarketDataSubscription,
     QuoteEvent,
     RealtimeEventKind,
+    RealtimeProjector,
     ReplayPacingMode,
     StrategyFreshnessBudget,
     StreamingResearchUpdate,
@@ -160,8 +161,12 @@ def test_streaming_resample_matches_accepted_us_d2_batch_semantics(tmp_path: Pat
         )
     )
     updates = _updates(report)
+    streamed_5m = _flatten_resampled(updates, 5 * 60)
     streamed_15m = _flatten_resampled(updates, 15 * 60)
+    streamed_30m = _flatten_resampled(updates, 30 * 60)
+    assert len(streamed_5m) == 60
     assert len(streamed_15m) == 20
+    assert len(streamed_30m) == 10
 
     batch_store = SessionResampledMinuteStore(CalendarSessionizedMinuteStore(store, calendar))
     batch_query = MarketDataQuery(
@@ -239,7 +244,7 @@ def test_streaming_feature_engine_reuses_b0_denominator_and_full_symbol_barrier(
 
 def test_missing_minute_is_preserved_as_incomplete_streaming_bucket(tmp_path: Path) -> None:
     store = _fixture_store(tmp_path, minutes=20, missing=("AAA", 7))
-    calendar = _calendar(minutes=20)
+    calendar = _calendar(minutes=30)
     algorithm = USBaselineStreamingAlgorithm(calendar, required_symbols=SYMBOLS)
     report = asyncio.run(
         AlgorithmRunner().run(
@@ -346,7 +351,7 @@ def test_fx_quote_can_share_algorithm_runner_without_creating_us_ohlcv_features(
         ask=1.1002,
         last=1.1001,
     )
-    assert algorithm.on_event(quote, AlgorithmRunner()._projector.snapshot()) is None
+    assert algorithm.on_event(quote, RealtimeProjector().snapshot()) is None
 
 
 def test_outside_regular_session_bar_does_not_enter_streaming_features() -> None:
