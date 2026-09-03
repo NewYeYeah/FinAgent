@@ -188,48 +188,38 @@ class RealtimeProjector:
                 applied += 1
         return applied
 
-    def _replace_if_newer(
-        self,
-        target: dict[str, RealtimeEvent],
-        key: str,
-        event: RealtimeEvent,
-    ) -> None:
-        current = target.get(key)
-        if current is None or _newer(event, current):
-            target[key] = event
-
     def _reduce(self, event: CanonicalRealtimeEvent) -> None:
         if isinstance(event, QuoteEvent):
-            current = self._quotes.get(event.symbol)
-            if current is None or _newer(event, current):
+            current_quote = self._quotes.get(event.symbol)
+            if current_quote is None or _newer(event, current_quote):
                 self._quotes[event.symbol] = event
             return
         if isinstance(event, BarEvent):
             key = f"{event.symbol}:{event.interval_seconds}"
-            current = self._bars.get(key)
-            if current is None or _newer(event, current):
+            current_bar = self._bars.get(key)
+            if current_bar is None or _newer(event, current_bar):
                 self._bars[key] = event
             return
         if isinstance(event, MarketStatusEvent):
-            current = self._market_statuses.get(event.market)
-            if current is None or _newer(event, current):
+            current_market_status = self._market_statuses.get(event.market)
+            if current_market_status is None or _newer(event, current_market_status):
                 self._market_statuses[event.market] = event
             return
         if isinstance(event, AccountStatusEvent):
-            current = self._accounts.get(event.account_id)
-            if current is None or _newer(event, current):
+            current_account = self._accounts.get(event.account_id)
+            if current_account is None or _newer(event, current_account):
                 self._accounts[event.account_id] = event
             return
         if isinstance(event, OrderEvent):
-            current = self._orders.get(event.client_order_id)
-            if current is None or _newer(event, current):
+            current_order = self._orders.get(event.client_order_id)
+            if current_order is None or _newer(event, current_order):
                 self._orders[event.client_order_id] = event
             return
         if isinstance(event, TradeEvent):
-            existing = self._trades.get(event.broker_deal_id)
-            if existing is not None and existing.event_id != event.event_id:
+            existing_trade = self._trades.get(event.broker_deal_id)
+            if existing_trade is not None and existing_trade.event_id != event.event_id:
                 raise ValueError("broker_deal_id conflict")
-            if existing is None:
+            if existing_trade is None:
                 self._trades[event.broker_deal_id] = event
                 sign = 1.0 if event.side is OrderSide.BUY else -1.0
                 self._portfolio_lots[event.symbol] = (
@@ -239,13 +229,13 @@ class RealtimeProjector:
                     self._portfolio_lots.pop(event.symbol)
             return
         if isinstance(event, OrderErrorEvent):
-            current = self._order_errors.get(event.client_order_id)
-            if current is None or _newer(event, current):
+            current_order_error = self._order_errors.get(event.client_order_id)
+            if current_order_error is None or _newer(event, current_order_error):
                 self._order_errors[event.client_order_id] = event
             return
         if isinstance(event, ConnectionEvent):
-            current = self._connections.get(event.connection_id)
-            if current is None or _newer(event, current):
+            current_connection = self._connections.get(event.connection_id)
+            if current_connection is None or _newer(event, current_connection):
                 self._connections[event.connection_id] = event
             return
         raise TypeError(f"unsupported canonical realtime event: {type(event).__name__}")
