@@ -21,11 +21,12 @@ jobs:
         with:
           python-version: "3.11"
       - run: python scripts/_patch_replay_campaign_hardening.py
-      - name: Commit patch
+      - name: Commit Python/test hardening only
         run: |
+          git restore .github/workflows/replay-experiment-campaign-v1.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/finagent/research/replay_experiment_campaign.py tests/test_replay_experiment_campaign_v1.py .github/workflows/replay-experiment-campaign-v1.yml
+          git add src/finagent/research/replay_experiment_campaign.py tests/test_replay_experiment_campaign_v1.py
           git diff --cached --quiet && exit 0
-          git commit -m "Harden replay experiment campaign report and CI"
+          git commit -m "Harden replay experiment campaign report"
           git push origin HEAD:rt-replay-experiment-campaign-v1
