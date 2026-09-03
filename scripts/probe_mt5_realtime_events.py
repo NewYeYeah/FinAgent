@@ -19,6 +19,7 @@ from finagent.brokers.mt5.realtime_adapter import (
     MT5RealtimeAdapterPolicy,
     MT5RealtimeMarketAdapter,
 )
+from finagent.realtime.events import CanonicalRealtimeEvent
 
 
 def _aware_datetime(value: str) -> datetime:
@@ -192,7 +193,7 @@ def main() -> int:
             )
         clock = build_mt5_broker_clock_evidence(
             server,
-            observations,
+            tuple(observations),
             generated_at=datetime.now(UTC),
         )
         if not clock.passed:
@@ -207,7 +208,9 @@ def main() -> int:
             ),
             clock,
         )
-        events = [adapter.connection_event(capability, observed_at=datetime.now(UTC))]
+        events: list[CanonicalRealtimeEvent] = [
+            adapter.connection_event(capability, observed_at=datetime.now(UTC))
+        ]
         for symbol in symbols:
             tick = client.symbol_info_tick(symbol)
             events.append(
