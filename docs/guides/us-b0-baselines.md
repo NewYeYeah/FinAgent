@@ -259,3 +259,42 @@ alpha_authority             = false
 The EngineeringUniverse is an integration universe, not a survivorship-unbiased market-wide research universe. Current spread evidence is not historical transaction-cost authority. No candidate winner may be promoted from US-B0 cost-free diagnostics alone.
 
 Only after the complete split-bound evidence is reviewed may `docs/status.toml` be advanced according to the stage-exit process and the resulting fixed MANUAL baseline be used to define the controlled US-A0 MANUAL / PROGRAMMATIC / AGENT experiment. The evidence graph itself never edits or supersedes project-stage authority.
+
+## 2026-09-04 formal closeout
+
+The first real B0 v1 execution is fully assembled and frozen, but its stage exit is
+blocked by source data quality rather than accepted:
+
+```text
+fold 1                         passed, 8/8 candidates
+fold 2                         passed, 8/8 candidates
+fold 3                         failed closed, 0/8 valid candidates
+aggregate report               us-baseline-walk-forward-aggregate-34a65ec2e885711892c4519c
+evidence graph                 us-baseline-walk-forward-evidence-28472b6d52036f543f575245
+ready_for_us_a0_candidate      false
+closeout decision              BLOCKED_SOURCE_DATA_QUALITY
+```
+
+The single underlying defect is an absent EEM research-source 1m row at
+`2026-03-17T18:59:00Z`. It makes the forward target partially missing for the
+cross-section formed at `2026-03-18T02:00:00+08:00`; the same structural blocker is
+therefore retained for all eight frozen candidates.
+
+A read-only `MetaQuotes-Demo` diagnostic found 31 EEM M1 bars over the inclusive
+`2026-03-17T18:45:00Z` through `19:15:00Z` window. This confirms that an independent
+community reference has coverage near the gap, but it is not the certified research
+source and does not repair, overwrite or supplement the B0 input.
+
+The active community development feed was separately checked over all 40 selected
+symbols. All 40 satisfy the frozen delayed-reference policy, with observed quote delay
+between `900.161197` and `914.379197` seconds and median delay error
+`1.026197` seconds. That evidence has simulation-reference authority only; it has no
+live-market, executable-spread, order, stage-exit or Alpha authority.
+
+The compliant remediation path is to obtain a corrected immutable snapshot from the
+same research source, re-run source certification under new content identities,
+preregister a replacement B0 protocol before inspecting replacement results, and then
+re-run every fold. Changing the current fold boundaries, deleting EEM, accepting a
+partial realised label, or inserting the community MT5 bar into the research corpus is
+not an admissible closeout action. Formal US-A0 remains unavailable until a replacement
+B0 evidence graph passes.

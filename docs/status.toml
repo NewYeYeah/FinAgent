@@ -5,7 +5,7 @@ planning_document = "docs/development/current-plan.md"
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
 current_stage = "US-B0"
-current_stage_status = "folds_1_2_passed_fold_3_data_quality_blocked"
+current_stage_status = "evidence_assembled_exit_blocked_by_source_quality"
 next_stage = "US-A0"
 
 [release.ashare_historical_v1]
@@ -132,6 +132,12 @@ limitations = [
 ]
 focused_ci = ".github/workflows/mt5-p0-readonly.yml"
 mutation_authority = false
+latest_community_readonly_probe_id = "mt5-capability-probe-ded3f01365f1ad3bebe58f70"
+latest_community_readonly_broker_server = "MetaQuotes-Demo"
+latest_community_readonly_trade_allowed = false
+latest_community_readonly_tradeapi_disabled = true
+latest_community_readonly_visible_symbol_count = 49
+latest_community_readonly_report = "reports/mt5/mt5_community_inventory_after_market_watch_20260904.json"
 
 [stage.us_i0]
 status = "accepted"
@@ -235,6 +241,20 @@ mt5_probe_id = "mt5-capability-probe-db652a528408fda2dd3a606e"
 broker_path_exchange_authority = false
 point_in_time_security_master_available = false
 focused_ci = ".github/workflows/us-i0-instrument-mapping.yml"
+community_delayed_reference_status = "accepted_for_simulation_reference"
+community_delayed_reference_broker_server = "MetaQuotes-Demo"
+community_delayed_reference_policy_id = "us-simulation-quote-timing-policy-e88e0297965f263baa182ad5"
+community_delayed_reference_report_id = "us-delayed-reference-quote-report-6e4053891c683f9aa77dace3"
+community_delayed_reference_valid_quote_count = 40
+community_delayed_reference_minimum_observed_delay_seconds = 900.161197
+community_delayed_reference_maximum_observed_delay_seconds = 914.379197
+community_delayed_reference_median_delay_error_seconds = 1.026197
+community_delayed_reference_live_market_data_authority = false
+community_delayed_reference_execution_authority = false
+community_delayed_reference_report = "reports/us_instruments/us_i0_community_delayed_quotes_20260904.json"
+community_market_watch_change_id = "mt5-market-watch-change-ab9e3578599cb366f8c4ef85"
+community_market_watch_add_only = true
+community_market_watch_added_symbol_count = 36
 
 [stage.us_d1]
 status = "accepted"
@@ -432,8 +452,10 @@ focused_ci = ".github/workflows/us-d3-minute-certification.yml"
 completion_ci = ".github/workflows/us-d3-completion.yml"
 
 [stage.us_b0]
-status = "in_progress_data_quality_blocked"
+status = "blocked_source_data_quality"
 started_at = "2026-09-04"
+closeout_reviewed_at = "2026-09-04"
+closeout_decision = "BLOCKED_SOURCE_DATA_QUALITY"
 protocol_id = "us-baseline-walk-forward-abec06d0d72302fcf11958a4"
 run_spec_id = "us-baseline-run-spec-31fe722d51f4b01b60789d63"
 denominator_id = "us-baseline-denominator-b8bdb313856e1f7dc652bdd9"
@@ -451,8 +473,21 @@ fold_3_evaluation_report_id = "us-baseline-evaluation-04bfc5b9c63bdc550ef7a272"
 fold_3_blocker = "EEM target_minute_missing at 2026-03-18T03:00:00+08:00 for feature formation 2026-03-18T02:00:00+08:00"
 fold_3_source_observation = "EEM raw 1m row absent at 2026-03-17T18:59:00+00:00 while the other 24 engineering assets are present"
 fold_3_blocker_scope = "source_data_quality_not_broker_or_account"
+walk_forward_aggregate_report_id = "us-baseline-walk-forward-aggregate-34a65ec2e885711892c4519c"
+walk_forward_evidence_graph_id = "us-baseline-walk-forward-evidence-28472b6d52036f543f575245"
+walk_forward_aggregate_candidate_count = 8
+walk_forward_aggregate_valid_candidate_count = 0
+walk_forward_ready_for_us_a0_candidate = false
+walk_forward_aggregate_report = "reports/us_b0/us_b0_walkforward_aggregate.json"
+walk_forward_evidence_graph = "reports/us_b0/us_b0_walkforward_evidence_graph.json"
+community_eem_reference_probe_id = "mt5-capability-probe-e0296cbc0a64c6beb9a77aa7"
+community_eem_reference_m1_bar_count = 31
+community_eem_reference_window_start = "2026-03-17T18:45:00+00:00"
+community_eem_reference_window_end = "2026-03-17T19:15:00+00:00"
+community_eem_reference_authority = "diagnostic_only_no_source_repair"
+community_eem_reference_report = "reports/mt5/mt5_community_eem_b0_gap_reference_20260904.json"
 stage_exit_gate_passed = false
-next_action = "review EEM source-row absence without changing frozen folds or statistical thresholds"
+next_action = "obtain a same-source corrected immutable snapshot, recertify it under new identities, preregister a replacement B0 protocol, and rerun all folds; do not start formal US-A0"
 
 [documentation]
 governance_version = "1.1"
