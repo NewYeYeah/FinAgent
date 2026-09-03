@@ -34,6 +34,20 @@ from .feed_regime import (
     build_mt5_feed_regime_evidence,
     build_mt5_feed_regime_report,
 )
+from .paper_replay import (
+    BrokerEventSource,
+    BrokerQueryPort,
+    MT5PaperBrokerSnapshot,
+    MT5PaperExecutionPolicy,
+    MT5PaperIncident,
+    MT5PaperOrderCommand,
+    MT5PaperOrderRecord,
+    MT5PaperReconciliationReport,
+    MT5PaperReconciliationState,
+    MT5PaperReplayBroker,
+    OrderCommandPort,
+    reconcile_mt5_paper_projection,
+)
 from .probe import probe_mt5_capabilities, run_mt5_readonly_probe
 from .realtime_adapter import (
     MT5RealtimeAdapterPolicy,
@@ -42,6 +56,8 @@ from .realtime_adapter import (
 )
 
 __all__ = [
+    "BrokerEventSource",
+    "BrokerQueryPort",
     "DEFAULT_MT5_BROKER_CLOCK_POLICY",
     "FX_ENGINEERING_FIXTURE",
     "METAQUOTES_DELAYED_US_EQUITY",
@@ -58,6 +74,14 @@ __all__ = [
     "MT5HistoryCapability",
     "MT5P0AcceptanceAssessment",
     "MT5P0AcceptancePolicy",
+    "MT5PaperBrokerSnapshot",
+    "MT5PaperExecutionPolicy",
+    "MT5PaperIncident",
+    "MT5PaperOrderCommand",
+    "MT5PaperOrderRecord",
+    "MT5PaperReconciliationReport",
+    "MT5PaperReconciliationState",
+    "MT5PaperReplayBroker",
     "MT5ReadOnlyClientProtocol",
     "MT5RealtimeAdapterPolicy",
     "MT5RealtimeAdapterReport",
@@ -66,11 +90,13 @@ __all__ = [
     "MT5SymbolSpec",
     "MT5TerminalCapability",
     "MetaTrader5ReadOnlyClient",
+    "OrderCommandPort",
     "assess_mt5_p0",
     "build_mt5_broker_clock_evidence",
     "build_mt5_feed_regime_evidence",
     "build_mt5_feed_regime_report",
     "mt5_broker_clock_evidence_from_document",
     "probe_mt5_capabilities",
+    "reconcile_mt5_paper_projection",
     "run_mt5_readonly_probe",
 ]
