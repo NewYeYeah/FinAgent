@@ -7,8 +7,9 @@ on:
       - "src/finagent/brokers/mt5/paper_replay.py"
       - "src/finagent/brokers/mt5/__init__.py"
       - "scripts/smoke_mt5_paper_replay_operations.py"
-      - "tests/test_mt5_paper_replay_operations.py"
+      - "tests/test_mt5_paper_replay_*.py"
       - "docs/guides/mt5-paper-replay-operations.md"
+      - "docs/development/mt5-paper-replay-implementation-status.md"
       - ".github/workflows/mt5-paper-replay-operations.yml"
   push:
     branches: [main]
@@ -16,8 +17,9 @@ on:
       - "src/finagent/brokers/mt5/paper_replay.py"
       - "src/finagent/brokers/mt5/__init__.py"
       - "scripts/smoke_mt5_paper_replay_operations.py"
-      - "tests/test_mt5_paper_replay_operations.py"
+      - "tests/test_mt5_paper_replay_*.py"
       - "docs/guides/mt5-paper-replay-operations.md"
+      - "docs/development/mt5-paper-replay-implementation-status.md"
       - ".github/workflows/mt5-paper-replay-operations.yml"
   workflow_dispatch:
 
@@ -42,6 +44,8 @@ jobs:
         run: >-
           uv run --frozen pytest -q
           tests/test_mt5_paper_replay_operations.py
+          tests/test_mt5_paper_replay_ports.py
+          tests/test_mt5_paper_replay_authority_boundary.py
           tests/test_realtime_replay_projection.py
       - name: Deterministic PAPER replay smoke
         run: uv run --frozen python scripts/smoke_mt5_paper_replay_operations.py
@@ -72,7 +76,9 @@ jobs:
             src/finagent/brokers/mt5/paper_replay.py \
             src/finagent/brokers/mt5/__init__.py \
             scripts/smoke_mt5_paper_replay_operations.py \
-            tests/test_mt5_paper_replay_operations.py
+            tests/test_mt5_paper_replay_operations.py \
+            tests/test_mt5_paper_replay_ports.py \
+            tests/test_mt5_paper_replay_authority_boundary.py
           uv run --frozen mypy --strict \
             src/finagent/brokers/mt5/paper_replay.py \
             scripts/smoke_mt5_paper_replay_operations.py
