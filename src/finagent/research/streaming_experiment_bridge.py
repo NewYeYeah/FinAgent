@@ -263,11 +263,11 @@ class StreamingResearchEvidenceBundle:
             "denominator_id",
         ):
             object.__setattr__(self, field_name, _text(getattr(self, field_name), field_name))
-        updates = tuple(_text(item, "update_ids[]") for item in self.update_ids)
+        updates = tuple(_text(update_id, "update_ids[]") for update_id in self.update_ids)
         if not updates or len(updates) != len(set(updates)):
             raise ValueError("streaming evidence update_ids must be non-empty and unique")
         object.__setattr__(self, "update_ids", updates)
-        symbols = tuple(sorted(_text(item, "required_symbols[]") for item in self.required_symbols))
+        symbols = tuple(sorted(_text(symbol, "required_symbols[]") for symbol in self.required_symbols))
         if not symbols or len(symbols) != len(set(symbols)):
             raise ValueError("streaming evidence required_symbols must be non-empty and unique")
         object.__setattr__(self, "required_symbols", symbols)
@@ -282,66 +282,72 @@ class StreamingResearchEvidenceBundle:
     def _validate_content(self) -> None:
         bar_by_key: dict[tuple[str, int, datetime], StreamingResampledBar] = {}
         bar_by_id: dict[str, StreamingResampledBar] = {}
-        for item in self.resampled_bars:
-            key = (item.bar.symbol, item.bar.interval_seconds, item.bar.event_time)
-            previous = bar_by_key.get(key)
-            if previous is not None and previous.resampled_bar_id != item.resampled_bar_id:
+        for resampled in self.resampled_bars:
+            key = (resampled.bar.symbol, resampled.bar.interval_seconds, resampled.bar.event_time)
+            previous_bar = bar_by_key.get(key)
+            if (
+                previous_bar is not None
+                and previous_bar.resampled_bar_id != resampled.resampled_bar_id
+            ):
                 raise ValueError("conflicting resampled bars share one semantic key")
-            bar_by_key[key] = item
-            if item.resampled_bar_id in bar_by_id:
+            bar_by_key[key] = resampled
+            if resampled.resampled_bar_id in bar_by_id:
                 raise ValueError("duplicate resampled_bar_id in streaming evidence")
-            bar_by_id[item.resampled_bar_id] = item
+            bar_by_id[resampled.resampled_bar_id] = resampled
 
         feature_by_id: dict[str, StreamingFeatureSnapshot] = {}
         feature_groups: dict[tuple[datetime, datetime, str, str], set[str]] = defaultdict(set)
-        for item in self.feature_snapshots:
-            if item.denominator_id != self.denominator_id:
+        for feature in self.feature_snapshots:
+            if feature.denominator_id != self.denominator_id:
                 raise ValueError("streaming feature denominator differs from bundle denominator")
-            if item.symbol not in self.required_symbols:
+            if feature.symbol not in self.required_symbols:
                 raise ValueError("streaming feature symbol lies outside required denominator")
-            bar = bar_by_id.get(item.resampled_bar_id)
+            bar = bar_by_id.get(feature.resampled_bar_id)
             if bar is None:
                 raise ValueError("streaming feature refers to a missing resampled bar")
-            if bar.bar.symbol != item.symbol or bar.bar.interval_seconds != 15 * 60:
+            if bar.bar.symbol != feature.symbol or bar.bar.interval_seconds != 15 * 60:
                 raise ValueError("streaming feature must refer to its canonical 15m symbol bar")
-            if bar.bar.event_time != item.event_time or bar.available_at != item.available_at:
+            if bar.bar.event_time != feature.event_time or bar.available_at != feature.available_at:
                 raise ValueError("streaming feature/bar clock mismatch")
-            if bar.session_id != item.session_id:
+            if bar.session_id != feature.session_id:
                 raise ValueError("streaming feature/bar session mismatch")
-            if item.snapshot_id in feature_by_id:
+            if feature.snapshot_id in feature_by_id:
                 raise ValueError("duplicate feature snapshot identity in bundle")
-            feature_by_id[item.snapshot_id] = item
+            feature_by_id[feature.snapshot_id] = feature
             group_key = (
-                item.event_time,
-                item.available_at,
-                item.session_id,
-                item.denominator_id,
+                feature.event_time,
+                feature.available_at,
+                feature.session_id,
+                feature.denominator_id,
             )
-            if item.symbol in feature_groups[group_key]:
+            if feature.symbol in feature_groups[group_key]:
                 raise ValueError("duplicate feature snapshot symbol inside one formation")
-            feature_groups[group_key].add(item.symbol)
+            feature_groups[group_key].add(feature.symbol)
 
         expected_symbols = set(self.required_symbols)
-        if any(symbols != expected_symbols for symbols in feature_groups.values()):
+        if any(group_symbols != expected_symbols for group_symbols in feature_groups.values()):
             raise ValueError("partial streaming feature denominator cannot enter experiment evidence")
 
         cross_groups: dict[tuple[datetime, datetime, str, str], str] = {}
-        for item in self.cross_section_snapshots:
-            if item.denominator_id != self.denominator_id:
+        for cross_section in self.cross_section_snapshots:
+            if cross_section.denominator_id != self.denominator_id:
                 raise ValueError("cross-section denominator differs from bundle denominator")
-            if item.required_symbols != self.required_symbols:
+            if cross_section.required_symbols != self.required_symbols:
                 raise ValueError("cross-section required symbols differ from bundle denominator")
             group_key = (
-                item.event_time,
-                item.available_at,
-                item.session_id,
-                item.denominator_id,
+                cross_section.event_time,
+                cross_section.available_at,
+                cross_section.session_id,
+                cross_section.denominator_id,
             )
             if group_key in cross_groups:
                 raise ValueError("duplicate cross-section formation in streaming evidence")
             expected_ids = tuple(
                 snapshot.snapshot_id
-                for snapshot in sorted(item.feature_snapshots, key=lambda value: value.symbol)
+                for snapshot in sorted(
+                    cross_section.feature_snapshots,
+                    key=lambda value: value.symbol,
+                )
             )
             actual_ids = tuple(
                 feature_by_id[snapshot_id].snapshot_id
@@ -350,7 +356,7 @@ class StreamingResearchEvidenceBundle:
             )
             if actual_ids != expected_ids:
                 raise ValueError("cross-section references feature snapshot outside bundle")
-            cross_groups[group_key] = item.snapshot_id
+            cross_groups[group_key] = cross_section.snapshot_id
         if set(cross_groups) != set(feature_groups):
             raise ValueError("streaming evidence requires one full cross-section per feature formation")
 
@@ -359,21 +365,21 @@ class StreamingResearchEvidenceBundle:
             StreamingExperimentLabel,
         ] = {}
         for label in self.labels:
-            previous = label_keys.get(label.semantic_key)
-            if previous is not None:
+            previous_label = label_keys.get(label.semantic_key)
+            if previous_label is not None:
                 raise ValueError("duplicate streaming label semantic key")
             label_keys[label.semantic_key] = label
             interval_seconds = _interval_seconds(label.signal_interval)
             bar_key = (label.asset, interval_seconds, label.source_event_time)
-            bar = bar_by_key.get(bar_key)
-            if bar is None:
+            label_bar = bar_by_key.get(bar_key)
+            if label_bar is None:
                 raise ValueError("streaming label anchor is not backed by persisted resampled bar")
-            if bar.session_id != label.session_id:
+            if label_bar.session_id != label.session_id:
                 raise ValueError("streaming label/bar session mismatch")
-            if bar.available_at != label.source_available_at:
+            if label_bar.available_at != label.source_available_at:
                 raise ValueError("streaming label/bar formation clock mismatch")
-            tolerance = max(1e-12, abs(bar.bar.close) * 1e-12)
-            if abs(bar.bar.close - label.source_price) > tolerance:
+            tolerance = max(1e-12, abs(label_bar.bar.close) * 1e-12)
+            if abs(label_bar.bar.close - label.source_price) > tolerance:
                 raise ValueError("streaming label source price differs from persisted bar close")
 
     @property
@@ -389,10 +395,12 @@ class StreamingResearchEvidenceBundle:
             "update_ids": list(self.update_ids),
             "denominator_id": self.denominator_id,
             "required_symbols": list(self.required_symbols),
-            "resampled_bars": [item.to_dict() for item in self.resampled_bars],
-            "feature_snapshots": [item.to_dict() for item in self.feature_snapshots],
-            "cross_section_snapshots": [item.to_dict() for item in self.cross_section_snapshots],
-            "labels": [item.to_dict() for item in self.labels],
+            "resampled_bars": [resampled.to_dict() for resampled in self.resampled_bars],
+            "feature_snapshots": [feature.to_dict() for feature in self.feature_snapshots],
+            "cross_section_snapshots": [
+                cross_section.to_dict() for cross_section in self.cross_section_snapshots
+            ],
+            "labels": [label.to_dict() for label in self.labels],
             "resampled_bar_count": len(self.resampled_bars),
             "feature_snapshot_count": len(self.feature_snapshots),
             "cross_section_snapshot_count": len(self.cross_section_snapshots),
