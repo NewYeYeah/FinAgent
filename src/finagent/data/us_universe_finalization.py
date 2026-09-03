@@ -397,7 +397,7 @@ class USUniverseFinalizationReport:
                 "universe:engineering_integration_only",
                 "universe:not_survivorship_unbiased",
                 "identity:no_point_in_time_security_master",
-                "identity:exact_symbol_match_requires_operator_attestation",
+                "identity:research_broker_mapping_requires_operator_attestation",
                 "spread:single_quote_snapshot_is_engineering_filter_not_execution_cost_authority",
             ],
             "generated_at": self.generated_at.astimezone(UTC).isoformat(),
@@ -440,28 +440,35 @@ def finalize_us_engineering_universe(
             "quote.quotes[].spread_bps",
         )
 
-    candidates: list[tuple[int, str]] = []
+    candidates: list[tuple[int, str, str]] = []
     excluded: list[str] = []
     for raw in _sequence(candidate_document.get("candidates"), "candidate.candidates"):
         candidate_row = _mapping(raw, "candidate.candidates[]")
-        symbol = _text(
+        research_symbol = _text(
             candidate_row.get("research_symbol"),
             "candidate.candidates[].research_symbol",
         )
+        broker_symbol = _text(
+            candidate_row.get("broker_symbol", research_symbol),
+            "candidate.candidates[].broker_symbol",
+        )
         rank = _integer(candidate_row.get("rank"), "candidate.candidates[].rank")
-        spread = quote_bps.get(symbol)
+        spread = quote_bps.get(broker_symbol)
         if spread is None or spread > policy.maximum_current_spread_bps:
-            excluded.append(symbol)
+            excluded.append(research_symbol)
             continue
-        candidates.append((rank, symbol))
+        candidates.append((rank, research_symbol, broker_symbol))
 
-    candidates.sort(key=lambda item: (item[0], item[1]))
-    selected = tuple(symbol for _rank, symbol in candidates[: policy.target_count])
+    candidates.sort(key=lambda item: (item[0], item[1], item[2]))
+    selected_rows = tuple(candidates[: policy.target_count])
+    selected = tuple(research for _rank, research, _broker in selected_rows)
     materialization: EngineeringUniverseMaterialization | None = None
     if selected:
         materialization = materialize_engineering_universe_from_mt5_probe(
             mt5_probe_document,
-            mapping_pairs=tuple((symbol, symbol) for symbol in selected),
+            mapping_pairs=tuple(
+                (research, broker) for _rank, research, broker in selected_rows
+            ),
             accepted_research_symbols=(
                 frozenset(selected) if operator_attested else frozenset()
             ),

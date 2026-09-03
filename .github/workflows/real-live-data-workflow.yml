@@ -117,17 +117,27 @@ jobs:
       - name: Authority-boundary guard
         run: |
           python - <<'PY'
+          import tomllib
           from pathlib import Path
 
-          text = Path("docs/status.toml").read_text(encoding="utf-8")
-          required = (
-              'current_stage = "US-D3"',
-              'current_stage_status = "awaiting_final_universe_and_reconciliation_evidence"',
-              'next_stage = "US-B0"',
-          )
-          missing = [item for item in required if item not in text]
-          if missing:
-              raise SystemExit(f"live-data engineering branch cannot advance stage authority: {missing}")
+          with Path("docs/status.toml").open("rb") as handle:
+              status = tomllib.load(handle)
+          us_d3 = status.get("stage", {}).get("us_d3", {})
+          required = {
+              "current_stage": status.get("current_stage") == "US-B0",
+              "next_stage": status.get("next_stage") == "US-A0",
+              "us_d3.status": us_d3.get("status") == "accepted",
+              "us_d3.outcome": (
+                  us_d3.get("certification_outcome")
+                  == "CERTIFIED_FOR_ENGINEERING_RESEARCH"
+              ),
+              "us_d3.exit_gate": us_d3.get("stage_exit_gate_passed") is True,
+          }
+          failed = [name for name, passed in required.items() if not passed]
+          if failed:
+              raise SystemExit(
+                  f"live-data stage authority is incomplete or inconsistent: {failed}"
+              )
           PY
       - name: Strict static checks
         run: |

@@ -12,7 +12,9 @@ from finagent.data.us_minute import (
     inventory_monthly_parquet,
 )
 from finagent.data.us_universe_candidates import (
+    USMappedCandidateSelectionPolicy,
     USUniverseCandidateSelectionPolicy,
+    select_us_mapped_universe_candidates,
     select_us_universe_candidates,
 )
 from finagent.domain.trading_calendar import TradingCalendarEvidence, TradingSession
@@ -294,3 +296,64 @@ def test_non_exact_symbol_policy_is_rejected() -> None:
     calendar = _calendar()
     with pytest.raises(ValueError, match="exact symbol text"):
         _policy(calendar, exact_symbol_match_only=False)
+
+
+def test_selects_candidates_through_explicit_suffix_mappings(tmp_path: Path) -> None:
+    root, inventory_id = _snapshot(tmp_path)
+    calendar = _calendar()
+    probe = _probe()
+    symbols = probe["symbols"]
+    assert isinstance(symbols, list)
+    symbols.append(
+        {
+            "symbol": "BBB.NYS",
+            "path": "NYSE\\Stock\\BBB.NYS",
+            "visible": True,
+            "tradable": True,
+        }
+    )
+    policy = USMappedCandidateSelectionPolicy(
+        start=_dt(2, 14, 30),
+        end=_dt(6, 14, 40),
+        calendar_id=calendar.calendar_id,
+        mapping_pairs=(("AAA", "AAA.US"), ("BBB", "BBB.NYS")),
+        top_n=2,
+        minimum_selected_count=2,
+        minimum_active_sessions=2,
+        minimum_active_session_ratio=0.66,
+        minimum_median_regular_coverage_ratio=0.80,
+        seed_symbols=("AAA", "BBB"),
+    )
+
+    report = select_us_mapped_universe_candidates(
+        root,
+        mt5_probe=probe,
+        calendar=calendar,
+        policy=policy,
+        expected_revision=REVISION,
+        expected_inventory_id=inventory_id,
+        cleaning_identity=CLEANING_ID,
+        temp_directory=tmp_path / "duckdb-temp-mapped",
+        generated_at=datetime(2026, 1, 7, tzinfo=UTC),
+    )
+
+    assert report.ready_for_spread_probe
+    assert report.mapped_intersection_count == 2
+    assert [(item.research_symbol, item.broker_symbol) for item in report.candidates] == [
+        ("AAA", "AAA.US"),
+        ("BBB", "BBB.NYS"),
+    ]
+    assert report.to_dict()["schema_version"] == (
+        "finagent.us-mapped-candidate-selection-report.v1"
+    )
+
+
+def test_mapped_policy_rejects_ambiguous_mapping_pairs() -> None:
+    calendar = _calendar()
+    with pytest.raises(ValueError, match="duplicate broker mapping"):
+        USMappedCandidateSelectionPolicy(
+            start=_dt(2, 14, 30),
+            end=_dt(6, 14, 40),
+            calendar_id=calendar.calendar_id,
+            mapping_pairs=(("AAA", "SHARED.NAS"), ("BBB", "SHARED.NAS")),
+        )

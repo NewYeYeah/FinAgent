@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass
+from datetime import timedelta
 
 from .capabilities import MT5CapabilityProbeReport
 from .client import RECOMMENDED_MT5_PACKAGE_VERSION
@@ -35,6 +36,7 @@ class MT5P0AcceptancePolicy:
     minimum_tick_window_m1_bars: int = 1
     require_spread: bool = True
     max_spread_staleness_seconds_at_probe_start: float = 300.0
+    maximum_history_window_skew_minutes: int = 360
     schema_version: str = "finagent.mt5-p0-acceptance-policy.v2"
 
     def __post_init__(self) -> None:
@@ -60,6 +62,8 @@ class MT5P0AcceptancePolicy:
             raise ValueError("minimum_tick_window_m1_bars must be >= 1")
         if self.max_spread_staleness_seconds_at_probe_start < 0:
             raise ValueError("max_spread_staleness_seconds_at_probe_start must be >= 0")
+        if self.maximum_history_window_skew_minutes < 0:
+            raise ValueError("maximum_history_window_skew_minutes must be >= 0")
 
     @property
     def policy_id(self) -> str:
@@ -80,6 +84,9 @@ class MT5P0AcceptancePolicy:
             "require_spread": self.require_spread,
             "max_spread_staleness_seconds_at_probe_start": (
                 self.max_spread_staleness_seconds_at_probe_start
+            ),
+            "maximum_history_window_skew_minutes": (
+                self.maximum_history_window_skew_minutes
             ),
         }
         if include_id:
@@ -173,6 +180,15 @@ def assess_mt5_p0(
         history = history_by_name.get(symbol)
         if policy.require_m1_history and (history is None or history.m1_bar_count <= 0):
             blockers.append(f"history:{symbol}:m1_missing")
+        elif policy.require_m1_history and history is not None:
+            assert history.m1_first_at is not None
+            assert history.m1_last_at is not None
+            skew = timedelta(minutes=policy.maximum_history_window_skew_minutes)
+            if (
+                history.m1_last_at < history.requested_bar_start - skew
+                or history.m1_first_at >= history.requested_bar_end + skew
+            ):
+                blockers.append(f"history:{symbol}:m1_outside_requested_window")
 
         spread = spread_by_name.get(symbol)
         if policy.require_spread:

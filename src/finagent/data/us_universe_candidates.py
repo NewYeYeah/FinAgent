@@ -347,6 +347,249 @@ class USUniverseCandidateSelectionReport:
         }
 
 
+@dataclass(frozen=True, slots=True)
+class USMappedCandidateSelectionPolicy:
+    """Explicit research-to-broker mapping policy for suffixed broker symbols."""
+
+    start: datetime
+    end: datetime
+    calendar_id: str
+    mapping_pairs: tuple[tuple[str, str], ...]
+    top_n: int = 40
+    minimum_selected_count: int = 20
+    minimum_active_sessions: int = 20
+    minimum_active_session_ratio: float = 0.80
+    minimum_median_regular_coverage_ratio: float = 0.80
+    minimum_median_session_close: float = 1.0
+    minimum_median_daily_notional_proxy: float = 0.0
+    require_tradable: bool = True
+    require_visible: bool = False
+    seed_symbols: tuple[str, ...] = ("AMD", "INTC", "MSFT", "NVDA")
+    schema_version: str = "finagent.us-mapped-candidate-selection-policy.v1"
+
+    def __post_init__(self) -> None:
+        exact_policy = self.to_exact_inventory_policy()
+        pairs: list[tuple[str, str]] = []
+        research_seen: set[str] = set()
+        broker_seen: set[str] = set()
+        for research_raw, broker_raw in self.mapping_pairs:
+            research = research_raw.strip()
+            broker = broker_raw.strip()
+            if not research or not broker:
+                raise ValueError("mapping pairs require non-empty research and broker symbols")
+            if research in research_seen:
+                raise ValueError(f"duplicate research mapping: {research}")
+            if broker in broker_seen:
+                raise ValueError(f"duplicate broker mapping: {broker}")
+            research_seen.add(research)
+            broker_seen.add(broker)
+            pairs.append((research, broker))
+        if not pairs:
+            raise ValueError("at least one explicit mapping pair is required")
+        object.__setattr__(self, "start", exact_policy.start)
+        object.__setattr__(self, "end", exact_policy.end)
+        object.__setattr__(self, "calendar_id", exact_policy.calendar_id)
+        object.__setattr__(self, "seed_symbols", exact_policy.seed_symbols)
+        object.__setattr__(self, "mapping_pairs", tuple(pairs))
+
+    def to_exact_inventory_policy(self) -> USUniverseCandidateSelectionPolicy:
+        return USUniverseCandidateSelectionPolicy(
+            start=self.start,
+            end=self.end,
+            calendar_id=self.calendar_id,
+            top_n=self.top_n,
+            minimum_selected_count=self.minimum_selected_count,
+            minimum_active_sessions=self.minimum_active_sessions,
+            minimum_active_session_ratio=self.minimum_active_session_ratio,
+            minimum_median_regular_coverage_ratio=(
+                self.minimum_median_regular_coverage_ratio
+            ),
+            minimum_median_session_close=self.minimum_median_session_close,
+            minimum_median_daily_notional_proxy=(
+                self.minimum_median_daily_notional_proxy
+            ),
+            require_tradable=self.require_tradable,
+            require_visible=self.require_visible,
+            seed_symbols=self.seed_symbols,
+        )
+
+    @property
+    def mapping_id(self) -> str:
+        return _canonical_hash(
+            {
+                "schema_version": "finagent.us-explicit-symbol-mapping.v1",
+                "mapping_pairs": [
+                    {"research_symbol": research, "broker_symbol": broker}
+                    for research, broker in self.mapping_pairs
+                ],
+            },
+            prefix="us-explicit-symbol-mapping",
+        )
+
+    @property
+    def policy_id(self) -> str:
+        return _canonical_hash(
+            self.to_dict(include_id=False),
+            prefix="us-mapped-candidate-policy",
+        )
+
+    def to_dict(self, *, include_id: bool = True) -> dict[str, object]:
+        payload: dict[str, object] = {
+            "schema_version": self.schema_version,
+            "start_inclusive": self.start.isoformat(),
+            "end_exclusive": self.end.isoformat(),
+            "calendar_id": self.calendar_id,
+            "mapping_id": self.mapping_id,
+            "mapping_pairs": [
+                {"research_symbol": research, "broker_symbol": broker}
+                for research, broker in self.mapping_pairs
+            ],
+            "top_n": self.top_n,
+            "minimum_selected_count": self.minimum_selected_count,
+            "minimum_active_sessions": self.minimum_active_sessions,
+            "minimum_active_session_ratio": self.minimum_active_session_ratio,
+            "minimum_median_regular_coverage_ratio": (
+                self.minimum_median_regular_coverage_ratio
+            ),
+            "minimum_median_session_close": self.minimum_median_session_close,
+            "minimum_median_daily_notional_proxy": (
+                self.minimum_median_daily_notional_proxy
+            ),
+            "exact_symbol_match_only": False,
+            "require_explicit_mapping": True,
+            "require_tradable": self.require_tradable,
+            "require_visible": self.require_visible,
+            "seed_symbols": list(self.seed_symbols),
+        }
+        if include_id:
+            payload["policy_id"] = self.policy_id
+        return payload
+
+
+@dataclass(frozen=True, slots=True)
+class USMappedCandidateSelectionReport:
+    policy: USMappedCandidateSelectionPolicy
+    source_revision: str
+    inventory_id: str
+    manifest_id: str
+    source_data_version: str
+    calendar_id: str
+    mt5_probe_id: str
+    broker_server: str
+    partition_months: tuple[str, ...]
+    selected_size_bytes: int
+    expected_session_count: int
+    research_symbol_count: int
+    broker_tradable_symbol_count: int
+    mapped_intersection_count: int
+    eligible_candidate_count: int
+    candidates: tuple[USUniverseCandidate, ...]
+    missing_seed_symbols: tuple[str, ...]
+    generated_at: datetime
+    schema_version: str = "finagent.us-mapped-candidate-selection-report.v1"
+
+    @property
+    def manual_visibility_required_symbols(self) -> tuple[str, ...]:
+        return tuple(
+            item.broker_symbol for item in self.candidates if item.visibility_action_required
+        )
+
+    @property
+    def blockers(self) -> tuple[str, ...]:
+        blockers: list[str] = []
+        if self.expected_session_count <= 0:
+            blockers.append("calendar:no_sessions_in_selection_window")
+        if self.mapped_intersection_count <= 0:
+            blockers.append("identity:no_explicit_research_broker_mapping_intersection")
+        if len(self.candidates) < self.policy.minimum_selected_count:
+            blockers.append(
+                "selection:insufficient_candidates:"
+                f"{len(self.candidates)}<{self.policy.minimum_selected_count}"
+            )
+        blockers.extend(f"seed:{symbol}:not_eligible" for symbol in self.missing_seed_symbols)
+        return tuple(blockers)
+
+    @property
+    def ready_for_spread_probe(self) -> bool:
+        return not self.blockers
+
+    @property
+    def limitations(self) -> tuple[str, ...]:
+        values = [
+            "universe:engineering_candidate_set_only",
+            "universe:not_survivorship_unbiased",
+            "identity:explicit_mapping_is_not_same_security_proof",
+            "identity:operator_mapping_attestation_still_required",
+            "identity:broker_path_not_exchange_authority",
+            "identity:no_point_in_time_security_master",
+            "liquidity:daily_notional_is_close_times_source_volume_proxy",
+            "spread:current_samples_are_diagnostic_not_historical_cost_authority",
+        ]
+        if self.manual_visibility_required_symbols:
+            values.append("broker_visibility:market_watch_selection_required")
+        return tuple(values)
+
+    @property
+    def selection_id(self) -> str:
+        return _canonical_hash(
+            {
+                "schema_version": self.schema_version,
+                "policy_id": self.policy.policy_id,
+                "mapping_id": self.policy.mapping_id,
+                "source_revision": self.source_revision,
+                "inventory_id": self.inventory_id,
+                "manifest_id": self.manifest_id,
+                "source_data_version": self.source_data_version,
+                "calendar_id": self.calendar_id,
+                "mt5_probe_id": self.mt5_probe_id,
+                "broker_server": self.broker_server,
+                "partition_months": list(self.partition_months),
+                "selected_size_bytes": self.selected_size_bytes,
+                "expected_session_count": self.expected_session_count,
+                "research_symbol_count": self.research_symbol_count,
+                "broker_tradable_symbol_count": self.broker_tradable_symbol_count,
+                "mapped_intersection_count": self.mapped_intersection_count,
+                "eligible_candidate_count": self.eligible_candidate_count,
+                "candidates": [item.to_dict() for item in self.candidates],
+                "missing_seed_symbols": list(self.missing_seed_symbols),
+            },
+            prefix="us-mapped-candidate-selection",
+        )
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "schema_version": self.schema_version,
+            "selection_id": self.selection_id,
+            "ready_for_spread_probe": self.ready_for_spread_probe,
+            "blockers": list(self.blockers),
+            "limitations": list(self.limitations),
+            "policy": self.policy.to_dict(),
+            "mapping_id": self.policy.mapping_id,
+            "source_revision": self.source_revision,
+            "inventory_id": self.inventory_id,
+            "manifest_id": self.manifest_id,
+            "source_data_version": self.source_data_version,
+            "calendar_id": self.calendar_id,
+            "mt5_probe_id": self.mt5_probe_id,
+            "broker_server": self.broker_server,
+            "partition_months": list(self.partition_months),
+            "selected_size_bytes": self.selected_size_bytes,
+            "expected_session_count": self.expected_session_count,
+            "research_symbol_count": self.research_symbol_count,
+            "broker_tradable_symbol_count": self.broker_tradable_symbol_count,
+            "mapped_intersection_count": self.mapped_intersection_count,
+            "eligible_candidate_count": self.eligible_candidate_count,
+            "selected_candidate_count": len(self.candidates),
+            "spread_probe_symbols": [item.broker_symbol for item in self.candidates],
+            "manual_visibility_required_symbols": list(
+                self.manual_visibility_required_symbols
+            ),
+            "missing_seed_symbols": list(self.missing_seed_symbols),
+            "candidates": [item.to_dict() for item in self.candidates],
+            "generated_at": self.generated_at.astimezone(UTC).isoformat(),
+        }
+
+
 def _broker_inventory(
     probe: Mapping[str, object],
     policy: USUniverseCandidateSelectionPolicy,
@@ -674,6 +917,200 @@ def select_us_universe_candidates(
         research_symbol_count=len(research_symbols),
         broker_tradable_symbol_count=len(broker_symbols),
         exact_intersection_count=len(intersection),
+        eligible_candidate_count=len(eligible),
+        candidates=ranked,
+        missing_seed_symbols=missing_seeds,
+        generated_at=_aware_utc(timestamp, "generated_at"),
+    )
+
+
+def select_us_mapped_universe_candidates(
+    root: str | Path,
+    *,
+    mt5_probe: Mapping[str, object],
+    calendar: TradingCalendarEvidence,
+    policy: USMappedCandidateSelectionPolicy,
+    expected_revision: str,
+    expected_inventory_id: str,
+    cleaning_identity: str,
+    execution_policy: DuckDBExecutionPolicy = DEFAULT_DUCKDB_EXECUTION_POLICY,
+    temp_directory: str | Path | None = None,
+    generated_at: datetime | None = None,
+) -> USMappedCandidateSelectionReport:
+    """Rank research assets through explicit, non-inferred broker mappings."""
+
+    if calendar.calendar_id != policy.calendar_id:
+        raise ValueError("calendar identity does not match candidate-selection policy")
+    inventory_policy = policy.to_exact_inventory_policy()
+    probe_id, broker_server, broker_symbols, spread_bps = _broker_inventory(
+        mt5_probe,
+        inventory_policy,
+    )
+    mapping_by_research = dict(policy.mapping_pairs)
+    manifest = manifest_from_huggingface_snapshot(
+        root,
+        expected_revision=expected_revision,
+        expected_inventory_id=expected_inventory_id,
+        cleaning_identity=cleaning_identity,
+    )
+    router_query = MarketDataQuery(
+        market_id=calendar.market_id,
+        assets=("__partition_router__",),
+        start=policy.start,
+        end=policy.end,
+        interval=BarInterval.MINUTE_1,
+        fields=(MarketDataField.CLOSE,),
+        session_policy=SessionPolicy.ALL_OBSERVED,
+        adjustment_policy=ResearchPriceBasis.RAW,
+        availability_policy=AvailabilityPolicy.EVENT_TIME,
+    )
+    partitions = select_partitions(manifest, router_query)
+    research_symbols = _discover_research_symbols(
+        tuple(item.path for item in partitions),
+        start=policy.start,
+        end=policy.end,
+        execution_policy=execution_policy,
+        temp_directory=temp_directory,
+    )
+    research_symbol_set = set(research_symbols)
+    intersection = tuple(
+        sorted(
+            research
+            for research, broker in mapping_by_research.items()
+            if research in research_symbol_set and broker in broker_symbols
+        )
+    )
+    expected_sessions = tuple(
+        session
+        for session in calendar.sessions
+        if session.open_at < policy.end and session.close_at > policy.start
+    )
+
+    candidates: list[USUniverseCandidate] = []
+    selected_size_bytes = sum(item.size_bytes for item in partitions)
+    if intersection and expected_sessions:
+        raw_store = DuckDBParquetMinuteStore(manifest)
+        sessionized_store = CalendarSessionizedMinuteStore(raw_store, calendar)
+        query = MarketDataQuery(
+            market_id=calendar.market_id,
+            assets=intersection,
+            start=policy.start,
+            end=policy.end,
+            interval=BarInterval.MINUTE_1,
+            fields=(MarketDataField.CLOSE, MarketDataField.VOLUME),
+            session_policy=SessionPolicy.REGULAR,
+            adjustment_policy=ResearchPriceBasis.RAW,
+            availability_policy=AvailabilityPolicy.EVENT_TIME,
+        )
+        plan, _evidence = sessionized_store.plan(query)
+        selected_size_bytes = plan.selected_size_bytes
+        connection = _duckdb().connect(database=":memory:")
+        try:
+            configure_duckdb_connection(
+                connection,
+                execution_policy,
+                temp_directory=temp_directory,
+            )
+            rows = connection.execute(
+                f"""
+                WITH sessionized AS (
+                    {plan.sql}
+                ),
+                daily AS (
+                    SELECT
+                        research_asset_id,
+                        session_date,
+                        count(*)::BIGINT AS minute_count,
+                        date_diff('minute', min(session_open), max(session_close))::BIGINT
+                            AS expected_minute_count,
+                        sum(CAST(close AS DOUBLE) * CAST(volume AS DOUBLE))::DOUBLE
+                            AS daily_notional_proxy,
+                        arg_max(CAST(close AS DOUBLE), event_time)::DOUBLE
+                            AS session_close_price,
+                        min(event_time) AS first_event_at,
+                        max(event_time) AS last_event_at
+                    FROM sessionized
+                    GROUP BY research_asset_id, session_date
+                )
+                SELECT
+                    research_asset_id,
+                    count(*)::BIGINT AS active_session_count,
+                    sum(minute_count)::BIGINT AS total_regular_minute_count,
+                    median(CAST(minute_count AS DOUBLE))::DOUBLE
+                        AS median_regular_minute_count,
+                    median(
+                        CAST(minute_count AS DOUBLE)
+                        / NULLIF(CAST(expected_minute_count AS DOUBLE), 0.0)
+                    )::DOUBLE AS median_regular_coverage_ratio,
+                    median(daily_notional_proxy)::DOUBLE AS median_daily_notional_proxy,
+                    median(session_close_price)::DOUBLE AS median_session_close,
+                    CAST(min(first_event_at) AS VARCHAR) AS first_observed_at,
+                    CAST(max(last_event_at) AS VARCHAR) AS last_observed_at
+                FROM daily
+                GROUP BY research_asset_id
+                ORDER BY research_asset_id
+                """
+            ).fetchall()
+        finally:
+            connection.close()
+
+        expected_count = len(expected_sessions)
+        for row in rows:
+            research_symbol = str(row[0])
+            broker_symbol = mapping_by_research[research_symbol]
+            broker = broker_symbols[broker_symbol]
+            active_count = int(row[1])
+            candidates.append(
+                USUniverseCandidate(
+                    research_symbol=research_symbol,
+                    broker_symbol=broker_symbol,
+                    broker_path=str(broker.get("path", "")).strip(),
+                    broker_visible=_boolean(
+                        broker.get("visible"),
+                        "symbols[].visible",
+                    ),
+                    broker_tradable=_boolean(
+                        broker.get("tradable"),
+                        "symbols[].tradable",
+                    ),
+                    active_session_count=active_count,
+                    expected_session_count=expected_count,
+                    active_session_ratio=active_count / expected_count,
+                    total_regular_minute_count=int(row[2]),
+                    median_regular_minute_count=float(row[3]),
+                    median_regular_coverage_ratio=float(row[4]),
+                    median_daily_notional_proxy=float(row[5]),
+                    median_session_close=float(row[6]),
+                    first_observed_at=_parse_aware_datetime(row[7], "first_observed_at"),
+                    last_observed_at=_parse_aware_datetime(row[8], "last_observed_at"),
+                    current_spread_bps=spread_bps.get(broker_symbol),
+                )
+            )
+
+    eligible = tuple(
+        item for item in candidates if _candidate_is_eligible(item, inventory_policy)
+    )
+    ranked = _rank_candidates(eligible, inventory_policy)
+    eligible_symbols = {item.research_symbol for item in eligible}
+    missing_seeds = tuple(
+        symbol for symbol in policy.seed_symbols if symbol not in eligible_symbols
+    )
+    timestamp = generated_at or datetime.now(UTC)
+    return USMappedCandidateSelectionReport(
+        policy=policy,
+        source_revision=expected_revision,
+        inventory_id=expected_inventory_id,
+        manifest_id=manifest.manifest_id,
+        source_data_version=manifest.data_version,
+        calendar_id=calendar.calendar_id,
+        mt5_probe_id=probe_id,
+        broker_server=broker_server,
+        partition_months=tuple(item.month for item in partitions),
+        selected_size_bytes=selected_size_bytes,
+        expected_session_count=len(expected_sessions),
+        research_symbol_count=len(research_symbols),
+        broker_tradable_symbol_count=len(broker_symbols),
+        mapped_intersection_count=len(intersection),
         eligible_candidate_count=len(eligible),
         candidates=ranked,
         missing_seed_symbols=missing_seeds,

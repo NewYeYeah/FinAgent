@@ -263,3 +263,87 @@ def test_v3_required_seed_still_fails_when_current_spread_is_too_wide() -> None:
     assert "INTC" in report.excluded_by_spread
     assert "INTC" in report.missing_seed_symbols
     assert "universe:required_seed_missing:INTC" in report.blockers
+
+
+def test_v3_materializes_explicit_research_to_broker_mappings() -> None:
+    research_symbols = _symbols()
+    mapped = {symbol: f"{symbol}.NAS" for symbol in research_symbols}
+    candidate = _candidate(broker_server="TradeMaxGlobal-Live")
+    candidate["spread_probe_symbols"] = list(mapped.values())
+    candidate["candidates"] = [
+        {
+            "rank": rank,
+            "research_symbol": research,
+            "broker_symbol": broker,
+        }
+        for rank, (research, broker) in enumerate(mapped.items(), start=1)
+    ]
+    p0_probe = {
+        "probe_id": "p0-probe",
+        "terminal": {"broker_server": "TradeMaxGlobal-Live"},
+    }
+    clock = build_mt5_broker_clock_evidence(
+        "TradeMaxGlobal-Live",
+        tuple(
+            MT5BrokerClockObservation(
+                symbol=symbol,
+                raw_broker_time_msc=int((NOW + timedelta(hours=3)).timestamp() * 1000),
+                retrieved_at_utc=NOW,
+                bid=1.0,
+                ask=1.0001,
+            )
+            for symbol in ("EURUSD", "GBPUSD", "USDJPY")
+        ),
+        generated_at=NOW,
+    )
+    raw_time = NOW - timedelta(seconds=30) + timedelta(hours=3)
+    ticks = {
+        broker: {
+            "time_msc": int(raw_time.timestamp() * 1000),
+            "time": int(raw_time.timestamp()),
+            "bid": 100.0,
+            "ask": 100.1,
+        }
+        for broker in mapped.values()
+    }
+    quote = build_candidate_quote_probe_report_v2(
+        candidate,
+        p0_probe,
+        [
+            {"name": broker, "visible": True, "trade_mode": 4}
+            for broker in mapped.values()
+        ],
+        ticks,
+        {broker: NOW for broker in mapped.values()},
+        clock,
+        generated_at=NOW,
+    )
+    inventory = {
+        "probe_id": "fresh-inventory-1",
+        "probed_at": NOW.isoformat(),
+        "terminal": {
+            "capability_id": "terminal-1",
+            "broker_server": "TradeMaxGlobal-Live",
+        },
+        "symbols": [_spec(broker) for broker in mapped.values()],
+    }
+
+    report = finalize_us_engineering_universe_v3(
+        candidate,
+        quote.to_dict(),
+        inventory,
+        policy=_policy(),
+        operator_attested=True,
+        generated_at=NOW,
+    )
+
+    assert report.accepted
+    assert report.accepted_mapping_count == 25
+    materialization = report.materialization
+    assert materialization is not None
+    pairs = {
+        (item.research.source_symbol, item.broker.broker_symbol)
+        for item in materialization.mappings
+    }
+    assert ("AMD", "AMD.NAS") in pairs
+    assert ("NVDA", "NVDA.NAS") in pairs

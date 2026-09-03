@@ -2,6 +2,16 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-04 — Target-broker mapped candidate workflow implementation
+
+- implemented a content-addressed, explicit one-to-one `RESEARCH=BROKER` candidate policy/report so target brokers with `.NAS`/`.NYS` suffixes can reuse the admitted historical ranking gates without inferring or stripping symbols;
+- propagated mapped broker symbols through current-quote seed requirements and final EngineeringUniverse materialization while retaining the exact-match v1 candidate artifact and finalizer CLI alias for compatibility;
+- hardened MT5-P0 acceptance against out-of-window history responses and added explicit accepted-universe reconciliation references for brokers whose historical retention differs by instrument;
+- kept the mapped selector offline and mutation-free: Market Watch changes remain a separate add-only allowlisted operator action, and all quote, inventory and minute-reference evidence continues through the funded-account dual-lock read-only client;
+- accepted target-broker P0 probe `mt5-capability-probe-17e5cc9c62b808c259294eb4`, a 58-pair explicit mapping with 55 eligible names and a 40-name quote surface, then froze 25-name EngineeringUniverse `engineering-universe-259e3975a25856bef28442ff`;
+- accepted four-symbol MT5-D0 reconciliation `minute-reference-reconciliation-73e9897bcb5e43fd5ce0c53d` with 100% aligned overlap for IWM/GLD/XLE/EEM at the independently measured −180-minute historical offset;
+- certified US-D3 as `CERTIFIED_FOR_ENGINEERING_RESEARCH` under report `us-minute-research-cert-485aeeac152a32caa546fbb8` and advanced stage authority to US-B0 without granting PAPER, execution or live-capital authority.
+
 ## 2026-09-03 — Replay Experiment Orchestration / Streaming-vs-Batch Research Campaign v1 implementation closure
 
 - implemented an engineering-only `ReplayExperimentCampaign` over one bounded minute source with independent streaming (`DatabaseReplaySource -> AlgorithmRunner -> USBaselineStreamingAlgorithm`) and accepted US-D2 batch (`SessionResampledMinuteStore -> SameSessionLabelStore`) paths;

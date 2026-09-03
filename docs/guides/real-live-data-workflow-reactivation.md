@@ -281,9 +281,12 @@ reference, close the 25-name final universe, authorize PAPER/execution, or advan
 When the target broker becomes available, reuse the same canonical source path and replace only source configuration/symbols. Revalidate broker/server/account identity, symbol contracts, timing class, spread/session behavior and PAPER lifecycle. FX acceptance never becomes U.S. CFD authority.
 
 The prior MetaQuotes-Demo candidate, quote and delayed-reference artifacts remain
-immutable. A target-broker freeze requires a new candidate/mapping identity and a new
-timing policy bound to the observed target server; do not rewrite the old artifacts or
-change their expected server merely to obtain a pass.
+immutable. The target-broker path uses
+`scripts/select_us_i0_mapped_candidates.py` with explicit one-to-one mappings such as
+`AMD=AMD.NAS`; suffixes are never inferred or removed. The resulting candidate,
+broker-clock quote, fresh inventory and final EngineeringUniverse artifacts all receive
+new content identities bound to the observed target server. Do not rewrite the old
+artifacts or change their expected server merely to obtain a pass.
 
 ## CI / workstation boundary
 

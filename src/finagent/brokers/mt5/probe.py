@@ -161,8 +161,8 @@ def _history_capability(
 ) -> MT5HistoryCapability:
     rates = _rows(client.copy_rates_range(symbol, bar_start, bar_end))
     rate_times = tuple(_unix_timestamp(_field(row, "time")) for row in rates)
-    m1_first = rate_times[0] if rate_times else None
-    m1_last = rate_times[-1] if rate_times else None
+    m1_first = min(rate_times) if rate_times else None
+    m1_last = max(rate_times) if rate_times else None
 
     actual_tick_start: datetime | None = None
     actual_tick_end: datetime | None = None
@@ -172,7 +172,7 @@ def _history_capability(
         actual_tick_end = tick_end
         tick_window_basis = "explicit"
     elif tick_requested and auto_tick_window_minutes is not None and rate_times:
-        actual_tick_end = rate_times[-1] + timedelta(minutes=1)
+        actual_tick_end = max(rate_times) + timedelta(minutes=1)
         actual_tick_start = actual_tick_end - timedelta(minutes=auto_tick_window_minutes)
         tick_window_basis = "derived_from_m1_tail"
 
