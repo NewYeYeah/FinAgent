@@ -78,3 +78,4 @@ patch(
 )
 
 print("streaming source v1 static patch applied")
+# trigger patch workflow
