@@ -146,7 +146,10 @@ def main() -> int:
         return 2
     if result["delayed_blocked_event_count"] != 4:
         return 2
-    if "freshness:source_delay_exceeded" not in result["delayed_reasons"]:
+    delayed_reasons = result["delayed_reasons"]
+    if not isinstance(delayed_reasons, list):
+        return 2
+    if "freshness:source_delay_exceeded" not in delayed_reasons:
         return 2
     return 0
 
