@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable
 from datetime import UTC, datetime
 from typing import Protocol
 
@@ -61,7 +61,7 @@ class MT5RealtimeSource:
     async def subscribe(
         self,
         subscription: MarketDataSubscription,
-    ) -> object:
+    ) -> AsyncIterator[CanonicalRealtimeEvent]:
         if subscription.start is not None or subscription.end is not None:
             raise ValueError("live MT5 source does not accept historical start/end bounds")
         if subscription.event_kinds != (RealtimeEventKind.QUOTE,):

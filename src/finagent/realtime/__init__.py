@@ -1,6 +1,6 @@
 from finagent.realtime.algorithm import (
-    AlgorithmRunReport,
     AlgorithmRunner,
+    AlgorithmRunReport,
     StreamingAlgorithm,
 )
 from finagent.realtime.database_replay import DatabaseReplaySource

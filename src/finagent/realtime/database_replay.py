@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
-from collections.abc import Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -191,18 +191,17 @@ class DatabaseReplaySource:
     async def subscribe(
         self,
         subscription: MarketDataSubscription,
-    ) -> object:
+    ) -> AsyncIterator[CanonicalRealtimeEvent]:
         query = self._query(subscription)
         plan = self._store.plan(query)
         previous_delivery_at: datetime | None = None
         emitted = 0
-        sequence = 0
-        for row in iter_plan_rows(
+        for sequence, row in enumerate(iter_plan_rows(
             plan,
             batch_size=self._batch_size,
             policy=self._execution_policy,
             temp_directory=self._temp_directory,
-        ):
+        )):
             event = self._event(plan_id=plan.plan_id, sequence=sequence, row=row)
             await self._pace(
                 subscription.pacing_mode,
@@ -211,8 +210,7 @@ class DatabaseReplaySource:
                 event.received_at,
             )
             yield event
-            emitted += 1
-            sequence += 1
+            emitted = sequence + 1
             previous_delivery_at = event.received_at
             if subscription.maximum_events is not None and emitted >= subscription.maximum_events:
                 return

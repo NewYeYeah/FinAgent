@@ -5,8 +5,9 @@ import json
 import math
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from collections.abc import AsyncIterator
 from enum import StrEnum
-from typing import AsyncIterator, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from finagent.realtime.events import CanonicalRealtimeEvent, RealtimeEventKind
 
@@ -92,9 +93,11 @@ class FeedTimingProfile:
                 _non_negative_optional(getattr(self, field_name), field_name),
             )
         object.__setattr__(self, "measured_at", _aware_optional(self.measured_at, "measured_at"))
-        if self.timing_class is FeedTimingClass.DELAYED:
-            if self.observed_delay_seconds is None or self.observed_delay_seconds <= 0:
-                raise ValueError("DELAYED timing profile requires observed_delay_seconds > 0")
+        if (
+            self.timing_class is FeedTimingClass.DELAYED
+            and (self.observed_delay_seconds is None or self.observed_delay_seconds <= 0)
+        ):
+            raise ValueError("DELAYED timing profile requires observed_delay_seconds > 0")
         if self.timing_class is FeedTimingClass.UNKNOWN and self.observed_delay_seconds is not None:
             raise ValueError("UNKNOWN timing profile cannot claim an observed source delay")
         if (
