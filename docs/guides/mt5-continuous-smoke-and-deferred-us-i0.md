@@ -31,7 +31,7 @@ exchange/session state
 
 These are separate measurements. A future server or account may expose the same ticker with different timing, contract, execution or subscription semantics and therefore requires a different evidence identity.
 
-Where MT5 exposes the information, later capability evidence should preserve feed/symbol fingerprint fields such as:
+`MT5FeedRegimeEvidence` preserves the feed/symbol fingerprint fields exposed by the existing read-only `symbols_get()` inventory:
 
 ```text
 subscription_delay
@@ -40,7 +40,55 @@ trade_exemode
 ticks_bookdepth
 ```
 
-These are evidence enrichments only. Until implemented and captured, do not infer a confirmed subscription state merely from the asset name. Existing quote-age, delayed-anchor, spread, universe, reconciliation and stage thresholds remain unchanged.
+The evidence is bound to the existing MT5 capability-probe identity, broker server, symbol and unchanged `MT5SymbolSpec.spec_id`. It deliberately does not add these fields to `MT5SymbolSpec` v1, so accepted MT5-P0/S2 identities do not drift merely because diagnostic feed metadata was added.
+
+Missing fields remain `None` with explicit `unavailable_not_inferred` limitations. When a symbol is not visible, `subscription_delay` is deliberately treated as unknown rather than inferred or trusted outside the governed Market Watch boundary. Existing quote-age, delayed-anchor, spread, universe, reconciliation and stage thresholds remain unchanged.
+
+### Read-only feed-regime fingerprint
+
+The lane is explicit input; FinAgent never auto-detects Lane A/B/C from ticker shape, quote age or contract fields.
+
+Lane A example:
+
+```powershell
+python scripts\probe_mt5_feed_regime.py `
+  --feed-lane fx_continuous_engineering_fixture `
+  --symbol EURUSD `
+  --symbol GBPUSD `
+  --symbol USDJPY `
+  --expected-package-version 5.0.6147 `
+  --output reports\mt5\mt5_feed_regime_fx.json
+```
+
+Lane B example, after the U.S. symbols have been manually exposed in Market Watch:
+
+```powershell
+python scripts\probe_mt5_feed_regime.py `
+  --feed-lane metaquotes_demo_delayed_us_equity_reference `
+  --symbol AMD `
+  --symbol INTC `
+  --symbol MSFT `
+  --symbol NVDA `
+  --expected-package-version 5.0.6147 `
+  --output reports\mt5\mt5_feed_regime_us_delayed.json
+```
+
+The script uses only the MT5-P0 read-only client and does not call `symbol_select()` or a market-book subscription/mutation API. Its report is permanently diagnostic-only:
+
+```text
+scope = mt5_feed_regime_diagnostic_only
+research_universe_authority = false
+us_i0_authority = false
+mt5_d0_authority = false
+us_d3_authority = false
+paper_authority = false
+execution_authority = false
+live_market_data_authority = false
+live_executable_spread_authority = false
+stage_exit_authority = false
+```
+
+A complete diagnostic report means only that all requested symbols resolved to a bound fingerprint without inventory/identity errors. It is not an admission Gate.
 
 ## 2. Lane A — FX engineering fixture
 
