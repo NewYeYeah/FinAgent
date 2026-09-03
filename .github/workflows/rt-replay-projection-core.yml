@@ -1,0 +1,50 @@
+name: rt-replay-projection-core
+
+on:
+  pull_request:
+    paths:
+      - "src/finagent/realtime/**"
+      - "scripts/run_realtime_replay_fixture.py"
+      - "tests/test_realtime_replay_projection.py"
+      - "docs/guides/realtime-replay-projection-core.md"
+      - ".github/workflows/rt-replay-projection-core.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rt-replay-projection-core:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused realtime regression
+        run: uv run --frozen pytest -q tests/test_realtime_replay_projection.py
+      - name: Deterministic replay smoke
+        run: |
+          uv run --frozen python scripts/run_realtime_replay_fixture.py \
+            --output /tmp/realtime_replay_projection_fixture.json
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/realtime \
+            scripts/run_realtime_replay_fixture.py \
+            tests/test_realtime_replay_projection.py
+          uv run --frozen mypy --strict \
+            src/finagent/realtime \
+            scripts/run_realtime_replay_fixture.py
+          uv run --frozen python -m py_compile \
+            src/finagent/realtime/events.py \
+            src/finagent/realtime/replay.py \
+            src/finagent/realtime/projections.py \
+            src/finagent/realtime/serialization.py \
+            scripts/run_realtime_replay_fixture.py
