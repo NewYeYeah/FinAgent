@@ -44,6 +44,7 @@ jobs:
         run: >-
           uv run --frozen pytest -q
           tests/test_mt5_paper_replay_operations.py
+          tests/test_mt5_paper_replay_identity_hardening.py
           tests/test_mt5_paper_replay_ports.py
           tests/test_mt5_paper_replay_authority_boundary.py
           tests/test_realtime_replay_projection.py
@@ -77,6 +78,7 @@ jobs:
             src/finagent/brokers/mt5/__init__.py \
             scripts/smoke_mt5_paper_replay_operations.py \
             tests/test_mt5_paper_replay_operations.py \
+            tests/test_mt5_paper_replay_identity_hardening.py \
             tests/test_mt5_paper_replay_ports.py \
             tests/test_mt5_paper_replay_authority_boundary.py
           uv run --frozen mypy --strict \
