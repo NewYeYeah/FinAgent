@@ -1,23 +1,50 @@
 # MT5 continuous smoke, delayed-reference simulation and live broker admission
 
-This guide separates three different purposes that must not be conflated:
+This guide separates three MT5 feed/evidence lanes that must not be conflated:
 
 ```text
-continuous/near-continuous MT5 instruments
-        -> engineering transport/clock smoke only
+Lane A — FX continuous/near-continuous engineering fixture
+        -> transport / broker clock / current bid-ask health only
 
-MetaQuotes-Demo U.S. equities without paid/community market-data subscription
-        -> 15-minute delayed simulation/reference evidence only
+Lane B — MetaQuotes-Demo U.S. equity delayed reference
+        -> simulation EngineeringUniverse / delayed-reference evidence only
 
-future broker demo/real account with current quotes
-        -> broker-specific live-current / execution evidence
+Lane C — future target-broker current U.S. equity/CFD feed
+        -> broker-specific PAPER/live-current/execution admission
 ```
 
-The distinction is an authority boundary, not merely a configuration choice. A delayed simulation quote can be useful for integration, mapping and historical research plumbing while remaining explicitly invalid as evidence of live executable price freshness.
+The distinction is an authority boundary, not merely a symbol-selection convenience. Switching between FX and U.S. equity symbols during development is allowed only when the test is explicitly asset/feed-invariant. Evidence never auto-promotes from one lane to another.
 
-## 1. Continuous-market engineering smoke
+## 1. What the approximately 15-minute delay means
 
-Default symbols are:
+The observed roughly 900-second U.S. equity delay is **not** treated as an intrinsic delay of the `MetaTrader5` Python API and is **not** assumed to apply to every stock or stock CFD. It is a property of the bound server/feed/subscription regime observed for the relevant symbols.
+
+FinAgent therefore distinguishes:
+
+```text
+API transport latency
+broker/server clock offset
+quote timestamp age
+market-data subscription/feed delay
+exchange/session state
+```
+
+These are separate measurements. A future server or account may expose the same ticker with different timing, contract, execution or subscription semantics and therefore requires a different evidence identity.
+
+Where MT5 exposes the information, later capability evidence should preserve feed/symbol fingerprint fields such as:
+
+```text
+subscription_delay
+chart_mode
+trade_exemode
+ticks_bookdepth
+```
+
+These are evidence enrichments only. Until implemented and captured, do not infer a confirmed subscription state merely from the asset name. Existing quote-age, delayed-anchor, spread, universe, reconciliation and stage thresholds remain unchanged.
+
+## 2. Lane A — FX engineering fixture
+
+Default engineering symbols are:
 
 ```text
 EURUSD
@@ -25,9 +52,9 @@ GBPUSD
 USDJPY
 ```
 
-These are used because the current MetaQuotes-Demo connection has demonstrated continuously updating weekday quotes and a stable broker-clock offset. They are not members of the U.S. research universe and are not used as substitute U.S. assets.
+They are useful because the current MetaQuotes-Demo connection has demonstrated continuously updating weekday quotes and a stable broker-clock offset. They are **not** members of the U.S. research universe and are never substitutes for U.S. research assets.
 
-Run:
+Run the engineering smoke:
 
 ```powershell
 conda activate finagent
@@ -43,22 +70,75 @@ python scripts\smoke_mt5_continuous_quotes.py `
   --output reports\mt5\mt5_continuous_quote_smoke.json
 ```
 
-Expected engineering result while those markets are actively quoting:
+Expected authority:
 
 ```text
-passed = true
-passed_symbol_count = 3
-clock_evidence.passed = true
+passed = true                 # when the selected FX feed is actively quoting
 stage_exit_authority = false
 research_universe_authority = false
 execution_authority = false
 ```
 
-The smoke validates read-only transport, broker-server identity, broker-clock normalization, current quote freshness for the chosen continuous instruments, positive bid/ask and diagnostic spread calculation. It deliberately does not call `symbol_select`, `order_check`, `order_send` or any account/position mutation API.
+### What FX may validate
 
-## 2. Observed MetaQuotes-Demo U.S. quote regime
+FX may be used to exercise MT5 behavior that is intentionally independent of the U.S. asset/feed regime:
 
-The active-session September 2026 probe established a stable and reproducible source behavior:
+```text
+initialize / shutdown / reconnect
+terminal_info / account_info
+server identity
+symbols_get / symbol_info plumbing
+symbol_info_tick plumbing
+broker-clock offset and normalization
+time/time_msc parsing
+current bid/ask numeric validation
+quote timestamp progression and freshness
+read-only inventory serialization
+content-addressed report construction
+error / timeout / retry handling
+```
+
+This is the permanent purpose of the continuous-product smoke introduced by the simulation-limited US-D3 bridge.
+
+### What FX may not validate
+
+A passing FX smoke must never be used to satisfy or imply:
+
+```text
+US-I0 candidate admission
+U.S. Market Watch candidate visibility
+U.S. delayed-reference timing admission
+U.S. stock/CFD session behavior
+U.S. stock trade/Last tick behavior
+U.S. stock volume semantics
+U.S. spread/liquidity Gate
+U.S. MT5-D0 reconciliation
+US-D3 U.S. research certification
+BrokerInstrument stock/CFD margin/fill/session semantics
+PAPER/live target-broker admission
+```
+
+The FX preflight is deliberately absent from the U.S. certification denominator.
+
+## 3. FX and regularly-opened U.S. equities are not microstructure-equivalent
+
+The two lanes share the MT5 transport but not the market semantics.
+
+| Dimension | FX engineering fixture | U.S. equity / equity-CFD reference |
+| --- | --- | --- |
+| Trading schedule | near-continuous weekday quoting, broker maintenance possible | exchange/session bounded, holidays/half-days/DST material |
+| Primary plumbing check | current bid/ask quote progression | quote progression plus stock-specific feed/session semantics |
+| `last` / trade ticks | may be absent or non-authoritative for the fixture | may carry material trade-price semantics depending on feed |
+| Volume | broker/feed-specific tick volume semantics | stock/equity feed semantics can differ materially |
+| Spread evidence | useful current engineering diagnostic | delayed feed spread is reference-only; target broker must re-admit executable spread |
+| Contract/margin/fill | FX-specific | CFD/exchange-stock configuration may differ |
+| Corporate actions | not a primary concern | splits/dividends/lifecycle matter for research/history |
+
+Do not write a generic test whose hidden assumption is “all symbols behave like EURUSD.” Asset/feed-specific behavior must remain behind explicit policy/evidence boundaries.
+
+## 4. Lane B — observed MetaQuotes-Demo U.S. delayed-reference regime
+
+The active-session September 2026 probe established:
 
 ```text
 broker clock normalization      passed
@@ -67,15 +147,11 @@ U.S. seed ticks                 continuously progressing
 U.S. seed normalized quote age  approximately 900 seconds
 ```
 
-AMD, INTC, MSFT and NVDA changed `time_msc`, bid, ask and last on repeated five-second samples, so the feed was not frozen. After the accepted +3-hour broker-clock normalization, the source was approximately fifteen minutes behind retrieval time.
+AMD, INTC, MSFT and NVDA changed `time_msc`, bid, ask and last on repeated samples, so the feed was not frozen. After accepted broker-clock normalization, the source remained approximately fifteen minutes behind retrieval time.
 
-The existing `finagent.us-candidate-quote-probe-report.v2` remains unchanged. It continues to ask whether a quote is current under the original live/current freshness semantics and therefore correctly records a quote slightly older than 900 seconds as `stale_quote`.
+The existing `finagent.us-candidate-quote-probe-report.v2` remains a live/current freshness probe. It correctly preserves raw provenance and may mark a roughly 900-second quote as `stale_quote`. FinAgent does **not** widen the v2 freshness threshold merely to force acceptance.
 
-FinAgent does **not** change the existing 900-second v2 current-quote threshold to 901/905/1200 seconds merely to obtain a pass.
-
-## 3. Simulation regime without a broker account
-
-The simulation phase intentionally does not require a broker account and does not purchase/subscribe to the MetaQuotes community real-time equity feed. Instead it introduces a separate, content-addressed delayed-reference timing policy:
+The separate delayed-reference policy asks a different question:
 
 ```text
 source_regime = metaquotes_demo_delayed_reference_without_broker_account
@@ -86,24 +162,30 @@ maximum_anchor_age_seconds = 60
 maximum_future_anchor_skew_seconds = 60
 ```
 
-The simulation validation anchor is:
+with:
 
 ```text
 validation_anchor_at_utc = retrieved_at_utc - 900 seconds
 anchor_age = validation_anchor_at_utc - normalized_sampled_at_utc
-```
 
-A quote is timing-valid for this regime only when:
-
-```text
 -60 seconds <= anchor_age <= +60 seconds
 ```
 
-This is materially different from increasing the raw quote-age limit. The raw v2 report remains the upstream provenance and may still contain `stale_quote`. The delayed-reference report independently asks whether that same progressing quote is consistent with the preregistered 15-minute source regime.
+A nearly current quote is intentionally **not** admitted under this delayed policy. If the source changes to current U.S. quotes, freeze a new regime/policy rather than silently reusing the delayed one.
 
-A quote with approximately zero delay is deliberately **not** admitted under this policy: it is about 900 seconds ahead of the delayed-reference anchor. If MetaQuotes-Demo changes from delayed to current equity quotes, a new source regime/policy must be frozen rather than silently inheriting the delayed policy.
+### Session timing consequence
 
-Freeze the policy:
+For a roughly 15-minute delayed U.S. feed, the observable regular-session window is effectively shifted relative to wall-clock retrieval time. Near the exchange open, a delayed anchor may still point to pre-open time; after the exchange close, delayed updates may continue for approximately the source-delay interval.
+
+Authoritative U.S. research sessions remain governed by the accepted XNYS calendar evidence. MT5 quote timing is diagnostic/source evidence and must not replace the materialized trading calendar.
+
+## 5. Lane B operator flow and Market Watch boundary
+
+FinAgent does not call `symbol_select()` in the governed US-I0 path. The intended U.S. candidates must be manually exposed in MT5 Market Watch before active-session evidence collection.
+
+A `not_visible` raw issue cannot be reinterpreted as delayed. Only raw provenance compatible with the delayed-reference assessment may continue; unrelated raw failures remain fail-closed.
+
+Freeze the delayed timing policy:
 
 ```powershell
 python scripts\freeze_us_i0_simulation_quote_policy.py `
@@ -119,183 +201,93 @@ python scripts\assess_us_i0_delayed_reference_quotes.py `
   --output reports\us_instruments\us_i0_delayed_reference_quotes_<raw-report-id>.json
 ```
 
-The output path is intentionally immutable. If a new raw quote-probe identity is collected, use a new delayed-reference output path rather than overwriting an older evidence artifact.
-
-### Authority of delayed-reference evidence
-
-A passing delayed-reference report may claim only limited simulation/engineering reference authority:
+The S2 simulation-universe implementation is present on `main`. Its frozen policy remains:
 
 ```text
-simulation_reference_authority = true
-engineering_reference_authority = true
-broker_account_required = false
-
-live_market_data_authority = false
-live_executable_spread_authority = false
-broker_account_authority = false
-execution_authority = false
-order_authority = false
-live_capital_authority = false
-status_authority = false
-stage_exit_authority = false
+target selected names = 25
+minimum valid names   = 20
+maximum selected      = 30
+delayed diagnostic spread threshold = 50 bps
+fresh inventory bound = 900 seconds
+required seed retention = AMD, INTC, MSFT, NVDA
 ```
 
-The first implementation stage stops here. It does not feed the existing v3 live/current EngineeringUniverse finalizer and does not advance `docs/status.toml`.
+The operator evidence run must still use the intended U.S. candidate set, a fresh read-only inventory and the exact frozen S2 identities. Do not lower the minimum count, widen the 50-bps diagnostic threshold or remove seed retention to obtain a pass.
 
-## 4. Why the delayed simulation anchor is acceptable
+The simulation-limited US-D3 bridge is also implemented on `main`. It may consume accepted S2 and U.S. MT5-D0 evidence while preserving delayed/no-target-broker/no-executable-spread limitations. Its existence does not itself advance `docs/status.toml`; stage advancement still requires the actual governed evidence chain and later status update.
 
-The design is reasonable for the simulation phase because the questions being answered are integration and research questions rather than live execution questions:
+## 6. Authority of delayed-reference evidence
 
-- can ResearchInstrument and MT5 reference symbols be mapped reproducibly;
-- does the MT5 read-only transport progress and preserve source timestamps;
-- are source clocks normalized correctly;
-- can delayed spread/quote observations be retained as diagnostic simulation references;
-- can historical B0/A0/R1 research and provider-neutral replay/runtime components be developed without broker-account side effects.
-
-It is **not** reasonable to use the same evidence to claim:
-
-- current executable spread;
-- current liquidity or slippage;
-- broker contract/account readiness;
-- PAPER order readiness;
-- live-capital readiness.
-
-For that reason the simulation regime receives a separate policy/report identity rather than modifying the live-current policy.
-
-## 5. Revised development arrangement
-
-The work is split into two evidence regimes and five implementation blocks.
-
-### S1 — delayed-reference timing/evidence contract — current increment
-
-Deliverables:
+Passing Lane B evidence may support only the authority explicitly carried by the simulation contracts. It does not create current executable-market authority.
 
 ```text
-canonical delayed-reference timing policy
-raw-v2 -> delayed-reference assessment
-content-addressed report/parser
-regime-separation tests
-operator guide
+simulation/engineering reference authority   allowed when the governed report passes
+live market-data authority                    false
+live executable-spread authority              false
+target broker/account authority               false
+order authority                               false
+live-capital authority                        false
+automatic status authority                    false
 ```
 
-S1 has no universe-finalization or stage-exit authority.
+Delayed MT5 quotes do not become historical labels or authoritative research prices. US-B0/A0/R1 continue to use the certified historical data plane and their own frozen research protocols.
 
-### S2 — simulation-specific EngineeringUniverse admission
+## 7. Lane C — future target-broker re-admission
 
-After the intended U.S. symbols are manually visible in Market Watch, build a simulation-specific finalizer that consumes:
+Before MT5-M1/MT5-E1, PAPER or any live-current claim, bind the actual target broker/server/account and repeat broker-specific admission. Simulation evidence does not auto-promote.
 
-```text
-candidate selection
-+ raw v2 quote provenance
-+ delayed-reference assessment
-+ fresh read-only symbol inventory
-```
-
-It may use delayed bid/ask spread only as a simulation engineering-universe diagnostic. It must carry `live_executable_spread_authority=false` and must not reuse the existing live/current v3 finalizer identity.
-
-A simulation-specific US-D3 acceptance path, if introduced, must preserve the same limitation and must never imply broker/live readiness.
-
-### S3 — historical research and Agent execution
-
-Once the simulation research environment is explicitly admitted, execute the already implemented historical evidence line:
+The re-admission surface includes, as applicable:
 
 ```text
-US-B0 deterministic baselines
-        -> US-A0 Agent Value PILOT/FORMAL
-        -> US-R1 robust intraday Alpha Gate
-```
-
-These stages use the certified historical data plane. Delayed MT5 reference quotes do not become labels or authoritative historical prices.
-
-### S4 — provider-neutral realtime/replay engineering
-
-Provider-neutral work may continue without a broker account:
-
-```text
-RT-R0 event contracts
-RT-R1 ReplayGateway
-RT-R2 append-only projections/state
-```
-
-Replay evidence remains engineering authority only.
-
-### L1 — future live broker re-admission
-
-Before MT5-M1/MT5-E1 or any live-current claim, bind the actual target broker/server/account and repeat broker-specific admission. Simulation evidence does not auto-promote.
-
-The minimum re-admission work is:
-
-```text
-fresh MT5-P0 capability probe against target broker
-broker/server/account identity binding
-broker symbol inventory and ResearchInstrument <-> BrokerInstrument mapping
-current quote freshness and spread/liquidity evidence
+fresh MT5-P0 capability probe
+broker/server/account identity
+actual broker symbol inventory
+ResearchInstrument <-> BrokerInstrument mapping
+current quote freshness
+current executable spread / liquidity evidence
 contract/tick/volume min/max/step semantics
-margin/swap/session/order/fill-mode evidence
+margin / swap semantics
+session / execution / filling modes
 M1/tick source reconciliation
-broker-specific historical execution/cost acceptance where required
-MT5-M1 realtime gateway acceptance
-MT5-E1 target-broker demo/PAPER execution
+MT5-M1 realtime market gateway acceptance
+MT5-E1 demo/PAPER order lifecycle
 MT5-O1 reconciliation/recovery/safety
-RT-R3 live Workbench acceptance
-MT5-L0 separate human-governed live-capital gate
+separate human-governed live-capital gate
 ```
 
-### Expected live-transition development workload
+A successful Lane A or Lane B run cannot satisfy this list by inheritance.
 
-The live transition is a **broker-admission and execution integration increment**, not a rewrite of the research stack.
+## 8. Validation substitution matrix
 
-Mostly reusable without redesign:
+Use this matrix when deciding whether a daytime FX run can replace a U.S.-equity active-session run.
+
+| Validation target | FX fixture may substitute? | Reason |
+| --- | --- | --- |
+| MT5 Python connectivity | yes | transport invariant |
+| broker-clock normalization | yes, as engineering smoke | clock plumbing invariant; U.S. evidence still binds its own report identity |
+| tick timestamp parsing | yes | transport/schema plumbing |
+| positive current bid/ask | yes, engineering only | does not prove U.S. feed semantics |
+| reconnect/error handling | yes | transport invariant |
+| U.S. candidate visibility | no | symbol/operator-specific |
+| 15-minute delayed-reference admission | no | feed-regime-specific |
+| U.S. session/open-close behavior | no | exchange/calendar-specific |
+| stock trade/Last tick semantics | no | asset/feed-specific |
+| U.S. spread Gate | no | feed/symbol-specific |
+| MT5-D0 U.S. reconciliation | no | accepted U.S. universe identity required |
+| US-D3 certification | no | U.S. evidence denominator excludes FX fixture |
+| stock/CFD margin/fill/order semantics | no | broker-instrument-specific |
+| PAPER/live admission | no | target broker/server/account must be bound |
+
+## 9. Current authority boundary
+
+Always read `docs/status.toml` for current stage authority. This guide does not maintain a second stage value.
+
+The permanent invariant is:
 
 ```text
-US-D1/D2 historical data plane and calendar/label semantics
-US-B0 deterministic baseline engine
-US-A0 Agent/DeepSeek controlled experiment
-US-R1 robust inference and Alpha Gate
-provider-neutral RT-R0/R1/R2 contracts/replay/projections
-deterministic historical execution architecture where broker-independent
+FX fixture evidence
+    != delayed U.S. simulation evidence
+    != future target-broker current/execution evidence
 ```
 
-Broker-specific work that must be repeated or completed for live:
-
-```text
-MT5-P0 / US-I0 broker evidence
-current quote and executable spread authority
-BrokerInstrument contract properties
-historical CFD friction calibration in US-X0/X1
-MT5-M1 market gateway
-MT5-E1 order lifecycle
-MT5-O1 recovery/reconciliation/safety
-live Workbench acceptance and separate capital gate
-```
-
-The expected engineering effort is therefore moderate rather than architectural: the provider-neutral research/replay layers are retained, while broker-facing evidence and adapters are re-bound and re-tested.
-
-## 6. Market Watch remains an operator boundary
-
-FinAgent still does not call `symbol_select()` in the governed US-I0 path. The intended candidate symbols must be manually exposed in MT5 Market Watch.
-
-A `not_visible` raw issue cannot be reinterpreted as delayed. Only a raw quote with no issue or with the delay-only `stale_quote` issue is eligible for delayed-reference timing assessment; all other raw issues remain fail-closed.
-
-## 7. US-B0 preimplementation while US-D3 is pending
-
-The formal baseline runner remains fail-closed until `docs/status.toml` actually advances to `US-B0`. Development can nevertheless continue on contracts and synthetic/fixture regressions.
-
-The pilot walk-forward design remains frozen as the existing three expanding folds, with actual observations filtered by the accepted XNYS regular-session calendar. The simulation quote regime does not modify B0 fold geometry, labels or research-price semantics.
-
-## Authority boundary
-
-Until a later simulation-specific admission increment is reviewed:
-
-```text
-current project stage                  US-D3
-raw live/current v2 quote Gate         unchanged
-MetaQuotes-Demo U.S. quote behavior    progressing, approximately 15m delayed
-S1 delayed-reference evidence          simulation/reference only
-formal live-current US-I0 v3 universe  still not accepted
-broker account authority               none
-order/live-capital authority           none
-US-B0 real-data evidence                forbidden until stage authority advances
-```
-
-This separation permits a no-account simulation program without converting delayed market data into live broker authority, and it preserves a clean re-admission boundary for the eventual real broker/account implementation.
+This separation allows daytime MT5 feature development without waiting for the U.S. cash session, while preventing a convenient FX pass from becoming a false proof of U.S. equity, CFD, reconciliation, PAPER or live behavior.
