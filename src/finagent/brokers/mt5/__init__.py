@@ -35,6 +35,11 @@ from .feed_regime import (
     build_mt5_feed_regime_report,
 )
 from .probe import probe_mt5_capabilities, run_mt5_readonly_probe
+from .realtime_adapter import (
+    MT5RealtimeAdapterPolicy,
+    MT5RealtimeAdapterReport,
+    MT5RealtimeMarketAdapter,
+)
 
 __all__ = [
     "DEFAULT_MT5_BROKER_CLOCK_POLICY",
@@ -54,6 +59,9 @@ __all__ = [
     "MT5P0AcceptanceAssessment",
     "MT5P0AcceptancePolicy",
     "MT5ReadOnlyClientProtocol",
+    "MT5RealtimeAdapterPolicy",
+    "MT5RealtimeAdapterReport",
+    "MT5RealtimeMarketAdapter",
     "MT5SpreadSample",
     "MT5SymbolSpec",
     "MT5TerminalCapability",

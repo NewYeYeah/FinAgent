@@ -1,0 +1,68 @@
+name: mt5-m1-realtime-adapter
+
+on:
+  pull_request:
+    paths:
+      - "src/finagent/brokers/mt5/realtime_adapter.py"
+      - "src/finagent/brokers/mt5/__init__.py"
+      - "scripts/probe_mt5_realtime_events.py"
+      - "tests/test_mt5_realtime_adapter.py"
+      - "tests/test_mt5_realtime_adapter_numpy_scalars.py"
+      - "tests/test_realtime_replay_projection.py"
+      - "docs/guides/mt5-m1-realtime-adapter.md"
+      - ".github/workflows/mt5-m1-realtime-adapter.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mt5-m1-realtime-adapter:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused MT5 and realtime regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_mt5_realtime_adapter.py \
+            tests/test_mt5_realtime_adapter_numpy_scalars.py \
+            tests/test_realtime_replay_projection.py \
+            tests/test_mt5_p0_feed_regime.py
+      - name: Static mutation-surface guard
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          paths = [
+              Path("src/finagent/brokers/mt5/realtime_adapter.py"),
+              Path("scripts/probe_mt5_realtime_events.py"),
+          ]
+          forbidden = ("symbol_select(", "order_send(", "market_book_add(", "positions_get(")
+          for path in paths:
+              text = path.read_text(encoding="utf-8")
+              found = [item for item in forbidden if item in text]
+              if found:
+                  raise SystemExit(f"forbidden MT5 surface in {path}: {found}")
+          PY
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/brokers/mt5/realtime_adapter.py \
+            src/finagent/brokers/mt5/__init__.py \
+            scripts/probe_mt5_realtime_events.py \
+            tests/test_mt5_realtime_adapter.py \
+            tests/test_mt5_realtime_adapter_numpy_scalars.py
+          uv run --frozen mypy --strict \
+            src/finagent/brokers/mt5/realtime_adapter.py \
+            scripts/probe_mt5_realtime_events.py
+          uv run --frozen python -m py_compile \
+            src/finagent/brokers/mt5/realtime_adapter.py \
+            scripts/probe_mt5_realtime_events.py
