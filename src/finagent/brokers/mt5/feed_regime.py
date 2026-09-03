@@ -284,7 +284,9 @@ class MT5FeedRegimeReport:
             "feed_lane": self.feed_lane,
             "requested_symbols": list(self.requested_symbols),
             "complete_for_diagnostic": self.complete_for_diagnostic,
-            "evidence": [item.to_dict() for item in self.evidence],
+            "evidence": [
+                item.to_dict(include_authority=include_authority) for item in self.evidence
+            ],
             "issues": [item.to_dict() for item in self.issues],
             "generated_at": self.generated_at.isoformat(),
         }
@@ -319,13 +321,16 @@ def build_mt5_feed_regime_evidence(
     feed_lane: str,
     observed_at: datetime,
 ) -> MT5FeedRegimeEvidence:
-    raw = _mapping(raw_symbol_info, "raw_symbol_info")
-    raw_symbol = _text(raw.get("name", raw.get("symbol")), "raw_symbol_info.symbol")
+    raw_symbol_mapping = _mapping(raw_symbol_info, "raw_symbol_info")
+    raw_symbol = _text(
+        raw_symbol_mapping.get("name", raw_symbol_mapping.get("symbol")),
+        "raw_symbol_info.symbol",
+    )
     if raw_symbol != symbol_spec.symbol:
         raise ValueError(
             f"raw symbol {raw_symbol!r} does not match symbol spec {symbol_spec.symbol!r}"
         )
-    raw_visible_value = raw.get("visible")
+    raw_visible_value = raw_symbol_mapping.get("visible")
     visible = (
         symbol_spec.visible
         if raw_visible_value is None
@@ -337,7 +342,7 @@ def build_mt5_feed_regime_evidence(
     subscription_delay = None
     if visible:
         subscription_delay = _optional_bool(
-            raw.get("subscription_delay"),
+            raw_symbol_mapping.get("subscription_delay"),
             "raw_symbol_info.subscription_delay",
         )
 
@@ -351,15 +356,15 @@ def build_mt5_feed_regime_evidence(
         visible=visible,
         subscription_delay=subscription_delay,
         chart_mode=_optional_non_negative_int(
-            raw.get("chart_mode"),
+            raw_symbol_mapping.get("chart_mode"),
             "raw_symbol_info.chart_mode",
         ),
         trade_exemode=_optional_non_negative_int(
-            raw.get("trade_exemode"),
+            raw_symbol_mapping.get("trade_exemode"),
             "raw_symbol_info.trade_exemode",
         ),
         ticks_bookdepth=_optional_non_negative_int(
-            raw.get("ticks_bookdepth"),
+            raw_symbol_mapping.get("ticks_bookdepth"),
             "raw_symbol_info.ticks_bookdepth",
         ),
     )
@@ -384,8 +389,11 @@ def build_mt5_feed_regime_report(
     raw_by_symbol: dict[str, object] = {}
     duplicate_raw_symbols: set[str] = set()
     for row in raw_inventory_rows:
-        raw = _mapping(row, "raw_inventory_rows[]")
-        symbol = _text(raw.get("name", raw.get("symbol")), "raw_inventory_rows[].symbol")
+        raw_mapping = _mapping(row, "raw_inventory_rows[]")
+        symbol = _text(
+            raw_mapping.get("name", raw_mapping.get("symbol")),
+            "raw_inventory_rows[].symbol",
+        )
         if symbol in raw_by_symbol:
             duplicate_raw_symbols.add(symbol)
         else:
@@ -399,24 +407,24 @@ def build_mt5_feed_regime_report(
     for symbol in requested:
         reasons: list[str] = []
         spec = specs.get(symbol)
-        raw = raw_by_symbol.get(symbol)
+        raw_row = raw_by_symbol.get(symbol)
         if symbol in duplicate_raw_symbols:
             reasons.append("duplicate_raw_inventory_symbol")
         if spec is None:
             reasons.append("missing_symbol_spec")
-        if raw is None:
+        if raw_row is None:
             reasons.append("missing_raw_inventory")
         if reasons:
             issues.append(MT5FeedRegimeIssue(symbol=symbol, reasons=tuple(reasons)))
             continue
-        assert spec is not None and raw is not None
+        assert spec is not None and raw_row is not None
         try:
             evidence.append(
                 build_mt5_feed_regime_evidence(
                     broker_server=server,
                     capability_probe_id=capability_report.probe_id,
                     symbol_spec=spec,
-                    raw_symbol_info=raw,
+                    raw_symbol_info=raw_row,
                     feed_lane=lane,
                     observed_at=observed_at,
                 )
