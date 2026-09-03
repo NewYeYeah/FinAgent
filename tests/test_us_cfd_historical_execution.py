@@ -124,6 +124,29 @@ def test_short_round_trip_has_symmetric_gross_pnl_and_adverse_costs() -> None:
     assert report.steps[1].fills[0].fill_price > 99.0
 
 
+def test_long_to_short_reversal_realizes_old_leg_and_resets_residual_entry() -> None:
+    report = run_cfd_historical_execution(
+        account_spec=_account(),
+        instruments=(_instrument(),),
+        cost_policy=_cost(),
+        steps=(
+            _step(0, 100.0, 0.25),
+            _step(30, 101.0, -0.25),
+            _step(60, 100.0, 0.0),
+        ),
+    )
+    assert report.passed
+    assert not report.final_state.positions
+    reversal = report.steps[1]
+    assert len(reversal.fills) == 1
+    assert reversal.fills[0].realized_pnl > 0
+    assert len(reversal.post_state.positions) == 1
+    residual = reversal.post_state.positions[0]
+    assert residual.lots < 0
+    assert residual.average_price == pytest.approx(reversal.fills[0].fill_price)
+    assert report.steps[2].fills[0].realized_pnl > 0
+
+
 def test_margin_gate_rejects_step_atomically_without_partial_positions() -> None:
     report = run_cfd_historical_execution(
         account_spec=_account(max_margin_utilization=0.10),
