@@ -5,7 +5,7 @@ import json
 import math
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from decimal import Decimal, ROUND_FLOOR
+from decimal import ROUND_FLOOR, Decimal
 from enum import StrEnum
 
 from finagent.brokers.mt5.capabilities import MT5SymbolSpec
