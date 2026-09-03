@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# Temporary branch-local static fixer; removed before merge.
 root = Path(__file__).resolve().parents[1]
 
 
