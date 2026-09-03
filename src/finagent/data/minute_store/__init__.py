@@ -24,6 +24,7 @@ from .smoke import (
     MinuteStoreSmokePolicy,
     MinuteStoreSmokeReport,
 )
+from .streaming import iter_plan_rows
 
 __all__ = [
     "DEFAULT_DUCKDB_EXECUTION_POLICY",
@@ -44,6 +45,7 @@ __all__ = [
     "count_plan_rows",
     "fetch_plan_rows",
     "inspect_execution_settings",
+    "iter_plan_rows",
     "manifest_from_directory",
     "manifest_from_huggingface_snapshot",
     "select_partitions",
