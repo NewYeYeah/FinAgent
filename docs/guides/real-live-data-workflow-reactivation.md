@@ -189,11 +189,31 @@ Always retain the degraded-feed tests:
 
 ## Target-broker U.S. timing probe
 
-Target-broker symbols must be exposed manually in MT5 Market Watch before probing. Use
-the broker's exact symbol text; this workflow does not strip suffixes or call
+Target-broker symbols must be exposed in MT5 Market Watch before probing, either
+manually or through the separate opt-in operator utility below. Use the broker's exact
+symbol text; the governed evidence workflow does not strip suffixes or call
 `symbol_select()`. On `TradeMaxGlobal-Live`, the four research seeds currently map to
 `AMD.NAS`, `INTC.NAS`, `MSFT.NAS` and `NVDA.NAS` and therefore cannot reuse the old
 MetaQuotes-Demo exact-symbol evidence identity.
+
+An operator may opt into the separate add-only Market Watch capability before the
+governed probe. It retains the funded-account lockout, accepts an exact per-run
+allowlist, defaults to dry-run, cannot remove symbols, and carries no trading or stage
+authority:
+
+```powershell
+python scripts\ensure_mt5_market_watch.py `
+  --symbol AMD.NAS `
+  --symbol INTC.NAS `
+  --output reports\mt5\mt5_market_watch_plan.json
+
+# Repeat with --apply only after reviewing the dry-run report.
+```
+
+This operator utility is deliberately outside the read-only P0/US-I0 evidence path.
+The canonical probes and finalizers continue to accept only
+`MT5ReadOnlyClientProtocol`, so Market Watch mutation cannot occur implicitly during
+evidence collection or universe finalization.
 
 During the active U.S. session, collect the target-broker timing evidence through the
 same canonical adapter:
@@ -219,6 +239,42 @@ Repeat the probe across multiple wall-clock samples. A changing normalized
 broker-clock normalization. The local `symbol_info_tick()` call duration is an API/IPC
 diagnostic and must not be reported as exchange-feed delay. Classify a progressing old
 quote as delayed, and a non-progressing old quote as frozen/stale.
+
+### Target-broker workstation evidence — 2026-09-03 UTC
+
+The add-only operator capability and the canonical read-only probes were exercised
+against `TradeMaxGlobal-Live` with both funded-account trading locks active. Thirteen
+exact broker symbols were added to Market Watch; the post-change read-only fingerprint
+then observed all `24 / 24` existing research-to-broker mappings as visible with no
+diagnostic issues.
+
+```text
+post-change Market Watch check mt5-market-watch-change-baf8e9858bcfc63aecba5b20
+post-change capability probe   mt5-capability-probe-686d85b4e59da5084eb1b6d8
+post-change feed report        mt5-feed-regime-report-3d274df9e9a5d0cad841990d
+24-symbol capability probe     mt5-capability-probe-a9da5370a4e1a780a419863a
+24-symbol clock evidence       mt5-broker-clock-evidence-d20cea7e04e4fefc577656eb
+24-symbol realtime report      mt5-realtime-adapter-f466af18071eafdbf34671f7
+
+Market Watch additions         13 / 13
+visible mapped symbols         24 / 24
+readable quote events          24 / 24
+cross-sectional median age     2.840 s
+cross-sectional maximum age    18.105 s
+trading or position calls      none
+```
+
+Five samples of the four seed mappings all advanced, with post-initial quote ages
+between approximately `2 s` and `5 s`. A separate five-sample, 25-symbol diagnostic
+returned all `125 / 125` requested quote observations; 24 symbols advanced during the
+approximately 19-second window. `EEM.NYS` did not change during that short window, but
+its quote age remained only `11.9-20.6 s`, so it is retained as a longer-soak item and
+is not mislabeled as a 900-second delayed or frozen source.
+
+This evidence supports a `CURRENT`/near-realtime engineering classification for the
+observed target-broker U.S. feed. It does not rewrite the MetaQuotes-Demo delayed
+reference, close the 25-name final universe, authorize PAPER/execution, or advance
+`docs/status.toml`.
 
 ## Final U.S. CFD freeze
 

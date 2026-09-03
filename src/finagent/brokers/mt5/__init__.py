@@ -34,6 +34,7 @@ from .feed_regime import (
     build_mt5_feed_regime_evidence,
     build_mt5_feed_regime_report,
 )
+from .market_watch import MetaTrader5MarketWatchClient, MT5MarketWatchChange
 from .paper_replay import (
     BrokerEventSource,
     BrokerQueryPort,
@@ -72,6 +73,7 @@ __all__ = [
     "MT5FeedRegimeIssue",
     "MT5FeedRegimeReport",
     "MT5HistoryCapability",
+    "MT5MarketWatchChange",
     "MT5P0AcceptanceAssessment",
     "MT5P0AcceptancePolicy",
     "MT5PaperBrokerSnapshot",
@@ -89,6 +91,7 @@ __all__ = [
     "MT5SpreadSample",
     "MT5SymbolSpec",
     "MT5TerminalCapability",
+    "MetaTrader5MarketWatchClient",
     "MetaTrader5ReadOnlyClient",
     "OrderCommandPort",
     "assess_mt5_p0",

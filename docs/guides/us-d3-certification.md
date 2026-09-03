@@ -75,11 +75,11 @@ This is only a candidate set. Exact ticker equality is not a security-identity a
 
 ## 3. Make candidate symbols visible manually
 
-The accepted MT5-P0 inventory may contain only a small visible Market Watch subset. Candidate discovery intentionally does not call `symbol_select`, so inspect `spread_probe_symbols` and `manual_visibility_required_symbols` and add the intended candidate symbols to MetaTrader 5 Market Watch manually.
+The accepted MT5-P0 inventory may contain only a small visible Market Watch subset. Candidate discovery intentionally does not call `symbol_select`, so inspect `spread_probe_symbols` and `manual_visibility_required_symbols` and expose the intended symbols manually or with the separate add-only, allowlisted `ensure_mt5_market_watch.py` operator utility.
 
 For the default 25-name final target, making all 40 candidates visible is preferred. It leaves room for stale, invalid or wider-than-50-bps quotes to be rejected without forcing a policy change.
 
-Do not add a programmatic `symbol_select` path to FinAgent. Visibility is broker-terminal state and remains outside the read-only P0/US-I0 code surface.
+Do not add `symbol_select` to the governed P0/US-I0 evidence path. Visibility remains broker-terminal state; the separate operator utility may change it before a fresh read-only probe but cannot grant evidence, execution or stage authority.
 
 ## 4. Collect broker-clock evidence and current quote evidence
 

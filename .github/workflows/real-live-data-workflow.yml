@@ -4,13 +4,16 @@ on:
   pull_request:
     paths:
       - "src/finagent/brokers/mt5/client.py"
+      - "src/finagent/brokers/mt5/market_watch.py"
       - "src/finagent/brokers/mt5/realtime_adapter.py"
       - "src/finagent/realtime/mt5_source.py"
       - "src/finagent/realtime/sources.py"
       - "scripts/probe_mt5_realtime_events.py"
+      - "scripts/ensure_mt5_market_watch.py"
       - "scripts/smoke_mt5_simulation_all_day_preflight.py"
       - "scripts/smoke_mt5_continuous_quotes.py"
       - "tests/test_mt5_broker_clock.py"
+      - "tests/test_mt5_market_watch.py"
       - "tests/test_mt5_continuous_quote_smoke.py"
       - "tests/test_mt5_p0_feed_regime.py"
       - "tests/test_mt5_p0_readonly_probe.py"
@@ -46,6 +49,7 @@ jobs:
         run: |
           uv run --frozen pytest -q \
             tests/test_mt5_broker_clock.py \
+            tests/test_mt5_market_watch.py \
             tests/test_mt5_continuous_quote_smoke.py \
             tests/test_mt5_p0_feed_regime.py \
             tests/test_mt5_p0_readonly_probe.py \
@@ -59,6 +63,7 @@ jobs:
       - name: Connected CLI contract smoke
         run: |
           uv run --frozen python scripts/probe_mt5_realtime_events.py --help >/dev/null
+          uv run --frozen python scripts/ensure_mt5_market_watch.py --help >/dev/null
           uv run --frozen python scripts/smoke_mt5_simulation_all_day_preflight.py --help >/dev/null
           uv run --frozen python scripts/smoke_mt5_continuous_quotes.py --help >/dev/null
       - name: Read-only mutation-surface guard
@@ -93,6 +98,21 @@ jobs:
               found = [item for item in forbidden if item in text]
               if found:
                   raise SystemExit(f"forbidden MT5 mutation/query surface in {path}: {found}")
+
+          market_watch_paths = [
+              Path("src/finagent/brokers/mt5/market_watch.py"),
+              Path("scripts/ensure_mt5_market_watch.py"),
+          ]
+          market_watch_forbidden = tuple(
+              item for item in forbidden if item != "symbol_select("
+          )
+          for path in market_watch_paths:
+              text = path.read_text(encoding="utf-8")
+              found = [item for item in market_watch_forbidden if item in text]
+              if found:
+                  raise SystemExit(
+                      f"trading/query surface leaked into Market Watch capability {path}: {found}"
+                  )
           PY
       - name: Authority-boundary guard
         run: |
@@ -113,25 +133,31 @@ jobs:
         run: |
           uv run --frozen ruff check \
             src/finagent/brokers/mt5/client.py \
+            src/finagent/brokers/mt5/market_watch.py \
             src/finagent/brokers/mt5/realtime_adapter.py \
             src/finagent/realtime/mt5_source.py \
             src/finagent/realtime/sources.py \
             scripts/probe_mt5_realtime_events.py \
+            scripts/ensure_mt5_market_watch.py \
             scripts/smoke_mt5_simulation_all_day_preflight.py \
             scripts/smoke_mt5_continuous_quotes.py
           uv run --frozen mypy --strict \
             src/finagent/brokers/mt5/client.py \
+            src/finagent/brokers/mt5/market_watch.py \
             src/finagent/brokers/mt5/realtime_adapter.py \
             src/finagent/realtime/mt5_source.py \
             src/finagent/realtime/sources.py \
             scripts/probe_mt5_realtime_events.py \
+            scripts/ensure_mt5_market_watch.py \
             scripts/smoke_mt5_simulation_all_day_preflight.py \
             scripts/smoke_mt5_continuous_quotes.py
           uv run --frozen python -m py_compile \
             src/finagent/brokers/mt5/client.py \
+            src/finagent/brokers/mt5/market_watch.py \
             src/finagent/brokers/mt5/realtime_adapter.py \
             src/finagent/realtime/mt5_source.py \
             src/finagent/realtime/sources.py \
             scripts/probe_mt5_realtime_events.py \
+            scripts/ensure_mt5_market_watch.py \
             scripts/smoke_mt5_simulation_all_day_preflight.py \
             scripts/smoke_mt5_continuous_quotes.py
