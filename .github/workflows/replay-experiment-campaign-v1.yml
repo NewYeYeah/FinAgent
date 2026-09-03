@@ -11,6 +11,7 @@ on:
       - "scripts/smoke_replay_experiment_campaign.py"
       - "scripts/run_replay_experiment_campaign.py"
       - "docs/guides/replay-experiment-campaign.md"
+      - "docs/development/changelog.md"
       - ".github/workflows/replay-experiment-campaign-v1.yml"
   push:
     branches: [main]
@@ -21,6 +22,7 @@ on:
       - "scripts/smoke_replay_experiment_campaign.py"
       - "scripts/run_replay_experiment_campaign.py"
       - "docs/guides/replay-experiment-campaign.md"
+      - "docs/development/changelog.md"
       - ".github/workflows/replay-experiment-campaign-v1.yml"
 
 permissions:
