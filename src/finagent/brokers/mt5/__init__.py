@@ -12,8 +12,8 @@ from .capabilities import (
 )
 from .client import (
     RECOMMENDED_MT5_PACKAGE_VERSION,
-    MT5ReadOnlyClientProtocol,
     MetaTrader5ReadOnlyClient,
+    MT5ReadOnlyClientProtocol,
 )
 from .clock import (
     DEFAULT_MT5_BROKER_CLOCK_POLICY,
