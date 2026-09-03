@@ -123,9 +123,26 @@ jobs:
           with Path("docs/status.toml").open("rb") as handle:
               status = tomllib.load(handle)
           us_d3 = status.get("stage", {}).get("us_d3", {})
+          # This workflow protects the completed live-data prerequisite.  It must
+          # remain valid after the project advances; exact per-stage authority is
+          # enforced by the formal B0/A0/R1 operators themselves.
+          stages_at_or_after_us_b0 = {
+              "US-B0",
+              "US-A0",
+              "US-R1",
+              "US-X0",
+              "US-X1",
+              "RT-R0",
+              "RT-R1",
+              "RT-R2",
+              "MT5-M1",
+              "MT5-E1",
+              "MT5-E2",
+          }
           required = {
-              "current_stage": status.get("current_stage") == "US-B0",
-              "next_stage": status.get("next_stage") == "US-A0",
+              "current_stage_at_or_after_us_b0": (
+                  status.get("current_stage") in stages_at_or_after_us_b0
+              ),
               "us_d3.status": us_d3.get("status") == "accepted",
               "us_d3.outcome": (
                   us_d3.get("certification_outcome")
