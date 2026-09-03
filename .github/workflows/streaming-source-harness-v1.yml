@@ -1,0 +1,105 @@
+name: streaming-source-harness-v1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/realtime/sources.py"
+      - "src/finagent/realtime/database_replay.py"
+      - "src/finagent/realtime/mt5_source.py"
+      - "src/finagent/realtime/algorithm.py"
+      - "src/finagent/realtime/__init__.py"
+      - "src/finagent/data/minute_store/streaming.py"
+      - "src/finagent/data/minute_store/__init__.py"
+      - "scripts/smoke_streaming_source_harness.py"
+      - "tests/test_streaming_source_harness_v1.py"
+      - ".github/workflows/streaming-source-harness-v1.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/finagent/realtime/sources.py"
+      - "src/finagent/realtime/database_replay.py"
+      - "src/finagent/realtime/mt5_source.py"
+      - "src/finagent/realtime/algorithm.py"
+      - "src/finagent/realtime/__init__.py"
+      - "src/finagent/data/minute_store/streaming.py"
+      - "src/finagent/data/minute_store/__init__.py"
+      - "scripts/smoke_streaming_source_harness.py"
+      - "tests/test_streaming_source_harness_v1.py"
+      - ".github/workflows/streaming-source-harness-v1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  streaming-source-harness:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused streaming source regression
+        run: >-
+          uv run --frozen pytest -q
+          tests/test_streaming_source_harness_v1.py
+          tests/test_realtime_replay_projection.py
+          tests/test_mt5_realtime_adapter.py
+      - name: Deterministic source harness smoke
+        run: uv run --frozen python scripts/smoke_streaming_source_harness.py
+      - name: Provider and mutation boundary guard
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          algorithm = Path("src/finagent/realtime/algorithm.py").read_text(encoding="utf-8").lower()
+          for forbidden in ("duckdb", "metatrader5", "database_replay", "mt5_source"):
+              if forbidden in algorithm:
+                  raise SystemExit(f"provider-specific dependency leaked into algorithm runner: {forbidden}")
+          database = Path("src/finagent/realtime/database_replay.py").read_text(encoding="utf-8")
+          if "MetaTrader5" in database:
+              raise SystemExit("MT5 dependency leaked into DatabaseReplaySource")
+          mt5 = Path("src/finagent/realtime/mt5_source.py").read_text(encoding="utf-8")
+          if "duckdb" in mt5.lower():
+              raise SystemExit("DuckDB dependency leaked into MT5RealtimeSource")
+          for path in (
+              Path("src/finagent/realtime/mt5_source.py"),
+              Path("src/finagent/realtime/database_replay.py"),
+          ):
+              text = path.read_text(encoding="utf-8")
+              for forbidden in ("order_send(", "symbol_select(", "market_book_add("):
+                  if forbidden in text:
+                      raise SystemExit(f"forbidden mutation surface in {path}: {forbidden}")
+          PY
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/realtime/sources.py \
+            src/finagent/realtime/database_replay.py \
+            src/finagent/realtime/mt5_source.py \
+            src/finagent/realtime/algorithm.py \
+            src/finagent/realtime/__init__.py \
+            src/finagent/data/minute_store/streaming.py \
+            src/finagent/data/minute_store/__init__.py \
+            scripts/smoke_streaming_source_harness.py \
+            tests/test_streaming_source_harness_v1.py
+          uv run --frozen mypy --strict \
+            src/finagent/realtime/sources.py \
+            src/finagent/realtime/database_replay.py \
+            src/finagent/realtime/mt5_source.py \
+            src/finagent/realtime/algorithm.py \
+            src/finagent/data/minute_store/streaming.py \
+            scripts/smoke_streaming_source_harness.py
+          uv run --frozen python -m py_compile \
+            src/finagent/realtime/sources.py \
+            src/finagent/realtime/database_replay.py \
+            src/finagent/realtime/mt5_source.py \
+            src/finagent/realtime/algorithm.py \
+            src/finagent/data/minute_store/streaming.py \
+            scripts/smoke_streaming_source_harness.py

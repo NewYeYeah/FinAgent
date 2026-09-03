@@ -1,3 +1,9 @@
+from finagent.realtime.algorithm import (
+    AlgorithmRunner,
+    AlgorithmRunReport,
+    StreamingAlgorithm,
+)
+from finagent.realtime.database_replay import DatabaseReplaySource
 from finagent.realtime.events import (
     AccountStatusEvent,
     BarEvent,
@@ -11,8 +17,10 @@ from finagent.realtime.events import (
     OrderLifecycleStatus,
     OrderSide,
     QuoteEvent,
+    RealtimeEventKind,
     TradeEvent,
 )
+from finagent.realtime.mt5_source import MT5QuoteAdapterProtocol, MT5RealtimeSource
 from finagent.realtime.projections import (
     RealtimeProjectionConfig,
     RealtimeProjectionSnapshot,
@@ -21,13 +29,32 @@ from finagent.realtime.projections import (
 )
 from finagent.realtime.replay import ReplayBatch, ReplayGateway, ReplayScenario
 from finagent.realtime.serialization import realtime_event_from_dict
+from finagent.realtime.sources import (
+    DataAdmissibilityDecision,
+    FeedTimingClass,
+    FeedTimingProfile,
+    MarketDataSource,
+    MarketDataSubscription,
+    ReplayPacingMode,
+    StrategyFreshnessBudget,
+)
 
 __all__ = [
     "AccountStatusEvent",
+    "AlgorithmRunReport",
+    "AlgorithmRunner",
     "BarEvent",
     "CanonicalRealtimeEvent",
     "ConnectionEvent",
     "ConnectionStatus",
+    "DataAdmissibilityDecision",
+    "DatabaseReplaySource",
+    "FeedTimingClass",
+    "FeedTimingProfile",
+    "MT5QuoteAdapterProtocol",
+    "MT5RealtimeSource",
+    "MarketDataSource",
+    "MarketDataSubscription",
     "MarketSessionStatus",
     "MarketStatusEvent",
     "OrderErrorEvent",
@@ -35,12 +62,16 @@ __all__ = [
     "OrderLifecycleStatus",
     "OrderSide",
     "QuoteEvent",
+    "RealtimeEventKind",
     "RealtimeProjectionConfig",
     "RealtimeProjectionSnapshot",
     "RealtimeProjector",
     "ReplayBatch",
     "ReplayGateway",
+    "ReplayPacingMode",
     "ReplayScenario",
+    "StrategyFreshnessBudget",
+    "StreamingAlgorithm",
     "TradeEvent",
     "realtime_event_from_dict",
     "rebuild_projection",
