@@ -202,6 +202,8 @@ def test_replay_campaign_proves_exact_streaming_batch_parity(tmp_path: Path) -> 
     }
     document = report.to_dict()
     assert document["engineering_only"] is True
+    assert document["formal_us_b0_operator_invoked"] is False
+    assert document["us_d3_certification_consumed"] is False
     assert document["certification_authority"] is False
     assert document["research_authority"] is False
     assert document["agent_value_gate_authority"] is False

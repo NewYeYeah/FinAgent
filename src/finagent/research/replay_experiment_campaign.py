@@ -72,6 +72,26 @@ _CAMPAIGN_SLICES = (
     (BarInterval.MINUTE_15, 120),
     (BarInterval.MINUTE_30, 60),
 )
+_CAMPAIGN_SURFACES = frozenset(
+    {
+        "rows:5m:60m",
+        "rows:15m:30m",
+        "rows:15m:60m",
+        "rows:15m:120m",
+        "rows:30m:60m",
+        "b0:observations",
+        "b0:materialization-diagnostics",
+        "b0:evaluation",
+        "a0:observations",
+        "a0:materialization-diagnostics",
+        "r1:TRAIN:15m:60m",
+        "r1:EVALUATION:5m:60m",
+        "r1:EVALUATION:15m:30m",
+        "r1:EVALUATION:15m:60m",
+        "r1:EVALUATION:15m:120m",
+        "r1:EVALUATION:30m:60m",
+    }
+)
 
 
 def _hash(payload: object, *, prefix: str) -> str:
@@ -270,6 +290,29 @@ class ReplayExperimentCampaignReport:
     parity_checks: tuple[ReplayExperimentParityCheck, ...]
     schema_version: str = "finagent.replay-experiment-campaign-report.v1"
 
+    def __post_init__(self) -> None:
+        for field_name in (
+            "source_manifest_id",
+            "source_run_report_id",
+            "streaming_bundle_id",
+            "b0_run_spec_id",
+            "b0_denominator_id",
+            "a0_denominator_id",
+            "r1_denominator_id",
+        ):
+            object.__setattr__(self, field_name, _text(getattr(self, field_name), field_name))
+        if self.b0_denominator_id != canonical_us_baseline_denominator().denominator_id:
+            raise ValueError("campaign report must bind the canonical B0 denominator")
+        slice_keys = tuple(
+            (item.signal_interval, item.label_horizon_trading_minutes)
+            for item in self.batch_slices
+        )
+        if len(slice_keys) != len(_CAMPAIGN_SLICES) or set(slice_keys) != set(_CAMPAIGN_SLICES):
+            raise ValueError("campaign report requires the frozen five unique batch slices")
+        surfaces = tuple(item.surface for item in self.parity_checks)
+        if len(surfaces) != len(_CAMPAIGN_SURFACES) or set(surfaces) != _CAMPAIGN_SURFACES:
+            raise ValueError("campaign report requires the frozen sixteen unique parity surfaces")
+
     @property
     def blockers(self) -> tuple[str, ...]:
         return tuple(f"parity:{item.surface}" for item in self.parity_checks if not item.equal)
@@ -298,6 +341,8 @@ class ReplayExperimentCampaignReport:
             "batch_slices": [item.to_dict() for item in self.batch_slices],
             "parity_checks": [item.to_dict() for item in self.parity_checks],
             "engineering_only": True,
+            "formal_us_b0_operator_invoked": False,
+            "us_d3_certification_consumed": False,
             "certification_authority": False,
             "research_authority": False,
             "agent_value_gate_authority": False,
