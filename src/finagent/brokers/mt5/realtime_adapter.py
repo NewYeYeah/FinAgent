@@ -62,15 +62,25 @@ def _value(record: object, name: str) -> object:
 
 
 def _number(value: object, field_name: str) -> float:
-    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+    if isinstance(value, bool):
         raise TypeError(f"{field_name} must be numeric")
-    return float(value)
+    if isinstance(value, (int, float, str)):
+        return float(value)
+    item = getattr(value, "item", None)
+    if callable(item):
+        return _number(item(), field_name)
+    raise TypeError(f"{field_name} must be numeric")
 
 
 def _integer(value: object, field_name: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+    if isinstance(value, bool):
         raise TypeError(f"{field_name} must be integer-like")
-    return int(value)
+    if isinstance(value, (int, float, str)):
+        return int(value)
+    item = getattr(value, "item", None)
+    if callable(item):
+        return _integer(item(), field_name)
+    raise TypeError(f"{field_name} must be integer-like")
 
 
 def _epoch_msc(record: object, *, field_prefix: str) -> int:
