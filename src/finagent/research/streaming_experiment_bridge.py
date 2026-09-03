@@ -17,8 +17,8 @@ from finagent.realtime.streaming_features import (
     StreamingCrossSectionSnapshot,
     StreamingFeatureSnapshot,
 )
-from finagent.realtime.streaming_research import StreamingResearchUpdate
 from finagent.realtime.streaming_resample import StreamingResampledBar
+from finagent.realtime.streaming_research import StreamingResearchUpdate
 from finagent.research.us_agent_value_evaluation import (
     USAgentValueEvaluationDenominator,
     materialize_us_a0_observations,
@@ -604,7 +604,7 @@ def write_streaming_research_evidence_artifact(
 def _parse_resampled_bar(document: Mapping[str, object]) -> StreamingResampledBar:
     event = realtime_event_from_dict(_mapping(document.get("bar"), "resampled.bar"))
     if not isinstance(event, BarEvent):
-        raise ValueError("persisted streaming resample does not contain a BarEvent")
+        raise TypeError("persisted streaming resample does not contain a BarEvent")
     item = StreamingResampledBar(
         bar=event,
         available_at=_aware(document.get("available_at"), "resampled.available_at"),
