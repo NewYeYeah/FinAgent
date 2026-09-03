@@ -1,0 +1,81 @@
+name: mt5-paper-replay-operations
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/brokers/mt5/paper_replay.py"
+      - "src/finagent/brokers/mt5/__init__.py"
+      - "scripts/smoke_mt5_paper_replay_operations.py"
+      - "tests/test_mt5_paper_replay_operations.py"
+      - "docs/guides/mt5-paper-replay-operations.md"
+      - ".github/workflows/mt5-paper-replay-operations.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/finagent/brokers/mt5/paper_replay.py"
+      - "src/finagent/brokers/mt5/__init__.py"
+      - "scripts/smoke_mt5_paper_replay_operations.py"
+      - "tests/test_mt5_paper_replay_operations.py"
+      - "docs/guides/mt5-paper-replay-operations.md"
+      - ".github/workflows/mt5-paper-replay-operations.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  paper-replay-operations:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused PAPER lifecycle and O1 regression
+        run: >-
+          uv run --frozen pytest -q
+          tests/test_mt5_paper_replay_operations.py
+          tests/test_realtime_replay_projection.py
+      - name: Deterministic PAPER replay smoke
+        run: uv run --frozen python scripts/smoke_mt5_paper_replay_operations.py
+      - name: Mutation-surface guard
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          paths = [
+              Path("src/finagent/brokers/mt5/paper_replay.py"),
+              Path("scripts/smoke_mt5_paper_replay_operations.py"),
+          ]
+          forbidden = (
+              "order_send(",
+              "symbol_select(",
+              "market_book_add(",
+              "positions_get(",
+              "MetaTrader5ReadOnlyClient(",
+          )
+          for path in paths:
+              text = path.read_text(encoding="utf-8")
+              found = [item for item in forbidden if item in text]
+              if found:
+                  raise SystemExit(f"forbidden broker mutation/source surface in {path}: {found}")
+          PY
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/brokers/mt5/paper_replay.py \
+            src/finagent/brokers/mt5/__init__.py \
+            scripts/smoke_mt5_paper_replay_operations.py \
+            tests/test_mt5_paper_replay_operations.py
+          uv run --frozen mypy --strict \
+            src/finagent/brokers/mt5/paper_replay.py \
+            scripts/smoke_mt5_paper_replay_operations.py
+          uv run --frozen python -m py_compile \
+            src/finagent/brokers/mt5/paper_replay.py \
+            scripts/smoke_mt5_paper_replay_operations.py
