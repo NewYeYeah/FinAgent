@@ -52,7 +52,6 @@ jobs:
             tests/test_us_a0_evaluation_bridge.py \
             tests/test_us_r1_walkforward_materialization.py
       - name: Deterministic replay campaign smoke
-        if: ${{ hashFiles('scripts/smoke_replay_experiment_campaign.py') != '' }}
         run: uv run --frozen python scripts/smoke_replay_experiment_campaign.py
       - name: Authority boundary guard
         run: |
@@ -76,16 +75,26 @@ jobs:
           operator = Path("scripts/materialize_us_b0_baselines.py").read_text(encoding="utf-8")
           if "_require_us_b0_stage_authority" not in operator:
               raise SystemExit("formal US-B0 operator lost its stage-authority guard")
+          local_operator = Path("scripts/run_replay_experiment_campaign.py").read_text(encoding="utf-8")
+          if "materialize_us_b0_baselines" in local_operator:
+              raise SystemExit("engineering campaign operator must not call/import formal US-B0 operator")
           PY
+      - name: Local bounded operator import/help smoke
+        run: uv run --frozen python scripts/run_replay_experiment_campaign.py --help
       - name: Strict static checks
         run: |
           uv run --frozen ruff check \
             src/finagent/research/replay_experiment_campaign.py \
             src/finagent/research/streaming_experiment_bridge.py \
+            scripts/smoke_replay_experiment_campaign.py \
+            scripts/run_replay_experiment_campaign.py \
             tests/test_replay_experiment_campaign_v1.py
           uv run --frozen mypy --strict \
             src/finagent/research/replay_experiment_campaign.py \
-            src/finagent/research/streaming_experiment_bridge.py
+            src/finagent/research/streaming_experiment_bridge.py \
+            scripts/smoke_replay_experiment_campaign.py
           uv run --frozen python -m py_compile \
             src/finagent/research/replay_experiment_campaign.py \
-            src/finagent/research/streaming_experiment_bridge.py
+            src/finagent/research/streaming_experiment_bridge.py \
+            scripts/smoke_replay_experiment_campaign.py \
+            scripts/run_replay_experiment_campaign.py
