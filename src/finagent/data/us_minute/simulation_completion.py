@@ -33,15 +33,15 @@ def _text(value: object, field_name: str) -> str:
     return rendered
 
 
+def _integer(value: object, field_name: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        raise TypeError(f"{field_name} must be integer-like")
+    return int(value)
+
+
 def _boolean(value: object, field_name: str) -> bool:
     if not isinstance(value, bool):
         raise TypeError(f"{field_name} must be boolean")
-    return value
-
-
-def _mapping(value: object, field_name: str) -> Mapping[str, object]:
-    if not isinstance(value, Mapping):
-        raise TypeError(f"{field_name} must be a mapping")
     return value
 
 
@@ -164,7 +164,10 @@ def validate_us_simulation_d3_completion_bundle(
         simulation_universe_id=_text(
             document.get("simulation_universe_id"), "completion.simulation_universe_id"
         ),
-        simulation_universe_count=int(document.get("simulation_universe_count", 0)),
+        simulation_universe_count=_integer(
+            document.get("simulation_universe_count"),
+            "completion.simulation_universe_count",
+        ),
         broker_server=_text(document.get("broker_server"), "completion.broker_server"),
         reconciliation_report_id=_text(
             document.get("reconciliation_report_id"), "completion.reconciliation_report_id"
