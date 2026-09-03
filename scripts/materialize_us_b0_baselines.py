@@ -231,6 +231,10 @@ def main() -> int:
         certification,
         universe,
         denominator=denominator,
+        # B0 amendment 2026-09-04: omit an entire formation cross-section when
+        # any already-formed position lacks its realized target.  This is
+        # symmetric complete-case deletion, not per-asset reweighting or fill.
+        fail_on_partial_realized_label=False,
     )
     execution_specs = bind_us_b0_fold_execution_specs(protocol, run_spec)
     execution_spec = execution_specs[args.fold_ordinal - 1]

@@ -13,7 +13,11 @@ from finagent.research.us_baseline_evaluation import (
 from finagent.research.us_baselines import canonical_us_baseline_denominator
 
 
-def _run_spec(*, minimum_cross_section: int = 4) -> USBaselineRunSpec:
+def _run_spec(
+    *,
+    minimum_cross_section: int = 4,
+    fail_on_partial_realized_label: bool = True,
+) -> USBaselineRunSpec:
     denominator = canonical_us_baseline_denominator()
     return USBaselineRunSpec(
         certification_report_id="us-minute-research-cert-test",
@@ -23,6 +27,7 @@ def _run_spec(*, minimum_cross_section: int = 4) -> USBaselineRunSpec:
         minimum_cross_section=minimum_cross_section,
         minimum_evaluated_periods=1,
         minimum_ic_periods=1,
+        fail_on_partial_realized_label=fail_on_partial_realized_label,
     )
 
 
@@ -143,6 +148,46 @@ def test_weights_are_formed_without_using_label_availability() -> None:
     assert result.blockers == (
         "partial_realized_label_missing:2026-03-09T14:15:00+00:00",
     )
+
+
+def test_complete_case_policy_omits_entire_partial_label_period_without_reweighting() -> None:
+    feature_id = "manual_reversal_1bar"
+    candidate = _candidate(feature_id)
+    first = _period(
+        feature_id,
+        period_index=0,
+        feature_values=(-2.0, -1.0, 1.0, 2.0),
+        labels=(0.04, 0.02, -0.02, -0.04),
+    )
+    partial = _period(
+        feature_id,
+        period_index=1,
+        feature_values=(-3.0, -1.0, 1.0, 3.0),
+        labels=(0.03, None, -0.01, -0.03),
+        reasons=(None, "target_minute_missing", None, None),
+    )
+    third = _period(
+        feature_id,
+        period_index=2,
+        feature_values=(2.0, 1.0, -1.0, -2.0),
+        labels=(-0.04, -0.02, 0.02, 0.04),
+    )
+
+    result = evaluate_us_baseline_candidate(
+        candidate,
+        first + partial + third,
+        run_spec=_run_spec(fail_on_partial_realized_label=False),
+    )
+
+    assert result.valid
+    assert result.evaluated_periods == 2
+    assert result.ic_periods == 2
+    assert result.partial_realized_label_omitted_periods == 1
+    assert result.blockers == ()
+    # The omitted period does not become the turnover baseline.  Turnover moves
+    # directly from the first accepted cross-section to the third.
+    assert result.mean_one_way_turnover == pytest.approx(0.75)
+    assert result.to_dict()["partial_realized_label_omitted_periods"] == 1
 
 
 def test_all_cross_session_labels_are_expected_boundary_not_zero_filled() -> None:

@@ -100,6 +100,34 @@ def test_formal_a0_predecessor_requires_status_recorded_graph_identity() -> None
         bind_authorized_us_a0_predecessor(drifted_status, graph, protocol)
 
 
+def test_a0_stage_authority_propagates_reviewed_complete_case_policy() -> None:
+    graph = _graph()
+    status = _status(graph)
+    stage = status["stage"]
+    assert isinstance(stage, dict)
+    us_b0 = stage["us_b0"]
+    assert isinstance(us_b0, dict)
+    us_b0["partial_realized_label_policy"] = "omit_entire_formation_cross_section"
+    us_b0["closeout_decision"] = "ACCEPTED_WITH_COMPLETE_CASE_AMENDMENT"
+
+    authority = require_us_a0_stage_authority(status)
+
+    assert authority.fail_on_partial_realized_label is False
+
+
+def test_a0_stage_authority_rejects_unreviewed_complete_case_policy() -> None:
+    graph = _graph()
+    status = _status(graph)
+    stage = status["stage"]
+    assert isinstance(stage, dict)
+    us_b0 = stage["us_b0"]
+    assert isinstance(us_b0, dict)
+    us_b0["partial_realized_label_policy"] = "omit_entire_formation_cross_section"
+
+    with pytest.raises(ValueError, match="reviewed closeout decision"):
+        require_us_a0_stage_authority(status)
+
+
 def test_authorized_binding_rejects_incomplete_three_fold_shape() -> None:
     graph = _graph()
     protocol = canonical_us_a0_experiment_protocol(USAgentValuePhase.PILOT)

@@ -46,6 +46,7 @@ def _ids(value: object, field_name: str) -> tuple[str, ...]:
 class USAgentValueStageAuthority:
     us_b0_evidence_graph_id: str
     us_b0_aggregate_report_id: str
+    fail_on_partial_realized_label: bool = True
     schema_version: str = "finagent.us-agent-value-stage-authority.v1"
 
     def __post_init__(self) -> None:
@@ -73,6 +74,15 @@ def require_us_a0_stage_authority(
         raise ValueError("formal US-A0 execution requires accepted US-B0 stage authority")
     if us_b0.get("stage_exit_gate_passed") is not True:
         raise ValueError("formal US-A0 execution requires US-B0 stage_exit_gate_passed=true")
+    partial_label_policy = us_b0.get("partial_realized_label_policy")
+    if partial_label_policy is None:
+        fail_on_partial_realized_label = True
+    elif partial_label_policy == "omit_entire_formation_cross_section":
+        if us_b0.get("closeout_decision") != "ACCEPTED_WITH_COMPLETE_CASE_AMENDMENT":
+            raise ValueError("complete-case B0 policy requires its reviewed closeout decision")
+        fail_on_partial_realized_label = False
+    else:
+        raise ValueError("unsupported reviewed US-B0 partial realised-label policy")
     return USAgentValueStageAuthority(
         us_b0_evidence_graph_id=_text(
             us_b0.get("walk_forward_evidence_graph_id"),
@@ -82,6 +92,7 @@ def require_us_a0_stage_authority(
             us_b0.get("walk_forward_aggregate_report_id"),
             "status.stage.us_b0.walk_forward_aggregate_report_id",
         ),
+        fail_on_partial_realized_label=fail_on_partial_realized_label,
     )
 
 

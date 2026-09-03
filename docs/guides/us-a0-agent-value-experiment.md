@@ -11,7 +11,7 @@ It does **not** ask whether any candidate is deployable. Agent Value Gate and Al
 
 ## Current authority boundary
 
-The repository may preregister US-A0 contracts while its predecessor evidence is pending. As of 2026-09-04 the project-stage authority remains at US-B0, whose assembled real-data evidence is blocked by one research-source data-quality defect. Formal Agent-value financial execution is not authorized until:
+The repository preregistered US-A0 contracts before inspecting A0 results. As of 2026-09-04 the amended B0 evidence graph is accepted and project-stage authority has advanced to US-A0. PILOT research execution is authorized because the following predecessor chain is complete:
 
 ```text
 US-I0 active-session acceptance completed
@@ -373,33 +373,32 @@ alpha_authority = false
 
 Experiment assembly is therefore an evidence-completeness transition, not an automatic claim that the Agent adds value.
 
-## Current remaining A0 work
+## A0 terminal outcome and next work
 
-After this increment the controlled path from preregistration through exact three-arm experiment evidence is implemented, but real execution remains blocked by project-stage authority. Remaining work is:
+The controlled three-arm PILOT is complete and revalidated by the separate Gate-review
+step. Its terminal decision is `PILOT_DO_NOT_PROCEED_TO_FORMAL`.
+Consequently the frozen FORMAL plan remains unexecuted and no FORMAL launch/runtime
+evidence may be prepared. A0 is closed with a valid negative result; US-R1 may use the
+complete PILOT three-run structural union without performance filtering. Future Agent
+generation is contracted to an optional hypothesis interface rather than new P0 scope.
+The handoff was re-hashed successfully as the 37-candidate denominator
+`us-r1-denominator-be5184ac3883b0799c00c5dc` with `performance_filter_applied=false`.
 
-1. preserve the existing A0 preregistration, execution-plan, gate-policy, launch, runtime and checkpoint identities without regenerating them;
-2. resolve the US-B0 source defect through a same-source corrected immutable snapshot, new certification identities and a preregistered replacement B0 run;
-3. advance `docs/status.toml` to `current_stage=US-A0` only after the replacement B0 graph is accepted;
-4. execute the frozen PILOT MANUAL / PROGRAMMATIC / AGENT runs, assemble their evidence graph and conduct the separate Agent Value Gate review;
-5. prepare FORMAL launch/runtime evidence from the already-frozen seven-run plan only after an accepted PILOT decision authorizes progression;
-6. keep Agent Value Gate distinct from the later deployment Alpha Gate.
+## 2026-09-04 implementation freeze, execution and closeout
 
-## 2026-09-04 implementation freeze
-
-The A0 implementation and prelaunch evidence were reviewed after the real B0 v1
-closeout. The implementation is complete through FORMAL orchestration, but A0 has not
-been entered and no financial experiment has started:
+The A0 implementation and prelaunch evidence were reviewed after the amended B0
+closeout. The exact frozen PILOT chain was then executed and reviewed:
 
 ```text
-implementation status       FROZEN_PRELAUNCH
-project current stage       US-B0
-launch readiness            false
-launch blocker              us_a0_stage_authority_not_ready
-external model called       false
-financial data read         false
-secrets loaded              false
-Agent Value Gate            NOT_RUN
-stage exit                  false
+implementation status       ACCEPTED_TERMINAL_PILOT
+project current stage       US-R1
+launch readiness            true
+launch blockers             none
+external model called       true, 16 bounded calls
+financial data read         true, frozen three-fold corpus only
+broker/order API called     false
+Agent Value Gate            PILOT_DO_NOT_PROCEED_TO_FORMAL
+stage exit                  true
 ```
 
 The frozen pre-result identities are:
@@ -419,9 +418,9 @@ FORMAL execution plan       us-agent-value-execution-plan-b5ade25e12219464e84724
 
 The PILOT plan contains exactly one MANUAL, one seeded PROGRAMMATIC and one AGENT run.
 Its AGENT identity is frozen to `deepseek` / `deepseek-v4-flash` /
-`us-a0-structured-candidate-v1`, but the Agent generation run does not exist and must
-not be created while B0 remains blocked. The deterministic MANUAL and PROGRAMMATIC
-generation evidence is preserved as pre-result control evidence only.
+`us-a0-structured-candidate-v1`. The deterministic MANUAL and PROGRAMMATIC generation
+evidence is preserved as pre-result control evidence; the AGENT generation may now be
+created only through the frozen launch/runtime/checkpoint chain.
 
 The FORMAL execution plan is also frozen before candidate generation. It contains one
 MANUAL run, three PROGRAMMATIC runs with seeds `1729/2718/3141`, and three independent
@@ -430,7 +429,27 @@ launch authority: the FORMAL Launch Bundle and runtime/checkpoint chain delibera
 not exist and may be prepared only after an accepted PILOT terminal decision.
 
 Both launch validators revalidated the complete PILOT preregistration/plan/policy/
-launch/runtime/checkpoint chain and returned only
-`us_a0_stage_authority_not_ready`. The focused A0 suite passed 82 tests. This freeze
-therefore distinguishes implementation completeness from research execution authority;
-it grants no Alpha, order, execution or live-capital authority.
+launch/runtime/checkpoint chain after the stage transition and returned no blockers;
+`ready_for_external_agent_generation=true`. DeepSeek returned 16/16 valid candidate
+slots with no invalid, duplicate or repaired slots. Usage was 16 calls, 18,063 tokens,
+68,053.523 ms aggregate latency and USD 0.00574186 recorded cost. Each of the MANUAL,
+PROGRAMMATIC and AGENT runs evaluated 16/16 valid candidates across all three folds.
+
+The terminal identities are:
+
+```text
+AGENT generation run        us-agent-value-generation-run-02a0f4afbc357550bbbf16a7
+experiment                  us-agent-value-experiment-550e3477fb740780e752fc94
+evidence graph              us-agent-value-experiment-evidence-9527f71a12ded2ff661dc99f
+comparison                  us-agent-value-comparison-72dc0f6e8981ce63786dabb6
+Gate assessment             us-agent-value-gate-assessment-c94b81d805f87bc6fbdee5ba
+Gate review                 us-agent-value-gate-review-7725562ec8f8e6a589f63e08
+terminal checkpoint         us-agent-value-pilot-checkpoint-c43bae9966fe3ae7cbc97be6
+```
+
+The Agent had eight candidates structurally novel versus both controls, a 100% valid
+rate and non-inferior generation efficiency. It nevertheless failed the frozen value
+rule: median worst-fold RankIC was `0.008369`, below MANUAL `0.012205` and PROGRAMMATIC
+`0.014049`; the required quality superiority and run-level repeatability were not met.
+The review accepted that negative result without changing thresholds. This closeout
+grants no Alpha, order, execution or live-capital authority.
