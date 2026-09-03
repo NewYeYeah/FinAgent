@@ -449,6 +449,7 @@ fold_3_status = "failed_closed"
 fold_3_manifest_id = "us-baseline-fold-run-a1bf0988ee86cac8d8a9b052"
 fold_3_evaluation_report_id = "us-baseline-evaluation-04bfc5b9c63bdc550ef7a272"
 fold_3_blocker = "EEM target_minute_missing at 2026-03-18T03:00:00+08:00 for feature formation 2026-03-18T02:00:00+08:00"
+fold_3_source_observation = "EEM raw 1m row absent at 2026-03-17T18:59:00+00:00 while the other 24 engineering assets are present"
 fold_3_blocker_scope = "source_data_quality_not_broker_or_account"
 stage_exit_gate_passed = false
 next_action = "review EEM source-row absence without changing frozen folds or statistical thresholds"
