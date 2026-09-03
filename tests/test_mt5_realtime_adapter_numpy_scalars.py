@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
+import numpy as np
+
 from finagent.brokers.mt5.clock import (
     MT5BrokerClockObservation,
     build_mt5_broker_clock_evidence,
@@ -14,14 +16,6 @@ from finagent.brokers.mt5.realtime_adapter import (
 
 NOW = datetime(2026, 9, 3, 6, 0, tzinfo=UTC)
 OFFSET = 3 * 60 * 60
-
-
-class _NumpyLikeScalar:
-    def __init__(self, value: int | float) -> None:
-        self._value = value
-
-    def item(self) -> int | float:
-        return self._value
 
 
 class _IndexRow:
@@ -62,15 +56,15 @@ def _adapter() -> MT5RealtimeMarketAdapter:
     )
 
 
-def test_quote_and_bar_accept_numpy_like_item_scalars() -> None:
+def test_quote_and_bar_accept_real_numpy_scalar_rows() -> None:
     adapter = _adapter()
     quote_time = NOW - timedelta(seconds=1)
     tick = _IndexRow(
         {
-            "time_msc": _NumpyLikeScalar(_raw_msc(quote_time)),
-            "bid": _NumpyLikeScalar(1.1),
-            "ask": _NumpyLikeScalar(1.1001),
-            "last": _NumpyLikeScalar(0.0),
+            "time_msc": np.int64(_raw_msc(quote_time)),
+            "bid": np.float64(1.1),
+            "ask": np.float64(1.1001),
+            "last": np.float64(0.0),
         }
     )
     quote = adapter.quote_event("EURUSD", tick, received_at=NOW)
@@ -81,14 +75,14 @@ def test_quote_and_bar_accept_numpy_like_item_scalars() -> None:
     bar_time = NOW - timedelta(minutes=2)
     rate = _IndexRow(
         {
-            "time": _NumpyLikeScalar(
+            "time": np.int64(
                 int((bar_time + timedelta(seconds=OFFSET)).timestamp())
             ),
-            "open": _NumpyLikeScalar(1.1),
-            "high": _NumpyLikeScalar(1.2),
-            "low": _NumpyLikeScalar(1.0),
-            "close": _NumpyLikeScalar(1.15),
-            "tick_volume": _NumpyLikeScalar(0),
+            "open": np.float64(1.1),
+            "high": np.float64(1.2),
+            "low": np.float64(1.0),
+            "close": np.float64(1.15),
+            "tick_volume": np.int64(0),
         }
     )
     bar = adapter.bar_event(
