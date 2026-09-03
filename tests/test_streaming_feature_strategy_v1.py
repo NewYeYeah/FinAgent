@@ -11,12 +11,16 @@ from finagent.data.minute_store import (
     fetch_plan_rows,
     manifest_from_directory,
 )
-from finagent.data.minute_transform import CalendarSessionizedMinuteStore, SessionResampledMinuteStore
+from finagent.data.minute_transform import (
+    CalendarSessionizedMinuteStore,
+    SessionResampledMinuteStore,
+)
 from finagent.data.query import MarketDataField, MarketDataQuery, SessionPolicy
 from finagent.domain.labels import AvailabilityPolicy, ResearchPriceBasis
 from finagent.domain.market_bars import BarInterval
 from finagent.domain.trading_calendar import TradingCalendarEvidence, TradingSession
 from finagent.realtime import (
+    AlgorithmRunReport,
     AlgorithmRunner,
     BarEvent,
     DatabaseReplaySource,
@@ -29,6 +33,7 @@ from finagent.realtime import (
     ReplayPacingMode,
     StrategyFreshnessBudget,
     StreamingResearchUpdate,
+    StreamingResampledBar,
     USBaselineStreamingAlgorithm,
 )
 from finagent.research.us_baselines import canonical_us_baseline_denominator
@@ -127,15 +132,16 @@ def _subscription(
     )
 
 
-def _updates(report: object) -> tuple[StreamingResearchUpdate, ...]:
-    outputs = getattr(report, "outputs")
-    return tuple(item for item in outputs if isinstance(item, StreamingResearchUpdate))
+def _updates(report: AlgorithmRunReport) -> tuple[StreamingResearchUpdate, ...]:
+    return tuple(
+        item for item in report.outputs if isinstance(item, StreamingResearchUpdate)
+    )
 
 
 def _flatten_resampled(
     updates: tuple[StreamingResearchUpdate, ...],
     interval_seconds: int,
-) -> tuple[object, ...]:
+) -> tuple[StreamingResampledBar, ...]:
     return tuple(
         item
         for update in updates
