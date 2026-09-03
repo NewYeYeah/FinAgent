@@ -1,0 +1,93 @@
+name: streaming-research-evidence-bridge-v1
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/research/streaming_experiment_bridge.py"
+      - "src/finagent/realtime/streaming_resample.py"
+      - "src/finagent/realtime/streaming_features.py"
+      - "src/finagent/realtime/streaming_research.py"
+      - "src/finagent/research/us_baseline_materialization.py"
+      - "src/finagent/research/us_agent_value_evaluation.py"
+      - "src/finagent/research/us_r1_materialization.py"
+      - "scripts/smoke_streaming_research_evidence_bridge.py"
+      - "tests/test_streaming_research_evidence_bridge_v1.py"
+      - "docs/guides/streaming-research-evidence-bridge.md"
+      - ".github/workflows/streaming-research-evidence-bridge-v1.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/finagent/research/streaming_experiment_bridge.py"
+      - "src/finagent/realtime/streaming_resample.py"
+      - "src/finagent/realtime/streaming_features.py"
+      - "src/finagent/realtime/streaming_research.py"
+      - "src/finagent/research/us_baseline_materialization.py"
+      - "src/finagent/research/us_agent_value_evaluation.py"
+      - "src/finagent/research/us_r1_materialization.py"
+      - "scripts/smoke_streaming_research_evidence_bridge.py"
+      - "tests/test_streaming_research_evidence_bridge_v1.py"
+      - "docs/guides/streaming-research-evidence-bridge.md"
+      - ".github/workflows/streaming-research-evidence-bridge-v1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  streaming-research-evidence-bridge:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused streaming evidence and research regressions
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_streaming_research_evidence_bridge_v1.py \
+            tests/test_streaming_feature_strategy_v1.py \
+            tests/test_streaming_source_harness_v1.py \
+            tests/test_us_b0_materialization.py \
+            tests/test_us_b0_evaluation_core.py \
+            tests/test_us_a0_evaluation_bridge.py \
+            tests/test_us_r1_walkforward_materialization.py
+      - name: Deterministic streaming research evidence smoke
+        run: uv run --frozen python scripts/smoke_streaming_research_evidence_bridge.py
+      - name: Provider and authority boundary guard
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("src/finagent/research/streaming_experiment_bridge.py")
+          text = path.read_text(encoding="utf-8").lower()
+          for forbidden in ("metatrader5", "mt5_source", "order_send(", "symbol_select(", "market_book_add("):
+              if forbidden in text:
+                  raise SystemExit(f"provider/broker mutation dependency leaked into {path}: {forbidden}")
+          for forbidden_claim in (
+              '"research_authority": true',
+              '"agent_value_gate_authority": true',
+              '"alpha_authority": true',
+              '"execution_authority": true',
+              '"stage_exit_authority": true',
+          ):
+              if forbidden_claim in text:
+                  raise SystemExit(f"authority escalation leaked into {path}: {forbidden_claim}")
+          PY
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/research/streaming_experiment_bridge.py \
+            scripts/smoke_streaming_research_evidence_bridge.py \
+            tests/test_streaming_research_evidence_bridge_v1.py
+          uv run --frozen mypy --strict \
+            src/finagent/research/streaming_experiment_bridge.py \
+            scripts/smoke_streaming_research_evidence_bridge.py
+          uv run --frozen python -m py_compile \
+            src/finagent/research/streaming_experiment_bridge.py \
+            scripts/smoke_streaming_research_evidence_bridge.py
