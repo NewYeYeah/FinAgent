@@ -153,6 +153,7 @@ class StreamingExperimentLabel:
     source_available_at: datetime
     source_price: float
     label_available: bool
+    price_event_time: datetime | None = None
     target_event_time: datetime | None = None
     target_available_at: datetime | None = None
     label_value: float | None = None
@@ -176,6 +177,13 @@ class StreamingExperimentLabel:
             "source_available_at",
             _aware(self.source_available_at, "source_available_at"),
         )
+        price_event_time = _optional_aware(self.price_event_time, "price_event_time")
+        if price_event_time is not None:
+            if price_event_time >= self.source_available_at:
+                raise ValueError("price_event_time must precede source_available_at")
+            if abs((self.source_available_at - price_event_time).total_seconds() - 60.0) > 1e-9:
+                raise ValueError("price_event_time must be the source 1m close event for source_available_at")
+        object.__setattr__(self, "price_event_time", price_event_time)
         source_price = _number(self.source_price, "source_price")
         if source_price <= 0:
             raise ValueError("source_price must be positive")
@@ -236,6 +244,8 @@ class StreamingExperimentLabel:
             "label_available": self.label_available,
             "unavailable_reason": self.unavailable_reason,
         }
+        if self.price_event_time is not None:
+            payload["price_event_time"] = self.price_event_time.isoformat()
         if include_id:
             payload["label_id"] = self.label_id
         return payload
@@ -756,6 +766,10 @@ def _parse_label(document: Mapping[str, object]) -> StreamingExperimentLabel:
             "label.source_available_at",
         ),
         source_price=_number(document.get("source_price"), "label.source_price"),
+        price_event_time=_optional_aware(
+            document.get("price_event_time"),
+            "label.price_event_time",
+        ),
         target_event_time=_optional_aware(
             document.get("target_event_time"),
             "label.target_event_time",
@@ -900,7 +914,11 @@ def streaming_experiment_rows(
             "coverage_ratio": item.coverage_ratio,
             "is_complete": item.bar.complete,
             "label_row_present": label is not None,
-            "source_event_time": label.source_event_time if label is not None else None,
+            "source_event_time": (
+                (label.price_event_time or label.source_event_time)
+                if label is not None
+                else None
+            ),
             "source_available_at": label.source_available_at if label is not None else None,
             "source_price": label.source_price if label is not None else None,
             "target_event_time": label.target_event_time if label is not None else None,
