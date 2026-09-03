@@ -407,6 +407,7 @@ def _a0_fixture(
         ),
     )
 
+    agent_quality: tuple[float | None, float | None]
     if scenario is USResearchFixtureScenario.KNOWN_ALPHA:
         manual_quality = (0.025, 0.015)
         programmatic_quality = (0.040, 0.025)
