@@ -17,6 +17,7 @@ from finagent.realtime.events import (
     OrderLifecycleStatus,
     OrderSide,
     QuoteEvent,
+    RealtimeEventKind,
     TradeEvent,
 )
 from finagent.realtime.mt5_source import MT5QuoteAdapterProtocol, MT5RealtimeSource
@@ -61,6 +62,7 @@ __all__ = [
     "OrderLifecycleStatus",
     "OrderSide",
     "QuoteEvent",
+    "RealtimeEventKind",
     "RealtimeProjectionConfig",
     "RealtimeProjectionSnapshot",
     "RealtimeProjector",
