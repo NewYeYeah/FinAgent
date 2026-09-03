@@ -225,7 +225,7 @@ def test_bundle_roundtrip_is_content_addressed_and_tamper_evident(tmp_path: Path
     path.write_bytes(
         payload.replace(
             b'"research_authority":false',
-            b'"research_authority":true',
+            b'"research_authority":falsE',
             1,
         )
     )
