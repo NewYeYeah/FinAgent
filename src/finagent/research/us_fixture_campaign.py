@@ -9,9 +9,9 @@ from enum import StrEnum
 from finagent.domain.market_bars import BarInterval
 from finagent.research.us_agent_value_experiment import (
     RunEvaluationLink,
-    SearchArmResult,
     build_search_arm_result,
 )
+from finagent.research.us_agent_value_gate import USAgentValueGateDecision
 from finagent.research.us_agent_value_generation import (
     CandidateGenerationRun,
     CandidateGenerationUsage,
@@ -51,7 +51,6 @@ from finagent.research.us_r1_protocol import (
     USR1Terminal,
     canonical_us_r1_research_protocol,
 )
-from finagent.research.us_agent_value_gate import USAgentValueGateDecision
 
 
 def _canonical_hash(payload: object, *, prefix: str) -> str:
@@ -258,7 +257,11 @@ def _b0_observations(
         event_time = start + timedelta(minutes=15 * period)
         formation_at = event_time + timedelta(minutes=15)
         label_at = formation_at + timedelta(minutes=60)
-        direction = 1.0 if scenario is USResearchFixtureScenario.KNOWN_ALPHA else (1.0 if period % 2 == 0 else -1.0)
+        direction = (
+            1.0
+            if scenario is USResearchFixtureScenario.KNOWN_ALPHA
+            else (1.0 if period % 2 == 0 else -1.0)
+        )
         for asset_index, asset in enumerate(assets):
             anchor_value = float(asset_index) - (asset_count - 1) / 2.0
             realized_label = direction * anchor_value * 0.001
@@ -324,7 +327,9 @@ def _agent_slots(
         for run in (manual_run, programmatic_run)
         for candidate in run.accepted_candidates
     }
-    selected = [candidate for candidate in vocabulary.all_candidates() if candidate.candidate_id not in excluded]
+    selected = [
+        candidate for candidate in vocabulary.all_candidates() if candidate.candidate_id not in excluded
+    ]
     if len(selected) < protocol.candidate_budget_per_run:
         raise RuntimeError("fixture vocabulary cannot provide enough structurally novel AGENT candidates")
     usage = CandidateGenerationUsage(
@@ -523,7 +528,9 @@ def _r1_fold_series(
                     quantile_monotonicity=monotonicity,
                 )
             )
-        folds.append(USR1FoldSeries(fold_id=f"fixture-fold-{fold_index + 1}", points=tuple(points)))
+        folds.append(
+            USR1FoldSeries(fold_id=f"fixture-fold-{fold_index + 1}", points=tuple(points))
+        )
     return tuple(folds)
 
 
@@ -609,6 +616,8 @@ def run_us_research_fixture_campaign(
 ) -> USResearchFixtureCampaignReport:
     timestamp = generated_at or datetime.now(UTC)
     return USResearchFixtureCampaignReport(
-        scenarios=tuple(run_us_research_fixture_scenario(scenario) for scenario in USResearchFixtureScenario),
+        scenarios=tuple(
+            run_us_research_fixture_scenario(scenario) for scenario in USResearchFixtureScenario
+        ),
         generated_at=timestamp,
     )
