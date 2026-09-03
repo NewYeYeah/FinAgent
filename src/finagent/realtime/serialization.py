@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import datetime
+from typing import TypedDict
 
 from finagent.realtime.events import (
     AccountStatusEvent,
@@ -19,6 +20,14 @@ from finagent.realtime.events import (
     RealtimeEventKind,
     TradeEvent,
 )
+
+
+class _CommonEventFields(TypedDict):
+    source: str
+    source_event_id: str
+    event_time: datetime
+    received_at: datetime
+    sequence: int
 
 
 def _mapping(value: object, field_name: str) -> Mapping[str, object]:
@@ -70,7 +79,7 @@ def _datetime(value: object, field_name: str) -> datetime:
 def realtime_event_from_dict(document: Mapping[str, object]) -> CanonicalRealtimeEvent:
     kind = RealtimeEventKind(_text(document.get("kind"), "event.kind"))
     payload = _mapping(document.get("payload"), "event.payload")
-    common: dict[str, object] = {
+    common: _CommonEventFields = {
         "source": _text(document.get("source"), "event.source"),
         "source_event_id": _text(
             document.get("source_event_id"),
