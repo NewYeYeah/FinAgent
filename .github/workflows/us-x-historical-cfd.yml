@@ -1,0 +1,47 @@
+name: us-x-historical-cfd
+
+on:
+  pull_request:
+    paths:
+      - "src/finagent/backtest/us_cfd_execution.py"
+      - "scripts/run_us_cfd_execution_fixture.py"
+      - "tests/test_us_cfd_historical_execution.py"
+      - "docs/guides/us-x-historical-cfd.md"
+      - ".github/workflows/us-x-historical-cfd.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  us-x-historical-cfd:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused CFD regression
+        run: uv run --frozen pytest -q tests/test_us_cfd_historical_execution.py
+      - name: Deterministic execution smoke
+        run: |
+          uv run --frozen python scripts/run_us_cfd_execution_fixture.py \
+            --output /tmp/us_cfd_historical_execution_fixture.json
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/backtest/us_cfd_execution.py \
+            scripts/run_us_cfd_execution_fixture.py \
+            tests/test_us_cfd_historical_execution.py
+          uv run --frozen mypy --strict \
+            src/finagent/backtest/us_cfd_execution.py \
+            scripts/run_us_cfd_execution_fixture.py
+          uv run --frozen python -m py_compile \
+            src/finagent/backtest/us_cfd_execution.py \
+            scripts/run_us_cfd_execution_fixture.py
