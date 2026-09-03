@@ -34,11 +34,41 @@ No authority may inherit automatically between these roles.
 Run before any connected MT5 test:
 
 ```powershell
-pytest -q tests/test_mt5_realtime_adapter.py tests/test_streaming_source_harness.py tests/test_streaming_feature_strategy.py
-ruff check src/finagent/brokers/mt5/realtime_adapter.py src/finagent/realtime/mt5_source.py src/finagent/realtime/sources.py
-mypy --strict src/finagent/brokers/mt5/realtime_adapter.py src/finagent/realtime/mt5_source.py src/finagent/realtime/sources.py
-python -m py_compile src/finagent/brokers/mt5/realtime_adapter.py src/finagent/realtime/mt5_source.py src/finagent/realtime/sources.py scripts/probe_mt5_realtime_events.py
+uv sync --frozen --extra dev
+uv run --frozen pytest -q `
+  tests/test_mt5_broker_clock.py `
+  tests/test_mt5_continuous_quote_smoke.py `
+  tests/test_mt5_p0_feed_regime.py `
+  tests/test_mt5_realtime_adapter.py `
+  tests/test_mt5_realtime_adapter_numpy_scalars.py `
+  tests/test_realtime_replay_projection.py `
+  tests/test_streaming_source_harness_v1.py `
+  tests/test_streaming_feature_strategy_v1.py `
+  tests/test_us_i0_delayed_reference.py
+
+uv run --frozen ruff check `
+  src/finagent/brokers/mt5/realtime_adapter.py `
+  src/finagent/realtime/mt5_source.py `
+  src/finagent/realtime/sources.py `
+  scripts/probe_mt5_realtime_events.py `
+  scripts/smoke_mt5_continuous_quotes.py
+
+uv run --frozen mypy --strict `
+  src/finagent/brokers/mt5/realtime_adapter.py `
+  src/finagent/realtime/mt5_source.py `
+  src/finagent/realtime/sources.py `
+  scripts/probe_mt5_realtime_events.py `
+  scripts/smoke_mt5_continuous_quotes.py
+
+uv run --frozen python -m py_compile `
+  src/finagent/brokers/mt5/realtime_adapter.py `
+  src/finagent/realtime/mt5_source.py `
+  src/finagent/realtime/sources.py `
+  scripts/probe_mt5_realtime_events.py `
+  scripts/smoke_mt5_continuous_quotes.py
 ```
+
+The dedicated `real-live-data-workflow` CI must run this source/runtime contract surface before workstation evidence is interpreted.
 
 ## D1 — connected FX engineering smoke
 
@@ -82,9 +112,22 @@ Acceptance checks:
 - no `symbol_select`, `order_send`, market-book subscription or mutation API is used;
 - all U.S.-market, execution, PAPER, stage-exit and live-capital authority flags remain false.
 
-## D1 soak
+## D1 quote soak
 
-After the one-shot probe passes, run `scripts/smoke_mt5_continuous_quotes.py` for the same FX fixture and preserve the generated report.
+After the one-shot probe passes, run the frozen current-quote smoke for the same FX fixture:
+
+```powershell
+python scripts\smoke_mt5_continuous_quotes.py `
+  --symbols EURUSD GBPUSD USDJPY `
+  --reference-symbols EURUSD GBPUSD USDJPY `
+  --minimum-symbol-count 3 `
+  --maximum-quote-age-seconds 60 `
+  --maximum-future-quote-skew-seconds 5 `
+  --expected-package-version 5.0.6147 `
+  --output reports\mt5\mt5_fx_continuous_quote_smoke.json
+```
+
+This command is still a read-only engineering smoke. Preserve the generated report and its broker-clock identity instead of replacing it with hand-written observations.
 
 ## Delayed/frozen regression
 
