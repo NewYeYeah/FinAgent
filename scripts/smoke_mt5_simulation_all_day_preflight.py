@@ -17,7 +17,7 @@ from finagent.brokers.mt5.continuous_quote_smoke import (
     build_mt5_continuous_quote_smoke_report,
 )
 from finagent.brokers.mt5.simulation_all_day_preflight import (
-    CANONICAL_MT5_SIMULATION_ALL_DAY_PREFLIGHT_POLICY,
+    MT5SimulationAllDayPreflightPolicy,
     build_mt5_simulation_all_day_preflight_report,
 )
 
@@ -50,6 +50,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--symbols", nargs="+", default=list(DEFAULT_SYMBOLS))
     parser.add_argument("--expected-package-version", default="5.0.6147")
     parser.add_argument(
+        "--expected-broker-server",
+        default="MetaQuotes-Demo",
+        help=(
+            "Exact broker server identity to bind into this preflight policy. "
+            "Evidence from another server is rejected instead of inherited."
+        ),
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=Path("reports/mt5/mt5_simulation_all_day_preflight.json"),
@@ -60,7 +68,9 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = build_parser().parse_args()
     symbols = _symbols(args.symbols)
-    policy = CANONICAL_MT5_SIMULATION_ALL_DAY_PREFLIGHT_POLICY
+    policy = MT5SimulationAllDayPreflightPolicy(
+        expected_broker_server=args.expected_broker_server,
+    )
     if symbols != policy.required_symbols:
         raise SystemExit(
             "all-day simulation preflight v1 requires exact symbols: "

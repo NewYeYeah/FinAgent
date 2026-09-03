@@ -44,13 +44,15 @@ uv run --frozen pytest -q `
   tests/test_realtime_replay_projection.py `
   tests/test_streaming_source_harness_v1.py `
   tests/test_streaming_feature_strategy_v1.py `
-  tests/test_us_i0_delayed_reference.py
+  tests/test_us_i0_delayed_reference.py `
+  tests/test_us_d3_simulation_admission.py
 
 uv run --frozen ruff check `
   src/finagent/brokers/mt5/realtime_adapter.py `
   src/finagent/realtime/mt5_source.py `
   src/finagent/realtime/sources.py `
   scripts/probe_mt5_realtime_events.py `
+  scripts/smoke_mt5_simulation_all_day_preflight.py `
   scripts/smoke_mt5_continuous_quotes.py
 
 uv run --frozen mypy --strict `
@@ -58,6 +60,7 @@ uv run --frozen mypy --strict `
   src/finagent/realtime/mt5_source.py `
   src/finagent/realtime/sources.py `
   scripts/probe_mt5_realtime_events.py `
+  scripts/smoke_mt5_simulation_all_day_preflight.py `
   scripts/smoke_mt5_continuous_quotes.py
 
 uv run --frozen python -m py_compile `
@@ -65,6 +68,7 @@ uv run --frozen python -m py_compile `
   src/finagent/realtime/mt5_source.py `
   src/finagent/realtime/sources.py `
   scripts/probe_mt5_realtime_events.py `
+  scripts/smoke_mt5_simulation_all_day_preflight.py `
   scripts/smoke_mt5_continuous_quotes.py
 ```
 
@@ -85,10 +89,11 @@ git pull --ff-only
 python scripts\smoke_mt5_simulation_all_day_preflight.py `
   --symbols EURUSD GBPUSD USDJPY `
   --expected-package-version 5.0.6147 `
+  --expected-broker-server TradeMaxGlobal-Live `
   --output reports\mt5\mt5_fx_live_preflight.json
 
 python scripts\probe_mt5_realtime_events.py `
-  --feed-lane FX_ENGINEERING_FIXTURE `
+  --feed-lane fx_continuous_engineering_fixture `
   --clock-reference-symbol EURUSD `
   --clock-reference-symbol GBPUSD `
   --clock-reference-symbol USDJPY `
@@ -138,9 +143,47 @@ Always retain the degraded-feed tests:
 - delayed data inside a strategy freshness budget may be admitted only if explicitly allowed;
 - delayed data beyond the budget must be rejected while transport can remain healthy.
 
+## Target-broker U.S. timing probe
+
+Target-broker symbols must be exposed manually in MT5 Market Watch before probing. Use
+the broker's exact symbol text; this workflow does not strip suffixes or call
+`symbol_select()`. On `TradeMaxGlobal-Live`, the four research seeds currently map to
+`AMD.NAS`, `INTC.NAS`, `MSFT.NAS` and `NVDA.NAS` and therefore cannot reuse the old
+MetaQuotes-Demo exact-symbol evidence identity.
+
+During the active U.S. session, collect the target-broker timing evidence through the
+same canonical adapter:
+
+```powershell
+python scripts\probe_mt5_realtime_events.py `
+  --feed-lane target_broker_current_us_equity_or_cfd `
+  --clock-reference-symbol EURUSD `
+  --clock-reference-symbol GBPUSD `
+  --clock-reference-symbol USDJPY `
+  --symbol AMD.NAS `
+  --symbol INTC.NAS `
+  --symbol MSFT.NAS `
+  --symbol NVDA.NAS `
+  --expected-package-version 5.0.6147 `
+  --capability-output reports\mt5\mt5_target_us_realtime_capability.json `
+  --clock-output reports\mt5\mt5_target_us_realtime_clock.json `
+  --output reports\mt5\mt5_target_us_realtime_events.json
+```
+
+Repeat the probe across multiple wall-clock samples. A changing normalized
+`event_time` proves progression; `received_at - event_time` estimates quote age after
+broker-clock normalization. The local `symbol_info_tick()` call duration is an API/IPC
+diagnostic and must not be reported as exchange-feed delay. Classify a progressing old
+quote as delayed, and a non-progressing old quote as frozen/stale.
+
 ## Final U.S. CFD freeze
 
 When the target broker becomes available, reuse the same canonical source path and replace only source configuration/symbols. Revalidate broker/server/account identity, symbol contracts, timing class, spread/session behavior and PAPER lifecycle. FX acceptance never becomes U.S. CFD authority.
+
+The prior MetaQuotes-Demo candidate, quote and delayed-reference artifacts remain
+immutable. A target-broker freeze requires a new candidate/mapping identity and a new
+timing policy bound to the observed target server; do not rewrite the old artifacts or
+change their expected server merely to obtain a pass.
 
 ## CI / workstation boundary
 
