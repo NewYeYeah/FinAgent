@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# Temporary branch-local patcher; removed before merge.
 root = Path(__file__).resolve().parents[1]
 path = root / "tests" / "test_streaming_feature_strategy_v1.py"
 text = path.read_text(encoding="utf-8")
