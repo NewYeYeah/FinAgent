@@ -23,15 +23,33 @@ from .clock import (
     build_mt5_broker_clock_evidence,
     mt5_broker_clock_evidence_from_document,
 )
+from .feed_regime import (
+    FX_ENGINEERING_FIXTURE,
+    METAQUOTES_DELAYED_US_EQUITY,
+    MT5_FEED_REGIME_LANES,
+    TARGET_BROKER_CURRENT_US_EQUITY_OR_CFD,
+    MT5FeedRegimeEvidence,
+    MT5FeedRegimeIssue,
+    MT5FeedRegimeReport,
+    build_mt5_feed_regime_evidence,
+    build_mt5_feed_regime_report,
+)
 from .probe import probe_mt5_capabilities, run_mt5_readonly_probe
 
 __all__ = [
     "DEFAULT_MT5_BROKER_CLOCK_POLICY",
+    "FX_ENGINEERING_FIXTURE",
+    "METAQUOTES_DELAYED_US_EQUITY",
+    "MT5_FEED_REGIME_LANES",
     "RECOMMENDED_MT5_PACKAGE_VERSION",
+    "TARGET_BROKER_CURRENT_US_EQUITY_OR_CFD",
     "MT5BrokerClockEvidence",
     "MT5BrokerClockObservation",
     "MT5BrokerClockPolicy",
     "MT5CapabilityProbeReport",
+    "MT5FeedRegimeEvidence",
+    "MT5FeedRegimeIssue",
+    "MT5FeedRegimeReport",
     "MT5HistoryCapability",
     "MT5P0AcceptanceAssessment",
     "MT5P0AcceptancePolicy",
@@ -42,6 +60,8 @@ __all__ = [
     "MetaTrader5ReadOnlyClient",
     "assess_mt5_p0",
     "build_mt5_broker_clock_evidence",
+    "build_mt5_feed_regime_evidence",
+    "build_mt5_feed_regime_report",
     "mt5_broker_clock_evidence_from_document",
     "probe_mt5_capabilities",
     "run_mt5_readonly_probe",
