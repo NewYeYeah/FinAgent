@@ -7,6 +7,7 @@ on:
       - "src/finagent/brokers/mt5/__init__.py"
       - "scripts/probe_mt5_realtime_events.py"
       - "tests/test_mt5_realtime_adapter.py"
+      - "tests/test_mt5_realtime_adapter_numpy_scalars.py"
       - "tests/test_realtime_replay_projection.py"
       - "docs/guides/mt5-m1-realtime-adapter.md"
       - ".github/workflows/mt5-m1-realtime-adapter.yml"
@@ -33,6 +34,7 @@ jobs:
         run: |
           uv run --frozen pytest -q \
             tests/test_mt5_realtime_adapter.py \
+            tests/test_mt5_realtime_adapter_numpy_scalars.py \
             tests/test_realtime_replay_projection.py \
             tests/test_mt5_p0_feed_regime.py
       - name: Static mutation-surface guard
@@ -56,7 +58,8 @@ jobs:
             src/finagent/brokers/mt5/realtime_adapter.py \
             src/finagent/brokers/mt5/__init__.py \
             scripts/probe_mt5_realtime_events.py \
-            tests/test_mt5_realtime_adapter.py
+            tests/test_mt5_realtime_adapter.py \
+            tests/test_mt5_realtime_adapter_numpy_scalars.py
           uv run --frozen mypy --strict \
             src/finagent/brokers/mt5/realtime_adapter.py \
             scripts/probe_mt5_realtime_events.py
