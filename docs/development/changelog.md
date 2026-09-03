@@ -2,6 +2,18 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-03 — Streaming Feature / Strategy Integration v1 implementation closure
+
+- implemented a provider-neutral incremental 1m -> 5m/15m/30m streaming resampler that reuses the accepted US-D2 `ResamplingSpec` semantics: session-open buckets, bucket-start event time, bucket-end availability, deterministic first/max/min/last/sum OHLCV, explicit incomplete coverage and non-divisible-session fail closed;
+- proved real temporary DuckDB/Parquet streaming 15m output matches the accepted `SessionResampledMinuteStore` batch path field-by-field and carries the same resampling-spec identity rather than introducing a second realtime aggregation authority;
+- implemented content-addressed `StreamingResampledBar`, `StreamingFeatureSnapshot`, `StreamingCrossSectionSnapshot` and `StreamingResearchUpdate` artifacts with engineering-only authority and source-event lineage;
+- reused the existing `USBaselineBar`, `canonical_us_baseline_denominator()` and `evaluate_us_baseline_feature()` contracts so the streaming feature path shares the existing B0 candidate/formula identity instead of duplicating feature formulas;
+- enforced a full-symbol cross-sectional barrier: partial symbol denominators never emit a cross-sectional snapshot or inferred ranks;
+- preserved the delayed-source boundary: all 60 events in the canonical ~900-second delayed fixture remained visible to runtime projection while zero events entered the feature algorithm under the frozen 60-second source-delay / 120-second event-age engineering budget;
+- deterministic smoke bound B0 denominator `us-baseline-denominator-b8bdb313856e1f7dc652bdd9`, replay run `algorithm-streaming-run-fee487ab505bebb2bab5d624`, replay semantic state `realtime-semantic-state-e2b2c83909b3bb8fd1326fb0` and delayed run `algorithm-streaming-run-f7cb9a77852566773c566ba6`;
+- passed 37 focused streaming/source/US-D2/B0 regressions, deterministic smoke, provider/mutation guards, Ruff, strict mypy, py_compile, Streaming Source Harness, RT replay/projection, generic pytest and project-wide quality checks;
+- retained `docs/status.toml` unchanged: this closure proves streaming engineering compatibility only and does not satisfy US-D3, B0/A0/R1 research authority, target-CFD microstructure, PAPER, execution or live-capital acceptance.
+
 ## 2026-09-03 — Streaming Source Harness v1 implementation closure
 
 - froze provider-neutral `MarketDataSource`, `MarketDataSubscription`, `FeedTimingProfile`, replay pacing and strategy-freshness contracts so algorithms do not depend directly on DuckDB or MetaTrader5 provider objects;
