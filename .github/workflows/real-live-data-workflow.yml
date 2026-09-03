@@ -3,6 +3,7 @@ name: real-live-data-workflow
 on:
   pull_request:
     paths:
+      - "src/finagent/brokers/mt5/client.py"
       - "src/finagent/brokers/mt5/realtime_adapter.py"
       - "src/finagent/realtime/mt5_source.py"
       - "src/finagent/realtime/sources.py"
@@ -12,6 +13,7 @@ on:
       - "tests/test_mt5_broker_clock.py"
       - "tests/test_mt5_continuous_quote_smoke.py"
       - "tests/test_mt5_p0_feed_regime.py"
+      - "tests/test_mt5_p0_readonly_probe.py"
       - "tests/test_mt5_realtime_adapter.py"
       - "tests/test_mt5_realtime_adapter_numpy_scalars.py"
       - "tests/test_realtime_replay_projection.py"
@@ -46,6 +48,7 @@ jobs:
             tests/test_mt5_broker_clock.py \
             tests/test_mt5_continuous_quote_smoke.py \
             tests/test_mt5_p0_feed_regime.py \
+            tests/test_mt5_p0_readonly_probe.py \
             tests/test_mt5_realtime_adapter.py \
             tests/test_mt5_realtime_adapter_numpy_scalars.py \
             tests/test_realtime_replay_projection.py \
@@ -64,15 +67,21 @@ jobs:
           from pathlib import Path
 
           paths = [
+              Path("src/finagent/brokers/mt5/client.py"),
               Path("src/finagent/brokers/mt5/realtime_adapter.py"),
               Path("src/finagent/realtime/mt5_source.py"),
               Path("scripts/probe_mt5_realtime_events.py"),
+              Path("scripts/smoke_mt5_simulation_all_day_preflight.py"),
               Path("scripts/smoke_mt5_continuous_quotes.py"),
           ]
           forbidden = (
               "symbol_select(",
+              "order_check(",
               "order_send(",
+              "order_calc_margin(",
+              "order_calc_profit(",
               "market_book_add(",
+              "market_book_get(",
               "market_book_release(",
               "positions_get(",
               "orders_get(",
@@ -103,6 +112,7 @@ jobs:
       - name: Strict static checks
         run: |
           uv run --frozen ruff check \
+            src/finagent/brokers/mt5/client.py \
             src/finagent/brokers/mt5/realtime_adapter.py \
             src/finagent/realtime/mt5_source.py \
             src/finagent/realtime/sources.py \
@@ -110,6 +120,7 @@ jobs:
             scripts/smoke_mt5_simulation_all_day_preflight.py \
             scripts/smoke_mt5_continuous_quotes.py
           uv run --frozen mypy --strict \
+            src/finagent/brokers/mt5/client.py \
             src/finagent/brokers/mt5/realtime_adapter.py \
             src/finagent/realtime/mt5_source.py \
             src/finagent/realtime/sources.py \
@@ -117,6 +128,7 @@ jobs:
             scripts/smoke_mt5_simulation_all_day_preflight.py \
             scripts/smoke_mt5_continuous_quotes.py
           uv run --frozen python -m py_compile \
+            src/finagent/brokers/mt5/client.py \
             src/finagent/brokers/mt5/realtime_adapter.py \
             src/finagent/realtime/mt5_source.py \
             src/finagent/realtime/sources.py \

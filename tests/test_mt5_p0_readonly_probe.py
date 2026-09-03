@@ -84,6 +84,9 @@ class FakeReadOnlyClient:
         }
         return ({**common, "name": "AAPL"}, {**common, "name": "MSFT"})
 
+    def symbol_info(self, symbol: str) -> object:
+        return next(item for item in self.symbols_get() if item["name"] == symbol)
+
     def symbol_info_tick(self, symbol: str) -> object:
         assert symbol in {"AAPL", "MSFT"}
         return {
@@ -222,6 +225,13 @@ def test_official_client_initialization_and_group_filter_are_read_only() -> None
     def shutdown() -> None:
         calls.append("shutdown")
 
+    def terminal_info() -> object:
+        calls.append("terminal_info")
+        return SimpleNamespace(
+            trade_allowed=False,
+            tradeapi_disabled=True,
+        )
+
     def symbols_get(*, group: str = "") -> tuple[object, ...]:
         calls.append(("symbols_get", group))
         return ()
@@ -232,6 +242,7 @@ def test_official_client_initialization_and_group_filter_are_read_only() -> None
         COPY_TICKS_ALL=0,
         initialize=initialize,
         shutdown=shutdown,
+        terminal_info=terminal_info,
         last_error=lambda: (1, "ok"),
         symbols_get=symbols_get,
     )
@@ -240,4 +251,38 @@ def test_official_client_initialization_and_group_filter_are_read_only() -> None
     assert client.symbols_get("*USD*") == ()
     client.shutdown()
 
-    assert calls == ["initialize", ("symbols_get", "*USD*"), "shutdown"]
+    assert calls == [
+        "initialize",
+        "terminal_info",
+        ("symbols_get", "*USD*"),
+        "shutdown",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("trade_allowed", "tradeapi_disabled"),
+    ((True, True), (False, False), (True, False)),
+)
+def test_official_client_refuses_terminal_without_both_read_only_locks(
+    trade_allowed: bool,
+    tradeapi_disabled: bool,
+) -> None:
+    calls: list[str] = []
+    fake_module = SimpleNamespace(
+        __version__="5.0.6147",
+        TIMEFRAME_M1=1,
+        COPY_TICKS_ALL=0,
+        initialize=lambda: True,
+        shutdown=lambda: calls.append("shutdown"),
+        last_error=lambda: (1, "ok"),
+        terminal_info=lambda: SimpleNamespace(
+            trade_allowed=trade_allowed,
+            tradeapi_disabled=tradeapi_disabled,
+        ),
+    )
+    client = MetaTrader5ReadOnlyClient(module=fake_module)
+
+    with pytest.raises(RuntimeError, match="read-only lockout is not active"):
+        client.initialize()
+
+    assert calls == ["shutdown"]

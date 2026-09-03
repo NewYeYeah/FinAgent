@@ -36,6 +36,8 @@ class MT5ReadOnlyClientProtocol(Protocol):
 
     def symbols_get(self, group: str = "") -> object: ...
 
+    def symbol_info(self, symbol: str) -> object: ...
+
     def symbol_info_tick(self, symbol: str) -> object: ...
 
     def copy_rates_range(
@@ -54,7 +56,12 @@ class MT5ReadOnlyClientProtocol(Protocol):
 
 
 class MetaTrader5ReadOnlyClient:
-    """Import-safe adapter over the official Windows MetaTrader5 Python package."""
+    """Fail-closed read-only adapter over the Windows MetaTrader5 package.
+
+    Initialization requires both terminal trading and external-Python trading to be
+    disabled. The class also deliberately exposes no order, position, symbol-selection
+    or market-book mutation surface.
+    """
 
     def __init__(
         self,
@@ -103,6 +110,24 @@ class MetaTrader5ReadOnlyClient:
         if not bool(self._module.initialize()):
             raise RuntimeError(f"MetaTrader5 initialize() failed: {self._last_error()!r}")
         self._initialized = True
+        try:
+            terminal = self._required_result(
+                self._module.terminal_info(),
+                "terminal_info()",
+            )
+            trade_allowed = bool(getattr(terminal, "trade_allowed", False))
+            tradeapi_disabled = bool(
+                getattr(terminal, "tradeapi_disabled", False)
+            )
+            if trade_allowed or not tradeapi_disabled:
+                raise RuntimeError(
+                    "MT5 funded-account read-only lockout is not active: require "
+                    "terminal_info.trade_allowed=false and "
+                    "terminal_info.tradeapi_disabled=true before any probe"
+                )
+        except Exception:
+            self.shutdown()
+            raise
 
     def shutdown(self) -> None:
         if self._initialized:
@@ -145,6 +170,11 @@ class MetaTrader5ReadOnlyClient:
         else:
             value = self._module.symbols_get()
         return self._required_result(value, "symbols_get()")
+
+    def symbol_info(self, symbol: str) -> object:
+        self._require_initialized()
+        value = self._module.symbol_info(symbol)
+        return self._required_result(value, f"symbol_info({symbol!r})")
 
     def symbol_info_tick(self, symbol: str) -> object:
         self._require_initialized()

@@ -39,6 +39,7 @@ uv run --frozen pytest -q `
   tests/test_mt5_broker_clock.py `
   tests/test_mt5_continuous_quote_smoke.py `
   tests/test_mt5_p0_feed_regime.py `
+  tests/test_mt5_p0_readonly_probe.py `
   tests/test_mt5_realtime_adapter.py `
   tests/test_mt5_realtime_adapter_numpy_scalars.py `
   tests/test_realtime_replay_projection.py `
@@ -48,6 +49,7 @@ uv run --frozen pytest -q `
   tests/test_us_d3_simulation_admission.py
 
 uv run --frozen ruff check `
+  src/finagent/brokers/mt5/client.py `
   src/finagent/brokers/mt5/realtime_adapter.py `
   src/finagent/realtime/mt5_source.py `
   src/finagent/realtime/sources.py `
@@ -56,6 +58,7 @@ uv run --frozen ruff check `
   scripts/smoke_mt5_continuous_quotes.py
 
 uv run --frozen mypy --strict `
+  src/finagent/brokers/mt5/client.py `
   src/finagent/brokers/mt5/realtime_adapter.py `
   src/finagent/realtime/mt5_source.py `
   src/finagent/realtime/sources.py `
@@ -64,6 +67,7 @@ uv run --frozen mypy --strict `
   scripts/smoke_mt5_continuous_quotes.py
 
 uv run --frozen python -m py_compile `
+  src/finagent/brokers/mt5/client.py `
   src/finagent/brokers/mt5/realtime_adapter.py `
   src/finagent/realtime/mt5_source.py `
   src/finagent/realtime/sources.py `
@@ -77,6 +81,12 @@ The dedicated `real-live-data-workflow` CI must run this source/runtime contract
 ## D1 — connected FX engineering smoke
 
 Run on a Windows workstation with the intended MT5 terminal already logged in and the three FX symbols available from the broker:
+
+When the terminal is connected to a funded account, first enable **Disable
+automated trading via external Python API** in MT5 and keep terminal automated
+trading disabled. Every approved connected command now fails closed unless
+`terminal_info.trade_allowed=false` and `terminal_info.tradeapi_disabled=true`.
+Do not bypass this guard for data collection.
 
 ```powershell
 conda activate finagent
