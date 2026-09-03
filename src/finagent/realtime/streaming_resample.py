@@ -68,9 +68,11 @@ class StreamingResampledBar:
         expected_ratio = self.observed_minute_count / self.expected_minute_count
         if abs(self.coverage_ratio - expected_ratio) > 1e-12:
             raise ValueError("coverage_ratio does not match observed/expected minute counts")
-        if self.bar.complete != (self.observed_minute_count == self.expected_minute_count):
-            if self.bar.complete:
-                raise ValueError("complete resampled bar requires full minute coverage")
+        if (
+            self.bar.complete
+            and self.observed_minute_count != self.expected_minute_count
+        ):
+            raise ValueError("complete resampled bar requires full minute coverage")
         if len(self.source_event_ids) != self.observed_minute_count:
             raise ValueError("source_event_ids must bind every observed minute")
         if len(self.source_event_ids) != len(set(self.source_event_ids)):

@@ -20,8 +20,8 @@ from finagent.domain.labels import AvailabilityPolicy, ResearchPriceBasis
 from finagent.domain.market_bars import BarInterval
 from finagent.domain.trading_calendar import TradingCalendarEvidence, TradingSession
 from finagent.realtime import (
-    AlgorithmRunReport,
     AlgorithmRunner,
+    AlgorithmRunReport,
     BarEvent,
     DatabaseReplaySource,
     FeedTimingClass,
@@ -32,8 +32,8 @@ from finagent.realtime import (
     RealtimeProjector,
     ReplayPacingMode,
     StrategyFreshnessBudget,
-    StreamingResearchUpdate,
     StreamingResampledBar,
+    StreamingResearchUpdate,
     USBaselineStreamingAlgorithm,
 )
 from finagent.research.us_baselines import canonical_us_baseline_denominator
