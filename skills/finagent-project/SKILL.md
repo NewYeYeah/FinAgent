@@ -117,6 +117,7 @@ If source code, tests and current docs disagree, do not silently reconcile them.
 | How does FinAgent work? | `architecture/overview.md` |
 | What may the Agent do? | `architecture/decisions.md` + Agent source/tests |
 | How should I run/use something? | relevant `guides/` document |
+| How may FX be used during MT5/U.S. development? | `architecture/decisions.md` D24 → `guides/mt5-continuous-smoke-and-deferred-us-i0.md` |
 | What does a test failure mean? | `testing/strategy.md` + failing test + runtime source |
 | What did Historical v1.0 prove? | `releases/ashare-historical-v1.md` |
 | Why was code changed historically? | aggregate changelog → Git/PR |
@@ -133,6 +134,37 @@ If source code, tests and current docs disagree, do not silently reconcile them.
 7. **Agent automation receives no multiplicity exemption.** Failed, repaired and weak candidates remain in the effective search denominator where the research protocol requires it.
 8. **No hidden reasoning persistence.** Store explicit hypotheses, artifacts, events and usage metadata, not model chain-of-thought.
 9. **No-alpha is a valid research terminal.** Never fabricate strategy/portfolio evidence to make a release appear populated.
+10. **MT5 feed regimes are not interchangeable.** A passing FX fixture proves only the asset/feed-invariant engineering behavior it actually exercised. It cannot satisfy U.S. universe, delayed-reference, reconciliation, US-D3, PAPER or live-broker evidence.
+
+### 5.1 MT5 feed-regime protocol
+
+For MT5 work, classify every run before interpreting it:
+
+```text
+Lane A — FX continuous/near-continuous fixture
+    EURUSD / GBPUSD / USDJPY
+    authority: transport / clock / current bid-ask engineering smoke only
+
+Lane B — MetaQuotes-Demo delayed U.S. equity reference
+    authority: simulation EngineeringUniverse / delayed-reference evidence only
+
+Lane C — future target-broker current U.S. equity/CFD feed
+    authority: separately admitted broker-specific PAPER/live-current evidence
+```
+
+Rules:
+
+- a roughly 15-minute delay is a bound feed/server/subscription observation, not an intrinsic `MetaTrader5` Python API delay and not a universal stock/CFD property;
+- use FX freely for transport, reconnect, broker-clock normalization, timestamp parsing, current bid/ask plumbing, read-only inventory serialization and error handling;
+- do not use FX to prove U.S. Market Watch visibility, delayed-reference timing, stock session behavior, stock trade/Last semantics, U.S. spread gates, MT5-D0, US-D3, stock/CFD margin/fill behavior, PAPER or live readiness;
+- the continuous FX preflight must remain outside the U.S. certification denominator;
+- delayed U.S. quotes may support only the authority carried by the simulation policy/report and never current executable spread, current liquidity, target-broker account, order or live-capital authority;
+- future broker/server/account evidence is a new admission chain; never auto-promote Lane A or Lane B identities into Lane C;
+- governed US-I0 symbol visibility remains an operator boundary: do not add `symbol_select()` to force Market Watch state;
+- preserve frozen S2 and MT5-D0 thresholds; do not weaken quote age, delayed anchor, minimum universe count, 50-bps delayed diagnostic spread, seed retention, overlap or offset thresholds to obtain a pass;
+- where MT5 exposes them, prefer preserving `subscription_delay`, `chart_mode`, `trade_exemode`, `ticks_bookdepth` and related symbol/server identity fields in capability evidence; absence of these fields must not be filled by inference.
+
+When reviewing a generic quote test, ask whether it is truly transport-invariant or whether it accidentally assumes FX microstructure. A test that requires universal `last > 0`, universal volume semantics, or a 24x5 session model is not a valid generic MT5 test.
 
 ## 6. Stage implementation protocol
 
@@ -231,6 +263,8 @@ Before approving a documentation change, verify:
 - [ ] platform acceptance is not described as Alpha/PAPER/live acceptance;
 - [ ] historical A-share limitations remain explicit where relevant;
 - [ ] provider/API capability is not confused with FinAgent adapter capability;
+- [ ] FX engineering smoke is not described or consumed as U.S. research/MT5-D0/US-D3/PAPER/live evidence;
+- [ ] delayed U.S. simulation evidence is not described as current executable-spread or target-broker authority;
 - [ ] local Windows commands follow the Conda + PowerShell convention;
 - [ ] relative links resolve;
 - [ ] `python scripts/check_docs.py` passes.
@@ -258,5 +292,7 @@ This prevents conclusions from being based on a planning document alone.
 Human-readable onboarding: `docs/guides/project-onboarding.md`.
 
 Documentation index: `docs/README.md`.
+
+MT5 feed-regime guide: `docs/guides/mt5-continuous-smoke-and-deferred-us-i0.md`.
 
 Current stage: `docs/status.toml`.
