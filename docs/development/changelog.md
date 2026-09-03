@@ -2,6 +2,17 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-03 — Replay Experiment Orchestration / Streaming-vs-Batch Research Campaign v1 implementation closure
+
+- implemented an engineering-only `ReplayExperimentCampaign` over one bounded minute source with independent streaming (`DatabaseReplaySource -> AlgorithmRunner -> USBaselineStreamingAlgorithm`) and accepted US-D2 batch (`SessionResampledMinuteStore -> SameSessionLabelStore`) paths;
+- froze exact row-count + SHA-256 parity across five input slices (5m/60m, 15m/30m, 15m/60m, 15m/120m, 30m/60m) and eleven downstream B0/A0/R1 observation/diagnostic/evaluation surfaces, for sixteen mandatory unique parity checks with no tolerance-based pass;
+- discovered and corrected a previously hidden clock conflation by retaining feature/bar formation `source_event_time` separately from optional D2 raw 1m `price_event_time`; new batch-backed evidence reproduces the formal D2 source clock while old v1 bridge documents remain backward-compatible;
+- hardened the content-addressed campaign report so it requires the frozen five batch slices, all sixteen unique parity surfaces and the canonical B0 denominator, while persisting `formal_us_b0_operator_invoked=false`, `us_d3_certification_consumed=false` and all research/Agent-value/Alpha/execution/stage authority flags as false;
+- added `scripts/run_replay_experiment_campaign.py` for bounded real local U.S. historical campaigns against frozen source revision `776328445b7ac6e7815ef3a483e9c8ded1eb6d56`, inventory `us-minute-inventory-c2cbf682b456f97eb613ed65`, cleaning stack `us-minute-cleaning-stack-a0d745a4a75d25a63e3a8244` and calendar `trading-calendar-03a9c29f566d6634aedbbbdc`, without invoking the formal stage-gated US-B0 operator;
+- deterministic real DuckDB/Parquet fixture smoke accepted campaign `replay-experiment-campaign-ae3eadfdd7110176150e9a99` with 16/16 parity checks, row counts 120/40/40/40/20 and no blockers;
+- passed 55 focused campaign/bridge/streaming/B0/A0/R1 regressions, deterministic smoke, provider/mutation and authority guards, Ruff, strict mypy, py_compile, bridge backward-compatibility checks, generic project tests and documentation governance;
+- retained `docs/status.toml` unchanged at US-D3: campaign parity proves implementation equivalence only and does not certify US-D3, formally admit B0/A0/R1, prove current U.S. market data, or grant CFD/PAPER/execution/live-capital authority.
+
 ## 2026-09-03 — Streaming Feature / Strategy Integration v1 implementation closure
 
 - implemented a provider-neutral incremental 1m -> 5m/15m/30m streaming resampler that reuses the accepted US-D2 `ResamplingSpec` semantics: session-open buckets, bucket-start event time, bucket-end availability, deterministic first/max/min/last/sum OHLCV, explicit incomplete coverage and non-divisible-session fail closed;

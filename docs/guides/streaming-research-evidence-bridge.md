@@ -129,8 +129,10 @@ FINAL-FREEZE target-broker U.S. CFD           -> final market/broker/execution f
 
 FX evidence never substitutes for U.S. research semantics. Historical replay supplies real historical U.S. market values and real streaming execution semantics, but not a current market feed. Target-CFD broker-specific semantics remain deferred to the final freeze campaign.
 
-## 9. Next implementation boundary
+## 9. Follow-on campaign
 
-After this bridge is closed, the next coherent engineering increment is **Replay Experiment Orchestration / Streaming-vs-Batch Research Campaign v1**: execute the existing B0/A0/R1 runners from persisted streaming evidence across deterministic replay fixtures and real bounded local U.S. slices, compare semantically equivalent streaming and batch inputs/results, and preserve every existing certification/Gate prerequisite.
+**Replay Experiment Orchestration / Streaming-vs-Batch Research Campaign v1** is now implemented. It independently materializes accepted US-D2 batch bars/labels from the same bounded minute source used by `DatabaseReplaySource`, freezes streaming evidence, and requires exact canonical equality across five row slices plus B0/A0/R1 materialization/evaluation surfaces. The implementation also separates the feature-formation clock from the D2 raw 1m price-source clock in persisted label evidence.
 
-That increment must still remain implementation/evidence preparation until current stage authority explicitly permits formal downstream research acceptance.
+See `docs/guides/replay-experiment-campaign.md` for the frozen sixteen parity surfaces, deterministic fixture identities, local bounded operator and authority boundary.
+
+The next coherent engineering increment is **Bounded Real-Data Replay Campaign / Runtime Soak v1**. It remains implementation/evidence preparation until current stage authority explicitly permits formal downstream research acceptance.
