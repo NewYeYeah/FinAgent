@@ -5,6 +5,8 @@ from collections.abc import Mapping, Sequence
 from finagent.research.us_r2_candidate_cache import (
     USR2AssetCandidateCache,
     USR2CandidateExecution,
+)
+from finagent.research.us_r2_candidate_cache import (
     materialize_us_r2_asset_candidate_cache as _materialize_candidate_cache,
 )
 
