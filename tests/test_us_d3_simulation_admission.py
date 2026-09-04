@@ -13,7 +13,7 @@ from finagent.brokers.mt5.continuous_quote_smoke import (
     build_mt5_continuous_quote_smoke_report,
 )
 from finagent.brokers.mt5.simulation_all_day_preflight import (
-    CANONICAL_MT5_SIMULATION_ALL_DAY_PREFLIGHT_POLICY,
+    MT5SimulationAllDayPreflightPolicy,
     build_mt5_simulation_all_day_preflight_report,
 )
 from finagent.data.us_candidate_quotes_v2 import (
@@ -29,7 +29,6 @@ from finagent.data.us_minute.reconciliation import (
     MinuteReferenceSymbolCheck,
 )
 from finagent.data.us_minute.simulation_certification import (
-    CANONICAL_US_SIMULATION_D3_CERTIFICATION_POLICY,
     USSimulationD3Review,
     USSimulationD3ReviewDecision,
     build_us_simulation_d3_certification,
@@ -123,6 +122,23 @@ def test_all_day_preflight_rejects_wrong_server_or_incomplete_symbol_fixture() -
     )
     assert not incomplete.passed
     assert "simulation_all_day:required_symbol_set_mismatch" in incomplete.blockers
+
+
+def test_all_day_preflight_can_freeze_an_explicit_broker_server() -> None:
+    policy = MT5SimulationAllDayPreflightPolicy(
+        expected_broker_server="TradeMaxGlobal-Live"
+    )
+    report = build_mt5_simulation_all_day_preflight_report(
+        _continuous_smoke(server="TradeMaxGlobal-Live"),
+        policy=policy,
+    )
+
+    assert report.passed
+    assert report.policy.expected_broker_server == "TradeMaxGlobal-Live"
+    assert (
+        report.to_dict()["policy"]["expected_broker_server"]
+        == "TradeMaxGlobal-Live"
+    )
 
 
 def _symbols(count: int = 25) -> tuple[str, ...]:

@@ -141,6 +141,20 @@ missing_seed_symbols = []
 
 The resulting `spread_probe_symbols` should then be measured with the read-only MT5 spread surface, preferably during the broker-observed active session. Current spread is diagnostic and does not substitute for historical transaction-cost evidence.
 
+### Explicit target-broker suffix mappings
+
+When broker symbols differ from research tickers, use
+`scripts/select_us_i0_mapped_candidates.py` with repeated, reviewed
+`--mapping RESEARCH=BROKER` arguments. The mapped v1 policy rejects duplicate research
+symbols and duplicate broker symbols, intersects only the explicit pairs with both the
+admitted research history and the supplied read-only MT5 inventory, and emits broker
+symbols for visibility and quote probing while preserving research symbols for ranking
+and downstream data access. It does not infer `.NAS`, `.NYS` or any other suffix.
+
+The legacy exact-symbol selector and its content-addressed v1 artifacts remain
+unchanged. Mapped selection creates a separate mapping identity and still requires the
+same-security operator attestation before final EngineeringUniverse acceptance.
+
 ## Expansion beyond the seed
 
 The planning target remains roughly 20–30 liquid engineering names. Seed acceptance proves the mapping machinery, not the final universe denominator. Expansion must intersect:

@@ -357,6 +357,7 @@ def bind_us_b0_run_spec(
     minimum_cross_section: int = 10,
     minimum_evaluated_periods: int = 20,
     minimum_ic_periods: int = 20,
+    fail_on_partial_realized_label: bool = True,
 ) -> tuple[USBaselineRunSpec, tuple[str, ...]]:
     if _text(certification_document.get("schema_version"), "certification.schema_version") != (
         "finagent.us-minute-certification-report.v1"
@@ -459,6 +460,7 @@ def bind_us_b0_run_spec(
         minimum_cross_section=minimum_cross_section,
         minimum_evaluated_periods=minimum_evaluated_periods,
         minimum_ic_periods=minimum_ic_periods,
+        fail_on_partial_realized_label=fail_on_partial_realized_label,
     )
     return run_spec, ordered_assets
 

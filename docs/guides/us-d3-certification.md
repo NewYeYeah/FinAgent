@@ -47,11 +47,19 @@ git merge --ff-only origin/main
 
 ## 2. Materialize the deterministic 40-name candidate set
 
+Use the legacy selector only when research and broker symbols are exactly equal. For a
+target broker that exposes explicit venue suffixes, use the mapped selector and pass
+every reviewed pair verbatim; the selector never strips, appends or infers a suffix:
+
 ```powershell
-python scripts\select_us_i0_universe_candidates.py `
+python scripts\select_us_i0_mapped_candidates.py `
   "D:\Data\datasets--mito0o852--OHLCV-1m" `
   --calendar reports\us_calendar\xnys_1992_2026.json `
-  --mt5-probe reports\mt5\mt5_p0_capability_probe.json `
+  --mt5-probe reports\mt5\mt5_target_p0_capability_probe.json `
+  --mapping AMD=AMD.NAS `
+  --mapping INTC=INTC.NAS `
+  --mapping MSFT=MSFT.NAS `
+  --mapping NVDA=NVDA.NAS `
   --start 2026-01-01T00:00:00+00:00 `
   --end 2026-04-01T00:00:00+00:00 `
   --top-n 40 `
@@ -59,9 +67,11 @@ python scripts\select_us_i0_universe_candidates.py `
   --memory-limit 512MB `
   --threads 2 `
   --max-temp-directory-size 4GB `
-  --temp-directory data\duckdb_temp\us_i0_candidates `
-  --output reports\us_instruments\us_i0_universe_candidates.json
+  --temp-directory data\duckdb_temp\us_i0_mapped_candidates `
+  --output reports\us_instruments\us_i0_target_broker_candidates.json
 ```
+
+Repeat `--mapping` for every operator-reviewed target-broker pair.
 
 Required output:
 
@@ -71,15 +81,16 @@ blockers = []
 selected_candidate_count >= 20
 ```
 
-This is only a candidate set. Exact ticker equality is not a security-identity attestation.
+This is only a candidate set. An explicit mapping is not a security-identity
+attestation; it remains subject to operator review at finalization.
 
 ## 3. Make candidate symbols visible manually
 
-The accepted MT5-P0 inventory may contain only a small visible Market Watch subset. Candidate discovery intentionally does not call `symbol_select`, so inspect `spread_probe_symbols` and `manual_visibility_required_symbols` and add the intended candidate symbols to MetaTrader 5 Market Watch manually.
+The accepted MT5-P0 inventory may contain only a small visible Market Watch subset. Candidate discovery intentionally does not call `symbol_select`, so inspect `spread_probe_symbols` and `manual_visibility_required_symbols` and expose the intended symbols manually or with the separate add-only, allowlisted `ensure_mt5_market_watch.py` operator utility.
 
 For the default 25-name final target, making all 40 candidates visible is preferred. It leaves room for stale, invalid or wider-than-50-bps quotes to be rejected without forcing a policy change.
 
-Do not add a programmatic `symbol_select` path to FinAgent. Visibility is broker-terminal state and remains outside the read-only P0/US-I0 code surface.
+Do not add `symbol_select` to the governed P0/US-I0 evidence path. Visibility remains broker-terminal state; the separate operator utility may change it before a fresh read-only probe but cannot grant evidence, execution or stage authority.
 
 ## 4. Collect broker-clock evidence and current quote evidence
 
@@ -100,23 +111,23 @@ They are measurement references only; they are not added to the U.S. Engineering
 
 ```powershell
 python scripts\probe_us_i0_candidate_quotes.py `
-  --candidate-report reports\us_instruments\us_i0_universe_candidates.json `
-  --mt5-p0-probe reports\mt5\mt5_p0_capability_probe.json `
+  --candidate-report reports\us_instruments\us_i0_target_broker_candidates.json `
+  --mt5-p0-probe reports\mt5\mt5_target_p0_capability_probe.json `
   --expected-package-version 5.0.6147 `
-  --clock-output reports\mt5\mt5_broker_clock_evidence.json `
-  --output reports\us_instruments\us_i0_candidate_quotes.json
+  --clock-output reports\mt5\mt5_target_broker_clock_evidence.json `
+  --output reports\us_instruments\us_i0_target_broker_quotes.json
 ```
 
 If one of the default references is unavailable at the connected broker, override the set with at least three active symbols:
 
 ```powershell
 python scripts\probe_us_i0_candidate_quotes.py `
-  --candidate-report reports\us_instruments\us_i0_universe_candidates.json `
-  --mt5-p0-probe reports\mt5\mt5_p0_capability_probe.json `
+  --candidate-report reports\us_instruments\us_i0_target_broker_candidates.json `
+  --mt5-p0-probe reports\mt5\mt5_target_p0_capability_probe.json `
   --clock-reference-symbol EURUSD `
   --clock-reference-symbol GBPUSD `
   --clock-reference-symbol USDJPY `
-  --output reports\us_instruments\us_i0_candidate_quotes.json
+  --output reports\us_instruments\us_i0_target_broker_quotes.json
 ```
 
 There is no hard-coded `UTC+3` or other broker timezone. The v1 clock policy requires a common observed offset from at least three references, snaps the median offset to a 60-second clock quantum, and rejects references whose residual exceeds 15 seconds. Changing broker/server can therefore produce a different accepted offset without changing code.
@@ -187,30 +198,30 @@ After the candidate Market Watch state is correct and quote evidence passes, rec
 ```powershell
 python scripts\probe_mt5_readonly.py `
   --expected-package-version 5.0.6147 `
-  --output reports\mt5\mt5_us_i0_final_inventory.json
+  --output reports\mt5\mt5_target_us_i0_final_inventory.json
 ```
 
 The candidate report, quote report, clock evidence and final inventory must all bind the same accepted MT5-P0 identity/broker server where applicable.
 
 ## 6. Freeze the final 25-name EngineeringUniverse
 
-After reviewing the selected exact-symbol mappings, explicitly attest them for bounded engineering integration.
+After reviewing the selected research-to-broker mappings, explicitly attest them for bounded engineering integration.
 
 Finalization v3 does **not** trust probe-time freshness forever. It reconstructs and verifies the content-addressed quote-probe v2 and embedded clock evidence, then re-assesses each `normalized_sampled_at_utc` against the finalization UTC clock.
 
 ```powershell
 python scripts\finalize_us_i0_engineering_universe.py `
-  --candidate-report reports\us_instruments\us_i0_universe_candidates.json `
-  --quote-probe reports\us_instruments\us_i0_candidate_quotes.json `
-  --mt5-inventory-probe reports\mt5\mt5_us_i0_final_inventory.json `
+  --candidate-report reports\us_instruments\us_i0_target_broker_candidates.json `
+  --quote-probe reports\us_instruments\us_i0_target_broker_quotes.json `
+  --mt5-inventory-probe reports\mt5\mt5_target_us_i0_final_inventory.json `
   --target-count 25 `
   --minimum-count 20 `
   --maximum-count 30 `
   --maximum-current-spread-bps 50 `
   --maximum-quote-age-seconds 900 `
   --maximum-future-quote-skew-seconds 60 `
-  --attest-selected-exact-matches `
-  --output reports\us_instruments\us_i0_final_engineering_universe.json
+  --attest-selected-mappings `
+  --output reports\us_instruments\us_i0_target_broker_final_engineering_universe.json
 ```
 
 The v3 finalizer fails closed when:
@@ -223,7 +234,7 @@ The v3 finalizer fails closed when:
 - fewer than 20 normalized quotes remain fresh at finalization time;
 - any required seed is not fresh;
 - the spread filter removes a required seed;
-- the final exact-symbol mapping attestation is absent.
+- the final research-to-broker mapping attestation is absent.
 
 The 50-bps spread threshold remains unchanged. If a required seed has a wider current spread, re-measure in an appropriate liquid session; do not widen the gate merely to force acceptance.
 
@@ -239,7 +250,7 @@ clock_evidence_id = mt5-broker-clock-evidence-...
 universe_id = engineering-universe-...
 ```
 
-The attestation means only that each exact research/broker symbol pair may be used in this engineering universe. It does not prove listed venue, PIT lifecycle, corporate-action completeness or live-trading suitability.
+The attestation means only that each explicit research/broker symbol pair may be used in this engineering universe. It does not prove listed venue, PIT lifecycle, corporate-action completeness or live-trading suitability.
 
 ## 7. Run MT5-D0 minute reconciliation
 
@@ -251,19 +262,28 @@ The broker-clock evidence used for current quote freshness does not replace this
 python scripts\reconcile_us_minute_mt5.py `
   "D:\Data\datasets--mito0o852--OHLCV-1m" `
   --calendar reports\us_calendar\xnys_1992_2026.json `
-  --engineering-universe reports\us_instruments\us_i0_final_engineering_universe.json `
-  --mt5-p0-probe reports\mt5\mt5_p0_capability_probe.json `
+  --engineering-universe reports\us_instruments\us_i0_target_broker_final_engineering_universe.json `
+  --mt5-p0-probe reports\mt5\mt5_target_p0_capability_probe.json `
   --start 2026-03-09T13:30:00+00:00 `
   --end 2026-03-09T20:00:00+00:00 `
   --reference-symbol-count 4 `
+  --reference-symbol IWM `
+  --reference-symbol GLD `
+  --reference-symbol XLE `
+  --reference-symbol EEM `
   --minimum-overlap-ratio 0.80 `
   --maximum-abs-offset-minutes 360 `
   --memory-limit 512MB `
   --threads 2 `
   --max-temp-directory-size 4GB `
   --temp-directory data\duckdb_temp\mt5_d0 `
-  --output reports\mt5\mt5_d0_minute_reconciliation.json
+  --output reports\mt5\mt5_target_d0_minute_reconciliation.json
 ```
+
+Explicit references must be accepted research symbols in the frozen universe and their
+count must equal `--reference-symbol-count` (four by default). This permits a broker
+with uneven historical retention to use reviewed names that actually cover the frozen
+window; it does not reduce the symbol-count, row-count, overlap, offset or price gates.
 
 Required output:
 
@@ -272,7 +292,9 @@ passed = true
 blockers = []
 ```
 
-If the connected MetaQuotes-Demo terminal does not retain the requested historical M1 bars, keep the failed row-free report. Do not weaken the overlap gate merely to force a pass; the reference window/policy must be reviewed explicitly.
+If the connected target terminal does not retain the requested historical M1 bars, keep
+the failed row-free report. Do not weaken the overlap gate merely to force a pass; the
+reference set/window/policy must be reviewed explicitly.
 
 ## 8. Aggregate the final US-D3 certification
 
@@ -281,8 +303,8 @@ python scripts\certify_us_minute_research.py `
   --source-certification reports\us_minute_local_certification.json `
   --d1-smoke reports\us_d1\us_d1_smoke_report.json `
   --d2-smoke reports\us_d2\us_d2_transform_smoke_report.json `
-  --engineering-universe reports\us_instruments\us_i0_final_engineering_universe.json `
-  --reconciliation reports\mt5\mt5_d0_minute_reconciliation.json `
+  --engineering-universe reports\us_instruments\us_i0_target_broker_final_engineering_universe.json `
+  --reconciliation reports\mt5\mt5_target_d0_minute_reconciliation.json `
   --output reports\us_d3\us_minute_research_certification.json
 ```
 

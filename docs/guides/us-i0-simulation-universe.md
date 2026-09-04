@@ -147,7 +147,7 @@ Therefore S2 acceptance does not by itself advance `docs/status.toml`, certify U
 
 ## 6. Operator sequence for the next evidence run
 
-First manually expose the intended 40 candidate U.S. symbols in MT5 Market Watch. FinAgent must not call `symbol_select()`.
+First expose the intended 40 candidate U.S. symbols in MT5 Market Watch manually or through the separate add-only, allowlisted `ensure_mt5_market_watch.py` operator utility. The governed US-I0 probe and finalizer must not call `symbol_select()`.
 
 During an active U.S. session rerun the raw quote probe:
 

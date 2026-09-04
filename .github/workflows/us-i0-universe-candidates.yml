@@ -6,6 +6,7 @@ on:
     paths:
       - "src/finagent/data/us_universe_candidates.py"
       - "scripts/select_us_i0_universe_candidates.py"
+      - "scripts/select_us_i0_mapped_candidates.py"
       - "tests/test_us_i0_universe_candidates.py"
       - "docs/status.toml"
       - "docs/development/changelog.md"
@@ -16,6 +17,7 @@ on:
     paths:
       - "src/finagent/data/us_universe_candidates.py"
       - "scripts/select_us_i0_universe_candidates.py"
+      - "scripts/select_us_i0_mapped_candidates.py"
       - "tests/test_us_i0_universe_candidates.py"
       - "docs/status.toml"
       - "docs/development/changelog.md"
@@ -47,10 +49,13 @@ jobs:
           uv run --frozen ruff check \
             src/finagent/data/us_universe_candidates.py \
             scripts/select_us_i0_universe_candidates.py \
+            scripts/select_us_i0_mapped_candidates.py \
             tests/test_us_i0_universe_candidates.py
           uv run --frozen mypy --strict \
             src/finagent/data/us_universe_candidates.py \
-            scripts/select_us_i0_universe_candidates.py
+            scripts/select_us_i0_universe_candidates.py \
+            scripts/select_us_i0_mapped_candidates.py
           uv run --frozen python -m py_compile \
             src/finagent/data/us_universe_candidates.py \
-            scripts/select_us_i0_universe_candidates.py
+            scripts/select_us_i0_universe_candidates.py \
+            scripts/select_us_i0_mapped_candidates.py

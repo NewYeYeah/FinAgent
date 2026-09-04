@@ -87,6 +87,34 @@ def _raw_time_msc(row: Mapping[str, object], field_name: str) -> int:
     return seconds * 1000
 
 
+def _required_broker_seed_symbols(
+    candidate_document: Mapping[str, object],
+    research_seed_symbols: tuple[str, ...],
+) -> tuple[str, ...]:
+    raw_candidates = candidate_document.get("candidates")
+    if raw_candidates is None:
+        return research_seed_symbols
+    mapping_by_research: dict[str, str] = {}
+    for raw in _sequence(raw_candidates, "candidate.candidates"):
+        row = _mapping(raw, "candidate.candidates[]")
+        research = _text(
+            row.get("research_symbol"),
+            "candidate.candidates[].research_symbol",
+        )
+        broker = _text(
+            row.get("broker_symbol", research),
+            "candidate.candidates[].broker_symbol",
+        )
+        mapping_by_research[research] = broker
+    missing = [symbol for symbol in research_seed_symbols if symbol not in mapping_by_research]
+    if missing:
+        raise ValueError(
+            "candidate report is ready but required seed mappings are missing: "
+            + ",".join(missing)
+        )
+    return tuple(mapping_by_research[symbol] for symbol in research_seed_symbols)
+
+
 @dataclass(frozen=True, slots=True)
 class USCandidateQuoteProbePolicyV2:
     maximum_quote_age_seconds: int = 900
@@ -380,7 +408,7 @@ def build_candidate_quote_probe_report_v2(
         candidate_policy.get("minimum_selected_count"),
         "candidate.policy.minimum_selected_count",
     )
-    seeds = tuple(
+    research_seeds = tuple(
         sorted(
             dict.fromkeys(
                 _text(item, "candidate.policy.seed_symbols[]")
@@ -391,6 +419,7 @@ def build_candidate_quote_probe_report_v2(
             )
         )
     )
+    seeds = _required_broker_seed_symbols(candidate_document, research_seeds)
 
     probe_id = _text(mt5_probe_document.get("probe_id"), "mt5_probe.probe_id")
     terminal = _mapping(mt5_probe_document.get("terminal"), "mt5_probe.terminal")

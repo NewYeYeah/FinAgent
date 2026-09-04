@@ -91,8 +91,13 @@ def _rank_weights(feature_values: Mapping[str, float]) -> dict[str, float]:
 
 
 def _turnover(previous: Mapping[str, float], current: Mapping[str, float]) -> tuple[float, float]:
-    assets = set(previous).union(current)
-    gross_traded = sum(
+    # Evidence IDs include aggregate turnover diagnostics.  Iterating a set here
+    # made the final floating-point bits depend on PYTHONHASHSEED, which in turn
+    # made otherwise identical B0/A0 evidence non-reproducible across processes.
+    # Sort the asset denominator and use fsum so the reduction order is explicit
+    # and numerically stable.
+    assets = sorted(set(previous).union(current))
+    gross_traded = math.fsum(
         abs(current.get(asset, 0.0) - previous.get(asset, 0.0)) for asset in assets
     )
     return 0.5 * gross_traded, gross_traded
@@ -135,8 +140,10 @@ class USBaselineRunSpec:
             raise ValueError("minimum_cross_section must be >= 2")
         if self.minimum_evaluated_periods < 1 or self.minimum_ic_periods < 1:
             raise ValueError("minimum evaluated/IC periods must be >= 1")
-        if not self.fail_on_partial_realized_label:
-            raise ValueError("US-B0 v1 fails closed on partially missing realized labels")
+        # ``False`` is the bounded complete-case policy introduced after the first
+        # real B0 run exposed one isolated missing target minute.  It omits the
+        # entire formation cross-section; it never zero-fills, reweights, or uses
+        # an alternate price source.
 
     @property
     def spec_id(self) -> str:
@@ -225,7 +232,12 @@ class USBaselineCandidateEvidence:
     mean_gross_traded_weight: float | None
     feature_coverage: float
     blockers: tuple[str, ...]
+    partial_realized_label_omitted_periods: int = 0
     schema_version: str = "finagent.us-baseline-candidate-evidence.v1"
+
+    def __post_init__(self) -> None:
+        if self.partial_realized_label_omitted_periods < 0:
+            raise ValueError("partial_realized_label_omitted_periods must be >= 0")
 
     @property
     def valid(self) -> bool:
@@ -258,6 +270,10 @@ class USBaselineCandidateEvidence:
             "valid": self.valid,
             "blockers": list(self.blockers),
         }
+        if self.partial_realized_label_omitted_periods:
+            payload["partial_realized_label_omitted_periods"] = (
+                self.partial_realized_label_omitted_periods
+            )
         if include_id:
             payload["evidence_id"] = self.evidence_id
         return payload
@@ -356,6 +372,7 @@ def evaluate_us_baseline_candidate(
     turnovers: list[float] = []
     gross_traded_weights: list[float] = []
     boundary_periods = 0
+    partial_label_omitted_periods = 0
     previous_weights: dict[str, float] = {}
 
     for formation_at in sorted(groups):
@@ -381,7 +398,10 @@ def evaluate_us_baseline_candidate(
             boundary_periods += 1
             continue
         if missing_rows:
-            blockers.append(f"partial_realized_label_missing:{formation_at.isoformat()}")
+            if run_spec.fail_on_partial_realized_label:
+                blockers.append(f"partial_realized_label_missing:{formation_at.isoformat()}")
+            else:
+                partial_label_omitted_periods += 1
             continue
 
         weights = _rank_weights(formation)
@@ -427,6 +447,7 @@ def evaluate_us_baseline_candidate(
         mean_gross_traded_weight=_mean(gross_traded_weights),
         feature_coverage=coverage,
         blockers=tuple(dict.fromkeys(blockers)),
+        partial_realized_label_omitted_periods=partial_label_omitted_periods,
     )
 
 

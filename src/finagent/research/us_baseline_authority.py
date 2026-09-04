@@ -25,6 +25,7 @@ def bind_current_us_b0_run_spec(
     minimum_cross_section: int = 10,
     minimum_evaluated_periods: int = 20,
     minimum_ic_periods: int = 20,
+    fail_on_partial_realized_label: bool = True,
 ) -> tuple[USBaselineRunSpec, tuple[str, ...]]:
     """Bind US-B0 to the current accepted final-universe schema without widening authority.
 
@@ -58,6 +59,7 @@ def bind_current_us_b0_run_spec(
         minimum_cross_section=minimum_cross_section,
         minimum_evaluated_periods=minimum_evaluated_periods,
         minimum_ic_periods=minimum_ic_periods,
+        fail_on_partial_realized_label=fail_on_partial_realized_label,
     )
 
 
@@ -70,6 +72,7 @@ def bind_simulation_us_b0_run_spec(
     minimum_cross_section: int = 10,
     minimum_evaluated_periods: int = 20,
     minimum_ic_periods: int = 20,
+    fail_on_partial_realized_label: bool = True,
 ) -> tuple[USBaselineRunSpec, tuple[str, ...], tuple[str, ...]]:
     """Bind reviewed simulation-limited US-D3 evidence into the frozen US-B0 evaluator.
 
@@ -141,6 +144,7 @@ def bind_simulation_us_b0_run_spec(
         minimum_cross_section=minimum_cross_section,
         minimum_evaluated_periods=minimum_evaluated_periods,
         minimum_ic_periods=minimum_ic_periods,
+        fail_on_partial_realized_label=fail_on_partial_realized_label,
     )
     if bound_selected != selected:
         raise ValueError("US-B0 compatibility binder changed simulation universe ordering")

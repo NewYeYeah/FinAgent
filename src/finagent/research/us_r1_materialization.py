@@ -6,15 +6,17 @@ import math
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
 
 from finagent.data.minute_store import MinuteMaterialization, MinuteQueryPlan
 from finagent.data.minute_transform import LabelQueryPlan, LabelSeriesEvidence, ResamplingEvidence
 from finagent.domain.market_bars import BarInterval
+from finagent.research.us_agent_value_protocol import USAgentValueCandidateSpec
 from finagent.research.us_baselines import (
     USBaselineBar,
+    USBaselineFeatureSpec,
     USBaselineProtocol,
     evaluate_us_baseline_feature,
 )
@@ -47,7 +49,7 @@ def _aware(value: object, field_name: str) -> datetime:
     parsed = value if isinstance(value, datetime) else datetime.fromisoformat(_text(value, field_name))
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise ValueError(f"{field_name} must be timezone-aware")
-    return parsed
+    return parsed.astimezone(UTC)
 
 
 def _float(value: object, field_name: str) -> float:
@@ -73,7 +75,7 @@ class USR1ObservationRole(StrEnum):
 @dataclass(frozen=True, slots=True)
 class USR1FeatureFormationPolicy:
     research_protocol_id: str
-    window_semantics: str = "same_structural_window_bars_at_each_frequency"
+    window_semantics: str = "elapsed_time_equivalent_endpoint_span_ceil"
     supported_intervals: tuple[BarInterval, ...] = (
         BarInterval.MINUTE_5,
         BarInterval.MINUTE_15,
@@ -81,14 +83,14 @@ class USR1FeatureFormationPolicy:
     )
     same_session_only: bool = True
     require_complete_bars: bool = True
-    schema_version: str = "finagent.us-r1-feature-formation-policy.v1"
+    schema_version: str = "finagent.us-r1-feature-formation-policy.v2"
 
     def __post_init__(self) -> None:
         protocol = canonical_us_r1_research_protocol()
         if self.research_protocol_id != protocol.protocol_id:
             raise ValueError("US-R1 formation policy/research protocol identity mismatch")
-        if self.window_semantics != "same_structural_window_bars_at_each_frequency":
-            raise ValueError("US-R1 v1 frequency robustness preserves structural bar counts")
+        if self.window_semantics != "elapsed_time_equivalent_endpoint_span_ceil":
+            raise ValueError("US-R1 formation must preserve approximate elapsed endpoint span")
         if self.supported_intervals != (
             BarInterval.MINUTE_5,
             BarInterval.MINUTE_15,
@@ -107,10 +109,12 @@ class USR1FeatureFormationPolicy:
             "schema_version": self.schema_version,
             "research_protocol_id": self.research_protocol_id,
             "window_semantics": self.window_semantics,
+            "base_interval": BarInterval.MINUTE_15.value,
+            "window_conversion": "1+ceil((base_window_bars-1)*15/target_interval_minutes)",
             "supported_intervals": [item.value for item in self.supported_intervals],
             "same_session_only": self.same_session_only,
             "require_complete_bars": self.require_complete_bars,
-            "reuse_boundary": "existing_us_b0_a0_structural_feature_evaluator",
+            "reuse_boundary": "existing_us_b0_a0_evaluator_with_frequency_bound_feature_spec",
             "status_authority": False,
             "alpha_authority": False,
         }
@@ -122,6 +126,48 @@ class USR1FeatureFormationPolicy:
 def canonical_us_r1_feature_formation_policy() -> USR1FeatureFormationPolicy:
     return USR1FeatureFormationPolicy(
         research_protocol_id=canonical_us_r1_research_protocol().protocol_id
+    )
+
+
+def effective_us_r1_window_bars(
+    candidate: USAgentValueCandidateSpec,
+    signal_interval: BarInterval,
+) -> int:
+    """Convert the A0 15m endpoint span to a deterministic R1 frequency window."""
+
+    interval_minutes = {
+        BarInterval.MINUTE_5: 5,
+        BarInterval.MINUTE_15: 15,
+        BarInterval.MINUTE_30: 30,
+    }.get(signal_interval)
+    if interval_minutes is None:
+        raise ValueError("US-R1 feature interval must be 5m/15m/30m")
+    if candidate.window_bars == 1:
+        return 1
+    return 1 + math.ceil((candidate.window_bars - 1) * 15 / interval_minutes)
+
+
+def compile_us_r1_feature_spec(
+    candidate: USAgentValueCandidateSpec,
+    signal_interval: BarInterval,
+) -> USBaselineFeatureSpec:
+    """Compile one structural candidate under the frozen frequency conversion."""
+
+    base = candidate.compile_feature_spec()
+    effective_window = effective_us_r1_window_bars(candidate, signal_interval)
+    if signal_interval is BarInterval.MINUTE_15:
+        return base
+    return USBaselineFeatureSpec(
+        feature_id=f"{base.feature_id}__r1_{signal_interval.value}_{effective_window}bars",
+        kind=base.kind,
+        window_bars=effective_window,
+        input_fields=base.input_fields,
+        hypothesis=base.hypothesis,
+        description=(
+            f"{base.description} R1 converts the 15m endpoint span to "
+            f"{effective_window} completed {signal_interval.value} bars."
+        ),
+        protocol_id=base.protocol_id,
     )
 
 
@@ -397,12 +443,16 @@ class USR1CandidateObservation:
             "label_horizon_trading_minutes": self.label_horizon_trading_minutes,
             "asset": self.asset,
             "session_id": self.session_id,
-            "event_time": self.event_time.isoformat(),
-            "feature_available_at": self.feature_available_at.isoformat(),
+            "event_time": self.event_time.astimezone(UTC).isoformat(),
+            "feature_available_at": self.feature_available_at.astimezone(UTC).isoformat(),
             "feature_value": self.feature_value,
             "feature_unavailable_reason": self.feature_unavailable_reason,
             "realized_label": self.realized_label,
-            "label_available_at": self.label_available_at.isoformat() if self.label_available_at else None,
+            "label_available_at": (
+                self.label_available_at.astimezone(UTC).isoformat()
+                if self.label_available_at
+                else None
+            ),
             "label_unavailable_reason": self.label_unavailable_reason,
         }
 
@@ -525,7 +575,7 @@ def materialize_us_r1_candidate_observations(
 
         for provenance in denominator.candidates:
             candidate = provenance.candidate
-            spec = candidate.compile_feature_spec()
+            spec = compile_us_r1_feature_spec(candidate, signal_interval)
             feature = evaluate_us_baseline_feature(
                 spec,
                 tuple(history),

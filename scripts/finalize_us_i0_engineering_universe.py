@@ -55,11 +55,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Maximum tolerated normalized quote timestamp lead over UTC finalization time.",
     )
     parser.add_argument(
+        "--attest-selected-mappings",
         "--attest-selected-exact-matches",
+        dest="attest_selected_mappings",
         action="store_true",
         help=(
-            "Explicitly attest that every policy-selected exact RESEARCH=BROKER symbol "
-            "represents the same security for bounded engineering integration only."
+            "Explicitly attest that every policy-selected RESEARCH=BROKER mapping "
+            "represents the same security for bounded engineering integration only. "
+            "The exact-match spelling is retained as a backward-compatible alias."
         ),
     )
     parser.add_argument(
@@ -85,7 +88,7 @@ def main() -> int:
         _read_mapping(args.quote_probe),
         _read_mapping(args.mt5_inventory_probe),
         policy=policy,
-        operator_attested=args.attest_selected_exact_matches,
+        operator_attested=args.attest_selected_mappings,
     )
     output = args.output.expanduser().resolve()
     output.parent.mkdir(parents=True, exist_ok=True)

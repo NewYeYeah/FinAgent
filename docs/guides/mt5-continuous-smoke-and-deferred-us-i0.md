@@ -229,7 +229,7 @@ Authoritative U.S. research sessions remain governed by the accepted XNYS calend
 
 ## 5. Lane B operator flow and Market Watch boundary
 
-FinAgent does not call `symbol_select()` in the governed US-I0 path. The intended U.S. candidates must be manually exposed in MT5 Market Watch before active-session evidence collection.
+FinAgent does not call `symbol_select()` in the governed US-I0 path. Before active-session evidence collection, the intended U.S. candidates must be exposed in MT5 Market Watch either manually or through the separate add-only, allowlisted `ensure_mt5_market_watch.py` operator utility.
 
 A `not_visible` raw issue cannot be reinterpreted as delayed. Only raw provenance compatible with the delayed-reference assessment may continue; unrelated raw failures remain fail-closed.
 

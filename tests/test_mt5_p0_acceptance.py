@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from finagent.brokers.mt5 import (
     MT5CapabilityProbeReport,
@@ -138,6 +138,36 @@ def test_inventory_only_report_fails_measurement_gate() -> None:
     assert "history:NVDA:m1_missing" in assessment.blockers
     assert "spread:NVDA:missing" in assessment.blockers
     assert "history:NVDA:tick_measurement_missing" not in assessment.blockers
+
+
+def test_m1_rows_outside_requested_window_fail_closed() -> None:
+    policy = MT5P0AcceptancePolicy(representative_symbols=("MSFT", "NVDA"))
+    invalid = _history("MSFT")
+    report = _report(
+        history=(
+            MT5HistoryCapability(
+                symbol="MSFT",
+                requested_bar_start=invalid.requested_bar_start,
+                requested_bar_end=invalid.requested_bar_end,
+                m1_bar_count=1,
+                m1_first_at=invalid.requested_bar_start + timedelta(days=30),
+                m1_last_at=invalid.requested_bar_start + timedelta(days=30),
+                requested_tick_start=invalid.requested_tick_start,
+                requested_tick_end=invalid.requested_tick_end,
+                tick_count=invalid.tick_count,
+                tick_first_at=invalid.tick_first_at,
+                tick_last_at=invalid.tick_last_at,
+                tick_window_m1_bar_count=invalid.tick_window_m1_bar_count,
+                tick_window_basis=invalid.tick_window_basis,
+            ),
+            _history("NVDA"),
+        )
+    )
+
+    assessment = assess_mt5_p0(report, policy)
+
+    assert assessment.accepted is False
+    assert "history:MSFT:m1_outside_requested_window" in assessment.blockers
 
 
 def test_zero_ticks_in_m1_anchored_window_is_capability_limitation() -> None:

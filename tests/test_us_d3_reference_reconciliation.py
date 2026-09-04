@@ -8,6 +8,7 @@ from finagent.data.us_minute.reconciliation import (
     ReferenceMinuteBar,
     reconcile_reference_symbol,
 )
+from scripts.reconcile_us_minute_mt5 import _select_reference_mappings
 
 
 def _bars(*, offset_minutes: int = 0, price_shift: float = 0.0, count: int = 120):
@@ -100,3 +101,29 @@ def test_low_overlap_fails_closed() -> None:
 
     assert not report.passed
     assert "symbol:MSFT:broker_rows_insufficient" in report.blockers
+
+
+def test_explicit_reference_selection_preserves_reviewed_order() -> None:
+    mappings = (("NVDA", "NVDA.NAS"), ("IWM", "IWM.NYS"), ("GLD", "GLD.NYS"))
+
+    selected = _select_reference_mappings(mappings, ("GLD", "IWM"), 2)
+
+    assert selected == (("GLD", "GLD.NYS"), ("IWM", "IWM.NYS"))
+
+
+def test_explicit_reference_selection_rejects_count_or_universe_drift() -> None:
+    mappings = (("IWM", "IWM.NYS"), ("GLD", "GLD.NYS"))
+
+    try:
+        _select_reference_mappings(mappings, ("IWM",), 2)
+    except ValueError as exc:
+        assert "count must equal" in str(exc)
+    else:
+        raise AssertionError("expected explicit reference-count mismatch")
+
+    try:
+        _select_reference_mappings(mappings, ("IWM", "EEM"), 2)
+    except ValueError as exc:
+        assert "absent from the accepted EngineeringUniverse" in str(exc)
+    else:
+        raise AssertionError("expected missing accepted reference mapping")

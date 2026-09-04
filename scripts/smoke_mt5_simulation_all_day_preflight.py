@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import argparse
-import importlib
 import json
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
+from finagent.brokers.mt5 import MetaTrader5ReadOnlyClient
 from finagent.brokers.mt5.clock import (
     MT5BrokerClockObservation,
     build_mt5_broker_clock_evidence,
@@ -17,18 +16,11 @@ from finagent.brokers.mt5.continuous_quote_smoke import (
     build_mt5_continuous_quote_smoke_report,
 )
 from finagent.brokers.mt5.simulation_all_day_preflight import (
-    CANONICAL_MT5_SIMULATION_ALL_DAY_PREFLIGHT_POLICY,
+    MT5SimulationAllDayPreflightPolicy,
     build_mt5_simulation_all_day_preflight_report,
 )
 
 DEFAULT_SYMBOLS = ("EURUSD", "GBPUSD", "USDJPY")
-
-
-def _module() -> Any:
-    try:
-        return importlib.import_module("MetaTrader5")
-    except ImportError as exc:
-        raise SystemExit("MetaTrader5 package is required for this local Windows preflight") from exc
 
 
 def _symbols(values: Sequence[str]) -> tuple[str, ...]:
@@ -50,6 +42,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--symbols", nargs="+", default=list(DEFAULT_SYMBOLS))
     parser.add_argument("--expected-package-version", default="5.0.6147")
     parser.add_argument(
+        "--expected-broker-server",
+        default="MetaQuotes-Demo",
+        help=(
+            "Exact broker server identity to bind into this preflight policy. "
+            "Evidence from another server is rejected instead of inherited."
+        ),
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=Path("reports/mt5/mt5_simulation_all_day_preflight.json"),
@@ -60,44 +60,37 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = build_parser().parse_args()
     symbols = _symbols(args.symbols)
-    policy = CANONICAL_MT5_SIMULATION_ALL_DAY_PREFLIGHT_POLICY
+    policy = MT5SimulationAllDayPreflightPolicy(
+        expected_broker_server=args.expected_broker_server,
+    )
     if symbols != policy.required_symbols:
         raise SystemExit(
             "all-day simulation preflight v1 requires exact symbols: "
             + ", ".join(policy.required_symbols)
         )
 
-    mt5 = _module()
-    observed_package = str(getattr(mt5, "__version__", "")).strip()
-    if observed_package != args.expected_package_version:
-        raise SystemExit(
-            "MetaTrader5 package version mismatch: "
-            f"observed={observed_package!r} expected={args.expected_package_version!r}"
-        )
-    if not mt5.initialize():
-        raise SystemExit(f"mt5.initialize() failed: {mt5.last_error()}")
+    client = MetaTrader5ReadOnlyClient(
+        expected_package_version=args.expected_package_version,
+    )
+    client.initialize()
 
     try:
-        account = mt5.account_info()
-        if account is None:
-            raise SystemExit(f"mt5.account_info() failed: {mt5.last_error()}")
-        broker_server = str(account.server).strip()
+        account = client.account_info()
+        broker_server = str(getattr(account, "server", "")).strip()
         if not broker_server:
             raise SystemExit("MT5 terminal server is empty")
 
         clock_observations: list[MT5BrokerClockObservation] = []
         for symbol in symbols:
-            tick = mt5.symbol_info_tick(symbol)
+            tick = client.symbol_info_tick(symbol)
             retrieved = datetime.now(UTC)
-            if tick is None:
-                continue
             clock_observations.append(
                 MT5BrokerClockObservation(
                     symbol=symbol,
-                    raw_broker_time_msc=int(tick.time_msc),
+                    raw_broker_time_msc=int(getattr(tick, "time_msc", 0)),
                     retrieved_at_utc=retrieved,
-                    bid=float(tick.bid),
-                    ask=float(tick.ask),
+                    bid=float(getattr(tick, "bid", 0.0)),
+                    ask=float(getattr(tick, "ask", 0.0)),
                 )
             )
         clock = build_mt5_broker_clock_evidence(
@@ -109,27 +102,22 @@ def main() -> int:
         tick_rows: dict[str, dict[str, object] | None] = {}
         retrieved_at: dict[str, datetime] = {}
         for symbol in symbols:
-            info = mt5.symbol_info(symbol)
-            if info is not None:
-                inventory_rows.append(
-                    {
-                        "name": symbol,
-                        "visible": bool(info.visible),
-                        "trade_mode": int(info.trade_mode),
-                    }
-                )
-            tick = mt5.symbol_info_tick(symbol)
-            retrieved_at[symbol] = datetime.now(UTC)
-            tick_rows[symbol] = (
-                None
-                if tick is None
-                else {
-                    "time": int(tick.time),
-                    "time_msc": int(tick.time_msc),
-                    "bid": float(tick.bid),
-                    "ask": float(tick.ask),
+            info = client.symbol_info(symbol)
+            inventory_rows.append(
+                {
+                    "name": symbol,
+                    "visible": bool(getattr(info, "visible", False)),
+                    "trade_mode": int(getattr(info, "trade_mode", 0)),
                 }
             )
+            tick = client.symbol_info_tick(symbol)
+            retrieved_at[symbol] = datetime.now(UTC)
+            tick_rows[symbol] = {
+                "time": int(getattr(tick, "time", 0)),
+                "time_msc": int(getattr(tick, "time_msc", 0)),
+                "bid": float(getattr(tick, "bid", 0.0)),
+                "ask": float(getattr(tick, "ask", 0.0)),
+            }
 
         continuous = build_mt5_continuous_quote_smoke_report(
             broker_server,
@@ -146,7 +134,7 @@ def main() -> int:
         )
         report = build_mt5_simulation_all_day_preflight_report(continuous, policy=policy)
     finally:
-        mt5.shutdown()
+        client.shutdown()
 
     output = args.output.expanduser().resolve()
     output.parent.mkdir(parents=True, exist_ok=True)

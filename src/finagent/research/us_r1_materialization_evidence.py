@@ -182,6 +182,12 @@ def validate_us_r1_input_rows(
         observed.add(asset)
         if _boolean(row.get("is_complete"), "row.is_complete"):
             complete.add(asset)
+        if not _boolean(row.get("label_row_present"), "row.label_row_present"):
+            # A missing label anchor legitimately leaves the downstream
+            # availability expression NULL.  The observation materializer
+            # records the precise technical blocker; do not mask it with a
+            # boolean type error at this earlier structural boundary.
+            continue
         if _boolean(row.get("label_available"), "row.label_available"):
             available_at = row.get("available_at")
             target_available_at = row.get("target_available_at")

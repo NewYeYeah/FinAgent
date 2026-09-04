@@ -235,6 +235,10 @@ def parse_us_baseline_evaluation_report(
                 candidate_document.get("blockers", ()),
                 f"evaluation.candidates[{index}].blockers",
             ),
+            partial_realized_label_omitted_periods=_integer(
+                candidate_document.get("partial_realized_label_omitted_periods", 0),
+                f"evaluation.candidates[{index}].partial_realized_label_omitted_periods",
+            ),
         )
         if candidate.run_spec_id != run_spec.spec_id:
             raise ValueError("candidate/run-spec identity mismatch")

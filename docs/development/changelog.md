@@ -2,6 +2,26 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-04 — US-R1 robust intraday Alpha Gate closure
+
+- executed the complete 37-candidate R1 denominator across three purged/embargoed folds and all six frozen slices per fold, with no materialization or final technical blocker;
+- replaced the initial same-bar-count frequency rule after its preserved `SYSTEM_FAILURE` showed that it changed economic lookback and made long-window 30m candidates structurally unevaluable; v2 preserves the A0 15m endpoint span via a deterministic elapsed-time conversion while retaining the candidate denominator, folds, minimum periods, thresholds and multiplicity rules;
+- admitted the known same-source EEM target-minute limitation through a bounded complete-case rule that omits the entire affected formation for every candidate, never fills a price or reweights only the remaining assets, and records the omission count in slice evidence;
+- fixed process-level evidence nondeterminism exposed by independent replay by canonically sorting turnover assets and using `math.fsum`; retained the non-replayable artifacts, added cross-hash-seed regression coverage and regenerated all downstream statistics from unchanged observations;
+- canonicalized all R1 observation clocks to UTC after streaming/batch parity exposed equal instants serialized with host-dependent offsets; retained the prior artifacts and regenerated the complete three-fold evidence while preserving the exact numeric family/assessment identity;
+- accepted review `us-r1-alpha-gate-review-eb56532850e3925100f43e43` and reviewed manifest `us-r1-reviewed-evidence-c01346b54fad55b0d181c0ed` with terminal `NO_ROBUST_FACTOR_FAMILY`, zero robust candidates and `alpha_gate_authority=true`;
+- closed R1 without granting Alpha, US-X0 progression, execution, order or live-capital authority; the deployment branch stops and any continuation requires a newly preregistered research iteration.
+
+## 2026-09-04 — Target-broker mapped candidate workflow implementation
+
+- implemented a content-addressed, explicit one-to-one `RESEARCH=BROKER` candidate policy/report so target brokers with `.NAS`/`.NYS` suffixes can reuse the admitted historical ranking gates without inferring or stripping symbols;
+- propagated mapped broker symbols through current-quote seed requirements and final EngineeringUniverse materialization while retaining the exact-match v1 candidate artifact and finalizer CLI alias for compatibility;
+- hardened MT5-P0 acceptance against out-of-window history responses and added explicit accepted-universe reconciliation references for brokers whose historical retention differs by instrument;
+- kept the mapped selector offline and mutation-free: Market Watch changes remain a separate add-only allowlisted operator action, and all quote, inventory and minute-reference evidence continues through the funded-account dual-lock read-only client;
+- accepted target-broker P0 probe `mt5-capability-probe-17e5cc9c62b808c259294eb4`, a 58-pair explicit mapping with 55 eligible names and a 40-name quote surface, then froze 25-name EngineeringUniverse `engineering-universe-259e3975a25856bef28442ff`;
+- accepted four-symbol MT5-D0 reconciliation `minute-reference-reconciliation-73e9897bcb5e43fd5ce0c53d` with 100% aligned overlap for IWM/GLD/XLE/EEM at the independently measured −180-minute historical offset;
+- certified US-D3 as `CERTIFIED_FOR_ENGINEERING_RESEARCH` under report `us-minute-research-cert-485aeeac152a32caa546fbb8` and advanced stage authority to US-B0 without granting PAPER, execution or live-capital authority.
+
 ## 2026-09-03 — Replay Experiment Orchestration / Streaming-vs-Batch Research Campaign v1 implementation closure
 
 - implemented an engineering-only `ReplayExperimentCampaign` over one bounded minute source with independent streaming (`DatabaseReplaySource -> AlgorithmRunner -> USBaselineStreamingAlgorithm`) and accepted US-D2 batch (`SessionResampledMinuteStore -> SameSessionLabelStore`) paths;

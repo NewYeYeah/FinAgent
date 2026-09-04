@@ -1,0 +1,190 @@
+name: real-live-data-workflow
+
+on:
+  pull_request:
+    paths:
+      - "src/finagent/brokers/mt5/client.py"
+      - "src/finagent/brokers/mt5/market_watch.py"
+      - "src/finagent/brokers/mt5/realtime_adapter.py"
+      - "src/finagent/realtime/mt5_source.py"
+      - "src/finagent/realtime/sources.py"
+      - "scripts/probe_mt5_realtime_events.py"
+      - "scripts/ensure_mt5_market_watch.py"
+      - "scripts/smoke_mt5_simulation_all_day_preflight.py"
+      - "scripts/smoke_mt5_continuous_quotes.py"
+      - "tests/test_mt5_broker_clock.py"
+      - "tests/test_mt5_market_watch.py"
+      - "tests/test_mt5_continuous_quote_smoke.py"
+      - "tests/test_mt5_p0_feed_regime.py"
+      - "tests/test_mt5_p0_readonly_probe.py"
+      - "tests/test_mt5_realtime_adapter.py"
+      - "tests/test_mt5_realtime_adapter_numpy_scalars.py"
+      - "tests/test_realtime_replay_projection.py"
+      - "tests/test_streaming_source_harness_v1.py"
+      - "tests/test_streaming_feature_strategy_v1.py"
+      - "tests/test_us_i0_delayed_reference.py"
+      - "tests/test_us_d3_simulation_admission.py"
+      - "docs/guides/real-live-data-workflow-reactivation.md"
+      - ".github/workflows/real-live-data-workflow.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-live-data-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused read-only realtime regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_mt5_broker_clock.py \
+            tests/test_mt5_market_watch.py \
+            tests/test_mt5_continuous_quote_smoke.py \
+            tests/test_mt5_p0_feed_regime.py \
+            tests/test_mt5_p0_readonly_probe.py \
+            tests/test_mt5_realtime_adapter.py \
+            tests/test_mt5_realtime_adapter_numpy_scalars.py \
+            tests/test_realtime_replay_projection.py \
+            tests/test_streaming_source_harness_v1.py \
+            tests/test_streaming_feature_strategy_v1.py \
+            tests/test_us_i0_delayed_reference.py \
+            tests/test_us_d3_simulation_admission.py
+      - name: Connected CLI contract smoke
+        run: |
+          uv run --frozen python scripts/probe_mt5_realtime_events.py --help >/dev/null
+          uv run --frozen python scripts/ensure_mt5_market_watch.py --help >/dev/null
+          uv run --frozen python scripts/smoke_mt5_simulation_all_day_preflight.py --help >/dev/null
+          uv run --frozen python scripts/smoke_mt5_continuous_quotes.py --help >/dev/null
+      - name: Read-only mutation-surface guard
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          paths = [
+              Path("src/finagent/brokers/mt5/client.py"),
+              Path("src/finagent/brokers/mt5/realtime_adapter.py"),
+              Path("src/finagent/realtime/mt5_source.py"),
+              Path("scripts/probe_mt5_realtime_events.py"),
+              Path("scripts/smoke_mt5_simulation_all_day_preflight.py"),
+              Path("scripts/smoke_mt5_continuous_quotes.py"),
+          ]
+          forbidden = (
+              "symbol_select(",
+              "order_check(",
+              "order_send(",
+              "order_calc_margin(",
+              "order_calc_profit(",
+              "market_book_add(",
+              "market_book_get(",
+              "market_book_release(",
+              "positions_get(",
+              "orders_get(",
+              "history_orders_get(",
+              "history_deals_get(",
+          )
+          for path in paths:
+              text = path.read_text(encoding="utf-8")
+              found = [item for item in forbidden if item in text]
+              if found:
+                  raise SystemExit(f"forbidden MT5 mutation/query surface in {path}: {found}")
+
+          market_watch_paths = [
+              Path("src/finagent/brokers/mt5/market_watch.py"),
+              Path("scripts/ensure_mt5_market_watch.py"),
+          ]
+          market_watch_forbidden = tuple(
+              item for item in forbidden if item != "symbol_select("
+          )
+          for path in market_watch_paths:
+              text = path.read_text(encoding="utf-8")
+              found = [item for item in market_watch_forbidden if item in text]
+              if found:
+                  raise SystemExit(
+                      f"trading/query surface leaked into Market Watch capability {path}: {found}"
+                  )
+          PY
+      - name: Authority-boundary guard
+        run: |
+          python - <<'PY'
+          import tomllib
+          from pathlib import Path
+
+          with Path("docs/status.toml").open("rb") as handle:
+              status = tomllib.load(handle)
+          us_d3 = status.get("stage", {}).get("us_d3", {})
+          # This workflow protects the completed live-data prerequisite.  It must
+          # remain valid after the project advances; exact per-stage authority is
+          # enforced by the formal B0/A0/R1 operators themselves.
+          stages_at_or_after_us_b0 = {
+              "US-B0",
+              "US-A0",
+              "US-R1",
+              "US-X0",
+              "US-X1",
+              "RT-R0",
+              "RT-R1",
+              "RT-R2",
+              "MT5-M1",
+              "MT5-E1",
+              "MT5-E2",
+          }
+          required = {
+              "current_stage_at_or_after_us_b0": (
+                  status.get("current_stage") in stages_at_or_after_us_b0
+              ),
+              "us_d3.status": us_d3.get("status") == "accepted",
+              "us_d3.outcome": (
+                  us_d3.get("certification_outcome")
+                  == "CERTIFIED_FOR_ENGINEERING_RESEARCH"
+              ),
+              "us_d3.exit_gate": us_d3.get("stage_exit_gate_passed") is True,
+          }
+          failed = [name for name, passed in required.items() if not passed]
+          if failed:
+              raise SystemExit(
+                  f"live-data stage authority is incomplete or inconsistent: {failed}"
+              )
+          PY
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/brokers/mt5/client.py \
+            src/finagent/brokers/mt5/market_watch.py \
+            src/finagent/brokers/mt5/realtime_adapter.py \
+            src/finagent/realtime/mt5_source.py \
+            src/finagent/realtime/sources.py \
+            scripts/probe_mt5_realtime_events.py \
+            scripts/ensure_mt5_market_watch.py \
+            scripts/smoke_mt5_simulation_all_day_preflight.py \
+            scripts/smoke_mt5_continuous_quotes.py
+          uv run --frozen mypy --strict \
+            src/finagent/brokers/mt5/client.py \
+            src/finagent/brokers/mt5/market_watch.py \
+            src/finagent/brokers/mt5/realtime_adapter.py \
+            src/finagent/realtime/mt5_source.py \
+            src/finagent/realtime/sources.py \
+            scripts/probe_mt5_realtime_events.py \
+            scripts/ensure_mt5_market_watch.py \
+            scripts/smoke_mt5_simulation_all_day_preflight.py \
+            scripts/smoke_mt5_continuous_quotes.py
+          uv run --frozen python -m py_compile \
+            src/finagent/brokers/mt5/client.py \
+            src/finagent/brokers/mt5/market_watch.py \
+            src/finagent/brokers/mt5/realtime_adapter.py \
+            src/finagent/realtime/mt5_source.py \
+            src/finagent/realtime/sources.py \
+            scripts/probe_mt5_realtime_events.py \
+            scripts/ensure_mt5_market_watch.py \
+            scripts/smoke_mt5_simulation_all_day_preflight.py \
+            scripts/smoke_mt5_continuous_quotes.py

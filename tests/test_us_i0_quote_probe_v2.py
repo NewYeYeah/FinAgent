@@ -213,3 +213,45 @@ def test_broker_clock_failure_blocks_all_quote_admission() -> None:
     assert not report.ready_for_finalization
     assert "quote_probe:broker_clock_evidence_failed" in report.blockers
     assert report.invalid_reason_counts["broker_clock_unavailable"] == 24
+
+
+def test_quote_probe_uses_mapped_broker_symbols_for_required_seeds() -> None:
+    candidate = _candidate()
+    mapped = {symbol: f"{symbol}.NAS" for symbol in _symbols()}
+    candidate["spread_probe_symbols"] = list(mapped.values())
+    candidate["candidates"] = [
+        {
+            "rank": rank,
+            "research_symbol": research,
+            "broker_symbol": broker,
+        }
+        for rank, (research, broker) in enumerate(mapped.items(), start=1)
+    ]
+    inventory = [
+        {"name": broker, "visible": True, "trade_mode": 4}
+        for broker in mapped.values()
+    ]
+    raw = NOW - timedelta(seconds=30) + timedelta(hours=3)
+    ticks = {
+        broker: {
+            "time_msc": int(raw.timestamp() * 1000),
+            "time": int(raw.timestamp()),
+            "bid": 100.0,
+            "ask": 100.1,
+        }
+        for broker in mapped.values()
+    }
+    retrieved = {broker: NOW for broker in mapped.values()}
+
+    report = build_candidate_quote_probe_report_v2(
+        candidate,
+        _probe(),
+        inventory,
+        ticks,
+        retrieved,
+        _clock(),
+        generated_at=NOW,
+    )
+
+    assert report.ready_for_finalization
+    assert report.required_seed_symbols == tuple(f"{symbol}.NAS" for symbol in sorted(SEEDS))

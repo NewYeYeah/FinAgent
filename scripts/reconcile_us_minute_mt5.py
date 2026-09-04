@@ -121,6 +121,38 @@ def _final_mappings(document: Mapping[str, object]) -> tuple[tuple[str, str], ..
     return tuple(pairs)
 
 
+def _select_reference_mappings(
+    mappings: tuple[tuple[str, str], ...],
+    requested_research_symbols: tuple[str, ...],
+    required_count: int,
+) -> tuple[tuple[str, str], ...]:
+    if required_count < 1:
+        raise ValueError("reference_symbol_count must be >= 1")
+    requested = tuple(
+        dict.fromkeys(symbol.strip() for symbol in requested_research_symbols if symbol.strip())
+    )
+    if not requested:
+        selected = mappings[:required_count]
+    else:
+        if len(requested) != required_count:
+            raise ValueError(
+                "explicit --reference-symbol count must equal --reference-symbol-count"
+            )
+        by_research = {research: (research, broker) for research, broker in mappings}
+        missing = [symbol for symbol in requested if symbol not in by_research]
+        if missing:
+            raise ValueError(
+                "reference symbols are absent from the accepted EngineeringUniverse: "
+                + ",".join(missing)
+            )
+        selected = tuple(by_research[symbol] for symbol in requested)
+    if len(selected) < required_count:
+        raise ValueError(
+            "final EngineeringUniverse has fewer mappings than required references"
+        )
+    return selected
+
+
 def _aware(value: str) -> datetime:
     parsed = datetime.fromisoformat(value.strip())
     if parsed.tzinfo is None or parsed.utcoffset() is None:
@@ -150,6 +182,15 @@ def build_parser() -> argparse.ArgumentParser:
         default=_aware("2026-03-09T20:00:00+00:00"),
     )
     parser.add_argument("--reference-symbol-count", type=int, default=4)
+    parser.add_argument(
+        "--reference-symbol",
+        action="append",
+        default=[],
+        help=(
+            "Accepted research symbol to use as a reconciliation reference; repeat exactly "
+            "--reference-symbol-count times. Defaults to the first accepted mappings."
+        ),
+    )
     parser.add_argument("--minimum-overlap-ratio", type=float, default=0.80)
     parser.add_argument("--maximum-abs-offset-minutes", type=int, default=360)
     parser.add_argument("--memory-limit", default="512MB")
@@ -183,12 +224,11 @@ def main() -> int:
     if not expected_server or not mt5_probe_id:
         raise ValueError("MT5-P0 probe is missing broker/probe identity")
 
-    mappings = _final_mappings(_read_mapping(args.engineering_universe))
-    mappings = mappings[: args.reference_symbol_count]
-    if len(mappings) < args.reference_symbol_count:
-        raise SystemExit(
-            "final EngineeringUniverse has fewer mappings than required references"
-        )
+    mappings = _select_reference_mappings(
+        _final_mappings(_read_mapping(args.engineering_universe)),
+        tuple(args.reference_symbol),
+        args.reference_symbol_count,
+    )
 
     policy = MinuteReferenceReconciliationPolicy(
         start=args.start,

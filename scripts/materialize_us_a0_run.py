@@ -27,7 +27,10 @@ from finagent.data.minute_transform import (
 from finagent.data.query import MarketDataField, MarketDataQuery, SessionPolicy
 from finagent.domain.labels import AvailabilityPolicy, ResearchPriceBasis
 from finagent.domain.market_bars import BarInterval
-from finagent.research.us_agent_value_authority import bind_authorized_us_a0_predecessor
+from finagent.research.us_agent_value_authority import (
+    bind_authorized_us_a0_predecessor,
+    require_us_a0_stage_authority,
+)
 from finagent.research.us_agent_value_evaluation import (
     USAgentValueFoldEvaluationReport,
     aggregate_us_a0_run_evaluation,
@@ -240,6 +243,7 @@ def main() -> int:
 
     predecessor_graph = _read_mapping(args.us_b0_evidence_graph.expanduser().resolve())
     predecessor = bind_authorized_us_a0_predecessor(status, predecessor_graph, protocol)
+    stage_authority = require_us_a0_stage_authority(status)
 
     certification = _read_mapping(args.certification.expanduser().resolve())
     universe = _read_mapping(args.engineering_universe.expanduser().resolve())
@@ -247,6 +251,7 @@ def main() -> int:
         certification,
         universe,
         denominator=canonical_us_baseline_denominator(),
+        fail_on_partial_realized_label=stage_authority.fail_on_partial_realized_label,
     )
     if source_us_b0_run_spec.spec_id != predecessor.us_b0_run_spec_id:
         raise SystemExit(

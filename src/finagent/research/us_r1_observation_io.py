@@ -12,6 +12,7 @@ from finagent.research.us_r1_materialization import (
     USR1CandidateObservation,
     USR1ObservationArtifact,
     USR1ObservationRole,
+    compile_us_r1_feature_spec,
 )
 from finagent.research.us_r1_protocol import USR1CandidateDenominator
 
@@ -124,7 +125,10 @@ def read_us_r1_observation_file(
     if len(lines) != artifact.row_count:
         raise ValueError("US-R1 observation file row count differs from artifact evidence")
     expected = {
-        provenance.candidate.candidate_id: provenance.candidate.compile_feature_spec().spec_id
+        provenance.candidate.candidate_id: compile_us_r1_feature_spec(
+            provenance.candidate,
+            artifact.signal_interval,
+        ).spec_id
         for provenance in denominator.candidates
     }
     rows: list[USR1CandidateObservation] = []

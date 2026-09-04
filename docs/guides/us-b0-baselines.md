@@ -83,7 +83,7 @@ expected same-session label-boundary periods
 explicit blockers
 ```
 
-A period where every formed asset has `target_crosses_session` is recognised as the expected same-session horizon boundary and is not zero-filled or charged fictitious close/reopen turnover. A partially missing realised target is fail-closed and retained as a blocker; it may not change the already-formed cross-section.
+A period where every formed asset has `target_crosses_session` is recognised as the expected same-session horizon boundary and is not zero-filled or charged fictitious close/reopen turnover. The evaluator remains fail-closed on a partially missing realised target by default. The reviewed 2026-09-04 B0 run uses the narrower complete-case amendment described below: when any already-formed asset lacks its realised label, the **entire formation cross-section** is omitted from every candidate. The implementation never deletes only the missing asset, changes the formed weights, or fills a price.
 
 The evaluation report always retains the complete eight-candidate denominator. Missing or invalid candidates cannot disappear merely because they have weak or unavailable evidence.
 
@@ -199,7 +199,7 @@ diagnostics.close_anchor_mismatch_count = 0
 candidate_count = 8
 ```
 
-A candidate with weak or negative RankIC is **not** repaired, dropped or redefined. Statistical weakness is a result. Evidence incompleteness, partial realised-label loss or insufficient evaluation/IC periods remains a blocker.
+A candidate with weak or negative RankIC is **not** repaired, dropped or redefined. Statistical weakness is a result. Evidence incompleteness or insufficient evaluation/IC periods remains a blocker. Partial realised-label loss is fail-closed under the default policy; an explicitly identified amended RunSpec may instead omit the whole affected formation cross-section and must report the omission count in every candidate's evidence.
 
 ## Split-bound aggregate and evidence graph
 
@@ -259,3 +259,78 @@ alpha_authority             = false
 The EngineeringUniverse is an integration universe, not a survivorship-unbiased market-wide research universe. Current spread evidence is not historical transaction-cost authority. No candidate winner may be promoted from US-B0 cost-free diagnostics alone.
 
 Only after the complete split-bound evidence is reviewed may `docs/status.toml` be advanced according to the stage-exit process and the resulting fixed MANUAL baseline be used to define the controlled US-A0 MANUAL / PROGRAMMATIC / AGENT experiment. The evidence graph itself never edits or supersedes project-stage authority.
+
+## 2026-09-04 formal closeout and complete-case amendment
+
+The first strict real B0 v1 execution was fully assembled and preserved as failed-closed evidence:
+
+```text
+fold 1                         passed, 8/8 candidates
+fold 2                         passed, 8/8 candidates
+fold 3                         failed closed, 0/8 valid candidates
+aggregate report               us-baseline-walk-forward-aggregate-34a65ec2e885711892c4519c
+evidence graph                 us-baseline-walk-forward-evidence-28472b6d52036f543f575245
+ready_for_us_a0_candidate      false
+closeout decision              BLOCKED_SOURCE_DATA_QUALITY
+```
+
+The single underlying defect is an absent EEM research-source 1m row at
+`2026-03-17T18:59:00Z`. It makes the forward target partially missing for the
+cross-section formed at `2026-03-18T02:00:00+08:00`; the same structural blocker is
+therefore retained for all eight frozen candidates.
+
+A read-only `MetaQuotes-Demo` diagnostic found 31 EEM M1 bars over the inclusive
+`2026-03-17T18:45:00Z` through `19:15:00Z` window. This confirms that an independent
+community reference has coverage near the gap, but it is not the certified research
+source and does not repair, overwrite or supplement the B0 input.
+
+The active community development feed was separately checked over all 40 selected
+symbols. All 40 satisfy the frozen delayed-reference policy, with observed quote delay
+between `900.161197` and `914.379197` seconds and median delay error
+`1.026197` seconds. That evidence has simulation-reference authority only; it has no
+live-market, executable-spread, order, stage-exit or Alpha authority.
+
+No higher-quality same-source snapshot is available. With explicit project authorization
+to make a documented data-quality concession, B0 therefore adopted one bounded change:
+
+```text
+policy                       omit_entire_formation_cross_section
+scope                        evaluation only; source files and universe unchanged
+affected event               one fold-3 formation period
+affected candidates          all eight, identically
+price fill                   none
+asset-specific deletion      none
+future-aware reweighting     none
+fold/threshold/formula change none
+```
+
+This changes the original principle that *every* partial realised label must block the
+run. The principle was too strict for an isolated ex-post label hole when source repair
+is unavailable: it discarded all three folds and every candidate even though the missing
+event can be removed symmetrically after the weights are formed. Whole-cross-section
+omission preserves equal information and equal sample support across all candidates and
+does not allow the missing asset's future outcome to alter weights. It is materially less
+biased than deleting EEM from the universe, zero-filling its return, renormalizing the
+remaining assets, or borrowing an independently sourced community/MT5 bar. Those
+alternatives remain prohibited. The strict behavior remains the API default; only the
+content-addressed amended RunSpec opts into this policy.
+
+All three folds were rerun under that new RunSpec, not relabelled in place. The strict
+evidence above remains immutable and traceable. The accepted amended result is:
+
+```text
+run spec                     us-baseline-run-spec-4ac2ae1d8cb95c01c8a99a11
+fold 1                       passed, 8/8 candidates
+fold 2                       passed, 8/8 candidates
+fold 3                       passed, 8/8 candidates; 1 whole-period omission each
+aggregate report             us-baseline-walk-forward-aggregate-88131e0eb8b205a78a559525
+evidence graph               us-baseline-walk-forward-evidence-1a541f4bf39b1abca833898b
+ready_for_us_a0_candidate    true
+closeout decision            ACCEPTED_WITH_COMPLETE_CASE_AMENDMENT
+```
+
+The fold boundaries, 25-asset EngineeringUniverse, eight denominator candidates,
+coverage/period thresholds, certified research source and walk-forward protocol identity
+are unchanged. The community feed remains a delayed diagnostic reference and contributes
+no values to B0. Project-stage authority was separately advanced in `docs/status.toml`;
+the evidence graph itself still has no authority to perform that transition.
