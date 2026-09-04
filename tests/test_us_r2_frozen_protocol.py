@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from itertools import pairwise
 
 import pytest
 
@@ -109,7 +110,7 @@ def test_freeze_binds_dynamic_cross_section_and_five_long_oos_folds() -> None:
     assert folds[0].evaluation_start.isoformat() == "2006-01-01"
     assert folds[-1].evaluation_start.isoformat() == "2022-01-01"
     assert folds[-1].evaluation_end.isoformat() == "2026-04-01"
-    assert all(left.evaluation_end <= right.evaluation_start for left, right in zip(folds, folds[1:]))
+    assert all(left.evaluation_end <= right.evaluation_start for left, right in pairwise(folds))
 
 
 def test_serialized_frozen_protocol_is_exactly_canonical() -> None:
