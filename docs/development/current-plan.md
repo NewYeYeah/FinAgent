@@ -714,6 +714,12 @@ SYSTEM_FAILURE
 ## Deployment Alpha Gate
 Only `ROBUST_FACTOR_FAMILY` with preregistered OOS/fold/stability/economic criteria permits strategy-specific CFD execution/Live-product work. `NO_ROBUST_FACTOR_FAMILY` is a valid research-platform result but stops the deployment branch; data/replay/reference infrastructure may continue independently.
 
+## US-R2 reviewed multi-regime replication
+
+After the short-window US-R1 negative terminal, US-R2 preserved the exact 37-candidate denominator and every R1 numeric Gate threshold while expanding evaluation to five non-overlapping historical folds and four ex-ante market regimes. The fixed current-symbol EngineeringUniverse remained explicitly survivorship conditioned; no PIT market-Alpha claim was permitted.
+
+US-R2 completed all 20 fold-regime cells per candidate, pooled HAC/bootstrap/Holm/BH inference and per-regime frequency/decay robustness. Its reviewed terminal is `NO_ROBUST_FACTOR_FAMILY`: 16 candidates passed the robustness sub-gate, but zero passed the complete Alpha Gate. This is a valid terminal with no technical blocker and does not reopen US-X0 or grant Alpha, execution, order, PAPER or live-capital authority. Any further Alpha work requires another preregistered research iteration.
+
 ---
 
 # 17. US-X0 — CFD Historical Execution Semantics

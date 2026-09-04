@@ -2,6 +2,15 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-05 — US-R2 denominator-preserving multi-regime Alpha Gate closure
+
+- completed the frozen 37-candidate denominator across five non-overlapping evaluation folds, four ex-ante IWM direction/volatility regimes and 21 annual partitions from 2006 through 2026 without candidate filtering, direction refit or new Agent candidates;
+- replaced the candidate-robustness runtime's annual DuckDB temp-table/four-slice `fetchall` path with a bounded ordered scan, one-slice-at-a-time reduction and at most one live feature matrix, retaining immutable 2006–2014 evidence and resuming through 2026 under a 512MB DuckDB limit;
+- added flushed year/slice/asset progress and structured failure records, then proved all 21 annual candidate-metric pairs replay with zero Parquet scans, zero feature evaluations and unchanged report `us-r2-candidate-robustness-9b8a0b575e20e31e6adc9ddf`;
+- observed 16 candidates passing the per-regime frequency/decay robustness sub-gate, while no candidate passed the complete inherited R1 Alpha Gate; all numeric thresholds remained unchanged and the full 37-candidate multiplicity denominator was preserved;
+- accepted independent review `us-r2-alpha-gate-review-36d4d07f8dd0b3dbf70656de` and reviewed manifest `us-r2-reviewed-evidence-b9c139214723c54e250d7ab6` with terminal `NO_ROBUST_FACTOR_FAMILY`, zero final robust candidates and no technical blockers;
+- closed US-R2 without Alpha, US-X0 progression, execution, order, PAPER or live-capital authority; the current-symbol universe remains survivorship conditioned and no PIT market-Alpha claim is made.
+
 ## 2026-09-04 — US-R1 robust intraday Alpha Gate closure
 
 - executed the complete 37-candidate R1 denominator across three purged/embargoed folds and all six frozen slices per fold, with no materialization or final technical blocker;

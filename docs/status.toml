@@ -4,7 +4,7 @@ planning_document = "docs/development/current-plan.md"
 
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
-current_stage = "US-R1"
+current_stage = "US-R2"
 current_stage_status = "accepted_no_robust_factor_family_terminal"
 next_stage = "research iteration"
 
@@ -654,6 +654,54 @@ execution_authority = false
 order_authority = false
 live_capital_authority = false
 supports_us_x0_progression = false
+stage_exit_gate_passed = true
+next_action = "preregister a new research iteration; do not progress to US-X0 without a later reviewed ROBUST_FACTOR_FAMILY terminal"
+
+[stage.us_r2]
+status = "accepted_no_robust_factor_family_terminal"
+started_at = "2026-09-04"
+accepted_at = "2026-09-05"
+corpus_id = "us-r2-regime-corpus-1d49ef091a1781941820a67f"
+frozen_protocol_id = "us-r2-frozen-protocol-13f55d77124730249454e769"
+candidate_denominator_id = "us-r1-denominator-be5184ac3883b0799c00c5dc"
+candidate_denominator_count = 37
+candidate_denominator_preserved = true
+performance_filter_applied = false
+new_agent_candidates_admitted = false
+walk_forward_fold_count = 5
+regime_count = 4
+required_fold_regime_cell_count_per_candidate = 20
+primary_statistics_report_id = "us-r2-primary-statistics-39329ed645222038a8e29fef"
+pooled_inference_report_id = "us-r2-pooled-inference-a0a2e40c2ec246fc607fab92"
+robustness_base_batch_evidence_id = "us-r2-robustness-base-batch-b02e589f1b334f8b9e2ef84e"
+candidate_robustness_plan_id = "us-r2-candidate-robustness-plan-df7b5644b73fd323f57cf64a"
+candidate_robustness_report_id = "us-r2-candidate-robustness-9b8a0b575e20e31e6adc9ddf"
+candidate_robustness_passed_count = 16
+candidate_robustness_annual_year_count = 21
+candidate_robustness_resumability_replay_passed = true
+candidate_robustness_resumability_replay_parquet_scan_count = 0
+candidate_robustness_resumability_replay_feature_evaluation_count = 0
+alpha_gate_policy_id = "us-r2-alpha-gate-policy-3262e85c0d8f562a0a1e3307"
+inherited_r1_alpha_gate_policy_id = "us-r1-alpha-gate-policy-92c02d52e0b6227daaf8da4c"
+alpha_gate_thresholds_relaxed = false
+final_family_evidence_id = "us-r2-final-family-evidence-3d8ad735f72f3a486acab09f"
+alpha_gate_assessment_id = "us-r2-alpha-gate-assessment-94bfdc03d36d0046fc4388ee"
+inference_graph_id = "us-r2-inference-graph-fc13566069fdb5cedd8b6675"
+alpha_gate_review_id = "us-r2-alpha-gate-review-36d4d07f8dd0b3dbf70656de"
+alpha_gate_reviewed_at = "2026-09-05T01:36:23.712735+08:00"
+reviewed_evidence_manifest_id = "us-r2-reviewed-evidence-b9c139214723c54e250d7ab6"
+terminal = "NO_ROBUST_FACTOR_FAMILY"
+technical_blocker_count = 0
+robust_candidate_count = 0
+alpha_gate_authority = true
+alpha_authority = false
+execution_authority = false
+order_authority = false
+paper_authority = false
+live_capital_authority = false
+supports_us_x0_progression = false
+point_in_time_security_master_available = false
+survivorship_safe_market_claim = false
 stage_exit_gate_passed = true
 next_action = "preregister a new research iteration; do not progress to US-X0 without a later reviewed ROBUST_FACTOR_FAMILY terminal"
 
