@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from finagent.research.us_a1_factor_graph import (
+    FactorComplexityBudget,
     FactorDenominatorPolicy,
     FactorGraphSpec,
     FactorInputField,
@@ -50,6 +51,23 @@ def _unavailable_division() -> FactorDenominatorPolicy:
     )
 
 
+def _budget_for_effective_window(window_bars: int) -> FactorComplexityBudget:
+    """Expand only the execution lookback budget required by an accepted scaled R1 window."""
+
+    default = FactorComplexityBudget()
+    required = max(default.max_window_bars, window_bars)
+    if required == default.max_window_bars:
+        return default
+    return FactorComplexityBudget(
+        max_nodes=default.max_nodes,
+        max_edges=default.max_edges,
+        max_depth=default.max_depth,
+        max_window_bars=required,
+        max_lookback_bars=max(default.max_lookback_bars, window_bars),
+        max_regime_gates=default.max_regime_gates,
+    )
+
+
 def legacy_a0_factor_graph_with_window(
     candidate: USAgentValueCandidateSpec,
     *,
@@ -57,9 +75,14 @@ def legacy_a0_factor_graph_with_window(
 ) -> FactorGraphSpec:
     """Build the legacy A0 numeric graph with an explicit effective window.
 
-    The external R1/A0 candidate identity is deliberately not changed here.  This helper exists
+    The external R1/A0 candidate identity is deliberately not changed here. This helper exists
     for preregistered frequency robustness, where the accepted R1 elapsed-time conversion changes
     the bar count at 5m/30m while preserving the same structural candidate and hypothesis.
+
+    A1-0's default complexity budget was frozen for the original 15m grammar (maximum 13 bars).
+    R1's already accepted elapsed-time conversion can require up to 37 bars at 5m. The graph-local
+    budget therefore expands only to the requested frozen effective window; node/edge/depth/regime
+    budgets and all numeric semantics remain unchanged.
     """
 
     if window_bars < 1:
@@ -196,7 +219,11 @@ def legacy_a0_factor_graph_with_window(
     else:
         raise ValueError(f"unsupported legacy US-A0 candidate kind: {kind.value}")
 
-    return FactorGraphSpec(nodes=nodes, output_node_id=output)
+    return FactorGraphSpec(
+        nodes=nodes,
+        output_node_id=output,
+        budget=_budget_for_effective_window(window),
+    )
 
 
 def legacy_a0_candidate_factor_graph(
