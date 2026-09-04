@@ -8,6 +8,7 @@ on:
       - "src/finagent/research/us_r2_candidate_robustness.py"
       - "scripts/evaluate_us_r2_candidate_robustness.py"
       - "tests/test_us_r2_candidate_robustness.py"
+      - "tests/test_us_r2_candidate_robustness_budget.py"
       - "docs/guides/us-r2-candidate-robustness.md"
       - ".github/workflows/us-r2-candidate-robustness.yml"
   workflow_dispatch:
@@ -31,7 +32,9 @@ jobs:
       - name: Reproduce locked development environment
         run: uv sync --frozen --extra dev
       - name: Exact scaled-window and robustness evidence regression
-        run: uv run --frozen pytest -q tests/test_us_r2_candidate_robustness.py
+        run: |
+          uv run --frozen pytest -q tests/test_us_r2_candidate_robustness.py
+          uv run --frozen pytest -q tests/test_us_r2_candidate_robustness_budget.py
       - name: Existing A1 legacy graph regression
         run: uv run --frozen pytest -q tests/test_us_a1_factor_materialization.py tests/test_us_a1_factor_graph.py
       - name: Existing R1 materialization regression
@@ -48,7 +51,8 @@ jobs:
             src/finagent/research/us_a1_legacy_graphs.py \
             src/finagent/research/us_r2_candidate_robustness.py \
             scripts/evaluate_us_r2_candidate_robustness.py \
-            tests/test_us_r2_candidate_robustness.py
+            tests/test_us_r2_candidate_robustness.py \
+            tests/test_us_r2_candidate_robustness_budget.py
           uv run --frozen mypy --strict \
             src/finagent/research/us_a1_legacy_graphs.py \
             src/finagent/research/us_r2_candidate_robustness.py \
