@@ -291,7 +291,7 @@ def test_robustness_policy_is_exact_r1_frequency_and_decay_set() -> None:
     ) == r1.robustness_intervals
     assert tuple(
         item.label_horizon_trading_minutes for item in slices if item.kind == "decay"
-    ) == r1.decay_horizons_trading_minutes
+    ) == r1.decay_horizon_trading_minutes
 
     policy = canonical_us_r2_robustness_materialization_policy()
     payload = policy.to_dict()
