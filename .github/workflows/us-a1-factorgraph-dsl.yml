@@ -1,0 +1,51 @@
+name: us-a1-factorgraph-dsl
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/research/us_a1_*.py"
+      - "tests/test_us_a1_factor_graph.py"
+      - "docs/guides/us-a1-factorgraph-dsl.md"
+      - ".github/workflows/us-a1-factorgraph-dsl.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    name: US-A1 FactorGraph DSL contracts
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Focused regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_us_a1_factor_graph.py \
+            tests/test_us_a0_protocol.py \
+            tests/test_us_a0_generation.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/research/us_a1_factor_graph.py \
+            src/finagent/research/us_a1_factor_validation.py \
+            src/finagent/research/us_a1_legacy_graphs.py \
+            tests/test_us_a1_factor_graph.py
+          uv run --frozen mypy --strict \
+            src/finagent/research/us_a1_factor_graph.py \
+            src/finagent/research/us_a1_factor_validation.py \
+            src/finagent/research/us_a1_legacy_graphs.py
+          uv run --frozen python -m py_compile \
+            src/finagent/research/us_a1_factor_graph.py \
+            src/finagent/research/us_a1_factor_validation.py \
+            src/finagent/research/us_a1_legacy_graphs.py
