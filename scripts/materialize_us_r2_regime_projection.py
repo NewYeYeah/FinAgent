@@ -22,6 +22,7 @@ from finagent.data.minute_transform import (
 from finagent.data.query import MarketDataField, MarketDataQuery, SessionPolicy
 from finagent.domain.labels import AvailabilityPolicy, ResearchPriceBasis
 from finagent.domain.market_bars import BarInterval
+from finagent.domain.trading_calendar import TradingCalendarEvidence
 from finagent.research.us_r2_frozen_protocol import (
     FROZEN_CALENDAR_ID,
     FROZEN_CLEANING_ID,
@@ -74,7 +75,7 @@ def _write_json(path: Path, document: Mapping[str, object] | dict[str, object]) 
     )
 
 
-def _source_query(calendar) -> MarketDataQuery:
+def _source_query(calendar: TradingCalendarEvidence) -> MarketDataQuery:
     sessions = tuple(
         item
         for item in calendar.sessions
