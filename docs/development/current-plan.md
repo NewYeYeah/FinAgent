@@ -1,6 +1,6 @@
 # FinAgent Current Development Plan
 
-Planning revision: **4.1**  
+Planning revision: **4.2**
 Stable path: `docs/development/current-plan.md`  
 Stage authority: `docs/status.toml`  
 Scope: **Historical v1.0 closure → U.S. minute research → Agent incremental-value validation → CFD historical execution → provider-neutral realtime → MT5 demo/PAPER → separately governed live-capital acceptance**
@@ -39,6 +39,10 @@ US-B0 deterministic non-Agent baselines
 US-A0 Agent incremental-value experiment
   ↓
 US-R1 robust intraday research + Alpha Gate
+  ↓
+US-R2 denominator-preserving multi-regime replication
+  ↓
+US-R3 preregistered Agent/Alpha research iteration
   ↓
        robust Alpha?
       /             \
@@ -719,6 +723,23 @@ Only `ROBUST_FACTOR_FAMILY` with preregistered OOS/fold/stability/economic crite
 After the short-window US-R1 negative terminal, US-R2 preserved the exact 37-candidate denominator and every R1 numeric Gate threshold while expanding evaluation to five non-overlapping historical folds and four ex-ante market regimes. The fixed current-symbol EngineeringUniverse remained explicitly survivorship conditioned; no PIT market-Alpha claim was permitted.
 
 US-R2 completed all 20 fold-regime cells per candidate, pooled HAC/bootstrap/Holm/BH inference and per-regime frequency/decay robustness. Its reviewed terminal is `NO_ROBUST_FACTOR_FAMILY`: 16 candidates passed the robustness sub-gate, but zero passed the complete Alpha Gate. This is a valid terminal with no technical blocker and does not reopen US-X0 or grant Alpha, execution, order, PAPER or live-capital authority. Any further Alpha work requires another preregistered research iteration.
+
+## US-R3 preregistered Agent/Alpha research iteration
+
+US-R3 is that new research iteration. It expands the research language and proposal boundary without reopening the R2 denominator or changing any R1/R2 threshold, statistic or reviewed terminal.
+
+The first increment freezes four constraints before any financial evaluation:
+
+- Agent output is a typed `FactorGraphSpec` plus structured hypothesis and falsification criteria; arbitrary code, labels, candidate performance, holdout evidence, broker state and provider tools are unavailable to the Agent;
+- MANUAL, PROGRAMMATIC and AGENT arms receive the same 24 candidate slots per run, with at least three programmatic seeds and three independent Agent runs;
+- cross-sectional rank, population z-score, Type-7 winsorization and reviewed regime masks have one deterministic, bounded multi-asset materialization implementation;
+- the current 2006–2026 R2 corpus is development/exploratory evidence only for new candidates. A new Alpha Gate requires post-R2 observations or another independently sealed evidence source.
+
+The first data-blind catalog contains three executable same-session OHLCV hypotheses—volatility-scaled momentum, volume-conditioned liquidity reversal and volume-confirmed range-location continuation—and three deferred hypotheses whose required semantics are absent: session-anchor market momentum, day/night decomposition and order-flow-conditioned reversal. A deferred hypothesis must gain its own typed data/operator contract before evaluation; OHLCV proxies may not silently impersonate order flow or cross-session information.
+
+US-R3-0 exits when the contracts, deterministic panel materializer, data-blind bundle, focused tests and CI are accepted. US-R3-1 may then connect a model adapter that receives only the policy-approved proposal context and returns the same envelope. No MT5 connection is required or admitted. The Agent receives no evaluation feedback within a generation run, and all denominator/gate changes require a new preregistration before results are inspected.
+
+US-R3 does not itself grant Alpha, execution, order, PAPER, US-X0 progression or live-capital authority. The detailed implementation and evidence boundary is recorded in `docs/guides/us-r3-agent-alpha-expansion.md`.
 
 ---
 

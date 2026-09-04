@@ -2,6 +2,15 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-05 — US-R3 data-blind Agent/Alpha preregistration contracts
+
+- opened a new research iteration after the reviewed US-R2 negative terminal without changing the frozen 37-candidate denominator, thresholds, statistics or historical conclusion;
+- bounded Agent authority to typed FactorGraph, hypothesis and falsification proposals plus deterministic validation, explicitly denying arbitrary code, labels, evaluation feedback, provider/MT5 tools, candidate selection, execution, orders and live capital;
+- implemented a bounded aligned-panel materializer with deterministic average-percentile ranks, population z-scores, Type-7 winsorization and exact regime-policy binding while preserving the original single-asset compiler identities;
+- preregistered equal 24-slot MANUAL / PROGRAMMATIC / AGENT budgets and a six-strategy frontier catalog: three executable OHLCV candidates and three explicitly deferred candidates requiring missing session-anchor, cross-session or order-flow semantics;
+- froze bundle `us-r3-research-bundle-dbfa49573ce477e71ca8d85b` without reading financial data, calling an external model, accessing MT5 or evaluating performance;
+- classified all reuse of the 2006–2026 R2 corpus as development/exploratory only; an independent Alpha Gate requires new post-R2 observations or another sealed independent source and remains unevaluated.
+
 ## 2026-09-05 — US-R2 denominator-preserving multi-regime Alpha Gate closure
 
 - completed the frozen 37-candidate denominator across five non-overlapping evaluation folds, four ex-ante IWM direction/volatility regimes and 21 annual partitions from 2006 through 2026 without candidate filtering, direction refit or new Agent candidates;
