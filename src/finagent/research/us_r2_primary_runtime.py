@@ -4,10 +4,12 @@ from collections.abc import Mapping
 
 import numpy as np
 
-from finagent.research.us_r2_candidate_cache import USR2AnnualCandidateCacheEvidence
+from finagent.research.us_r2_candidate_cache import (
+    FROZEN_CANDIDATE_COUNT,
+    USR2AnnualCandidateCacheEvidence,
+)
 from finagent.research.us_r2_primary_statistics import (
     _METRIC_STATUS_NAMES,
-    FROZEN_CANDIDATE_COUNT,
     METRIC_AVAILABLE,
     USR2AnnualPrimaryMetricArrays,
     USR2AnnualPrimaryMetricEvidence,
@@ -82,7 +84,7 @@ def parse_us_r2_primary_direction_evidence(
                 item.get("insufficient_cross_section_period_count"),
                 "insufficient_cross_section_period_count",
             ),
-            mean_raw_rank_ic=(None if mean_raw is None else float(mean_raw)),
+            mean_raw_rank_ic=(None if mean_raw is None else float(str(mean_raw))),
             direction=(None if direction_raw is None else _integer(direction_raw, "direction")),
             blockers=tuple(
                 _text(value, "blockers[]")
