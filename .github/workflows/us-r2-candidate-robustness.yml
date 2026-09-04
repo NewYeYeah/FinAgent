@@ -1,0 +1,59 @@
+name: us-r2-candidate-robustness
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/research/us_a1_legacy_graphs.py"
+      - "src/finagent/research/us_r2_candidate_robustness.py"
+      - "scripts/evaluate_us_r2_candidate_robustness.py"
+      - "tests/test_us_r2_candidate_robustness.py"
+      - "docs/guides/us-r2-candidate-robustness.md"
+      - ".github/workflows/us-r2-candidate-robustness.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  candidate-robustness:
+    name: US-R2 full-denominator frequency/decay robustness
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Exact scaled-window and robustness evidence regression
+        run: uv run --frozen pytest -q tests/test_us_r2_candidate_robustness.py
+      - name: Existing A1 legacy graph regression
+        run: uv run --frozen pytest -q tests/test_us_a1_factor_materialization.py tests/test_us_a1_factor_graph.py
+      - name: Existing R1 materialization regression
+        run: uv run --frozen pytest -q tests/test_us_r1_walkforward_materialization.py
+      - name: Exact robustness-base predecessor regression
+        run: uv run --frozen pytest -q tests/test_us_r2_robustness_base.py
+      - name: Primary and pooled predecessor regression
+        run: |
+          uv run --frozen pytest -q tests/test_us_r2_primary_statistics.py
+          uv run --frozen pytest -q tests/test_us_r2_pooled_inference.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/research/us_a1_legacy_graphs.py \
+            src/finagent/research/us_r2_candidate_robustness.py \
+            scripts/evaluate_us_r2_candidate_robustness.py \
+            tests/test_us_r2_candidate_robustness.py
+          uv run --frozen mypy --strict \
+            src/finagent/research/us_a1_legacy_graphs.py \
+            src/finagent/research/us_r2_candidate_robustness.py \
+            scripts/evaluate_us_r2_candidate_robustness.py
+          uv run --frozen python -m py_compile \
+            src/finagent/research/us_a1_legacy_graphs.py \
+            src/finagent/research/us_r2_candidate_robustness.py \
+            scripts/evaluate_us_r2_candidate_robustness.py
