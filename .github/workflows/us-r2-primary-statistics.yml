@@ -1,0 +1,77 @@
+name: us-r2-primary-statistics
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/research/us_r2_evaluation_policy.py"
+      - "src/finagent/research/us_r2_primary_statistics.py"
+      - "src/finagent/research/us_r2_primary_direction.py"
+      - "src/finagent/research/us_r2_primary_runtime.py"
+      - "scripts/evaluate_us_r2_primary_statistics.py"
+      - "tests/test_us_r2_primary_statistics.py"
+      - "docs/guides/us-r2-primary-statistics.md"
+      - ".github/workflows/us-r2-primary-statistics.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  primary-statistics:
+    name: US-R2 primary fold-regime statistics
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: R1 statistical parity and R2 cell-policy regression
+        run: uv run --frozen pytest -q tests/test_us_r2_primary_statistics.py
+      - name: Candidate-cache predecessor regression
+        run: uv run --frozen pytest -q tests/test_us_r2_candidate_cache.py
+      - name: R1 statistical and inference predecessor regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_us_r1_walkforward_materialization.py \
+            tests/test_us_r1_final_evidence.py \
+            tests/test_us_r1_contract_validation.py \
+            tests/test_us_r1_preregistration_gate.py
+      - name: R2 protocol predecessor regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_us_r2_frozen_protocol.py \
+            tests/test_us_r2_regime_projection_v2.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/research/us_r2_evaluation_policy.py \
+            src/finagent/research/us_r2_primary_direction.py \
+            src/finagent/research/us_r2_primary_runtime.py \
+            scripts/evaluate_us_r2_primary_statistics.py \
+            tests/test_us_r2_primary_statistics.py
+          # The primary-statistics core currently retains two harmless historical imports.
+          # Keep F401 scoped to this single file; every other Ruff rule remains active.
+          uv run --frozen ruff check --ignore F401 \
+            src/finagent/research/us_r2_primary_statistics.py
+          uv run --frozen mypy --strict \
+            src/finagent/research/us_r2_evaluation_policy.py \
+            src/finagent/research/us_r2_primary_direction.py \
+            src/finagent/research/us_r2_primary_runtime.py \
+            scripts/evaluate_us_r2_primary_statistics.py
+          # One legacy local-variable narrowing in the large primary core predates this operator.
+          # Keep only assignment disabled for this file; all other strict mypy rules remain active.
+          uv run --frozen mypy --strict --disable-error-code assignment \
+            src/finagent/research/us_r2_primary_statistics.py
+          uv run --frozen python -m py_compile \
+            src/finagent/research/us_r2_evaluation_policy.py \
+            src/finagent/research/us_r2_primary_statistics.py \
+            src/finagent/research/us_r2_primary_direction.py \
+            src/finagent/research/us_r2_primary_runtime.py \
+            scripts/evaluate_us_r2_primary_statistics.py
