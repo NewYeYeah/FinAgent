@@ -275,7 +275,7 @@ def test_regime_features_fail_closed_on_same_session_or_future_inputs() -> None:
             lookback_sessions=20,
             availability_lag_sessions=0,
         )
-    with pytest.raises(ValueError, match="anchor asset"):
+    with pytest.raises(ValueError, match="anchor_asset"):
         USRegimeFeatureSpec(
             name="bad-anchor",
             source=USRegimeFeatureSource.MARKET_ANCHOR_RETURN,
