@@ -1,0 +1,59 @@
+name: us-r2-pooled-inference
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/finagent/research/us_r2_pooled_inference.py"
+      - "scripts/evaluate_us_r2_pooled_inference.py"
+      - "tests/test_us_r2_pooled_inference.py"
+      - "docs/guides/us-r2-pooled-inference.md"
+      - ".github/workflows/us-r2-pooled-inference.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pooled-inference:
+    name: US-R2 denominator-preserving pooled inference
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install canonical uv resolver
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: "0.12.1"
+      - name: Reproduce locked development environment
+        run: uv sync --frozen --extra dev
+      - name: Pooled inference R1 parity and denominator gate
+        run: uv run --frozen pytest -q tests/test_us_r2_pooled_inference.py
+      - name: Primary-statistics predecessor regression
+        run: uv run --frozen pytest -q tests/test_us_r2_primary_statistics.py
+      - name: R1 inference predecessor regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_us_r1_walkforward_materialization.py \
+            tests/test_us_r1_final_evidence.py \
+            tests/test_us_r1_contract_validation.py \
+            tests/test_us_r1_preregistration_gate.py
+      - name: R2 protocol predecessor regression
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_us_r2_frozen_protocol.py \
+            tests/test_us_r2_regime_projection_v2.py
+      - name: Strict static checks
+        run: |
+          uv run --frozen ruff check \
+            src/finagent/research/us_r2_pooled_inference.py \
+            scripts/evaluate_us_r2_pooled_inference.py \
+            tests/test_us_r2_pooled_inference.py
+          uv run --frozen mypy --strict \
+            src/finagent/research/us_r2_pooled_inference.py \
+            scripts/evaluate_us_r2_pooled_inference.py
+          uv run --frozen python -m py_compile \
+            src/finagent/research/us_r2_pooled_inference.py \
+            scripts/evaluate_us_r2_pooled_inference.py
