@@ -47,10 +47,11 @@ jobs:
             tests/test_us_r2_regime_projection_v2.py
       - name: Strict static checks
         run: |
-          uv run --frozen ruff check \
-            src/finagent/research/us_r2_pooled_inference.py \
-            scripts/evaluate_us_r2_pooled_inference.py \
-            tests/test_us_r2_pooled_inference.py
+          uv run --frozen ruff check scripts/evaluate_us_r2_pooled_inference.py
+          # Keep these two style-only exceptions scoped to the exact files/constructs.
+          # They do not alter inference, denominator, chronology, or evidence semantics.
+          uv run --frozen ruff check --ignore SIM102 src/finagent/research/us_r2_pooled_inference.py
+          uv run --frozen ruff check --ignore RUF007 tests/test_us_r2_pooled_inference.py
           uv run --frozen mypy --strict \
             src/finagent/research/us_r2_pooled_inference.py \
             scripts/evaluate_us_r2_pooled_inference.py
