@@ -39,14 +39,17 @@ jobs:
         run: |
           uv run --frozen ruff check \
             src/finagent/research/us_r2_corpus.py \
+            src/finagent/research/us_r2_inventory.py \
             src/finagent/research/us_r2_protocol.py \
             scripts/inventory_us_r2_corpus.py \
             tests/test_us_r2_corpus.py
           uv run --frozen mypy --strict \
             src/finagent/research/us_r2_corpus.py \
+            src/finagent/research/us_r2_inventory.py \
             src/finagent/research/us_r2_protocol.py \
             scripts/inventory_us_r2_corpus.py
           uv run --frozen python -m py_compile \
             src/finagent/research/us_r2_corpus.py \
+            src/finagent/research/us_r2_inventory.py \
             src/finagent/research/us_r2_protocol.py \
             scripts/inventory_us_r2_corpus.py
