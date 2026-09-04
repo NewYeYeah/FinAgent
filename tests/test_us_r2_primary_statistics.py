@@ -266,7 +266,8 @@ def test_fold01_direction_uses_exact_r1_numpy_mean_and_positive_zero_tie() -> No
         source_annual_evidence_ids=source_ids,
     )
     policy = canonical_us_r1_statistical_evaluation_policy()
-    assert actual.passed
+    assert len(actual.candidates) == len(candidate_ids)
+    assert all(item.passed for item in actual.candidates)
     for item in actual.candidates:
         expected, _points = evaluate_us_r1_candidate_slice(
             observations,
