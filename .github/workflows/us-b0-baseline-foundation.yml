@@ -11,6 +11,7 @@ on:
       - "tests/test_us_b0_baseline_contracts.py"
       - "tests/test_us_b0_evaluation_core.py"
       - "tests/test_us_b0_materialization.py"
+      - "tests/test_us_b0_turnover_determinism.py"
       - "docs/guides/us-b0-baselines.md"
       - ".github/workflows/us-b0-baseline-foundation.yml"
   push:
@@ -23,6 +24,7 @@ on:
       - "tests/test_us_b0_baseline_contracts.py"
       - "tests/test_us_b0_evaluation_core.py"
       - "tests/test_us_b0_materialization.py"
+      - "tests/test_us_b0_turnover_determinism.py"
       - "docs/guides/us-b0-baselines.md"
       - ".github/workflows/us-b0-baseline-foundation.yml"
 
@@ -49,7 +51,8 @@ jobs:
           uv run --frozen pytest -q \
             tests/test_us_b0_baseline_contracts.py \
             tests/test_us_b0_evaluation_core.py \
-            tests/test_us_b0_materialization.py
+            tests/test_us_b0_materialization.py \
+            tests/test_us_b0_turnover_determinism.py
       - name: Strict static checks
         run: |
           uv run --frozen ruff check \
@@ -59,7 +62,8 @@ jobs:
             scripts/materialize_us_b0_baselines.py \
             tests/test_us_b0_baseline_contracts.py \
             tests/test_us_b0_evaluation_core.py \
-            tests/test_us_b0_materialization.py
+            tests/test_us_b0_materialization.py \
+            tests/test_us_b0_turnover_determinism.py
           uv run --frozen mypy --strict \
             src/finagent/research/us_baselines.py \
             src/finagent/research/us_baseline_evaluation.py \
