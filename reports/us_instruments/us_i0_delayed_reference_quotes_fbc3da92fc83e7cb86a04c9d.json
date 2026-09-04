@@ -1,0 +1,1013 @@
+{
+  "alpha_authority": false,
+  "assessments": [
+    {
+      "anchor_age_seconds": 0.117654,
+      "ask": 223.88,
+      "bid": 223.87,
+      "delay_error_seconds": 0.11765400000001591,
+      "eligible_for_delay_reinterpretation": true,
+      "observed_delay_seconds": 900.117654,
+      "raw_issue_reasons": [
+        "stale_quote"
+      ],
+      "raw_quote_present": true,
+      "reasons": [],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": 0.4466778336121007,
+      "symbol": "NVDA",
+      "tradable": true,
+      "valid_for_simulation_reference": true,
+      "validation_anchor_at_utc": "2026-09-02T14:41:45.849654+00:00",
+      "visible": true
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "TSLA",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "MU",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "IWM",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": 0.244654,
+      "ask": 497.78,
+      "bid": 497.73,
+      "delay_error_seconds": 0.24465399999996862,
+      "eligible_for_delay_reinterpretation": true,
+      "observed_delay_seconds": 900.244654,
+      "raw_issue_reasons": [
+        "stale_quote"
+      ],
+      "raw_quote_present": true,
+      "reasons": [],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": 1.004510251026198,
+      "symbol": "MSFT",
+      "tradable": true,
+      "valid_for_simulation_reference": true,
+      "validation_anchor_at_utc": "2026-09-02T14:41:45.849654+00:00",
+      "visible": true
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "SNDK",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "AMZN",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "AAPL",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "GOOGL",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "META",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": 0.222654,
+      "ask": 459.23,
+      "bid": 459.08,
+      "delay_error_seconds": 0.2226540000000341,
+      "eligible_for_delay_reinterpretation": true,
+      "observed_delay_seconds": 900.222654,
+      "raw_issue_reasons": [
+        "stale_quote"
+      ],
+      "raw_quote_present": true,
+      "reasons": [],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": 3.2668706645911323,
+      "symbol": "AMD",
+      "tradable": true,
+      "valid_for_simulation_reference": true,
+      "validation_anchor_at_utc": "2026-09-02T14:41:45.849654+00:00",
+      "visible": true
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "AVGO",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "PLTR",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "GLD",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "GOOG",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "SLV",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "VOO",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "TQQQ",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "SOXL",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "TSM",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "SQQQ",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": 0.065654,
+      "ask": 89.03,
+      "bid": 89.02,
+      "delay_error_seconds": 0.065653999999995,
+      "eligible_for_delay_reinterpretation": true,
+      "observed_delay_seconds": 900.065654,
+      "raw_issue_reasons": [
+        "stale_quote"
+      ],
+      "raw_quote_present": true,
+      "reasons": [],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": 1.123279977534975,
+      "symbol": "INTC",
+      "tradable": true,
+      "valid_for_simulation_reference": true,
+      "validation_anchor_at_utc": "2026-09-02T14:41:45.849654+00:00",
+      "visible": true
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "IVV",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "RSP",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "ORCL",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "SMH",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "NFLX",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "XLE",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "XLF",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "MSTR",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "XOM",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "XLK",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "EEM",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "APP",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "JPM",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "IBIT",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "XLI",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "SOXX",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "XLV",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    },
+    {
+      "anchor_age_seconds": null,
+      "ask": null,
+      "bid": null,
+      "delay_error_seconds": null,
+      "eligible_for_delay_reinterpretation": false,
+      "observed_delay_seconds": null,
+      "raw_issue_reasons": [
+        "not_visible"
+      ],
+      "raw_quote_present": false,
+      "reasons": [
+        "raw_quote_unavailable",
+        "raw_issue:not_visible"
+      ],
+      "schema_version": "finagent.us-delayed-reference-quote-assessment.v1",
+      "spread_bps": null,
+      "symbol": "EFA",
+      "tradable": null,
+      "valid_for_simulation_reference": false,
+      "validation_anchor_at_utc": null,
+      "visible": null
+    }
+  ],
+  "blockers": [
+    "simulation_quote_probe:insufficient_valid_quotes:4<20"
+  ],
+  "broker_account_authority": false,
+  "broker_account_required": false,
+  "broker_clock_evidence_id": "mt5-broker-clock-evidence-1a85227be8ba91209c0a73b2",
+  "broker_clock_passed": true,
+  "broker_server": "MetaQuotes-Demo",
+  "candidate_selection_id": "us-universe-candidate-selection-c35944d1c266c9fcd3d87fd4",
+  "engineering_reference_authority": false,
+  "execution_authority": false,
+  "generated_at": "2026-09-02T14:56:45.851803+00:00",
+  "live_capital_authority": false,
+  "live_executable_spread_authority": false,
+  "live_market_data_authority": false,
+  "median_delay_error_seconds": 0.2226540000000341,
+  "minimum_valid_quote_count": 20,
+  "mt5_capability_probe_id": "mt5-capability-probe-db652a528408fda2dd3a606e",
+  "order_authority": false,
+  "policy": {
+    "broker_account_required": false,
+    "execution_authority": false,
+    "expected_broker_server": "MetaQuotes-Demo",
+    "expected_source_delay_seconds": 900,
+    "live_capital_authority": false,
+    "live_market_data_authority": false,
+    "maximum_anchor_age_seconds": 60,
+    "maximum_future_anchor_skew_seconds": 60,
+    "order_authority": false,
+    "policy_id": "us-simulation-quote-timing-policy-e88e0297965f263baa182ad5",
+    "raw_live_quote_policy_unchanged": true,
+    "schema_version": "finagent.us-simulation-quote-timing-policy.v1",
+    "source_regime": "metaquotes_demo_delayed_reference_without_broker_account",
+    "stage_exit_authority": false,
+    "status_authority": false,
+    "validation_anchor_semantics": "retrieved_at_utc_minus_expected_source_delay"
+  },
+  "raw_quote_policy_id": "us-candidate-quote-policy-8ccc0f73653bad555931ffcb",
+  "raw_quote_probe_report_id": "us-candidate-quote-probe-fbc3da92fc83e7cb86a04c9d",
+  "ready_for_simulation_reference": false,
+  "report_id": "us-delayed-reference-quote-report-23beb1b407fa905dc5b0457a",
+  "requested_symbols": [
+    "NVDA",
+    "TSLA",
+    "MU",
+    "IWM",
+    "MSFT",
+    "SNDK",
+    "AMZN",
+    "AAPL",
+    "GOOGL",
+    "META",
+    "AMD",
+    "AVGO",
+    "PLTR",
+    "GLD",
+    "GOOG",
+    "SLV",
+    "VOO",
+    "TQQQ",
+    "SOXL",
+    "TSM",
+    "SQQQ",
+    "INTC",
+    "IVV",
+    "RSP",
+    "ORCL",
+    "SMH",
+    "NFLX",
+    "XLE",
+    "XLF",
+    "MSTR",
+    "XOM",
+    "XLK",
+    "EEM",
+    "APP",
+    "JPM",
+    "IBIT",
+    "XLI",
+    "SOXX",
+    "XLV",
+    "EFA"
+  ],
+  "required_seed_symbols": [
+    "AMD",
+    "INTC",
+    "MSFT",
+    "NVDA"
+  ],
+  "schema_version": "finagent.us-delayed-reference-quote-report.v1",
+  "simulation_reference_authority": false,
+  "stage_exit_authority": false,
+  "status_authority": false,
+  "valid_quote_count": 4,
+  "valid_quote_symbols": [
+    "NVDA",
+    "MSFT",
+    "AMD",
+    "INTC"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "agent_value_gate_authority": false,
+  "agent_value_gate_decision": "UNDECIDED_REQUIRES_SEPARATE_REVIEW",
+  "alpha_authority": false,
+  "arm_result_ids": [
+    "us-agent-value-search-arm-result-7951baeb324ae8533bfec4cf",
+    "us-agent-value-search-arm-result-8bdca8b0e7dd2636390ea31b",
+    "us-agent-value-search-arm-result-479a2dbdb2c4d1a21d3f1b41"
+  ],
+  "comparison_snapshot_id": "us-agent-value-comparison-72dc0f6e8981ce63786dabb6",
+  "evidence_complete": true,
+  "execution_plan_id": "us-agent-value-execution-plan-4312941b91abba09a44c34cb",
+  "experiment_id": "us-agent-value-experiment-550e3477fb740780e752fc94",
+  "generation_run_ids": [
+    "us-agent-value-generation-run-cf34df9b22107cbc37405849",
+    "us-agent-value-generation-run-94037a514ac060f3383c0b03",
+    "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+  ],
+  "graph_id": "us-agent-value-experiment-evidence-9527f71a12ded2ff661dc99f",
+  "predecessor_binding_id": "us-agent-value-predecessor-19b127b5466479a1680c8e25",
+  "preregistration_bundle_id": "us-agent-value-preregistration-9d592189de4ed0edf16e23c6",
+  "ready_for_agent_value_gate_review": true,
+  "run_evaluation_link_ids": [
+    "us-agent-value-run-evaluation-link-de19ffbf68674199d67c5732",
+    "us-agent-value-run-evaluation-link-83e091d9f003204e4bcd1b35",
+    "us-agent-value-run-evaluation-link-3f411b86dd70995cd3282b15"
+  ],
+  "run_evaluation_report_ids": [
+    "us-agent-value-run-evaluation-c1d4f709f5fd37a1763758bf",
+    "us-agent-value-run-evaluation-f78611fb62f8b30a056928d0",
+    "us-agent-value-run-evaluation-19328315bba55de5623eac87"
+  ],
+  "run_evidence_manifest_ids": [
+    "us-agent-value-run-evidence-e2e67a2bdf15f3e37b508db7",
+    "us-agent-value-run-evidence-d7f74fc8b45876bbcc19a665",
+    "us-agent-value-run-evidence-2afe225bfc1678c56e2dff26"
+  ],
+  "schema_version": "finagent.us-agent-value-experiment-evidence-graph.v1",
+  "scope": "content_addressed_three_arm_agent_value_experiment_evidence_graph",
+  "stage_exit_authority": false,
+  "status_authority": false
+}

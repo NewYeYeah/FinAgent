@@ -1,0 +1,33 @@
+{
+  "agent_value_gate_authority": false,
+  "alpha_authority": false,
+  "base_url": "https://api.deepseek.com",
+  "blockers": [],
+  "completion_budget_semantics": "reasoning_content_and_final_content_share_max_output_tokens",
+  "configured_model": "deepseek-v4-flash",
+  "max_output_tokens": 65536,
+  "passed": true,
+  "profile": "deepseek_official_v4_flash",
+  "provider": "deepseek",
+  "provider_attempts": "1",
+  "provider_status": "stop",
+  "reasoning_effort": "high",
+  "reasoning_tokens": "497",
+  "report_id": "llm-profile-smoke-26ff0a4181f5ea7c8646101b",
+  "research_authority": false,
+  "response_model": "deepseek-v4-flash",
+  "retrieved_at": "2026-09-02T08:42:48.658697+00:00",
+  "schema_version": "finagent.llm-profile-smoke.v1",
+  "scope": "engineering_smoke_only_not_us_a0_generation_or_gate_evidence",
+  "stage_exit_authority": false,
+  "thinking": true,
+  "usage": {
+    "cached_input_tokens": 0,
+    "cost_usd": 0.0007656000000000001,
+    "input_tokens": 213,
+    "latency_ms": 4366.3460000025225,
+    "output_tokens": 509,
+    "pricing_policy_id": "deepseek-v4-pricing-2026-08-17-v1",
+    "total_tokens": 722
+  }
+}

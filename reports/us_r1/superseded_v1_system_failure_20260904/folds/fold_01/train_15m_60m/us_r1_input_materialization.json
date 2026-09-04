@@ -1,0 +1,10 @@
+{
+  "content_sha256": "0b09bb45bdd81f3a623d82bd0124d9b487bc5424bd3a4c59336f094f0c68efd2",
+  "data_version": "us-r1-input-data-version-b840d32acc7ff43bd67143b2",
+  "materialization_id": "minute-materialization-09fb60dc0e993706931d127f",
+  "output_filename": "us_r1_inputs.parquet",
+  "plan_id": "us-r1-input-plan-af1cbeee91b2587d5875f9af",
+  "row_count": 13000,
+  "schema_version": "finagent.minute-materialization.v2",
+  "size_bytes": 350743
+}

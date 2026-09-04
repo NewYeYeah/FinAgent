@@ -1,0 +1,4 @@
+Running 1 test using 1 worker
+
+[1/1] [chromium] › e2e\historical-release-smoke-real.spec.ts:22:1 › Historical Workbench 1.0 renders the frozen release without inventing unavailable evidence
+  1 passed (2.2s)

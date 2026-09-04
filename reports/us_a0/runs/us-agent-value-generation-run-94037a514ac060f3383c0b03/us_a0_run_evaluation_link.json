@@ -1,0 +1,13 @@
+{
+  "authoritative_evidence_id": "us-agent-value-run-evaluation-f78611fb62f8b30a056928d0",
+  "best_mean_rank_ic": 0.03207218309739601,
+  "best_worst_fold_rank_ic": 0.014048697768807962,
+  "blockers": [],
+  "evaluated_candidate_count": 16,
+  "generation_run_id": "us-agent-value-generation-run-94037a514ac060f3383c0b03",
+  "link_id": "us-agent-value-run-evaluation-link-83e091d9f003204e4bcd1b35",
+  "metric_authority": "copied_from_authoritative_split_bound_evidence_not_recomputed_here",
+  "passed": true,
+  "schema_version": "finagent.us-agent-value-run-evaluation-link.v1",
+  "valid_candidate_count": 16
+}

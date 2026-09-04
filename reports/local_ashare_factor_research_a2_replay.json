@@ -1,0 +1,915 @@
+{
+  "acceptance_id": "ashare-factor-acceptance-4a8a1d75742aae51bab9237b",
+  "candidate_denominator": [
+    {
+      "feature_digest": "baea398a43ab4d1f1d63a1acdfa4843d1e058adef4929fdacc406f65bc01357e",
+      "feature_id": "a2-momentum-20",
+      "generator_id": "ashare-a2-deterministic-baseline-v1",
+      "hypothesis": "Medium-horizon price continuation contains cross-sectional information.",
+      "input_fields": [
+        "simple_return_20"
+      ],
+      "lookback": 1
+    },
+    {
+      "feature_digest": "8f9b8b214d0eb40fc34b93024585e2b67d6a8116394ecdcf22396845d67b058c",
+      "feature_id": "a2-reversal-5",
+      "generator_id": "ashare-a2-deterministic-baseline-v1",
+      "hypothesis": "Short-horizon overreaction mean-reverts in the next session.",
+      "input_fields": [
+        "simple_return_5"
+      ],
+      "lookback": 1
+    },
+    {
+      "feature_digest": "bb7e0c289e20dda6d86f29fd60f1ec83fc1c726acecb7e24c2d3e1f5564c062f",
+      "feature_id": "a2-volume-confirmed-momentum",
+      "generator_id": "ashare-a2-deterministic-baseline-v1",
+      "hypothesis": "Price continuation is stronger when accompanied by expanding activity.",
+      "input_fields": [
+        "simple_return_5",
+        "log_volume_change_5"
+      ],
+      "lookback": 1
+    },
+    {
+      "feature_digest": "1294dcf766a8a0c900d9fffcfa943decf3e5662060d02c48fda217d5758e8ca4",
+      "feature_id": "a2-low-realized-variance",
+      "generator_id": "ashare-a2-deterministic-baseline-v1",
+      "hypothesis": "Lower recent idiosyncratic volatility is associated with stronger risk-adjusted cross-sectional returns.",
+      "input_fields": [
+        "squared_log_return_1"
+      ],
+      "lookback": 20
+    },
+    {
+      "feature_digest": "d21f9aee52a45ae6c7128c2e88f8ff28dbc85dfa264d5574c89feaf9a6b9c9ba",
+      "feature_id": "a2-small-size",
+      "generator_id": "ashare-a2-deterministic-baseline-v1",
+      "hypothesis": "Smaller liquid A-share firms may earn a cross-sectional size premium.",
+      "input_fields": [
+        "circ_mv"
+      ],
+      "lookback": 1
+    }
+  ],
+  "candidate_universe": {
+    "asset_keys": [
+      "equity:SSE:601398:CNY",
+      "equity:SSE:601857:CNY",
+      "equity:SSE:601288:CNY",
+      "equity:SSE:600519:CNY",
+      "equity:SSE:601988:CNY",
+      "equity:SSE:601318:CNY",
+      "equity:SSE:601628:CNY",
+      "equity:SSE:600036:CNY",
+      "equity:SSE:600028:CNY",
+      "equity:SSE:601088:CNY",
+      "equity:SSE:600000:CNY",
+      "equity:SSE:600104:CNY",
+      "equity:SZSE:000333:CNY",
+      "equity:SSE:601166:CNY",
+      "equity:SSE:601299:CNY",
+      "equity:SZSE:000858:CNY",
+      "equity:SZSE:000002:CNY",
+      "equity:SZSE:002415:CNY",
+      "equity:SSE:601766:CNY",
+      "equity:SSE:601668:CNY",
+      "equity:SZSE:000651:CNY",
+      "equity:SSE:601601:CNY",
+      "equity:SSE:600016:CNY",
+      "equity:SSE:601328:CNY",
+      "equity:SZSE:000001:CNY",
+      "equity:SSE:601998:CNY",
+      "equity:SZSE:000725:CNY",
+      "equity:SSE:600276:CNY",
+      "equity:SSE:600887:CNY",
+      "equity:SSE:600019:CNY",
+      "equity:SSE:600900:CNY",
+      "equity:SSE:600030:CNY",
+      "equity:SSE:600048:CNY",
+      "equity:SSE:601818:CNY",
+      "equity:SSE:601390:CNY",
+      "equity:SSE:600018:CNY",
+      "equity:SSE:601800:CNY",
+      "equity:SSE:601336:CNY",
+      "equity:SSE:603288:CNY",
+      "equity:SZSE:002304:CNY",
+      "equity:SSE:601006:CNY",
+      "equity:SSE:600050:CNY",
+      "equity:SSE:601169:CNY",
+      "equity:SSE:601186:CNY",
+      "equity:SZSE:000063:CNY",
+      "equity:SSE:600585:CNY",
+      "equity:SSE:600015:CNY",
+      "equity:SSE:600690:CNY",
+      "equity:SSE:601989:CNY",
+      "equity:SZSE:000562:CNY",
+      "equity:SSE:601238:CNY",
+      "equity:SZSE:000538:CNY",
+      "equity:SSE:601111:CNY",
+      "equity:SSE:600837:CNY",
+      "equity:SSE:600703:CNY",
+      "equity:SZSE:000776:CNY",
+      "equity:SZSE:002252:CNY",
+      "equity:SSE:600518:CNY",
+      "equity:SSE:600309:CNY",
+      "equity:SSE:601688:CNY",
+      "equity:SSE:600340:CNY",
+      "equity:SZSE:000568:CNY",
+      "equity:SSE:603993:CNY",
+      "equity:SZSE:002736:CNY",
+      "equity:SSE:601600:CNY",
+      "equity:SSE:601211:CNY",
+      "equity:SZSE:000895:CNY",
+      "equity:SSE:600741:CNY",
+      "equity:SSE:600196:CNY",
+      "equity:SZSE:300498:CNY",
+      "equity:SSE:601888:CNY",
+      "equity:SSE:600999:CNY",
+      "equity:SSE:600029:CNY",
+      "equity:SZSE:002027:CNY",
+      "equity:SSE:601225:CNY",
+      "equity:SSE:600115:CNY",
+      "equity:SZSE:002142:CNY",
+      "equity:SSE:601618:CNY",
+      "equity:SZSE:002475:CNY",
+      "equity:SZSE:002594:CNY",
+      "equity:SSE:600832:CNY",
+      "equity:SSE:601939:CNY",
+      "equity:SSE:601899:CNY",
+      "equity:SSE:600023:CNY",
+      "equity:SSE:601012:CNY",
+      "equity:SZSE:002230:CNY",
+      "equity:SSE:601669:CNY",
+      "equity:SSE:601633:CNY",
+      "equity:SSE:600031:CNY",
+      "equity:SSE:601018:CNY",
+      "equity:SSE:601727:CNY",
+      "equity:SSE:601933:CNY",
+      "equity:SSE:600011:CNY",
+      "equity:SZSE:002450:CNY",
+      "equity:SSE:601009:CNY",
+      "equity:SSE:600795:CNY",
+      "equity:SZSE:002024:CNY",
+      "equity:SZSE:002466:CNY",
+      "equity:SSE:600660:CNY",
+      "equity:SSE:600383:CNY",
+      "equity:SSE:601901:CNY",
+      "equity:SZSE:002456:CNY",
+      "equity:SSE:600010:CNY",
+      "equity:SSE:600066:CNY",
+      "equity:SSE:600111:CNY",
+      "equity:SZSE:002202:CNY",
+      "equity:SSE:601229:CNY",
+      "equity:SSE:601788:CNY",
+      "equity:SSE:600221:CNY",
+      "equity:SSE:600893:CNY",
+      "equity:SSE:601898:CNY",
+      "equity:SZSE:000069:CNY",
+      "equity:SSE:601919:CNY",
+      "equity:SSE:600487:CNY",
+      "equity:SSE:600886:CNY",
+      "equity:SSE:600516:CNY",
+      "equity:SSE:600809:CNY",
+      "equity:SSE:600009:CNY",
+      "equity:SZSE:002493:CNY",
+      "equity:SZSE:002008:CNY",
+      "equity:SSE:601377:CNY",
+      "equity:SZSE:300072:CNY",
+      "equity:SSE:600176:CNY",
+      "equity:SZSE:000527:CNY",
+      "equity:SZSE:000625:CNY",
+      "equity:SZSE:002294:CNY",
+      "equity:SZSE:002241:CNY",
+      "equity:SZSE:000963:CNY",
+      "equity:SZSE:000768:CNY",
+      "equity:SSE:600663:CNY",
+      "equity:SSE:601607:CNY",
+      "equity:SSE:600688:CNY",
+      "equity:SSE:600547:CNY",
+      "equity:SSE:600208:CNY",
+      "equity:SSE:600674:CNY",
+      "equity:SZSE:002508:CNY",
+      "equity:SSE:601992:CNY",
+      "equity:SSE:600085:CNY",
+      "equity:SSE:600398:CNY",
+      "equity:SZSE:000783:CNY",
+      "equity:SSE:600919:CNY",
+      "equity:SSE:600958:CNY",
+      "equity:SZSE:002673:CNY",
+      "equity:SSE:600188:CNY",
+      "equity:SSE:600705:CNY",
+      "equity:SSE:600362:CNY",
+      "equity:SZSE:000024:CNY",
+      "equity:SSE:601991:CNY",
+      "equity:SZSE:000709:CNY",
+      "equity:SZSE:300059:CNY"
+    ],
+    "data_version": "local-ashare-frozen-96f1a2c07f285e6ff41575cf",
+    "schema_version": "finagent.ashare-candidate-universe.v1",
+    "scope": "fixed pre-development candidate universe; not survivorship-certified",
+    "selection_date": "2017-12-29",
+    "selection_id": "ashare-candidate-universe-fc8bd3c86ac304f2d24a8da4",
+    "size": 150,
+    "ts_codes": [
+      "601398.SH",
+      "601857.SH",
+      "601288.SH",
+      "600519.SH",
+      "601988.SH",
+      "601318.SH",
+      "601628.SH",
+      "600036.SH",
+      "600028.SH",
+      "601088.SH",
+      "600000.SH",
+      "600104.SH",
+      "000333.SZ",
+      "601166.SH",
+      "601299.SH",
+      "000858.SZ",
+      "000002.SZ",
+      "002415.SZ",
+      "601766.SH",
+      "601668.SH",
+      "000651.SZ",
+      "601601.SH",
+      "600016.SH",
+      "601328.SH",
+      "000001.SZ",
+      "601998.SH",
+      "000725.SZ",
+      "600276.SH",
+      "600887.SH",
+      "600019.SH",
+      "600900.SH",
+      "600030.SH",
+      "600048.SH",
+      "601818.SH",
+      "601390.SH",
+      "600018.SH",
+      "601800.SH",
+      "601336.SH",
+      "603288.SH",
+      "002304.SZ",
+      "601006.SH",
+      "600050.SH",
+      "601169.SH",
+      "601186.SH",
+      "000063.SZ",
+      "600585.SH",
+      "600015.SH",
+      "600690.SH",
+      "601989.SH",
+      "000562.SZ",
+      "601238.SH",
+      "000538.SZ",
+      "601111.SH",
+      "600837.SH",
+      "600703.SH",
+      "000776.SZ",
+      "002252.SZ",
+      "600518.SH",
+      "600309.SH",
+      "601688.SH",
+      "600340.SH",
+      "000568.SZ",
+      "603993.SH",
+      "002736.SZ",
+      "601600.SH",
+      "601211.SH",
+      "000895.SZ",
+      "600741.SH",
+      "600196.SH",
+      "300498.SZ",
+      "601888.SH",
+      "600999.SH",
+      "600029.SH",
+      "002027.SZ",
+      "601225.SH",
+      "600115.SH",
+      "002142.SZ",
+      "601618.SH",
+      "002475.SZ",
+      "002594.SZ",
+      "600832.SH",
+      "601939.SH",
+      "601899.SH",
+      "600023.SH",
+      "601012.SH",
+      "002230.SZ",
+      "601669.SH",
+      "601633.SH",
+      "600031.SH",
+      "601018.SH",
+      "601727.SH",
+      "601933.SH",
+      "600011.SH",
+      "002450.SZ",
+      "601009.SH",
+      "600795.SH",
+      "002024.SZ",
+      "002466.SZ",
+      "600660.SH",
+      "600383.SH",
+      "601901.SH",
+      "002456.SZ",
+      "600010.SH",
+      "600066.SH",
+      "600111.SH",
+      "002202.SZ",
+      "601229.SH",
+      "601788.SH",
+      "600221.SH",
+      "600893.SH",
+      "601898.SH",
+      "000069.SZ",
+      "601919.SH",
+      "600487.SH",
+      "600886.SH",
+      "600516.SH",
+      "600809.SH",
+      "600009.SH",
+      "002493.SZ",
+      "002008.SZ",
+      "601377.SH",
+      "300072.SZ",
+      "600176.SH",
+      "000527.SZ",
+      "000625.SZ",
+      "002294.SZ",
+      "002241.SZ",
+      "000963.SZ",
+      "000768.SZ",
+      "600663.SH",
+      "601607.SH",
+      "600688.SH",
+      "600547.SH",
+      "600208.SH",
+      "600674.SH",
+      "002508.SZ",
+      "601992.SH",
+      "600085.SH",
+      "600398.SH",
+      "000783.SZ",
+      "600919.SH",
+      "600958.SH",
+      "002673.SZ",
+      "600188.SH",
+      "600705.SH",
+      "600362.SH",
+      "000024.SZ",
+      "601991.SH",
+      "000709.SZ",
+      "300059.SZ"
+    ]
+  },
+  "data_version": "local-ashare-frozen-96f1a2c07f285e6ff41575cf",
+  "development_report": {
+    "candidates": [
+      {
+        "coverage": 1.0,
+        "feature_digest": "baea398a43ab4d1f1d63a1acdfa4843d1e058adef4929fdacc406f65bc01357e",
+        "feature_id": "a2-momentum-20",
+        "horizon_diagnostics": {
+          "forward_simple_return_1": {
+            "label_name": "forward_simple_return_1",
+            "pearson_ic": 0.0035467929884830706,
+            "pearson_icir": 0.015865618482477795,
+            "periods": 963,
+            "rank_ic": -0.017271386724195717,
+            "rank_icir": -0.07921431256743353
+          },
+          "forward_simple_return_5": {
+            "label_name": "forward_simple_return_5",
+            "pearson_ic": 0.006533635255608475,
+            "pearson_icir": 0.03137203016911224,
+            "periods": 959,
+            "rank_ic": -0.011029712525537597,
+            "rank_icir": -0.05334678940288952
+          }
+        },
+        "primary_label": "forward_simple_return_1",
+        "quantile_diagnostics": {
+          "long_short_mean_return": 0.0005910216403932673,
+          "long_short_sharpe": 0.6950732779791583,
+          "mean_one_way_turnover": 0.17840228996050586,
+          "periods": 903,
+          "quantile_mean_returns": [
+            0.00045163418090736506,
+            0.0004396474302326766,
+            0.0005147588002741683,
+            0.0006582673803679052,
+            0.0010426558213006325
+          ]
+        }
+      },
+      {
+        "coverage": 1.0,
+        "feature_digest": "8f9b8b214d0eb40fc34b93024585e2b67d6a8116394ecdcf22396845d67b058c",
+        "feature_id": "a2-reversal-5",
+        "horizon_diagnostics": {
+          "forward_simple_return_1": {
+            "label_name": "forward_simple_return_1",
+            "pearson_ic": 0.009170777057447163,
+            "pearson_icir": 0.044640951832061265,
+            "periods": 963,
+            "rank_ic": 0.037120796987242036,
+            "rank_icir": 0.1839958062937602
+          },
+          "forward_simple_return_5": {
+            "label_name": "forward_simple_return_5",
+            "pearson_ic": 0.004624966517823706,
+            "pearson_icir": 0.023473500935333014,
+            "periods": 959,
+            "rank_ic": 0.018066239911981967,
+            "rank_icir": 0.09214145235280578
+          }
+        },
+        "primary_label": "forward_simple_return_1",
+        "quantile_diagnostics": {
+          "long_short_mean_return": 6.0069635618144974e-05,
+          "long_short_sharpe": 0.07977243661683796,
+          "mean_one_way_turnover": 0.3543270288601941,
+          "periods": 903,
+          "quantile_mean_returns": [
+            0.0007782685614043318,
+            0.0005245245629470407,
+            0.0003587899830321806,
+            0.0005906637555043253,
+            0.0008383381970224767
+          ]
+        }
+      },
+      {
+        "coverage": 1.0,
+        "feature_digest": "bb7e0c289e20dda6d86f29fd60f1ec83fc1c726acecb7e24c2d3e1f5564c062f",
+        "feature_id": "a2-volume-confirmed-momentum",
+        "horizon_diagnostics": {
+          "forward_simple_return_1": {
+            "label_name": "forward_simple_return_1",
+            "pearson_ic": -0.006981724825225211,
+            "pearson_icir": -0.03518504897978916,
+            "periods": 963,
+            "rank_ic": -0.030620281089395216,
+            "rank_icir": -0.16008379986832924
+          },
+          "forward_simple_return_5": {
+            "label_name": "forward_simple_return_5",
+            "pearson_ic": -0.008470436161341893,
+            "pearson_icir": -0.04568413180862939,
+            "periods": 959,
+            "rank_ic": -0.017709758096650468,
+            "rank_icir": -0.09543469887268755
+          }
+        },
+        "primary_label": "forward_simple_return_1",
+        "quantile_diagnostics": {
+          "long_short_mean_return": 0.00021827020153300245,
+          "long_short_sharpe": 0.29775945907110585,
+          "mean_one_way_turnover": 0.40298874012166863,
+          "periods": 903,
+          "quantile_mean_returns": [
+            0.0005521345876469831,
+            0.0007725123111438613,
+            0.00041064098740470107,
+            0.0005872657223954869,
+            0.0007704047891799855
+          ]
+        }
+      },
+      {
+        "coverage": 0.9823674088994957,
+        "feature_digest": "1294dcf766a8a0c900d9fffcfa943decf3e5662060d02c48fda217d5758e8ca4",
+        "feature_id": "a2-low-realized-variance",
+        "horizon_diagnostics": {
+          "forward_simple_return_1": {
+            "label_name": "forward_simple_return_1",
+            "pearson_ic": -0.01450746079046136,
+            "pearson_icir": -0.0588827176750121,
+            "periods": 953,
+            "rank_ic": 0.015241008409695238,
+            "rank_icir": 0.061569827131077975
+          },
+          "forward_simple_return_5": {
+            "label_name": "forward_simple_return_5",
+            "pearson_ic": -0.023307320519170012,
+            "pearson_icir": -0.09563599884612359,
+            "periods": 949,
+            "rank_ic": 0.007694459197062366,
+            "rank_icir": 0.03173311195526569
+          }
+        },
+        "primary_label": "forward_simple_return_1",
+        "quantile_diagnostics": {
+          "long_short_mean_return": -0.000938600463516781,
+          "long_short_sharpe": -1.0586428082695674,
+          "mean_one_way_turnover": 0.07122151175124689,
+          "periods": 897,
+          "quantile_mean_returns": [
+            0.0011143437163994852,
+            0.0007115221090805078,
+            0.0005008778011970434,
+            0.00028470346765390077,
+            0.00017574325288270416
+          ]
+        }
+      },
+      {
+        "coverage": 1.0,
+        "feature_digest": "d21f9aee52a45ae6c7128c2e88f8ff28dbc85dfa264d5574c89feaf9a6b9c9ba",
+        "feature_id": "a2-small-size",
+        "horizon_diagnostics": {
+          "forward_simple_return_1": {
+            "label_name": "forward_simple_return_1",
+            "pearson_ic": 0.0010412630126852083,
+            "pearson_icir": 0.006481107625683928,
+            "periods": 963,
+            "rank_ic": -0.010567685371156089,
+            "rank_icir": -0.057888337507844716
+          },
+          "forward_simple_return_5": {
+            "label_name": "forward_simple_return_5",
+            "pearson_ic": -0.0009040541717106449,
+            "pearson_icir": -0.005403379026703662,
+            "periods": 959,
+            "rank_ic": -0.016306617223801265,
+            "rank_icir": -0.0858728150355557
+          }
+        },
+        "primary_label": "forward_simple_return_1",
+        "quantile_diagnostics": {
+          "long_short_mean_return": 0.00041224489663477953,
+          "long_short_sharpe": 0.6951638107487169,
+          "mean_one_way_turnover": 0.018256842372815944,
+          "periods": 903,
+          "quantile_mean_returns": [
+            0.00036180329901833386,
+            0.0006285727570032685,
+            0.0006969145001480829,
+            0.0006335580305339145,
+            0.0007740481956531133
+          ]
+        }
+      }
+    ],
+    "data_version": "local-ashare-frozen-96f1a2c07f285e6ff41575cf",
+    "factor_value_correlations": {
+      "1294dcf766a8a0c900d9fffcfa943decf3e5662060d02c48fda217d5758e8ca4|8f9b8b214d0eb40fc34b93024585e2b67d6a8116394ecdcf22396845d67b058c": 0.03847704783984507,
+      "1294dcf766a8a0c900d9fffcfa943decf3e5662060d02c48fda217d5758e8ca4|baea398a43ab4d1f1d63a1acdfa4843d1e058adef4929fdacc406f65bc01357e": -0.18178677757980016,
+      "1294dcf766a8a0c900d9fffcfa943decf3e5662060d02c48fda217d5758e8ca4|bb7e0c289e20dda6d86f29fd60f1ec83fc1c726acecb7e24c2d3e1f5564c062f": -0.057516147671133735,
+      "1294dcf766a8a0c900d9fffcfa943decf3e5662060d02c48fda217d5758e8ca4|d21f9aee52a45ae6c7128c2e88f8ff28dbc85dfa264d5574c89feaf9a6b9c9ba": -0.0986709616603559,
+      "8f9b8b214d0eb40fc34b93024585e2b67d6a8116394ecdcf22396845d67b058c|baea398a43ab4d1f1d63a1acdfa4843d1e058adef4929fdacc406f65bc01357e": -0.4341274989404819,
+      "8f9b8b214d0eb40fc34b93024585e2b67d6a8116394ecdcf22396845d67b058c|bb7e0c289e20dda6d86f29fd60f1ec83fc1c726acecb7e24c2d3e1f5564c062f": -0.9051632208559054,
+      "8f9b8b214d0eb40fc34b93024585e2b67d6a8116394ecdcf22396845d67b058c|d21f9aee52a45ae6c7128c2e88f8ff28dbc85dfa264d5574c89feaf9a6b9c9ba": 0.06265095457855165,
+      "baea398a43ab4d1f1d63a1acdfa4843d1e058adef4929fdacc406f65bc01357e|bb7e0c289e20dda6d86f29fd60f1ec83fc1c726acecb7e24c2d3e1f5564c062f": 0.43011310121952434,
+      "baea398a43ab4d1f1d63a1acdfa4843d1e058adef4929fdacc406f65bc01357e|d21f9aee52a45ae6c7128c2e88f8ff28dbc85dfa264d5574c89feaf9a6b9c9ba": -0.11168930156683954,
+      "bb7e0c289e20dda6d86f29fd60f1ec83fc1c726acecb7e24c2d3e1f5564c062f|d21f9aee52a45ae6c7128c2e88f8ff28dbc85dfa264d5574c89feaf9a6b9c9ba": -0.026622988936177393
+    },
+    "primary_label": "forward_simple_return_1",
+    "report_id": "factor-quant-f16006b9538fa652507d25d2",
+    "schema_version": "finagent.factor-quant-report.v2",
+    "scope": "development_only_factor_quant_diagnostics",
+    "split_name": "development"
+  },
+  "discovery": null,
+  "frozen_ensemble": {
+    "components": [
+      {
+        "direction": 1,
+        "feature_digest": "8f9b8b214d0eb40fc34b93024585e2b67d6a8116394ecdcf22396845d67b058c",
+        "feature_id": "a2-reversal-5",
+        "weight": 0.5665245301141176
+      },
+      {
+        "direction": -1,
+        "feature_digest": "baea398a43ab4d1f1d63a1acdfa4843d1e058adef4929fdacc406f65bc01357e",
+        "feature_id": "a2-momentum-20",
+        "weight": 0.2439014894390015
+      },
+      {
+        "direction": 1,
+        "feature_digest": "1294dcf766a8a0c900d9fffcfa943decf3e5662060d02c48fda217d5758e8ca4",
+        "feature_id": "a2-low-realized-variance",
+        "weight": 0.189573980446881
+      }
+    ],
+    "development_report_id": "factor-quant-f16006b9538fa652507d25d2",
+    "ensemble_id": "ashare-frozen-factor-ensemble-6a31c0729e921ebf3b5ae55c",
+    "primary_label": "forward_simple_return_1",
+    "quality_metric": "rank_icir",
+    "schema_version": "finagent.ashare-frozen-factor-ensemble.v1",
+    "selection_id": "factor-ensemble-selection-4c2dcbea267dcebe9b5168e6"
+  },
+  "mode": "replay",
+  "passed": true,
+  "reserve": {
+    "end": "2026-08-22",
+    "start": "2025-01-01",
+    "status": "untouched"
+  },
+  "schema_version": "finagent.ashare-factor-research-acceptance.v1",
+  "scope": "bounded historical daily factor research only; no A-share execution, promotion, sealed holdout, paper or realtime claim",
+  "universe_policy": {
+    "candidate_selection_id": "ashare-candidate-universe-fc8bd3c86ac304f2d24a8da4",
+    "config": {
+      "exclude_st": true,
+      "liquidity_lookback": 20,
+      "min_close": 1.0,
+      "min_liquidity_observations": 10,
+      "min_listed_days": 120,
+      "min_median_amount_cny": 5000000.0
+    },
+    "data_version": "ashare-universe-policy-75eabbbf249f3d2f15e99a51",
+    "report_id": "ashare-universe-policy-e15199328e6c32b1f054db48",
+    "schema_version": "finagent.ashare-research-universe-policy.v1",
+    "splits": {
+      "development": {
+        "assets": 150,
+        "average_eligible_assets": 140.82117163412127,
+        "eligible_cells": 137019,
+        "maximum_eligible_assets": 145,
+        "minimum_eligible_assets": 0,
+        "rejected_counts": {
+          "base_ineligible": 6579,
+          "liquidity": 1449,
+          "listed_days": 0,
+          "price": 19,
+          "st": 912
+        },
+        "split_name": "development",
+        "timestamps": 973
+      },
+      "validation": {
+        "assets": 150,
+        "average_eligible_assets": 140.1129476584022,
+        "eligible_cells": 101722,
+        "maximum_eligible_assets": 143,
+        "minimum_eligible_assets": 0,
+        "rejected_counts": {
+          "base_ineligible": 4453,
+          "liquidity": 1314,
+          "listed_days": 0,
+          "price": 0,
+          "st": 1429
+        },
+        "split_name": "validation",
+        "timestamps": 726
+      }
+    }
+  },
+  "validation_comparison": {
+    "best_single_feature_digest": "1294dcf766a8a0c900d9fffcfa943decf3e5662060d02c48fda217d5758e8ca4",
+    "best_single_long_short_sharpe": 0.10327785886076321,
+    "best_single_rank_icir": 0.23260226455309096,
+    "ensemble_long_short_sharpe": -0.5235355884049178,
+    "ensemble_minus_best_single_long_short_sharpe": 0.4202577295441545,
+    "ensemble_minus_best_single_rank_icir": -0.18299425672591993,
+    "ensemble_rank_icir": 0.04960800782717103
+  },
+  "validation_ensemble": {
+    "coverage": 0.9860682792255776,
+    "feature_digest": "ashare-frozen-factor-ensemble-6a31c0729e921ebf3b5ae55c",
+    "feature_id": "a2-frozen-ensemble",
+    "horizon_diagnostics": {
+      "forward_simple_return_1": {
+        "label_name": "forward_simple_return_1",
+        "pearson_ic": -0.005722182549285111,
+        "pearson_icir": -0.024421651032623094,
+        "periods": 706,
+        "rank_ic": 0.01174226397049172,
+        "rank_icir": 0.04960800782717103
+      },
+      "forward_simple_return_5": {
+        "label_name": "forward_simple_return_5",
+        "pearson_ic": -0.0010934519409398936,
+        "pearson_icir": -0.00511274896546712,
+        "periods": 702,
+        "rank_ic": 0.005642661028659422,
+        "rank_icir": 0.02598951363271323
+      }
+    },
+    "primary_label": "forward_simple_return_1",
+    "quantile_diagnostics": {
+      "long_short_mean_return": -0.0004149785969539705,
+      "long_short_sharpe": -0.5235355884049178,
+      "mean_one_way_turnover": 0.30488364644901483,
+      "periods": 695,
+      "quantile_mean_returns": [
+        0.0002766719808319494,
+        0.0005370892356487745,
+        0.00044524132025126266,
+        0.00016516375572500324,
+        -0.0001383066161220211
+      ]
+    }
+  },
+  "validation_report": {
+    "candidates": [
+      {
+        "coverage": 1.0,
+        "feature_digest": "baea398a43ab4d1f1d63a1acdfa4843d1e058adef4929fdacc406f65bc01357e",
+        "feature_id": "a2-momentum-20",
+        "horizon_diagnostics": {
+          "forward_simple_return_1": {
+            "label_name": "forward_simple_return_1",
+            "pearson_ic": 0.009317503104803088,
+            "pearson_icir": 0.03689755834053064,
+            "periods": 716,
+            "rank_ic": -0.0025050265685169983,
+            "rank_icir": -0.00977191992215871
+          },
+          "forward_simple_return_5": {
+            "label_name": "forward_simple_return_5",
+            "pearson_ic": 0.0015506714280993541,
+            "pearson_icir": 0.006606195519722362,
+            "periods": 712,
+            "rank_ic": -0.0011602048861318645,
+            "rank_icir": -0.004906241706117512
+          }
+        },
+        "primary_label": "forward_simple_return_1",
+        "quantile_diagnostics": {
+          "long_short_mean_return": 0.0004440867946258083,
+          "long_short_sharpe": 0.5263511433725702,
+          "mean_one_way_turnover": 0.17164758732646662,
+          "periods": 704,
+          "quantile_mean_returns": [
+            -3.5004801772196926e-05,
+            0.00016502064772129857,
+            0.00022466311324736236,
+            0.0004325227369829968,
+            0.0004090819928536115
+          ]
+        }
+      },
+      {
+        "coverage": 1.0,
+        "feature_digest": "8f9b8b214d0eb40fc34b93024585e2b67d6a8116394ecdcf22396845d67b058c",
+        "feature_id": "a2-reversal-5",
+        "horizon_diagnostics": {
+          "forward_simple_return_1": {
+            "label_name": "forward_simple_return_1",
+            "pearson_ic": -0.007409501642682137,
+            "pearson_icir": -0.03216742158011516,
+            "periods": 716,
+            "rank_ic": 0.004235399103543344,
+            "rank_icir": 0.01780755800603461
+          },
+          "forward_simple_return_5": {
+            "label_name": "forward_simple_return_5",
+            "pearson_ic": -0.008991277703435923,
+            "pearson_icir": -0.04259450586313673,
+            "periods": 712,
+            "rank_ic": -0.006865680873232915,
+            "rank_icir": -0.03148556409695537
+          }
+        },
+        "primary_label": "forward_simple_return_1",
+        "quantile_diagnostics": {
+          "long_short_mean_return": -0.00030699860675926247,
+          "long_short_sharpe": -0.3951180286615732,
+          "mean_one_way_turnover": 0.34378236257277206,
+          "periods": 704,
+          "quantile_mean_returns": [
+            0.0001954724765317874,
+            0.0005677302532211676,
+            0.0003285266862002105,
+            0.00020720942968782653,
+            -0.00011152613022747502
+          ]
+        }
+      },
+      {
+        "coverage": 1.0,
+        "feature_digest": "bb7e0c289e20dda6d86f29fd60f1ec83fc1c726acecb7e24c2d3e1f5564c062f",
+        "feature_id": "a2-volume-confirmed-momentum",
+        "horizon_diagnostics": {
+          "forward_simple_return_1": {
+            "label_name": "forward_simple_return_1",
+            "pearson_ic": 0.001261832891944638,
+            "pearson_icir": 0.00584221256110247,
+            "periods": 716,
+            "rank_ic": -0.007653783308860597,
+            "rank_icir": -0.033776974252293326
+          },
+          "forward_simple_return_5": {
+            "label_name": "forward_simple_return_5",
+            "pearson_ic": 0.0012931825728258461,
+            "pearson_icir": 0.006448608599569991,
+            "periods": 712,
+            "rank_ic": -0.001145104351585439,
+            "rank_icir": -0.005446055013521898
+          }
+        },
+        "primary_label": "forward_simple_return_1",
+        "quantile_diagnostics": {
+          "long_short_mean_return": 0.0002058025881258499,
+          "long_short_sharpe": 0.2757974132575646,
+          "mean_one_way_turnover": 0.38987191418495293,
+          "periods": 704,
+          "quantile_mean_returns": [
+            -3.0411810660785615e-05,
+            0.00027323844493432216,
+            0.0003626922872846093,
+            0.0004195235483258388,
+            0.0001753907774650643
+          ]
+        }
+      },
+      {
+        "coverage": 0.9838677965435205,
+        "feature_digest": "1294dcf766a8a0c900d9fffcfa943decf3e5662060d02c48fda217d5758e8ca4",
+        "feature_id": "a2-low-realized-variance",
+        "horizon_diagnostics": {
+          "forward_simple_return_1": {
+            "label_name": "forward_simple_return_1",
+            "pearson_ic": 0.01302723576143688,
+            "pearson_icir": 0.05831850464944426,
+            "periods": 706,
+            "rank_ic": 0.051108858998083366,
+            "rank_icir": 0.23260226455309096
+          },
+          "forward_simple_return_5": {
+            "label_name": "forward_simple_return_5",
+            "pearson_ic": 0.027676533592568303,
+            "pearson_icir": 0.13125538442936158,
+            "periods": 702,
+            "rank_ic": 0.06355664201303197,
+            "rank_icir": 0.2885727738716521
+          }
+        },
+        "primary_label": "forward_simple_return_1",
+        "quantile_diagnostics": {
+          "long_short_mean_return": 7.450696306101557e-05,
+          "long_short_sharpe": 0.10327785886076321,
+          "mean_one_way_turnover": 0.07797079249572428,
+          "periods": 695,
+          "quantile_mean_returns": [
+            0.00033448204209839805,
+            0.00011412798498223885,
+            6.488944340556692e-05,
+            0.0003787776787524255,
+            0.0004089890051594137
+          ]
+        }
+      },
+      {
+        "coverage": 1.0,
+        "feature_digest": "d21f9aee52a45ae6c7128c2e88f8ff28dbc85dfa264d5574c89feaf9a6b9c9ba",
+        "feature_id": "a2-small-size",
+        "horizon_diagnostics": {
+          "forward_simple_return_1": {
+            "label_name": "forward_simple_return_1",
+            "pearson_ic": -0.0017962012452445966,
+            "pearson_icir": -0.009096233473563265,
+            "periods": 716,
+            "rank_ic": -0.009279957306676943,
+            "rank_icir": -0.04236614759666053
+          },
+          "forward_simple_return_5": {
+            "label_name": "forward_simple_return_5",
+            "pearson_ic": -0.008517394969709609,
+            "pearson_icir": -0.0419464244393825,
+            "periods": 712,
+            "rank_ic": -0.01728514983835827,
+            "rank_icir": -0.08027500962759594
+          }
+        },
+        "primary_label": "forward_simple_return_1",
+        "quantile_diagnostics": {
+          "long_short_mean_return": 0.00010699863106299963,
+          "long_short_sharpe": 0.16702678653985512,
+          "mean_one_way_turnover": 0.010499468204209585,
+          "periods": 704,
+          "quantile_mean_returns": [
+            0.00015256352643770014,
+            0.00013571689374532897,
+            0.00023044108468154664,
+            0.0004207643933150533,
+            0.0002595621575006998
+          ]
+        }
+      }
+    ],
+    "data_version": "local-ashare-frozen-96f1a2c07f285e6ff41575cf",
+    "factor_value_correlations": {
+      "1294dcf766a8a0c900d9fffcfa943decf3e5662060d02c48fda217d5758e8ca4|8f9b8b214d0eb40fc34b93024585e2b67d6a8116394ecdcf22396845d67b058c": -0.02520178879698224,
+      "1294dcf766a8a0c900d9fffcfa943decf3e5662060d02c48fda217d5758e8ca4|baea398a43ab4d1f1d63a1acdfa4843d1e058adef4929fdacc406f65bc01357e": -0.05649489948106805,
+      "1294dcf766a8a0c900d9fffcfa943decf3e5662060d02c48fda217d5758e8ca4|bb7e0c289e20dda6d86f29fd60f1ec83fc1c726acecb7e24c2d3e1f5564c062f": -0.008037011817241988,
+      "1294dcf766a8a0c900d9fffcfa943decf3e5662060d02c48fda217d5758e8ca4|d21f9aee52a45ae6c7128c2e88f8ff28dbc85dfa264d5574c89feaf9a6b9c9ba": -0.062351828462954,
+      "8f9b8b214d0eb40fc34b93024585e2b67d6a8116394ecdcf22396845d67b058c|baea398a43ab4d1f1d63a1acdfa4843d1e058adef4929fdacc406f65bc01357e": -0.4369355090115646,
+      "8f9b8b214d0eb40fc34b93024585e2b67d6a8116394ecdcf22396845d67b058c|bb7e0c289e20dda6d86f29fd60f1ec83fc1c726acecb7e24c2d3e1f5564c062f": -0.91318953098911,
+      "8f9b8b214d0eb40fc34b93024585e2b67d6a8116394ecdcf22396845d67b058c|d21f9aee52a45ae6c7128c2e88f8ff28dbc85dfa264d5574c89feaf9a6b9c9ba": 0.052382107517184764,
+      "baea398a43ab4d1f1d63a1acdfa4843d1e058adef4929fdacc406f65bc01357e|bb7e0c289e20dda6d86f29fd60f1ec83fc1c726acecb7e24c2d3e1f5564c062f": 0.44411542026736334,
+      "baea398a43ab4d1f1d63a1acdfa4843d1e058adef4929fdacc406f65bc01357e|d21f9aee52a45ae6c7128c2e88f8ff28dbc85dfa264d5574c89feaf9a6b9c9ba": -0.07725052275207377,
+      "bb7e0c289e20dda6d86f29fd60f1ec83fc1c726acecb7e24c2d3e1f5564c062f|d21f9aee52a45ae6c7128c2e88f8ff28dbc85dfa264d5574c89feaf9a6b9c9ba": -0.02449144862409512
+    },
+    "primary_label": "forward_simple_return_1",
+    "report_id": "factor-quant-d2418acda51e2c5c8165a946",
+    "schema_version": "finagent.factor-quant-report.v2",
+    "scope": "development_only_factor_quant_diagnostics",
+    "split_name": "validation"
+  }
+}

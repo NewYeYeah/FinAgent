@@ -1,0 +1,18 @@
+{
+  "alpha_authority": false,
+  "alpha_gate_assessment_id": "us-r1-alpha-gate-assessment-b17c29760e78a55906b3eac9",
+  "alpha_gate_authority": true,
+  "alpha_gate_review_id": "us-r1-alpha-gate-review-eb56532850e3925100f43e43",
+  "denominator_id": "us-r1-denominator-be5184ac3883b0799c00c5dc",
+  "family_evidence_id": "us-r1-family-evidence-2d2e4657e124fc5066b05a7d",
+  "inference_graph_id": "us-r1-inference-graph-e046766caec2c08580036f2d",
+  "live_capital_authority": false,
+  "manifest_id": "us-r1-reviewed-evidence-c01346b54fad55b0d181c0ed",
+  "order_authority": false,
+  "robust_candidate_ids": [],
+  "schema_version": "finagent.us-r1-reviewed-evidence-manifest.v1",
+  "stage_exit_authority": false,
+  "status_authority": false,
+  "supports_us_x0_progression": false,
+  "terminal": "NO_ROBUST_FACTOR_FAMILY"
+}

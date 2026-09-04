@@ -1,0 +1,11 @@
+{
+  "artifact_id": "us-r1-period-metrics-4e59f53f89fdc535e29cd325",
+  "content_sha256": "1d2b4288289c662b7da190ad686720e6b6cc2dcd3de467223b4f850b81380e73",
+  "denominator_id": "us-r1-denominator-be5184ac3883b0799c00c5dc",
+  "evaluation_policy_id": "us-r1-statistical-evaluation-policy-59b2743189d62947a34fdbdb",
+  "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+  "fold_ordinal": 2,
+  "output_filename": "us_r1_period_metrics.jsonl",
+  "row_count": 43053,
+  "schema_version": "finagent.us-r1-period-metric-artifact.v1"
+}

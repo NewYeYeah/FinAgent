@@ -1,0 +1,63 @@
+{
+  "agent_value_gate_authority": false,
+  "alpha_authority": false,
+  "budget_scope": "exact_pre_generation_independent_run_plan",
+  "phase": "PILOT",
+  "plan_id": "us-agent-value-execution-plan-4312941b91abba09a44c34cb",
+  "preregistration_bundle_id": "us-agent-value-preregistration-9d592189de4ed0edf16e23c6",
+  "protocol_id": "us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03",
+  "run_spec_count": 3,
+  "run_spec_ids": [
+    "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+    "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+    "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c"
+  ],
+  "run_specs": [
+    {
+      "arm": "MANUAL",
+      "candidate_budget": 16,
+      "generator_id": "us_a0_manual_grid_v1",
+      "model_id": null,
+      "phase": "PILOT",
+      "prompt_template_id": null,
+      "protocol_id": "us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03",
+      "provider_id": null,
+      "random_seed": null,
+      "run_ordinal": 1,
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.us-agent-value-generation-run-spec.v1"
+    },
+    {
+      "arm": "PROGRAMMATIC",
+      "candidate_budget": 16,
+      "generator_id": "us_a0_seeded_uniform_without_replacement_v1",
+      "model_id": null,
+      "phase": "PILOT",
+      "prompt_template_id": null,
+      "protocol_id": "us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03",
+      "provider_id": null,
+      "random_seed": 1729,
+      "run_ordinal": 1,
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.us-agent-value-generation-run-spec.v1"
+    },
+    {
+      "arm": "AGENT",
+      "candidate_budget": 16,
+      "generator_id": "us_a0_structured_agent_generator_v1",
+      "model_id": "deepseek-v4-flash",
+      "phase": "PILOT",
+      "prompt_template_id": "us-a0-structured-candidate-v1",
+      "protocol_id": "us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03",
+      "provider_id": "deepseek",
+      "random_seed": null,
+      "run_ordinal": 1,
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.us-agent-value-generation-run-spec.v1"
+    }
+  ],
+  "schema_version": "finagent.us-agent-value-execution-plan.v1",
+  "stage_exit_authority": false,
+  "status_authority": false,
+  "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4"
+}

@@ -1,0 +1,218 @@
+{
+  "action_authority": {
+    "coverage_id": "corporate-action-coverage-4812f92e4fae339f3ccec35d",
+    "cross_session_raw_denied": true,
+    "passed": true,
+    "same_session_raw_allowed": true,
+    "schema_version": "finagent.us-d2-action-authority-smoke-check.v1",
+    "split_adjusted_denied": true,
+    "total_return_adjusted_denied": true
+  },
+  "assets": [
+    "AMD",
+    "INTC",
+    "MSFT",
+    "NVDA"
+  ],
+  "blockers": [],
+  "calendar_id": "trading-calendar-03a9c29f566d6634aedbbbdc",
+  "manifest_id": "minute-store-manifest-425d29a05cd26890d972c8f9",
+  "passed": true,
+  "policy": {
+    "calendar_id": "trading-calendar-03a9c29f566d6634aedbbbdc",
+    "minimum_assets": 4,
+    "policy_id": "us-d2-transform-smoke-policy-1c20c683e20eb0b1a910c9bf",
+    "required_scenarios": [
+      "half_day",
+      "pre_dst",
+      "post_dst"
+    ],
+    "schema_version": "finagent.us-d2-transform-smoke-policy.v1"
+  },
+  "ran_at": "2026-09-01T14:03:10.741920+00:00",
+  "report_id": "us-d2-transform-smoke-4b47e2fe2525d7f599d6579f",
+  "scenarios": [
+    {
+      "asset_count": 4,
+      "end": "2025-11-28T18:00:00+00:00",
+      "expected_regular_minutes_per_asset": 210,
+      "expected_regular_row_count": 840,
+      "labels": {
+        "available_row_count": 600,
+        "content_sha256": "34634301666ceac91e2ae7022b071f1ce3c647d056575df284d95f022003b57c",
+        "label_data_version": "label-data-version-7c665334c456f82ad688aae5",
+        "label_plan_id": "label-query-plan-6f6e14b6cbb72309b2ac2776",
+        "materialization_id": "minute-materialization-11e4d1c570d39e2d65cec038",
+        "other_unavailable_count": 0,
+        "passed": true,
+        "row_count": 840,
+        "schema_version": "finagent.us-d2-label-smoke-check.v1",
+        "target_crosses_session_count": 240,
+        "target_minute_missing_count": 0
+      },
+      "name": "half_day",
+      "passed": true,
+      "regular_1m_row_count": 840,
+      "regular_row_coverage_ratio": 1.0,
+      "resamples": [
+        {
+          "complete_row_count": 168,
+          "content_sha256": "10e7c9d798d5e521805467f484275cad64e9394d5e6e25eb162a2d8c5f4c0fb9",
+          "incomplete_row_count": 0,
+          "interval": "5m",
+          "materialization_id": "minute-materialization-6755efdd7cb44a2c54d2cbe2",
+          "minimum_coverage_ratio": 1.0,
+          "passed": true,
+          "row_count": 168,
+          "schema_version": "finagent.us-d2-resample-smoke-check.v1"
+        },
+        {
+          "complete_row_count": 56,
+          "content_sha256": "e5b831fdecc5484a82141067082fdee90f57ef4e838092fb0d1bfba3f3ea5274",
+          "incomplete_row_count": 0,
+          "interval": "15m",
+          "materialization_id": "minute-materialization-a59a7d7081ec8dbe4334771d",
+          "minimum_coverage_ratio": 1.0,
+          "passed": true,
+          "row_count": 56,
+          "schema_version": "finagent.us-d2-resample-smoke-check.v1"
+        },
+        {
+          "complete_row_count": 28,
+          "content_sha256": "48d04b656702601f085122c3a0ab5e341090fd35d063e7009a2219c57b3967f8",
+          "incomplete_row_count": 0,
+          "interval": "30m",
+          "materialization_id": "minute-materialization-ced449b5fef6f0835fe7fa6b",
+          "minimum_coverage_ratio": 1.0,
+          "passed": true,
+          "row_count": 28,
+          "schema_version": "finagent.us-d2-resample-smoke-check.v1"
+        }
+      ],
+      "schema_version": "finagent.us-d2-scenario-smoke-check.v1",
+      "start": "2025-11-28T14:30:00+00:00"
+    },
+    {
+      "asset_count": 4,
+      "end": "2026-03-06T21:00:00+00:00",
+      "expected_regular_minutes_per_asset": 390,
+      "expected_regular_row_count": 1560,
+      "labels": {
+        "available_row_count": 1320,
+        "content_sha256": "7f819558030e639c972d5f05d800310a5ca8b011adf3e78e3a6974655eb2b201",
+        "label_data_version": "label-data-version-7c665334c456f82ad688aae5",
+        "label_plan_id": "label-query-plan-7b9eac68a56a05346071f712",
+        "materialization_id": "minute-materialization-cd3b1c8b6fab65d27e52a713",
+        "other_unavailable_count": 0,
+        "passed": true,
+        "row_count": 1560,
+        "schema_version": "finagent.us-d2-label-smoke-check.v1",
+        "target_crosses_session_count": 240,
+        "target_minute_missing_count": 0
+      },
+      "name": "pre_dst",
+      "passed": true,
+      "regular_1m_row_count": 1560,
+      "regular_row_coverage_ratio": 1.0,
+      "resamples": [
+        {
+          "complete_row_count": 312,
+          "content_sha256": "a30ea7e416de0359dff1e4ab4b10783fddd9e1f383ef8237b5ffbb6ae0563cb6",
+          "incomplete_row_count": 0,
+          "interval": "5m",
+          "materialization_id": "minute-materialization-fb29f7a5bd89b704274bc3b1",
+          "minimum_coverage_ratio": 1.0,
+          "passed": true,
+          "row_count": 312,
+          "schema_version": "finagent.us-d2-resample-smoke-check.v1"
+        },
+        {
+          "complete_row_count": 104,
+          "content_sha256": "5bf156090f2b63b140970a130cb0628fe048480ec7d8856ac099de23d256ddf4",
+          "incomplete_row_count": 0,
+          "interval": "15m",
+          "materialization_id": "minute-materialization-4b664fdfdab41c6f9813a0cb",
+          "minimum_coverage_ratio": 1.0,
+          "passed": true,
+          "row_count": 104,
+          "schema_version": "finagent.us-d2-resample-smoke-check.v1"
+        },
+        {
+          "complete_row_count": 52,
+          "content_sha256": "becd0a41738cdec348e06c619652074a0a45654ff819d4a12a1d4b91550537b1",
+          "incomplete_row_count": 0,
+          "interval": "30m",
+          "materialization_id": "minute-materialization-f209c4249fcc5b0f9b6ba925",
+          "minimum_coverage_ratio": 1.0,
+          "passed": true,
+          "row_count": 52,
+          "schema_version": "finagent.us-d2-resample-smoke-check.v1"
+        }
+      ],
+      "schema_version": "finagent.us-d2-scenario-smoke-check.v1",
+      "start": "2026-03-06T14:30:00+00:00"
+    },
+    {
+      "asset_count": 4,
+      "end": "2026-03-09T20:00:00+00:00",
+      "expected_regular_minutes_per_asset": 390,
+      "expected_regular_row_count": 1560,
+      "labels": {
+        "available_row_count": 1320,
+        "content_sha256": "d632e6b00c806ed68216ee03a9b53dad197b75f123b8196941cbd1598ba41aa1",
+        "label_data_version": "label-data-version-7c665334c456f82ad688aae5",
+        "label_plan_id": "label-query-plan-e3ba31aff1a52e1237443f32",
+        "materialization_id": "minute-materialization-8f6536a1b44053a616972195",
+        "other_unavailable_count": 0,
+        "passed": true,
+        "row_count": 1560,
+        "schema_version": "finagent.us-d2-label-smoke-check.v1",
+        "target_crosses_session_count": 240,
+        "target_minute_missing_count": 0
+      },
+      "name": "post_dst",
+      "passed": true,
+      "regular_1m_row_count": 1560,
+      "regular_row_coverage_ratio": 1.0,
+      "resamples": [
+        {
+          "complete_row_count": 312,
+          "content_sha256": "6b930b7cca04d664aa34ea00f62233cadcce1fee527e895b9664685c9067992a",
+          "incomplete_row_count": 0,
+          "interval": "5m",
+          "materialization_id": "minute-materialization-abca4b0cc5d4ed81743533a4",
+          "minimum_coverage_ratio": 1.0,
+          "passed": true,
+          "row_count": 312,
+          "schema_version": "finagent.us-d2-resample-smoke-check.v1"
+        },
+        {
+          "complete_row_count": 104,
+          "content_sha256": "fe226f99f0229a957392ac1c4490df8801f7b951b8b29038123440474001336a",
+          "incomplete_row_count": 0,
+          "interval": "15m",
+          "materialization_id": "minute-materialization-7545096a8b95a9749e456dba",
+          "minimum_coverage_ratio": 1.0,
+          "passed": true,
+          "row_count": 104,
+          "schema_version": "finagent.us-d2-resample-smoke-check.v1"
+        },
+        {
+          "complete_row_count": 52,
+          "content_sha256": "85e8b660031d00970f00aaa680bd8f2a3660ecc7ae47231b2881f06b420e1914",
+          "incomplete_row_count": 0,
+          "interval": "30m",
+          "materialization_id": "minute-materialization-bff994eee3d69c4b81f53883",
+          "minimum_coverage_ratio": 1.0,
+          "passed": true,
+          "row_count": 52,
+          "schema_version": "finagent.us-d2-resample-smoke-check.v1"
+        }
+      ],
+      "schema_version": "finagent.us-d2-scenario-smoke-check.v1",
+      "start": "2026-03-09T13:30:00+00:00"
+    }
+  ],
+  "schema_version": "finagent.us-d2-transform-smoke-report.v1",
+  "source_data_version": "minute-data-version-999f210df720fd8d9c998fd9"
+}

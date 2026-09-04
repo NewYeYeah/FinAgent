@@ -1,0 +1,61 @@
+{
+  "alpha_authority": false,
+  "calendar_id": "trading-calendar-03a9c29f566d6634aedbbbdc",
+  "direction_selection": "train_15m_60m_rank_ic_sign_only",
+  "evaluation_semantics": "oos_only_after_entire_excluded_gap",
+  "fold_count": 3,
+  "folds": [
+    {
+      "embargo_trading_minutes": 60,
+      "evaluation_end": "2026-03-02T00:00:00+00:00",
+      "evaluation_start": "2026-02-17T00:00:00+00:00",
+      "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+      "gap_end": "2026-02-17T00:00:00+00:00",
+      "gap_semantics": "entire_pre_evaluation_validation_window_excluded; formal runner verifies XNYS regular-session minutes >= purge+embargo",
+      "gap_start": "2026-02-02T00:00:00+00:00",
+      "ordinal": 1,
+      "purge_trading_minutes": 60,
+      "required_gap_trading_minutes": 120,
+      "schema_version": "finagent.us-r1-walk-forward-fold.v1",
+      "train_end": "2026-02-02T00:00:00+00:00",
+      "train_start": "2026-01-02T00:00:00+00:00"
+    },
+    {
+      "embargo_trading_minutes": 60,
+      "evaluation_end": "2026-03-16T00:00:00+00:00",
+      "evaluation_start": "2026-03-02T00:00:00+00:00",
+      "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+      "gap_end": "2026-03-02T00:00:00+00:00",
+      "gap_semantics": "entire_pre_evaluation_validation_window_excluded; formal runner verifies XNYS regular-session minutes >= purge+embargo",
+      "gap_start": "2026-02-17T00:00:00+00:00",
+      "ordinal": 2,
+      "purge_trading_minutes": 60,
+      "required_gap_trading_minutes": 120,
+      "schema_version": "finagent.us-r1-walk-forward-fold.v1",
+      "train_end": "2026-02-17T00:00:00+00:00",
+      "train_start": "2026-01-02T00:00:00+00:00"
+    },
+    {
+      "embargo_trading_minutes": 60,
+      "evaluation_end": "2026-03-30T00:00:00+00:00",
+      "evaluation_start": "2026-03-16T00:00:00+00:00",
+      "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+      "gap_end": "2026-03-16T00:00:00+00:00",
+      "gap_semantics": "entire_pre_evaluation_validation_window_excluded; formal runner verifies XNYS regular-session minutes >= purge+embargo",
+      "gap_start": "2026-03-02T00:00:00+00:00",
+      "ordinal": 3,
+      "purge_trading_minutes": 60,
+      "required_gap_trading_minutes": 120,
+      "schema_version": "finagent.us-r1-walk-forward-fold.v1",
+      "train_end": "2026-03-02T00:00:00+00:00",
+      "train_start": "2026-01-02T00:00:00+00:00"
+    }
+  ],
+  "market_id": "XNYS",
+  "protocol_id": "us-r1-walk-forward-bc5e8d07026b0ef1627002a1",
+  "research_protocol_id": "us-r1-protocol-451a26b7217b52cbb20d2449",
+  "schema_version": "finagent.us-r1-walk-forward-protocol.v1",
+  "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+  "stage_exit_authority": false,
+  "status_authority": false
+}

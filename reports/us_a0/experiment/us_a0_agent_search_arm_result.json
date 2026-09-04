@@ -1,0 +1,54 @@
+{
+  "accepted_candidate_count": 16,
+  "agent_value_gate_authority": false,
+  "alpha_authority": false,
+  "arm": "AGENT",
+  "blockers": [],
+  "duplicate_rate": 0.0,
+  "duplicate_slot_count": 0,
+  "evaluation_link_ids": [
+    "us-agent-value-run-evaluation-link-3f411b86dd70995cd3282b15"
+  ],
+  "evaluation_links": [
+    {
+      "authoritative_evidence_id": "us-agent-value-run-evaluation-19328315bba55de5623eac87",
+      "best_mean_rank_ic": 0.03207218309739601,
+      "best_worst_fold_rank_ic": 0.008368998176039514,
+      "blockers": [],
+      "evaluated_candidate_count": 16,
+      "generation_run_id": "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7",
+      "link_id": "us-agent-value-run-evaluation-link-3f411b86dd70995cd3282b15",
+      "metric_authority": "copied_from_authoritative_split_bound_evidence_not_recomputed_here",
+      "passed": true,
+      "schema_version": "finagent.us-agent-value-run-evaluation-link.v1",
+      "valid_candidate_count": 16
+    }
+  ],
+  "generation_run_ids": [
+    "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+  ],
+  "generation_run_spec_ids": [
+    "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c"
+  ],
+  "independent_run_count": 1,
+  "invalid_rate": 0.0,
+  "invalid_slot_count": 0,
+  "passed": true,
+  "phase": "PILOT",
+  "protocol_id": "us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03",
+  "repair_count": 0,
+  "replacement_count": 0,
+  "result_id": "us-agent-value-search-arm-result-479a2dbdb2c4d1a21d3f1b41",
+  "schema_version": "finagent.search-arm-result.v1",
+  "stage_exit_authority": false,
+  "trial_count": 16,
+  "usage": {
+    "cost_usd": 0.00574186,
+    "input_tokens": 10327,
+    "latency_ms": 68053.52279999715,
+    "llm_calls": 16,
+    "output_tokens": 7736,
+    "total_tokens": 18063
+  },
+  "valid_candidate_rate": 1.0
+}

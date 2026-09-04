@@ -1,0 +1,9 @@
+{
+  "artifact_id": "us-baseline-observations-89829ffd82cfd4fb69c14bbf",
+  "content_sha256": "de9cf06447b2bb21cb74d23b02044ed9999b84e6378c8f6a468a6c2236c7c5a5",
+  "denominator_id": "us-agent-value-evaluation-denominator-53abe33cf4b5cabfccbd05f1",
+  "output_filename": "us_a0_observations.jsonl",
+  "row_count": 93552,
+  "run_spec_id": "us-baseline-run-spec-03b7214f6d7e6a717acb2b6f",
+  "schema_version": "finagent.us-baseline-observation-artifact.v1"
+}

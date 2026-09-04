@@ -1,0 +1,106 @@
+{
+  "blockers": [],
+  "broker_account_authority": false,
+  "capability_probe_id": "mt5-capability-probe-d2b40bb3e6144eb269e26569",
+  "clock_evidence_id": "mt5-broker-clock-evidence-8e335d6b62fbc4952875c01a",
+  "event_count": 4,
+  "events": [
+    {
+      "event_id": "realtime-event-67882cad459e0f599dc4e8dc",
+      "event_time": "2026-09-03T16:03:28.911428+00:00",
+      "kind": "CONNECTION",
+      "payload": {
+        "connection_id": "mt5:TradeMaxGlobal-Live",
+        "reason": "read-only MT5 terminal capability observation",
+        "status": "CONNECTED"
+      },
+      "received_at": "2026-09-03T16:03:28.911428+00:00",
+      "schema_version": "finagent.realtime-connection-event.v1",
+      "sequence": 0,
+      "source": "mt5.readonly.connection",
+      "source_event_id": "mt5-connection-observation-45e6facc8e75b6e7a6841216"
+    },
+    {
+      "event_id": "realtime-event-31689ace1ac23109c3d6c083",
+      "event_time": "2026-09-03T16:03:26.547000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 1.16243,
+        "ask_size": null,
+        "bid": 1.16236,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "EURUSD"
+      },
+      "received_at": "2026-09-03T16:03:28.921482+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 0,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-4c179191c368382ab48e4eb6"
+    },
+    {
+      "event_id": "realtime-event-1fd635373fbffb31246f249c",
+      "event_time": "2026-09-03T16:03:26.566000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 1.35343,
+        "ask_size": null,
+        "bid": 1.35335,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "GBPUSD"
+      },
+      "received_at": "2026-09-03T16:03:28.921482+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 1,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-ba377d29794ac1ad05f326d6"
+    },
+    {
+      "event_id": "realtime-event-801873ac1f1bb9c7b0e40497",
+      "event_time": "2026-09-03T16:03:26.936000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 155.365,
+        "ask_size": null,
+        "bid": 155.357,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "USDJPY"
+      },
+      "received_at": "2026-09-03T16:03:28.921482+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 2,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-9fbac414dae947838217c5ad"
+    }
+  ],
+  "execution_authority": false,
+  "feed_lane_inferred": false,
+  "generated_at": "2026-09-03T16:03:28.921482+00:00",
+  "implementation_ready_for_mt5_m1_acceptance": true,
+  "live_capital_authority": false,
+  "live_market_data_authority": false,
+  "order_send_used": false,
+  "paper_authority": false,
+  "passed": true,
+  "policy": {
+    "bar_source": "mt5.readonly.bar",
+    "broker_server": "TradeMaxGlobal-Live",
+    "connection_source": "mt5.readonly.connection",
+    "feed_lane": "fx_continuous_engineering_fixture",
+    "feed_lane_inferred": false,
+    "mutation_authority": false,
+    "policy_id": "mt5-realtime-adapter-policy-554ee305160a4065b08cc8f7",
+    "quote_source": "mt5.readonly.quote",
+    "read_only": true,
+    "schema_version": "finagent.mt5-realtime-adapter-policy.v1"
+  },
+  "read_only": true,
+  "report_id": "mt5-realtime-adapter-5bab8c7d5d227bd8a8d0b305",
+  "schema_version": "finagent.mt5-realtime-adapter-report.v1",
+  "stage_exit_authority": false,
+  "status_authority": false,
+  "symbol_select_used": false,
+  "us_market_source_authority": false
+}

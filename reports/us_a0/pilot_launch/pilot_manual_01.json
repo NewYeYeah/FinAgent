@@ -1,0 +1,801 @@
+{
+  "accepted_candidate_count": 16,
+  "accepted_candidate_ids": [
+    "us-agent-value-candidate-32151417ddc1442a6d10eec8",
+    "us-agent-value-candidate-340fbb96b15a633238d5fb63",
+    "us-agent-value-candidate-f131706d527cb8cbc40116fc",
+    "us-agent-value-candidate-2661049725ff182d0c04087f",
+    "us-agent-value-candidate-0da826673af58f71ed8252e6",
+    "us-agent-value-candidate-94f6f66824f90ff829727254",
+    "us-agent-value-candidate-98d3f18bed490c671cbb9e74",
+    "us-agent-value-candidate-ab398bc3d19261ecff036331",
+    "us-agent-value-candidate-9ed2d6a987c83d51f5339dca",
+    "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+    "us-agent-value-candidate-d0a398f8a38ca304cad983d1",
+    "us-agent-value-candidate-ae2d2c97a446bd0fad29ad80",
+    "us-agent-value-candidate-93ce47e9d4e8e803db00b016",
+    "us-agent-value-candidate-017d20c6abef5affa9b03b68",
+    "us-agent-value-candidate-cb59c3fc6d45deca3dc71613",
+    "us-agent-value-candidate-60b8299c009e84abae2fcb99"
+  ],
+  "agent_value_gate_authority": false,
+  "alpha_authority": false,
+  "candidate_budget": 16,
+  "duplicate_slot_count": 0,
+  "event_count": 16,
+  "events": [
+    {
+      "arm": "MANUAL",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-32151417ddc1442a6d10eec8",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:2",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 2
+      },
+      "candidate_id": "us-agent-value-candidate-32151417ddc1442a6d10eec8",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-6cd28324b3ec4749f514edf6",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Pre-registered MANUAL structural candidate; not performance-selected.",
+        "kind": "reversal",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-c2120b507674fcf160ae5f65",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 2
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-46cf66d7901ebcb977bba7d7",
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 1,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "MANUAL",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-340fbb96b15a633238d5fb63",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:3",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 3
+      },
+      "candidate_id": "us-agent-value-candidate-340fbb96b15a633238d5fb63",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-5c8f657f43fa631438623cfc",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Pre-registered MANUAL structural candidate; not performance-selected.",
+        "kind": "reversal",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-55c34d3a50bbe367f619466a",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 3
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-b6ba57e872b615d3cd4b5e20",
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 2,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "MANUAL",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-f131706d527cb8cbc40116fc",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:5",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 5
+      },
+      "candidate_id": "us-agent-value-candidate-f131706d527cb8cbc40116fc",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-37661710613b9566d4886c42",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Pre-registered MANUAL structural candidate; not performance-selected.",
+        "kind": "momentum",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-f0dc1cd40a82e5d344c83a57",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 5
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-5a732d1c4efcbed7652b04cf",
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 3,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "MANUAL",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-2661049725ff182d0c04087f",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:9",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 9
+      },
+      "candidate_id": "us-agent-value-candidate-2661049725ff182d0c04087f",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-2e0d92a5c861ef1f4411d541",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Pre-registered MANUAL structural candidate; not performance-selected.",
+        "kind": "momentum",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-269985b127dde5d3a568a17b",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 9
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-5e88b09f130753db888b1000",
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 4,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "MANUAL",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-0da826673af58f71ed8252e6",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:4",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 4
+      },
+      "candidate_id": "us-agent-value-candidate-0da826673af58f71ed8252e6",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-3ca0ea1eb5187c2047e153bc",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Pre-registered MANUAL structural candidate; not performance-selected.",
+        "kind": "range_mean",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-30571ef31af739852b69c00a",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 4
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-044acabc710cffe147510b6a",
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 5,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "MANUAL",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-94f6f66824f90ff829727254",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "return_volatility",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "return_volatility:5",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 5
+      },
+      "candidate_id": "us-agent-value-candidate-94f6f66824f90ff829727254",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-3e7f5b132a3973ffb47e3d80",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Pre-registered MANUAL structural candidate; not performance-selected.",
+        "kind": "return_volatility",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-c92fdc8f888f81e03d86785e",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 5
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-496ab679435284a9f9c99c19",
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 6,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "MANUAL",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-98d3f18bed490c671cbb9e74",
+        "input_fields": [
+          "volume"
+        ],
+        "kind": "volume_surprise",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "volume_surprise:9",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 9
+      },
+      "candidate_id": "us-agent-value-candidate-98d3f18bed490c671cbb9e74",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-c0c46564c5effddd524b0732",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Pre-registered MANUAL structural candidate; not performance-selected.",
+        "kind": "volume_surprise",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-587933ee1e2d66e1fa09f940",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 9
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-b7228bdbf6efad30170e27ae",
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 7,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "MANUAL",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-ab398bc3d19261ecff036331",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "close_location",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "close_location:1",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 1
+      },
+      "candidate_id": "us-agent-value-candidate-ab398bc3d19261ecff036331",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-e11b0cfca21ed837ac93321e",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Pre-registered MANUAL structural candidate; not performance-selected.",
+        "kind": "close_location",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-2c0ecbfd343cfc1f04b298a9",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 1
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-bbc5409e2f4f309d9446ad90",
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 8,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "MANUAL",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-9ed2d6a987c83d51f5339dca",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:2",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 2
+      },
+      "candidate_id": "us-agent-value-candidate-9ed2d6a987c83d51f5339dca",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-c83f65ef25bef6efadb63fc7",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Pre-registered MANUAL structural candidate; not performance-selected.",
+        "kind": "momentum",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-a854ab2120cae6b6670a8065",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 2
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-f605aaac91c5f9662481f535",
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 9,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "MANUAL",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:3",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 3
+      },
+      "candidate_id": "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-62fb75011134091b299da33c",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Pre-registered MANUAL structural candidate; not performance-selected.",
+        "kind": "momentum",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-e27490cb6e233cbce98d8571",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 3
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-e9c0db13d33eefe8a9fee542",
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 10,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "MANUAL",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-d0a398f8a38ca304cad983d1",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:5",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 5
+      },
+      "candidate_id": "us-agent-value-candidate-d0a398f8a38ca304cad983d1",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-ae5d1508da0ae9f4b4f253db",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Pre-registered MANUAL structural candidate; not performance-selected.",
+        "kind": "reversal",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-a4fab12b3ee4aa8530d0f770",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 5
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-5e1f50298fd64cf5c2fed37f",
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 11,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "MANUAL",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-ae2d2c97a446bd0fad29ad80",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:9",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 9
+      },
+      "candidate_id": "us-agent-value-candidate-ae2d2c97a446bd0fad29ad80",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-26ce9f1a595b677c93163e93",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Pre-registered MANUAL structural candidate; not performance-selected.",
+        "kind": "reversal",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-fccdd5c3bcd89de7ebe9ea81",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 9
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-684d04978df4dd51bb50c046",
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 12,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "MANUAL",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-93ce47e9d4e8e803db00b016",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:1",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 1
+      },
+      "candidate_id": "us-agent-value-candidate-93ce47e9d4e8e803db00b016",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-c25449b0656ef66162a184c7",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Pre-registered MANUAL structural candidate; not performance-selected.",
+        "kind": "range_mean",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-49bf4f4a150656847d215149",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 1
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-6b539b6472c3c313db2467d0",
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 13,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "MANUAL",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-017d20c6abef5affa9b03b68",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:8",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 8
+      },
+      "candidate_id": "us-agent-value-candidate-017d20c6abef5affa9b03b68",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-2d44b24fbdb72f4a7c513b87",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Pre-registered MANUAL structural candidate; not performance-selected.",
+        "kind": "range_mean",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-c50ec02a11fb1e3cb324ad3b",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 8
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-dea3e958d1301aeba486900a",
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 14,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "MANUAL",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-cb59c3fc6d45deca3dc71613",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "return_volatility",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "return_volatility:9",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 9
+      },
+      "candidate_id": "us-agent-value-candidate-cb59c3fc6d45deca3dc71613",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-8155161585ff2ae6a946d3cb",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Pre-registered MANUAL structural candidate; not performance-selected.",
+        "kind": "return_volatility",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-544b50eb02dd46d008462cb8",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 9
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-500c2f2494ece162abca1f3a",
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 15,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "MANUAL",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-60b8299c009e84abae2fcb99",
+        "input_fields": [
+          "volume"
+        ],
+        "kind": "volume_surprise",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "volume_surprise:5",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 5
+      },
+      "candidate_id": "us-agent-value-candidate-60b8299c009e84abae2fcb99",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-93df640311d734d12f3e57ae",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Pre-registered MANUAL structural candidate; not performance-selected.",
+        "kind": "volume_surprise",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-82ae93c43d83a56e75785701",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 5
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-fe88a26b37158403984cba9b",
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 16,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    }
+  ],
+  "invalid_slot_count": 0,
+  "repair_count": 0,
+  "replacement_count": 0,
+  "run_id": "us-agent-value-generation-run-cf34df9b22107cbc37405849",
+  "schema_version": "finagent.candidate-generation-run.v1",
+  "spec": {
+    "arm": "MANUAL",
+    "candidate_budget": 16,
+    "generator_id": "us_a0_manual_grid_v1",
+    "model_id": null,
+    "phase": "PILOT",
+    "prompt_template_id": null,
+    "protocol_id": "us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03",
+    "provider_id": null,
+    "random_seed": null,
+    "run_ordinal": 1,
+    "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+    "schema_version": "finagent.us-agent-value-generation-run-spec.v1"
+  },
+  "stage_exit_authority": false,
+  "usage": {
+    "cost_usd": 0.0,
+    "input_tokens": 0,
+    "latency_ms": 0.0,
+    "llm_calls": 0,
+    "output_tokens": 0,
+    "schema_version": "finagent.us-agent-value-generation-usage.v1",
+    "total_tokens": 0
+  }
+}

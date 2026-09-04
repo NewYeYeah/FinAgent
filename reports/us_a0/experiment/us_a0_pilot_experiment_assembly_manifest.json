@@ -1,0 +1,24 @@
+{
+  "agent_value_gate_authority": false,
+  "alpha_authority": false,
+  "arm_result_ids": [
+    "us-agent-value-search-arm-result-7951baeb324ae8533bfec4cf",
+    "us-agent-value-search-arm-result-8bdca8b0e7dd2636390ea31b",
+    "us-agent-value-search-arm-result-479a2dbdb2c4d1a21d3f1b41"
+  ],
+  "assembly_semantics": "deterministic_from_committed_run_evidence_no_row_level_recomputation",
+  "assessment_semantics": "preregistered_machine_recommendation_before_independent_review",
+  "comparison_snapshot_id": "us-agent-value-comparison-72dc0f6e8981ce63786dabb6",
+  "evidence_graph_id": "us-agent-value-experiment-evidence-9527f71a12ded2ff661dc99f",
+  "execution_plan_id": "us-agent-value-execution-plan-4312941b91abba09a44c34cb",
+  "experiment_id": "us-agent-value-experiment-550e3477fb740780e752fc94",
+  "gate_assessment_id": "us-agent-value-gate-assessment-c94b81d805f87bc6fbdee5ba",
+  "gate_policy_id": "us-agent-value-gate-policy-3c5c42ff29892af134773010",
+  "manifest_id": "us-agent-value-pilot-experiment-assembly-ac882b838347003007c0b582",
+  "predecessor_binding_id": "us-agent-value-predecessor-19b127b5466479a1680c8e25",
+  "run_evidence_complete_checkpoint_id": "us-agent-value-pilot-checkpoint-a1ede3a66124ba4f4e74b519",
+  "run_progress_id": "us-agent-value-pilot-run-progress-7247afab8eb1569ef641c74d",
+  "schema_version": "finagent.us-agent-value-pilot-experiment-assembly-manifest.v1",
+  "stage_exit_authority": false,
+  "status_authority": false
+}

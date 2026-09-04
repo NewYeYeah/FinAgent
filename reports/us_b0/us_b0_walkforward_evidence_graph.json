@@ -1,0 +1,131 @@
+{
+  "aggregate_candidate_count": 8,
+  "aggregate_report_id": "us-baseline-walk-forward-aggregate-88131e0eb8b205a78a559525",
+  "aggregate_valid_candidate_count": 8,
+  "alpha_authority": false,
+  "blockers": [],
+  "denominator_id": "us-baseline-denominator-b8bdb313856e1f7dc652bdd9",
+  "factor_selection_authority": false,
+  "fold_count": 3,
+  "fold_evaluation_report_ids": [
+    "us-baseline-evaluation-9dcbabaacd31bff890aa7e71",
+    "us-baseline-evaluation-4fb282ee138886921654c27d",
+    "us-baseline-evaluation-07db98e57c072c24c0fea74c"
+  ],
+  "fold_execution_spec_ids": [
+    "us-baseline-fold-execution-3d2761cbcfd00fe2c8ef63c8",
+    "us-baseline-fold-execution-59c86ff5653a9722e46a9710",
+    "us-baseline-fold-execution-e5369c2ae547d2b3604572f6"
+  ],
+  "fold_manifest_ids": [
+    "us-baseline-fold-run-ce4958023e107afc76a5a121",
+    "us-baseline-fold-run-c16abc1221f6eda04dd9aa00",
+    "us-baseline-fold-run-e6f4d6b2f92ef9acd47f887a"
+  ],
+  "fold_manifests": [
+    {
+      "alpha_authority": false,
+      "blockers": [],
+      "engineering_asset_count": 25,
+      "engineering_universe_id": "engineering-universe-259e3975a25856bef28442ff",
+      "evaluation_report_id": "us-baseline-evaluation-9dcbabaacd31bff890aa7e71",
+      "execution_spec": {
+        "evaluation_end": "2026-03-02T00:00:00+00:00",
+        "evaluation_start": "2026-02-17T00:00:00+00:00",
+        "execution_spec_id": "us-baseline-fold-execution-3d2761cbcfd00fe2c8ef63c8",
+        "fold_id": "us-baseline-fold-f3edf2f91244230bf668bdea",
+        "fold_ordinal": 1,
+        "protocol_id": "us-baseline-walk-forward-abec06d0d72302fcf11958a4",
+        "purpose": "cost_free_manual_baseline_evaluation",
+        "run_spec_id": "us-baseline-run-spec-4ac2ae1d8cb95c01c8a99a11",
+        "schema_version": "finagent.us-baseline-fold-execution-spec.v1",
+        "stage_exit_authority": false
+      },
+      "factor_selection_authority": false,
+      "input_materialization_id": "minute-materialization-a05e73e9d39183555779cef2",
+      "input_plan_id": "us-baseline-input-plan-53d5d869dc8ac93a4584e535",
+      "manifest_id": "us-baseline-fold-run-ce4958023e107afc76a5a121",
+      "materialization_report_id": "us-baseline-materialization-e2c713bce26edde2f588c9bc",
+      "observation_artifact_id": "us-baseline-observations-5509c0d1bae2579e6e50bf53",
+      "passed": true,
+      "schema_version": "finagent.us-baseline-fold-run-manifest.v1",
+      "stage_exit_authority": false,
+      "status_authority": false,
+      "window_binding": "runner_enforced_exact_frozen_fold_evaluation_window"
+    },
+    {
+      "alpha_authority": false,
+      "blockers": [],
+      "engineering_asset_count": 25,
+      "engineering_universe_id": "engineering-universe-259e3975a25856bef28442ff",
+      "evaluation_report_id": "us-baseline-evaluation-4fb282ee138886921654c27d",
+      "execution_spec": {
+        "evaluation_end": "2026-03-16T00:00:00+00:00",
+        "evaluation_start": "2026-03-02T00:00:00+00:00",
+        "execution_spec_id": "us-baseline-fold-execution-59c86ff5653a9722e46a9710",
+        "fold_id": "us-baseline-fold-88d4fcd64816f7613cf60f1b",
+        "fold_ordinal": 2,
+        "protocol_id": "us-baseline-walk-forward-abec06d0d72302fcf11958a4",
+        "purpose": "cost_free_manual_baseline_evaluation",
+        "run_spec_id": "us-baseline-run-spec-4ac2ae1d8cb95c01c8a99a11",
+        "schema_version": "finagent.us-baseline-fold-execution-spec.v1",
+        "stage_exit_authority": false
+      },
+      "factor_selection_authority": false,
+      "input_materialization_id": "minute-materialization-6f6f013516acd509643b5b05",
+      "input_plan_id": "us-baseline-input-plan-321f7bb0ab95604a01ea8f4e",
+      "manifest_id": "us-baseline-fold-run-c16abc1221f6eda04dd9aa00",
+      "materialization_report_id": "us-baseline-materialization-7f1c81de7104324a0d384f94",
+      "observation_artifact_id": "us-baseline-observations-7f85d174e0e33ba7f4fbf4fd",
+      "passed": true,
+      "schema_version": "finagent.us-baseline-fold-run-manifest.v1",
+      "stage_exit_authority": false,
+      "status_authority": false,
+      "window_binding": "runner_enforced_exact_frozen_fold_evaluation_window"
+    },
+    {
+      "alpha_authority": false,
+      "blockers": [],
+      "engineering_asset_count": 25,
+      "engineering_universe_id": "engineering-universe-259e3975a25856bef28442ff",
+      "evaluation_report_id": "us-baseline-evaluation-07db98e57c072c24c0fea74c",
+      "execution_spec": {
+        "evaluation_end": "2026-03-30T00:00:00+00:00",
+        "evaluation_start": "2026-03-16T00:00:00+00:00",
+        "execution_spec_id": "us-baseline-fold-execution-e5369c2ae547d2b3604572f6",
+        "fold_id": "us-baseline-fold-1420b446d3a1046150099eaa",
+        "fold_ordinal": 3,
+        "protocol_id": "us-baseline-walk-forward-abec06d0d72302fcf11958a4",
+        "purpose": "cost_free_manual_baseline_evaluation",
+        "run_spec_id": "us-baseline-run-spec-4ac2ae1d8cb95c01c8a99a11",
+        "schema_version": "finagent.us-baseline-fold-execution-spec.v1",
+        "stage_exit_authority": false
+      },
+      "factor_selection_authority": false,
+      "input_materialization_id": "minute-materialization-a956741ff7f74c160a5a3c52",
+      "input_plan_id": "us-baseline-input-plan-b9887fd631d1faa1ba153655",
+      "manifest_id": "us-baseline-fold-run-e6f4d6b2f92ef9acd47f887a",
+      "materialization_report_id": "us-baseline-materialization-d6afbd0f7bdcc2432993f6c7",
+      "observation_artifact_id": "us-baseline-observations-b242291bf9961cfe34cc327a",
+      "passed": true,
+      "schema_version": "finagent.us-baseline-fold-run-manifest.v1",
+      "stage_exit_authority": false,
+      "status_authority": false,
+      "window_binding": "runner_enforced_exact_frozen_fold_evaluation_window"
+    }
+  ],
+  "fold_materialization_report_ids": [
+    "us-baseline-materialization-e2c713bce26edde2f588c9bc",
+    "us-baseline-materialization-7f1c81de7104324a0d384f94",
+    "us-baseline-materialization-d6afbd0f7bdcc2432993f6c7"
+  ],
+  "graph_id": "us-baseline-walk-forward-evidence-1a541f4bf39b1abca833898b",
+  "passed": true,
+  "protocol_id": "us-baseline-walk-forward-abec06d0d72302fcf11958a4",
+  "ready_for_us_a0_candidate": true,
+  "run_spec_id": "us-baseline-run-spec-4ac2ae1d8cb95c01c8a99a11",
+  "schema_version": "finagent.us-baseline-walk-forward-evidence-graph.v1",
+  "scope": "split_bound_manual_baseline_evidence_graph",
+  "stage_exit_authority": false,
+  "status_authority": false
+}

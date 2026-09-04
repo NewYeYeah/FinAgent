@@ -1,0 +1,18 @@
+{
+  "broker_account_required": false,
+  "execution_authority": false,
+  "expected_broker_server": "MetaQuotes-Demo",
+  "expected_source_delay_seconds": 900,
+  "live_capital_authority": false,
+  "live_market_data_authority": false,
+  "maximum_anchor_age_seconds": 60,
+  "maximum_future_anchor_skew_seconds": 60,
+  "order_authority": false,
+  "policy_id": "us-simulation-quote-timing-policy-e88e0297965f263baa182ad5",
+  "raw_live_quote_policy_unchanged": true,
+  "schema_version": "finagent.us-simulation-quote-timing-policy.v1",
+  "source_regime": "metaquotes_demo_delayed_reference_without_broker_account",
+  "stage_exit_authority": false,
+  "status_authority": false,
+  "validation_anchor_semantics": "retrieved_at_utc_minus_expected_source_delay"
+}

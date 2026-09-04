@@ -1,0 +1,40 @@
+{
+  "alpha_authority": false,
+  "alpha_gate_assessment_id": "us-r1-alpha-gate-assessment-1029be3afe0c3e11f030539b",
+  "alpha_gate_authority": false,
+  "alpha_gate_policy_id": "us-r1-alpha-gate-policy-92c02d52e0b6227daaf8da4c",
+  "denominator_id": "us-r1-denominator-be5184ac3883b0799c00c5dc",
+  "direction_evidence_id": "us-r1-direction-set-d2acc3313115ef97e35d0683",
+  "direction_preparation_report_id": "us-r1-direction-preparation-a784c39838a05254ea9f5ad6",
+  "evaluation_policy_id": "us-r1-statistical-evaluation-policy-59b2743189d62947a34fdbdb",
+  "evidence_semantics": "materialization_to_period_metrics_to_dependence_aware_multiplicity_corrected_gate",
+  "family_evidence_id": "us-r1-family-evidence-c66f370c5b80321b56279580",
+  "fold_materialization_manifest_ids": [
+    "us-r1-fold-materialization-60b4da5f708885b3ed5b935d",
+    "us-r1-fold-materialization-1ce90aec954bf874c0b4d0d5",
+    "us-r1-fold-materialization-18073ab94f792bd4fe0e3b63"
+  ],
+  "fold_statistics_report_ids": [
+    "us-r1-fold-statistics-94beba636f3ff9998828552e",
+    "us-r1-fold-statistics-7cdd344afc989a1d1d61df76",
+    "us-r1-fold-statistics-bf09193f32b579a686580a16"
+  ],
+  "formation_policy_id": "us-r1-feature-formation-policy-096359410aa2a5d853272228",
+  "graph_id": "us-r1-inference-graph-9e913013e048ca83dbaab9bf",
+  "live_capital_authority": false,
+  "order_authority": false,
+  "period_metric_artifact_ids": [
+    "us-r1-period-metrics-9fc3c75afa455574b85335d3",
+    "us-r1-period-metrics-4e54b177a5242a824c943f33",
+    "us-r1-period-metrics-769e8b7fce1aba76e8bb9be2"
+  ],
+  "research_protocol_id": "us-r1-protocol-451a26b7217b52cbb20d2449",
+  "robust_candidate_ids": [],
+  "schema_version": "finagent.us-r1-inference-evidence-graph.v1",
+  "stage_exit_authority": false,
+  "status_authority": false,
+  "technical_blockers": [],
+  "technical_failure_semantics": "no_hac_bootstrap_or_multiplicity_when_required_pre_gate_evidence_is_incomplete",
+  "terminal": "NO_ROBUST_FACTOR_FAMILY",
+  "walk_forward_protocol_id": "us-r1-walk-forward-bc5e8d07026b0ef1627002a1"
+}

@@ -1,0 +1,88 @@
+{
+  "annualization": 252.0,
+  "authority": "authoritative",
+  "candidate_feature_digests": [
+    "564e206b60a8bd860b0680f39bb0edd878400780e1e156ea884228617c4541cc",
+    "75775cfa2eba7d2247ab2e2025d8577f2f343f5f5f3ef8c8b8a5984cba7df316",
+    "4147b39b6d4cfb816250e4f4ef585e2cf2de1f8c30b4e5b7dc009209775e0d68",
+    "c454bcc0e1b7d25d6c67f9240acfceba8800ef316f13b794b23c9a6745ef7830",
+    "eff30c9573be83bfb7bee27a945059622602982b77326893ffad1607d1a94428"
+  ],
+  "candidate_selection_id": "ashare-candidate-universe-fc8bd3c86ac304f2d24a8da4",
+  "columns": [
+    "sequence",
+    "row_id",
+    "feature_id",
+    "feature_digest",
+    "fold_id",
+    "session_date",
+    "train_direction",
+    "series_kind",
+    "metric",
+    "authority",
+    "label_name",
+    "quantile",
+    "value",
+    "sample_count",
+    "window_count"
+  ],
+  "data_file": "local_ashare_robust_research_a26.factor-series.parquet",
+  "data_sha256": "c96ce69c5a3b6ff375a48e895a4ead8ddca67044325e3eccbb6bc6412b6d63b1",
+  "data_version": "local-ashare-frozen-96f1a2c07f285e6ff41575cf",
+  "decay_labels": [
+    "forward_simple_return_5"
+  ],
+  "end_date": "2024-12-31",
+  "factor_count": 5,
+  "fold_count": 4,
+  "gate_report_id": "ashare-robust-gate-report-3be4fdfb129b495c73274dc8",
+  "metric_authority": {
+    "authoritative": [
+      "pearson_ic_raw",
+      "rank_ic_raw",
+      "pearson_ic",
+      "rank_ic",
+      "return",
+      "one_way_turnover",
+      "eligible_count",
+      "valid_factor_count",
+      "coverage"
+    ],
+    "derived": [
+      "rolling_pearson_ic",
+      "rolling_rank_ic",
+      "nav"
+    ]
+  },
+  "min_cross_section": 50,
+  "min_periods": 150,
+  "nullable_columns": [
+    "quantile"
+  ],
+  "orientation": "test-period IC and quantile portfolios use the frozen train_direction from each A2.6 walk-forward fold; test data never selects direction",
+  "plan_id": "ashare-walk-forward-plan-26500f9887a91ba5c991f893",
+  "primary_label": "forward_simple_return_1",
+  "program_id": "local-ashare-robust-a26-001",
+  "program_result_id": "ashare-robust-program-result-538f8ba57118c43a8b900d82",
+  "program_spec_id": "ashare-research-program-spec-e268d82871a6ac2f3c4ac5c6",
+  "quant_config_digest": "factor-series-quant-config-b0d2719d9d9bcd271a83cd1399d17d1c4007416c",
+  "quantiles": 5,
+  "rolling_definition": "rolling IC is the arithmetic mean of the latest rolling_window valid oriented IC observations for the same factor/fold/horizon",
+  "rolling_window": 20,
+  "row_count": 129921,
+  "rows_digest": "factor-series-rows-1735b35e30bd6aceead09f95b4bb266c8e4a4b4dc62e03e114ad34e6e7b8831b",
+  "schema_version": "finagent.factor-series.manifest.v1",
+  "scope": "internal A2.6 walk-forward factor-series evidence only; reserve remains untouched and no execution, promotion, PAPER, realtime or live authority",
+  "selected_feature_digests": [],
+  "selection_id": "ashare-robust-factor-selection-3806cd3aae7627988ec64bae",
+  "series_id": "factor-series-a65bbb2ffbdc5adc14a53ade737b5fecb31ddc98",
+  "session_count": 969,
+  "source_report_content_digest": "a2p6-report-content-21a007be06bd832979a18996f4093147a27b46d0dd42b928fd288785f9f86ec9",
+  "source_report_file": "local_ashare_robust_research_a26.json",
+  "source_report_sha256": "75b83e71a308a2568e68aa1fe5f4c803d6261c2d4f54ed756291db5a52b94b57",
+  "start_date": "2021-01-04",
+  "universe_policy_version": "ashare-universe-policy-181bdfc396fee89fea80228d",
+  "walk_forward_report_id": "ashare-walk-forward-report-4f13354a9db8bcf89b04cff5",
+  "winsor_lower_quantile": 0.01,
+  "winsor_upper_quantile": 0.99
+}

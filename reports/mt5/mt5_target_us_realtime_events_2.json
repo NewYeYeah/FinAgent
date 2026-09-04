@@ -1,0 +1,124 @@
+{
+  "blockers": [],
+  "broker_account_authority": false,
+  "capability_probe_id": "mt5-capability-probe-e52a8283f3566b7f31505fa1",
+  "clock_evidence_id": "mt5-broker-clock-evidence-4bbc5b736deae3b930666797",
+  "event_count": 5,
+  "events": [
+    {
+      "event_id": "realtime-event-435ee0ee8fb03d5602afd3f5",
+      "event_time": "2026-09-03T16:37:37.979982+00:00",
+      "kind": "CONNECTION",
+      "payload": {
+        "connection_id": "mt5:TradeMaxGlobal-Live",
+        "reason": "read-only MT5 terminal capability observation",
+        "status": "CONNECTED"
+      },
+      "received_at": "2026-09-03T16:37:37.979982+00:00",
+      "schema_version": "finagent.realtime-connection-event.v1",
+      "sequence": 0,
+      "source": "mt5.readonly.connection",
+      "source_event_id": "mt5-connection-observation-cf0b82160a35652ab46c5469"
+    },
+    {
+      "event_id": "realtime-event-8a7bb42b6cd09c2c699160d1",
+      "event_time": "2026-09-03T16:37:35.025000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 457.81,
+        "ask_size": null,
+        "bid": 457.59,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "AMD.NAS"
+      },
+      "received_at": "2026-09-03T16:37:37.987781+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 0,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-990865a2bfb03b348e8f82f3"
+    },
+    {
+      "event_id": "realtime-event-427d6338a57340226b15cad9",
+      "event_time": "2026-09-03T16:37:35.611000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 90.42,
+        "ask_size": null,
+        "bid": 90.29,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "INTC.NAS"
+      },
+      "received_at": "2026-09-03T16:37:37.989287+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 1,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-faf904f382a18adbd926b12a"
+    },
+    {
+      "event_id": "realtime-event-e66cf871468e8d58a8f0f25e",
+      "event_time": "2026-09-03T16:37:35.068000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 512.24,
+        "ask_size": null,
+        "bid": 512.09,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "MSFT.NAS"
+      },
+      "received_at": "2026-09-03T16:37:37.989287+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 2,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-c1a3a6ad34a9ecca9f219746"
+    },
+    {
+      "event_id": "realtime-event-7f51cc8d946f5504df9e8188",
+      "event_time": "2026-09-03T16:37:35.022000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 227.59,
+        "ask_size": null,
+        "bid": 227.47,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "NVDA.NAS"
+      },
+      "received_at": "2026-09-03T16:37:37.989287+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 3,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-eb67098356b2c7df23961e0c"
+    }
+  ],
+  "execution_authority": false,
+  "feed_lane_inferred": false,
+  "generated_at": "2026-09-03T16:37:37.989287+00:00",
+  "implementation_ready_for_mt5_m1_acceptance": true,
+  "live_capital_authority": false,
+  "live_market_data_authority": false,
+  "order_send_used": false,
+  "paper_authority": false,
+  "passed": true,
+  "policy": {
+    "bar_source": "mt5.readonly.bar",
+    "broker_server": "TradeMaxGlobal-Live",
+    "connection_source": "mt5.readonly.connection",
+    "feed_lane": "target_broker_current_us_equity_or_cfd",
+    "feed_lane_inferred": false,
+    "mutation_authority": false,
+    "policy_id": "mt5-realtime-adapter-policy-0491dcad92d4f94ec9b69906",
+    "quote_source": "mt5.readonly.quote",
+    "read_only": true,
+    "schema_version": "finagent.mt5-realtime-adapter-policy.v1"
+  },
+  "read_only": true,
+  "report_id": "mt5-realtime-adapter-9ef02d40a229657f42df2266",
+  "schema_version": "finagent.mt5-realtime-adapter-report.v1",
+  "stage_exit_authority": false,
+  "status_authority": false,
+  "symbol_select_used": false,
+  "us_market_source_authority": false
+}

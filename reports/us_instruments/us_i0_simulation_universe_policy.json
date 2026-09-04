@@ -1,0 +1,20 @@
+{
+  "broker_account_required": false,
+  "execution_authority": false,
+  "live_executable_spread_authority": false,
+  "maximum_count": 30,
+  "maximum_inventory_age_seconds": 900,
+  "maximum_inventory_future_skew_seconds": 60,
+  "maximum_reference_spread_bps": 50.0,
+  "minimum_count": 20,
+  "policy_id": "us-simulation-universe-final-policy-b75fd9c0bca9285e28d2ad9d",
+  "raw_live_current_v3_finalizer_unchanged": true,
+  "require_operator_attestation": true,
+  "require_seed_retention": true,
+  "require_tradable": true,
+  "require_visible": true,
+  "schema_version": "finagent.us-simulation-universe-finalization-policy.v1",
+  "spread_semantics": "delayed_reference_diagnostic_only",
+  "stage_exit_authority": false,
+  "target_count": 25
+}

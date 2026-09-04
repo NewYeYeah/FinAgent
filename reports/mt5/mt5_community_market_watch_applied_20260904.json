@@ -1,0 +1,298 @@
+{
+  "add_only": true,
+  "changed_count": 36,
+  "changes": [
+    {
+      "changed": false,
+      "is_visible": true,
+      "symbol": "NVDA",
+      "was_visible": true
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "TSLA",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "MU",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "IWM",
+      "was_visible": false
+    },
+    {
+      "changed": false,
+      "is_visible": true,
+      "symbol": "MSFT",
+      "was_visible": true
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "SNDK",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "AMZN",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "AAPL",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "GOOGL",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "META",
+      "was_visible": false
+    },
+    {
+      "changed": false,
+      "is_visible": true,
+      "symbol": "AMD",
+      "was_visible": true
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "AVGO",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "PLTR",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "GLD",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "GOOG",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "SLV",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "VOO",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "TQQQ",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "SOXL",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "TSM",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "SQQQ",
+      "was_visible": false
+    },
+    {
+      "changed": false,
+      "is_visible": true,
+      "symbol": "INTC",
+      "was_visible": true
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "IVV",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "RSP",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "ORCL",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "SMH",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "NFLX",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "XLE",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "XLF",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "MSTR",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "XOM",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "XLK",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "EEM",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "APP",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "JPM",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "IBIT",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "XLI",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "SOXX",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "XLV",
+      "was_visible": false
+    },
+    {
+      "changed": true,
+      "is_visible": true,
+      "symbol": "EFA",
+      "was_visible": false
+    }
+  ],
+  "execution_authority": false,
+  "live_capital_authority": false,
+  "mode": "apply",
+  "order_check_authority": false,
+  "order_send_authority": false,
+  "position_query_authority": false,
+  "report_id": "mt5-market-watch-change-ab9e3578599cb366f8c4ef85",
+  "requested_symbols": [
+    "NVDA",
+    "TSLA",
+    "MU",
+    "IWM",
+    "MSFT",
+    "SNDK",
+    "AMZN",
+    "AAPL",
+    "GOOGL",
+    "META",
+    "AMD",
+    "AVGO",
+    "PLTR",
+    "GLD",
+    "GOOG",
+    "SLV",
+    "VOO",
+    "TQQQ",
+    "SOXL",
+    "TSM",
+    "SQQQ",
+    "INTC",
+    "IVV",
+    "RSP",
+    "ORCL",
+    "SMH",
+    "NFLX",
+    "XLE",
+    "XLF",
+    "MSTR",
+    "XOM",
+    "XLK",
+    "EEM",
+    "APP",
+    "JPM",
+    "IBIT",
+    "XLI",
+    "SOXX",
+    "XLV",
+    "EFA"
+  ],
+  "schema_version": "finagent.mt5-market-watch-change.v1",
+  "stage_exit_authority": false,
+  "terminal_state_mutation": true
+}

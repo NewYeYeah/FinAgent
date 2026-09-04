@@ -1,0 +1,4286 @@
+{
+  "accepted": true,
+  "accepted_mapping_count": 25,
+  "base_finalization": {
+    "accepted": true,
+    "accepted_mapping_count": 25,
+    "blockers": [],
+    "candidate_selection_id": "us-mapped-candidate-selection-ca07551e1e77acbf4604f277",
+    "excluded_by_spread": [
+      "HYG",
+      "VNQ"
+    ],
+    "generated_at": "2026-09-03T17:15:11.045542+00:00",
+    "limitations": [
+      "universe:engineering_integration_only",
+      "universe:not_survivorship_unbiased",
+      "identity:no_point_in_time_security_master",
+      "identity:research_broker_mapping_requires_operator_attestation",
+      "spread:single_quote_snapshot_is_engineering_filter_not_execution_cost_authority"
+    ],
+    "materialization": {
+      "accepted": true,
+      "blockers": [],
+      "broker_server": "TradeMaxGlobal-Live",
+      "generated_at": "2026-09-03T17:15:11.049687+00:00",
+      "limitations": [
+        "universe:engineering_integration_only",
+        "universe:not_survivorship_unbiased",
+        "identity:no_point_in_time_security_master",
+        "identity:broker_path_not_exchange_authority",
+        "identity:listed_venue_not_authoritative_from_ohlcv_source",
+        "evidence:broker_path_not_listed_exchange_authority",
+        "evidence:no_pit_security_master"
+      ],
+      "mappings": [
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-e8a5aa29ead846599dcaf17c",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "NVDA.NAS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\NVDA.NAS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-04c3011424d2c540a64fa1e0",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-e8a5aa29ead846599dcaf17c",
+            "broker_path": "US Stock\\NVDA.NAS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "NVDA.NAS",
+            "evidence_id": "instrument-mapping-evidence-23f9a25de33a7e34f3f4366a",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-d4fb11ca71e341bdb80739f5",
+            "research_symbol": "NVDA",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-3871619bfac1bb9555484569",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-d4fb11ca71e341bdb80739f5",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "NVDA",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-1096a1d4b591007bae6c6fa1",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "TSLA.NAS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\TSLA.NAS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-4e2403a48eded0a11786c9ca",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-1096a1d4b591007bae6c6fa1",
+            "broker_path": "US Stock\\TSLA.NAS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "TSLA.NAS",
+            "evidence_id": "instrument-mapping-evidence-3b0361474091894484d0fc6f",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-3c5bf21898b2d3f6656d6d0f",
+            "research_symbol": "TSLA",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-a73f8edba05f17b9615c366a",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-3c5bf21898b2d3f6656d6d0f",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "TSLA",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-28d92e9cf20e62be0e727198",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "MU.NAS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\MU.NAS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-1c682c426f28ac83623ed5aa",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-28d92e9cf20e62be0e727198",
+            "broker_path": "US Stock\\MU.NAS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "MU.NAS",
+            "evidence_id": "instrument-mapping-evidence-34562cea1a3d8dc3a353826b",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-9129fd493205f27f4b38321e",
+            "research_symbol": "MU",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-38a38f43b12f1d4f64909838",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-9129fd493205f27f4b38321e",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "MU",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-94fe42a583a44aed92e97aff",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "IWM.NYS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\IWM.NYS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-16df9ce071fac242d9bf2951",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-94fe42a583a44aed92e97aff",
+            "broker_path": "US Stock\\IWM.NYS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "IWM.NYS",
+            "evidence_id": "instrument-mapping-evidence-0c714a48b775ee65d0bb401c",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-2f874c441bea5e66853945b0",
+            "research_symbol": "IWM",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-714fe1933832a2b99d0e7733",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-2f874c441bea5e66853945b0",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "IWM",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-904843f5d8bfb438941f6201",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "MSFT.NAS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\MSFT.NAS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-90213f54043858c470090841",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-904843f5d8bfb438941f6201",
+            "broker_path": "US Stock\\MSFT.NAS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "MSFT.NAS",
+            "evidence_id": "instrument-mapping-evidence-0f906b6113ce31e1df44d735",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-bb532d6e271d16ed23c5367c",
+            "research_symbol": "MSFT",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-3f5e6efe522534b19fd6061f",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-bb532d6e271d16ed23c5367c",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "MSFT",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-101bcfd78b8b8f5083da8e7b",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "SNDK.NAS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\SNDK.NAS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-5f22311cfc48d5af030faf89",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-101bcfd78b8b8f5083da8e7b",
+            "broker_path": "US Stock\\SNDK.NAS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "SNDK.NAS",
+            "evidence_id": "instrument-mapping-evidence-0b0d8500c950a3dee4602c2b",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-a9b9a579c06509e198f8ed86",
+            "research_symbol": "SNDK",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-b9b2c65358b3e8ab6de4b96b",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-a9b9a579c06509e198f8ed86",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "SNDK",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-7a1c707c9ded52d56dd95030",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "AMZN.NAS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\AMZN.NAS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-0a75c62c1e4f86c93ca281a6",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-7a1c707c9ded52d56dd95030",
+            "broker_path": "US Stock\\AMZN.NAS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "AMZN.NAS",
+            "evidence_id": "instrument-mapping-evidence-dc84a13253f4a63db1694691",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-40fc19c470ed445e9df05fd4",
+            "research_symbol": "AMZN",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-1c6396819bd175db59b2596d",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-40fc19c470ed445e9df05fd4",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "AMZN",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-0d96a2e590efe2f64976ef40",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "AAPL.NAS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\AAPL.NAS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-36e1889a8e49757f4668d540",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-0d96a2e590efe2f64976ef40",
+            "broker_path": "US Stock\\AAPL.NAS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "AAPL.NAS",
+            "evidence_id": "instrument-mapping-evidence-337bb7000742cb8b0893fee4",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-0ff2f5569a0d55f81c8bf766",
+            "research_symbol": "AAPL",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-022a46b4a5bac1ecdcbcc635",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-0ff2f5569a0d55f81c8bf766",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "AAPL",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-3f5e7076d94e751aa751e9ea",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "GOOGL.NAS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\GOOGL.NAS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-7ce39ff4e094b06ff1b6102c",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-3f5e7076d94e751aa751e9ea",
+            "broker_path": "US Stock\\GOOGL.NAS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "GOOGL.NAS",
+            "evidence_id": "instrument-mapping-evidence-bee9b4fc0b0d0278e73e9e49",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-2b4c71193d7fe4a39b06b843",
+            "research_symbol": "GOOGL",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-9eb3e83e1fd666570882e51b",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-2b4c71193d7fe4a39b06b843",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "GOOGL",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-5529c3a5c28a2054192b8193",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "META.NAS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\META.NAS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-2ccc1133824d24f70f61d719",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-5529c3a5c28a2054192b8193",
+            "broker_path": "US Stock\\META.NAS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "META.NAS",
+            "evidence_id": "instrument-mapping-evidence-ce9220392737abdc004f3316",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-495ad4980dbdb833a872d9db",
+            "research_symbol": "META",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-9811b5868d97d2d2ea7d0366",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-495ad4980dbdb833a872d9db",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "META",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-c90520df2f7dae1b067071f1",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "AMD.NAS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\AMD.NAS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-8aa796a9ff3606149b4146a6",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-c90520df2f7dae1b067071f1",
+            "broker_path": "US Stock\\AMD.NAS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "AMD.NAS",
+            "evidence_id": "instrument-mapping-evidence-34462d115db2acefdd92bdb7",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-9d5d2348c11ee9c2b052c76a",
+            "research_symbol": "AMD",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-79b799430dadd90776edbf3f",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-9d5d2348c11ee9c2b052c76a",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "AMD",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-7482275738aa852d114916e5",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "AVGO.NAS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\AVGO.NAS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-76f5f91f492143be55d317a1",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-7482275738aa852d114916e5",
+            "broker_path": "US Stock\\AVGO.NAS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "AVGO.NAS",
+            "evidence_id": "instrument-mapping-evidence-fa1464f384eb32e7f137df25",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-2184ecfded646eb74f235ae2",
+            "research_symbol": "AVGO",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-7c91bbf5da7a29aefe92b2e7",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-2184ecfded646eb74f235ae2",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "AVGO",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-5156ebefa4aae434b4db1bd0",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "PLTR.NYS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\PLTR.NYS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-244f6a2d2cb6d319c2e4e73b",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-5156ebefa4aae434b4db1bd0",
+            "broker_path": "US Stock\\PLTR.NYS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "PLTR.NYS",
+            "evidence_id": "instrument-mapping-evidence-ef9e44599105055ee9d99f0e",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-f257b6b236dfb07f68e5289b",
+            "research_symbol": "PLTR",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-7917afa5db2f2b895e906899",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-f257b6b236dfb07f68e5289b",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "PLTR",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-01973741c1cd3a6702e2cf17",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "GLD.NYS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\GLD.NYS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-278816e5a4143d0cfb1594cf",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-01973741c1cd3a6702e2cf17",
+            "broker_path": "US Stock\\GLD.NYS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "GLD.NYS",
+            "evidence_id": "instrument-mapping-evidence-8e6ff83cc2a1c4a6245cc0de",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-5919de826e237b82cd9803b4",
+            "research_symbol": "GLD",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-60b6ca7762845c863066c425",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-5919de826e237b82cd9803b4",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "GLD",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-0f9cd1c2cfe82688493c3b32",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "GOOG.NAS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\GOOG.NAS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-faa250a24d795824c61b9cc6",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-0f9cd1c2cfe82688493c3b32",
+            "broker_path": "US Stock\\GOOG.NAS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "GOOG.NAS",
+            "evidence_id": "instrument-mapping-evidence-bf80027bba6e4615acd50b7c",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-5275d70845b3cd7777c30ed2",
+            "research_symbol": "GOOG",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-2fd285181e160375cd18ee34",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-5275d70845b3cd7777c30ed2",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "GOOG",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-591d95d2cdbd634cd52e6a7e",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "TSM.NYS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\TSM.NYS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-2306f214e50e3753a5304f38",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-591d95d2cdbd634cd52e6a7e",
+            "broker_path": "US Stock\\TSM.NYS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "TSM.NYS",
+            "evidence_id": "instrument-mapping-evidence-e7de258bc151b76bdcf7cf5c",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-e81ae448b5c09fe1835e0e49",
+            "research_symbol": "TSM",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-240ebc840810951cda7a5d72",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-e81ae448b5c09fe1835e0e49",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "TSM",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-892ba5a16e912fd76093a0bc",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "INTC.NAS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\INTC.NAS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-24c720f27b49f4da1c68e312",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-892ba5a16e912fd76093a0bc",
+            "broker_path": "US Stock\\INTC.NAS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "INTC.NAS",
+            "evidence_id": "instrument-mapping-evidence-029d29fe1dd1b01952f0e003",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-fe8ca5958c5a816d7ba8170e",
+            "research_symbol": "INTC",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-229bcd1ac7154596f68b85f7",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-fe8ca5958c5a816d7ba8170e",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "INTC",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-d876a752c985b1d2ed2a0902",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "ORCL.NYS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\ORCL.NYS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-fa8236f23c207e1641fae43c",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-d876a752c985b1d2ed2a0902",
+            "broker_path": "US Stock\\ORCL.NYS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "ORCL.NYS",
+            "evidence_id": "instrument-mapping-evidence-da1c140abca9d2a97985f899",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-ad8fa1f679e5f5de9d82f0ec",
+            "research_symbol": "ORCL",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-a590d3cb88e041e6beec3482",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-ad8fa1f679e5f5de9d82f0ec",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "ORCL",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-e61e490dbe1523c5a1d2d191",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "NFLX.NAS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\NFLX.NAS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-0f306eb11be220a0a9f877de",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-e61e490dbe1523c5a1d2d191",
+            "broker_path": "US Stock\\NFLX.NAS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "NFLX.NAS",
+            "evidence_id": "instrument-mapping-evidence-a343c49f3451764c4b0c97b4",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-4c32dee616f50e96efa0faa4",
+            "research_symbol": "NFLX",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-30fab5d1b8aadfd83bef9da8",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-4c32dee616f50e96efa0faa4",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "NFLX",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-4d1d3a45d6230c3223567e99",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "XLE.NYS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\XLE.NYS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-c35e6c4fcb67e70320eb2460",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-4d1d3a45d6230c3223567e99",
+            "broker_path": "US Stock\\XLE.NYS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "XLE.NYS",
+            "evidence_id": "instrument-mapping-evidence-4f02c24719bc3d61aba71851",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-2697c48aa8cdcb66cfef24e4",
+            "research_symbol": "XLE",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-64007907ef97fb6f031dbc2f",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-2697c48aa8cdcb66cfef24e4",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "XLE",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-86fdad3c4d6b96da6e771c99",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "MSTR.NAS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\MSTR.NAS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-06d2a577e290cb9b06ffc5ca",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-86fdad3c4d6b96da6e771c99",
+            "broker_path": "US Stock\\MSTR.NAS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "MSTR.NAS",
+            "evidence_id": "instrument-mapping-evidence-90b95e038bed2406e13390e6",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-50dd949194b181b4cd2a6767",
+            "research_symbol": "MSTR",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-ecfecda3cda8f95ad207596a",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-50dd949194b181b4cd2a6767",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "MSTR",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-017ae7c71998d4e3595cceb7",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "XOM.NYS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\XOM.NYS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-4477f584d1900a52fd5f00e3",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-017ae7c71998d4e3595cceb7",
+            "broker_path": "US Stock\\XOM.NYS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "XOM.NYS",
+            "evidence_id": "instrument-mapping-evidence-81002c449bcd4a80b9531b30",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-fcc03a9a9cceb62ddee9e94b",
+            "research_symbol": "XOM",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-b8d8bb796163cd06cf110c54",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-fcc03a9a9cceb62ddee9e94b",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "XOM",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-f4878de212620f085606ef1f",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "EEM.NYS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\EEM.NYS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-a4cb041ac6db3417c32d48c2",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-f4878de212620f085606ef1f",
+            "broker_path": "US Stock\\EEM.NYS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "EEM.NYS",
+            "evidence_id": "instrument-mapping-evidence-f6bbf71886e60d567ccc4b65",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-d4ab844fa667dde48f456b51",
+            "research_symbol": "EEM",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-50102b2b01010167f74e92c0",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-d4ab844fa667dde48f456b51",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "EEM",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-eb52722d2ab86d52d372ad0b",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "JPM.NYS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\JPM.NYS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-1fad3909d801200477415545",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-eb52722d2ab86d52d372ad0b",
+            "broker_path": "US Stock\\JPM.NYS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "JPM.NYS",
+            "evidence_id": "instrument-mapping-evidence-c1cf59fb7d4ebea7172e587d",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-3d1e6256ce0a79899cd1d0a0",
+            "research_symbol": "JPM",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-6c3ebc81de32362aafe06a02",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-3d1e6256ce0a79899cd1d0a0",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "JPM",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        },
+        {
+          "broker": {
+            "broker_instrument_id": "broker-instrument-a45bd5f514b69da6390fd999",
+            "broker_server": "TradeMaxGlobal-Live",
+            "broker_symbol": "COIN.NAS",
+            "contract_size": 1.0,
+            "currency_base": "USD",
+            "currency_margin": "USD",
+            "currency_profit": "USD",
+            "filling_mode": 2,
+            "limitations": [
+              "identity:broker_path_not_exchange_authority"
+            ],
+            "margin_initial": 0.0,
+            "margin_maintenance": 0.0,
+            "order_mode": 63,
+            "path": "US Stock\\COIN.NAS",
+            "point": 0.01,
+            "schema_version": "finagent.broker-instrument.v1",
+            "swap_long": -3.8,
+            "swap_mode": 5,
+            "swap_short": -1.0,
+            "symbol_spec_id": "mt5-symbol-c5e80b0b588fe676d54f3ed5",
+            "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+            "tick_size": 0.01,
+            "tick_value": 0.01,
+            "tradable": true,
+            "trade_calc_mode": 2,
+            "trade_mode": 4,
+            "visible": true,
+            "volume_max": 1000.0,
+            "volume_min": 1.0,
+            "volume_step": 1.0
+          },
+          "evidence": {
+            "broker_instrument_id": "broker-instrument-a45bd5f514b69da6390fd999",
+            "broker_path": "US Stock\\COIN.NAS",
+            "broker_path_is_exchange_authority": false,
+            "broker_symbol": "COIN.NAS",
+            "evidence_id": "instrument-mapping-evidence-017d88e1334355e9bbf62c9f",
+            "limitations": [
+              "evidence:broker_path_not_listed_exchange_authority",
+              "evidence:no_pit_security_master"
+            ],
+            "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+            "observed_at": "2026-09-03T17:15:09.708423+00:00",
+            "operator_attested_same_security": true,
+            "quote_currency_matches": true,
+            "research_instrument_id": "research-instrument-7eafed28248fc75d7b7ba688",
+            "research_symbol": "COIN",
+            "schema_version": "finagent.instrument-mapping-evidence.v1",
+            "symbol_text_matches": false
+          },
+          "mapping_id": "instrument-mapping-936fcfacd5c996bcb968430c",
+          "rejection_reason": null,
+          "research": {
+            "asset_class": "equity",
+            "lifecycle_policy": "historical_symbol_without_lifecycle",
+            "limitations": [
+              "identity:no_point_in_time_security_master",
+              "identity:listed_venue_not_authoritative_from_ohlcv_source"
+            ],
+            "quote_currency": "USD",
+            "research_instrument_id": "research-instrument-7eafed28248fc75d7b7ba688",
+            "schema_version": "finagent.research-instrument.v1",
+            "source_candidate": "hf-mito0o852-ohlcv-1m",
+            "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+            "source_symbol": "COIN",
+            "venue_code": null
+          },
+          "schema_version": "finagent.instrument-mapping.v1",
+          "status": "accepted_for_engineering"
+        }
+      ],
+      "materialization_id": "engineering-universe-materialization-26d2695eb00daa7e7252411a",
+      "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+      "requested_pairs": [
+        {
+          "broker_symbol": "NVDA.NAS",
+          "research_symbol": "NVDA"
+        },
+        {
+          "broker_symbol": "TSLA.NAS",
+          "research_symbol": "TSLA"
+        },
+        {
+          "broker_symbol": "MU.NAS",
+          "research_symbol": "MU"
+        },
+        {
+          "broker_symbol": "IWM.NYS",
+          "research_symbol": "IWM"
+        },
+        {
+          "broker_symbol": "MSFT.NAS",
+          "research_symbol": "MSFT"
+        },
+        {
+          "broker_symbol": "SNDK.NAS",
+          "research_symbol": "SNDK"
+        },
+        {
+          "broker_symbol": "AMZN.NAS",
+          "research_symbol": "AMZN"
+        },
+        {
+          "broker_symbol": "AAPL.NAS",
+          "research_symbol": "AAPL"
+        },
+        {
+          "broker_symbol": "GOOGL.NAS",
+          "research_symbol": "GOOGL"
+        },
+        {
+          "broker_symbol": "META.NAS",
+          "research_symbol": "META"
+        },
+        {
+          "broker_symbol": "AMD.NAS",
+          "research_symbol": "AMD"
+        },
+        {
+          "broker_symbol": "AVGO.NAS",
+          "research_symbol": "AVGO"
+        },
+        {
+          "broker_symbol": "PLTR.NYS",
+          "research_symbol": "PLTR"
+        },
+        {
+          "broker_symbol": "GLD.NYS",
+          "research_symbol": "GLD"
+        },
+        {
+          "broker_symbol": "GOOG.NAS",
+          "research_symbol": "GOOG"
+        },
+        {
+          "broker_symbol": "TSM.NYS",
+          "research_symbol": "TSM"
+        },
+        {
+          "broker_symbol": "INTC.NAS",
+          "research_symbol": "INTC"
+        },
+        {
+          "broker_symbol": "ORCL.NYS",
+          "research_symbol": "ORCL"
+        },
+        {
+          "broker_symbol": "NFLX.NAS",
+          "research_symbol": "NFLX"
+        },
+        {
+          "broker_symbol": "XLE.NYS",
+          "research_symbol": "XLE"
+        },
+        {
+          "broker_symbol": "MSTR.NAS",
+          "research_symbol": "MSTR"
+        },
+        {
+          "broker_symbol": "XOM.NYS",
+          "research_symbol": "XOM"
+        },
+        {
+          "broker_symbol": "EEM.NYS",
+          "research_symbol": "EEM"
+        },
+        {
+          "broker_symbol": "JPM.NYS",
+          "research_symbol": "JPM"
+        },
+        {
+          "broker_symbol": "COIN.NAS",
+          "research_symbol": "COIN"
+        }
+      ],
+      "schema_version": "finagent.engineering-universe-materialization.v1",
+      "source_candidate": "hf-mito0o852-ohlcv-1m",
+      "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+      "universe": {
+        "broker_instrument_ids": [
+          "broker-instrument-e8a5aa29ead846599dcaf17c",
+          "broker-instrument-1096a1d4b591007bae6c6fa1",
+          "broker-instrument-28d92e9cf20e62be0e727198",
+          "broker-instrument-94fe42a583a44aed92e97aff",
+          "broker-instrument-904843f5d8bfb438941f6201",
+          "broker-instrument-101bcfd78b8b8f5083da8e7b",
+          "broker-instrument-7a1c707c9ded52d56dd95030",
+          "broker-instrument-0d96a2e590efe2f64976ef40",
+          "broker-instrument-3f5e7076d94e751aa751e9ea",
+          "broker-instrument-5529c3a5c28a2054192b8193",
+          "broker-instrument-c90520df2f7dae1b067071f1",
+          "broker-instrument-7482275738aa852d114916e5",
+          "broker-instrument-5156ebefa4aae434b4db1bd0",
+          "broker-instrument-01973741c1cd3a6702e2cf17",
+          "broker-instrument-0f9cd1c2cfe82688493c3b32",
+          "broker-instrument-591d95d2cdbd634cd52e6a7e",
+          "broker-instrument-892ba5a16e912fd76093a0bc",
+          "broker-instrument-d876a752c985b1d2ed2a0902",
+          "broker-instrument-e61e490dbe1523c5a1d2d191",
+          "broker-instrument-4d1d3a45d6230c3223567e99",
+          "broker-instrument-86fdad3c4d6b96da6e771c99",
+          "broker-instrument-017ae7c71998d4e3595cceb7",
+          "broker-instrument-f4878de212620f085606ef1f",
+          "broker-instrument-eb52722d2ab86d52d372ad0b",
+          "broker-instrument-a45bd5f514b69da6390fd999"
+        ],
+        "limitations": [
+          "universe:engineering_integration_only",
+          "universe:not_survivorship_unbiased",
+          "universe:no_market_wide_alpha_claim"
+        ],
+        "mapping_ids": [
+          "instrument-mapping-3871619bfac1bb9555484569",
+          "instrument-mapping-a73f8edba05f17b9615c366a",
+          "instrument-mapping-38a38f43b12f1d4f64909838",
+          "instrument-mapping-714fe1933832a2b99d0e7733",
+          "instrument-mapping-3f5e6efe522534b19fd6061f",
+          "instrument-mapping-b9b2c65358b3e8ab6de4b96b",
+          "instrument-mapping-1c6396819bd175db59b2596d",
+          "instrument-mapping-022a46b4a5bac1ecdcbcc635",
+          "instrument-mapping-9eb3e83e1fd666570882e51b",
+          "instrument-mapping-9811b5868d97d2d2ea7d0366",
+          "instrument-mapping-79b799430dadd90776edbf3f",
+          "instrument-mapping-7c91bbf5da7a29aefe92b2e7",
+          "instrument-mapping-7917afa5db2f2b895e906899",
+          "instrument-mapping-60b6ca7762845c863066c425",
+          "instrument-mapping-2fd285181e160375cd18ee34",
+          "instrument-mapping-240ebc840810951cda7a5d72",
+          "instrument-mapping-229bcd1ac7154596f68b85f7",
+          "instrument-mapping-a590d3cb88e041e6beec3482",
+          "instrument-mapping-30fab5d1b8aadfd83bef9da8",
+          "instrument-mapping-64007907ef97fb6f031dbc2f",
+          "instrument-mapping-ecfecda3cda8f95ad207596a",
+          "instrument-mapping-b8d8bb796163cd06cf110c54",
+          "instrument-mapping-50102b2b01010167f74e92c0",
+          "instrument-mapping-6c3ebc81de32362aafe06a02",
+          "instrument-mapping-936fcfacd5c996bcb968430c"
+        ],
+        "research_instrument_ids": [
+          "research-instrument-d4fb11ca71e341bdb80739f5",
+          "research-instrument-3c5bf21898b2d3f6656d6d0f",
+          "research-instrument-9129fd493205f27f4b38321e",
+          "research-instrument-2f874c441bea5e66853945b0",
+          "research-instrument-bb532d6e271d16ed23c5367c",
+          "research-instrument-a9b9a579c06509e198f8ed86",
+          "research-instrument-40fc19c470ed445e9df05fd4",
+          "research-instrument-0ff2f5569a0d55f81c8bf766",
+          "research-instrument-2b4c71193d7fe4a39b06b843",
+          "research-instrument-495ad4980dbdb833a872d9db",
+          "research-instrument-9d5d2348c11ee9c2b052c76a",
+          "research-instrument-2184ecfded646eb74f235ae2",
+          "research-instrument-f257b6b236dfb07f68e5289b",
+          "research-instrument-5919de826e237b82cd9803b4",
+          "research-instrument-5275d70845b3cd7777c30ed2",
+          "research-instrument-e81ae448b5c09fe1835e0e49",
+          "research-instrument-fe8ca5958c5a816d7ba8170e",
+          "research-instrument-ad8fa1f679e5f5de9d82f0ec",
+          "research-instrument-4c32dee616f50e96efa0faa4",
+          "research-instrument-2697c48aa8cdcb66cfef24e4",
+          "research-instrument-50dd949194b181b4cd2a6767",
+          "research-instrument-fcc03a9a9cceb62ddee9e94b",
+          "research-instrument-d4ab844fa667dde48f456b51",
+          "research-instrument-3d1e6256ce0a79899cd1d0a0",
+          "research-instrument-7eafed28248fc75d7b7ba688"
+        ],
+        "schema_version": "finagent.engineering-universe.v1",
+        "universe_id": "engineering-universe-259e3975a25856bef28442ff"
+      },
+      "unmapped_requests": []
+    },
+    "operator_attested": true,
+    "policy": {
+      "maximum_count": 30,
+      "maximum_current_spread_bps": 50.0,
+      "minimum_count": 20,
+      "policy_id": "us-universe-final-policy-8532c71e1fafec290cb0a7af",
+      "require_operator_attestation": true,
+      "require_tradable": true,
+      "schema_version": "finagent.us-engineering-universe-finalization-policy.v1",
+      "target_count": 25
+    },
+    "quote_probe_id": "us-candidate-quote-probe-11f6f5f82da17df1a2c9e7cc",
+    "report_id": "us-engineering-universe-finalization-a1ceb8d3720999aa65e2fa5c",
+    "schema_version": "finagent.us-engineering-universe-finalization-report.v1",
+    "selected_symbols": [
+      "NVDA",
+      "TSLA",
+      "MU",
+      "IWM",
+      "MSFT",
+      "SNDK",
+      "AMZN",
+      "AAPL",
+      "GOOGL",
+      "META",
+      "AMD",
+      "AVGO",
+      "PLTR",
+      "GLD",
+      "GOOG",
+      "TSM",
+      "INTC",
+      "ORCL",
+      "NFLX",
+      "XLE",
+      "MSTR",
+      "XOM",
+      "EEM",
+      "JPM",
+      "COIN"
+    ],
+    "universe_id": "engineering-universe-259e3975a25856bef28442ff"
+  },
+  "blockers": [],
+  "candidate_selection_id": "us-mapped-candidate-selection-ca07551e1e77acbf4604f277",
+  "clock_evidence_id": "mt5-broker-clock-evidence-3b0cc2597055158b3c49b305",
+  "excluded_by_quote_quality": [],
+  "excluded_by_spread": [
+    "HYG",
+    "VNQ"
+  ],
+  "generated_at": "2026-09-03T17:15:11.045542+00:00",
+  "limitations": [
+    "universe:engineering_integration_only",
+    "universe:not_survivorship_unbiased",
+    "identity:no_point_in_time_security_master",
+    "identity:research_broker_mapping_requires_operator_attestation",
+    "spread:single_quote_snapshot_is_engineering_filter_not_execution_cost_authority",
+    "quote_freshness:bounded_at_probe_and_finalization_time",
+    "broker_clock:normalization_bound_to_observed_clock_evidence"
+  ],
+  "materialization": {
+    "accepted": true,
+    "blockers": [],
+    "broker_server": "TradeMaxGlobal-Live",
+    "generated_at": "2026-09-03T17:15:11.049687+00:00",
+    "limitations": [
+      "universe:engineering_integration_only",
+      "universe:not_survivorship_unbiased",
+      "identity:no_point_in_time_security_master",
+      "identity:broker_path_not_exchange_authority",
+      "identity:listed_venue_not_authoritative_from_ohlcv_source",
+      "evidence:broker_path_not_listed_exchange_authority",
+      "evidence:no_pit_security_master"
+    ],
+    "mappings": [
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-e8a5aa29ead846599dcaf17c",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "NVDA.NAS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\NVDA.NAS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-04c3011424d2c540a64fa1e0",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-e8a5aa29ead846599dcaf17c",
+          "broker_path": "US Stock\\NVDA.NAS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "NVDA.NAS",
+          "evidence_id": "instrument-mapping-evidence-23f9a25de33a7e34f3f4366a",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-d4fb11ca71e341bdb80739f5",
+          "research_symbol": "NVDA",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-3871619bfac1bb9555484569",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-d4fb11ca71e341bdb80739f5",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "NVDA",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-1096a1d4b591007bae6c6fa1",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "TSLA.NAS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\TSLA.NAS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-4e2403a48eded0a11786c9ca",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-1096a1d4b591007bae6c6fa1",
+          "broker_path": "US Stock\\TSLA.NAS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "TSLA.NAS",
+          "evidence_id": "instrument-mapping-evidence-3b0361474091894484d0fc6f",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-3c5bf21898b2d3f6656d6d0f",
+          "research_symbol": "TSLA",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-a73f8edba05f17b9615c366a",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-3c5bf21898b2d3f6656d6d0f",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "TSLA",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-28d92e9cf20e62be0e727198",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "MU.NAS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\MU.NAS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-1c682c426f28ac83623ed5aa",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-28d92e9cf20e62be0e727198",
+          "broker_path": "US Stock\\MU.NAS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "MU.NAS",
+          "evidence_id": "instrument-mapping-evidence-34562cea1a3d8dc3a353826b",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-9129fd493205f27f4b38321e",
+          "research_symbol": "MU",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-38a38f43b12f1d4f64909838",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-9129fd493205f27f4b38321e",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "MU",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-94fe42a583a44aed92e97aff",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "IWM.NYS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\IWM.NYS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-16df9ce071fac242d9bf2951",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-94fe42a583a44aed92e97aff",
+          "broker_path": "US Stock\\IWM.NYS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "IWM.NYS",
+          "evidence_id": "instrument-mapping-evidence-0c714a48b775ee65d0bb401c",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-2f874c441bea5e66853945b0",
+          "research_symbol": "IWM",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-714fe1933832a2b99d0e7733",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-2f874c441bea5e66853945b0",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "IWM",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-904843f5d8bfb438941f6201",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "MSFT.NAS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\MSFT.NAS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-90213f54043858c470090841",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-904843f5d8bfb438941f6201",
+          "broker_path": "US Stock\\MSFT.NAS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "MSFT.NAS",
+          "evidence_id": "instrument-mapping-evidence-0f906b6113ce31e1df44d735",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-bb532d6e271d16ed23c5367c",
+          "research_symbol": "MSFT",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-3f5e6efe522534b19fd6061f",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-bb532d6e271d16ed23c5367c",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "MSFT",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-101bcfd78b8b8f5083da8e7b",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "SNDK.NAS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\SNDK.NAS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-5f22311cfc48d5af030faf89",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-101bcfd78b8b8f5083da8e7b",
+          "broker_path": "US Stock\\SNDK.NAS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "SNDK.NAS",
+          "evidence_id": "instrument-mapping-evidence-0b0d8500c950a3dee4602c2b",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-a9b9a579c06509e198f8ed86",
+          "research_symbol": "SNDK",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-b9b2c65358b3e8ab6de4b96b",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-a9b9a579c06509e198f8ed86",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "SNDK",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-7a1c707c9ded52d56dd95030",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "AMZN.NAS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\AMZN.NAS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-0a75c62c1e4f86c93ca281a6",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-7a1c707c9ded52d56dd95030",
+          "broker_path": "US Stock\\AMZN.NAS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "AMZN.NAS",
+          "evidence_id": "instrument-mapping-evidence-dc84a13253f4a63db1694691",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-40fc19c470ed445e9df05fd4",
+          "research_symbol": "AMZN",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-1c6396819bd175db59b2596d",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-40fc19c470ed445e9df05fd4",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "AMZN",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-0d96a2e590efe2f64976ef40",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "AAPL.NAS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\AAPL.NAS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-36e1889a8e49757f4668d540",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-0d96a2e590efe2f64976ef40",
+          "broker_path": "US Stock\\AAPL.NAS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "AAPL.NAS",
+          "evidence_id": "instrument-mapping-evidence-337bb7000742cb8b0893fee4",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-0ff2f5569a0d55f81c8bf766",
+          "research_symbol": "AAPL",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-022a46b4a5bac1ecdcbcc635",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-0ff2f5569a0d55f81c8bf766",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "AAPL",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-3f5e7076d94e751aa751e9ea",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "GOOGL.NAS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\GOOGL.NAS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-7ce39ff4e094b06ff1b6102c",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-3f5e7076d94e751aa751e9ea",
+          "broker_path": "US Stock\\GOOGL.NAS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "GOOGL.NAS",
+          "evidence_id": "instrument-mapping-evidence-bee9b4fc0b0d0278e73e9e49",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-2b4c71193d7fe4a39b06b843",
+          "research_symbol": "GOOGL",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-9eb3e83e1fd666570882e51b",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-2b4c71193d7fe4a39b06b843",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "GOOGL",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-5529c3a5c28a2054192b8193",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "META.NAS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\META.NAS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-2ccc1133824d24f70f61d719",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-5529c3a5c28a2054192b8193",
+          "broker_path": "US Stock\\META.NAS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "META.NAS",
+          "evidence_id": "instrument-mapping-evidence-ce9220392737abdc004f3316",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-495ad4980dbdb833a872d9db",
+          "research_symbol": "META",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-9811b5868d97d2d2ea7d0366",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-495ad4980dbdb833a872d9db",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "META",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-c90520df2f7dae1b067071f1",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "AMD.NAS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\AMD.NAS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-8aa796a9ff3606149b4146a6",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-c90520df2f7dae1b067071f1",
+          "broker_path": "US Stock\\AMD.NAS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "AMD.NAS",
+          "evidence_id": "instrument-mapping-evidence-34462d115db2acefdd92bdb7",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-9d5d2348c11ee9c2b052c76a",
+          "research_symbol": "AMD",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-79b799430dadd90776edbf3f",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-9d5d2348c11ee9c2b052c76a",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "AMD",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-7482275738aa852d114916e5",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "AVGO.NAS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\AVGO.NAS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-76f5f91f492143be55d317a1",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-7482275738aa852d114916e5",
+          "broker_path": "US Stock\\AVGO.NAS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "AVGO.NAS",
+          "evidence_id": "instrument-mapping-evidence-fa1464f384eb32e7f137df25",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-2184ecfded646eb74f235ae2",
+          "research_symbol": "AVGO",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-7c91bbf5da7a29aefe92b2e7",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-2184ecfded646eb74f235ae2",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "AVGO",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-5156ebefa4aae434b4db1bd0",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "PLTR.NYS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\PLTR.NYS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-244f6a2d2cb6d319c2e4e73b",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-5156ebefa4aae434b4db1bd0",
+          "broker_path": "US Stock\\PLTR.NYS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "PLTR.NYS",
+          "evidence_id": "instrument-mapping-evidence-ef9e44599105055ee9d99f0e",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-f257b6b236dfb07f68e5289b",
+          "research_symbol": "PLTR",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-7917afa5db2f2b895e906899",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-f257b6b236dfb07f68e5289b",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "PLTR",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-01973741c1cd3a6702e2cf17",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "GLD.NYS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\GLD.NYS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-278816e5a4143d0cfb1594cf",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-01973741c1cd3a6702e2cf17",
+          "broker_path": "US Stock\\GLD.NYS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "GLD.NYS",
+          "evidence_id": "instrument-mapping-evidence-8e6ff83cc2a1c4a6245cc0de",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-5919de826e237b82cd9803b4",
+          "research_symbol": "GLD",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-60b6ca7762845c863066c425",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-5919de826e237b82cd9803b4",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "GLD",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-0f9cd1c2cfe82688493c3b32",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "GOOG.NAS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\GOOG.NAS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-faa250a24d795824c61b9cc6",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-0f9cd1c2cfe82688493c3b32",
+          "broker_path": "US Stock\\GOOG.NAS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "GOOG.NAS",
+          "evidence_id": "instrument-mapping-evidence-bf80027bba6e4615acd50b7c",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-5275d70845b3cd7777c30ed2",
+          "research_symbol": "GOOG",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-2fd285181e160375cd18ee34",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-5275d70845b3cd7777c30ed2",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "GOOG",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-591d95d2cdbd634cd52e6a7e",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "TSM.NYS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\TSM.NYS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-2306f214e50e3753a5304f38",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-591d95d2cdbd634cd52e6a7e",
+          "broker_path": "US Stock\\TSM.NYS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "TSM.NYS",
+          "evidence_id": "instrument-mapping-evidence-e7de258bc151b76bdcf7cf5c",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-e81ae448b5c09fe1835e0e49",
+          "research_symbol": "TSM",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-240ebc840810951cda7a5d72",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-e81ae448b5c09fe1835e0e49",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "TSM",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-892ba5a16e912fd76093a0bc",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "INTC.NAS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\INTC.NAS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-24c720f27b49f4da1c68e312",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-892ba5a16e912fd76093a0bc",
+          "broker_path": "US Stock\\INTC.NAS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "INTC.NAS",
+          "evidence_id": "instrument-mapping-evidence-029d29fe1dd1b01952f0e003",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-fe8ca5958c5a816d7ba8170e",
+          "research_symbol": "INTC",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-229bcd1ac7154596f68b85f7",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-fe8ca5958c5a816d7ba8170e",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "INTC",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-d876a752c985b1d2ed2a0902",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "ORCL.NYS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\ORCL.NYS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-fa8236f23c207e1641fae43c",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-d876a752c985b1d2ed2a0902",
+          "broker_path": "US Stock\\ORCL.NYS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "ORCL.NYS",
+          "evidence_id": "instrument-mapping-evidence-da1c140abca9d2a97985f899",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-ad8fa1f679e5f5de9d82f0ec",
+          "research_symbol": "ORCL",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-a590d3cb88e041e6beec3482",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-ad8fa1f679e5f5de9d82f0ec",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "ORCL",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-e61e490dbe1523c5a1d2d191",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "NFLX.NAS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\NFLX.NAS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-0f306eb11be220a0a9f877de",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-e61e490dbe1523c5a1d2d191",
+          "broker_path": "US Stock\\NFLX.NAS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "NFLX.NAS",
+          "evidence_id": "instrument-mapping-evidence-a343c49f3451764c4b0c97b4",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-4c32dee616f50e96efa0faa4",
+          "research_symbol": "NFLX",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-30fab5d1b8aadfd83bef9da8",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-4c32dee616f50e96efa0faa4",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "NFLX",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-4d1d3a45d6230c3223567e99",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "XLE.NYS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\XLE.NYS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-c35e6c4fcb67e70320eb2460",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-4d1d3a45d6230c3223567e99",
+          "broker_path": "US Stock\\XLE.NYS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "XLE.NYS",
+          "evidence_id": "instrument-mapping-evidence-4f02c24719bc3d61aba71851",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-2697c48aa8cdcb66cfef24e4",
+          "research_symbol": "XLE",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-64007907ef97fb6f031dbc2f",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-2697c48aa8cdcb66cfef24e4",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "XLE",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-86fdad3c4d6b96da6e771c99",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "MSTR.NAS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\MSTR.NAS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-06d2a577e290cb9b06ffc5ca",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-86fdad3c4d6b96da6e771c99",
+          "broker_path": "US Stock\\MSTR.NAS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "MSTR.NAS",
+          "evidence_id": "instrument-mapping-evidence-90b95e038bed2406e13390e6",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-50dd949194b181b4cd2a6767",
+          "research_symbol": "MSTR",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-ecfecda3cda8f95ad207596a",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-50dd949194b181b4cd2a6767",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "MSTR",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-017ae7c71998d4e3595cceb7",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "XOM.NYS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\XOM.NYS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-4477f584d1900a52fd5f00e3",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-017ae7c71998d4e3595cceb7",
+          "broker_path": "US Stock\\XOM.NYS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "XOM.NYS",
+          "evidence_id": "instrument-mapping-evidence-81002c449bcd4a80b9531b30",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-fcc03a9a9cceb62ddee9e94b",
+          "research_symbol": "XOM",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-b8d8bb796163cd06cf110c54",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-fcc03a9a9cceb62ddee9e94b",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "XOM",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-f4878de212620f085606ef1f",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "EEM.NYS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\EEM.NYS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-a4cb041ac6db3417c32d48c2",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-f4878de212620f085606ef1f",
+          "broker_path": "US Stock\\EEM.NYS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "EEM.NYS",
+          "evidence_id": "instrument-mapping-evidence-f6bbf71886e60d567ccc4b65",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-d4ab844fa667dde48f456b51",
+          "research_symbol": "EEM",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-50102b2b01010167f74e92c0",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-d4ab844fa667dde48f456b51",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "EEM",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-eb52722d2ab86d52d372ad0b",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "JPM.NYS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\JPM.NYS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-1fad3909d801200477415545",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-eb52722d2ab86d52d372ad0b",
+          "broker_path": "US Stock\\JPM.NYS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "JPM.NYS",
+          "evidence_id": "instrument-mapping-evidence-c1cf59fb7d4ebea7172e587d",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-3d1e6256ce0a79899cd1d0a0",
+          "research_symbol": "JPM",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-6c3ebc81de32362aafe06a02",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-3d1e6256ce0a79899cd1d0a0",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "JPM",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      },
+      {
+        "broker": {
+          "broker_instrument_id": "broker-instrument-a45bd5f514b69da6390fd999",
+          "broker_server": "TradeMaxGlobal-Live",
+          "broker_symbol": "COIN.NAS",
+          "contract_size": 1.0,
+          "currency_base": "USD",
+          "currency_margin": "USD",
+          "currency_profit": "USD",
+          "filling_mode": 2,
+          "limitations": [
+            "identity:broker_path_not_exchange_authority"
+          ],
+          "margin_initial": 0.0,
+          "margin_maintenance": 0.0,
+          "order_mode": 63,
+          "path": "US Stock\\COIN.NAS",
+          "point": 0.01,
+          "schema_version": "finagent.broker-instrument.v1",
+          "swap_long": -3.8,
+          "swap_mode": 5,
+          "swap_short": -1.0,
+          "symbol_spec_id": "mt5-symbol-c5e80b0b588fe676d54f3ed5",
+          "terminal_capability_id": "mt5-terminal-ddee5e094eba1388be944da0",
+          "tick_size": 0.01,
+          "tick_value": 0.01,
+          "tradable": true,
+          "trade_calc_mode": 2,
+          "trade_mode": 4,
+          "visible": true,
+          "volume_max": 1000.0,
+          "volume_min": 1.0,
+          "volume_step": 1.0
+        },
+        "evidence": {
+          "broker_instrument_id": "broker-instrument-a45bd5f514b69da6390fd999",
+          "broker_path": "US Stock\\COIN.NAS",
+          "broker_path_is_exchange_authority": false,
+          "broker_symbol": "COIN.NAS",
+          "evidence_id": "instrument-mapping-evidence-017d88e1334355e9bbf62c9f",
+          "limitations": [
+            "evidence:broker_path_not_listed_exchange_authority",
+            "evidence:no_pit_security_master"
+          ],
+          "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+          "observed_at": "2026-09-03T17:15:09.708423+00:00",
+          "operator_attested_same_security": true,
+          "quote_currency_matches": true,
+          "research_instrument_id": "research-instrument-7eafed28248fc75d7b7ba688",
+          "research_symbol": "COIN",
+          "schema_version": "finagent.instrument-mapping-evidence.v1",
+          "symbol_text_matches": false
+        },
+        "mapping_id": "instrument-mapping-936fcfacd5c996bcb968430c",
+        "rejection_reason": null,
+        "research": {
+          "asset_class": "equity",
+          "lifecycle_policy": "historical_symbol_without_lifecycle",
+          "limitations": [
+            "identity:no_point_in_time_security_master",
+            "identity:listed_venue_not_authoritative_from_ohlcv_source"
+          ],
+          "quote_currency": "USD",
+          "research_instrument_id": "research-instrument-7eafed28248fc75d7b7ba688",
+          "schema_version": "finagent.research-instrument.v1",
+          "source_candidate": "hf-mito0o852-ohlcv-1m",
+          "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+          "source_symbol": "COIN",
+          "venue_code": null
+        },
+        "schema_version": "finagent.instrument-mapping.v1",
+        "status": "accepted_for_engineering"
+      }
+    ],
+    "materialization_id": "engineering-universe-materialization-26d2695eb00daa7e7252411a",
+    "mt5_probe_id": "mt5-capability-probe-1b61018546f5305a4b91eb15",
+    "requested_pairs": [
+      {
+        "broker_symbol": "NVDA.NAS",
+        "research_symbol": "NVDA"
+      },
+      {
+        "broker_symbol": "TSLA.NAS",
+        "research_symbol": "TSLA"
+      },
+      {
+        "broker_symbol": "MU.NAS",
+        "research_symbol": "MU"
+      },
+      {
+        "broker_symbol": "IWM.NYS",
+        "research_symbol": "IWM"
+      },
+      {
+        "broker_symbol": "MSFT.NAS",
+        "research_symbol": "MSFT"
+      },
+      {
+        "broker_symbol": "SNDK.NAS",
+        "research_symbol": "SNDK"
+      },
+      {
+        "broker_symbol": "AMZN.NAS",
+        "research_symbol": "AMZN"
+      },
+      {
+        "broker_symbol": "AAPL.NAS",
+        "research_symbol": "AAPL"
+      },
+      {
+        "broker_symbol": "GOOGL.NAS",
+        "research_symbol": "GOOGL"
+      },
+      {
+        "broker_symbol": "META.NAS",
+        "research_symbol": "META"
+      },
+      {
+        "broker_symbol": "AMD.NAS",
+        "research_symbol": "AMD"
+      },
+      {
+        "broker_symbol": "AVGO.NAS",
+        "research_symbol": "AVGO"
+      },
+      {
+        "broker_symbol": "PLTR.NYS",
+        "research_symbol": "PLTR"
+      },
+      {
+        "broker_symbol": "GLD.NYS",
+        "research_symbol": "GLD"
+      },
+      {
+        "broker_symbol": "GOOG.NAS",
+        "research_symbol": "GOOG"
+      },
+      {
+        "broker_symbol": "TSM.NYS",
+        "research_symbol": "TSM"
+      },
+      {
+        "broker_symbol": "INTC.NAS",
+        "research_symbol": "INTC"
+      },
+      {
+        "broker_symbol": "ORCL.NYS",
+        "research_symbol": "ORCL"
+      },
+      {
+        "broker_symbol": "NFLX.NAS",
+        "research_symbol": "NFLX"
+      },
+      {
+        "broker_symbol": "XLE.NYS",
+        "research_symbol": "XLE"
+      },
+      {
+        "broker_symbol": "MSTR.NAS",
+        "research_symbol": "MSTR"
+      },
+      {
+        "broker_symbol": "XOM.NYS",
+        "research_symbol": "XOM"
+      },
+      {
+        "broker_symbol": "EEM.NYS",
+        "research_symbol": "EEM"
+      },
+      {
+        "broker_symbol": "JPM.NYS",
+        "research_symbol": "JPM"
+      },
+      {
+        "broker_symbol": "COIN.NAS",
+        "research_symbol": "COIN"
+      }
+    ],
+    "schema_version": "finagent.engineering-universe-materialization.v1",
+    "source_candidate": "hf-mito0o852-ohlcv-1m",
+    "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+    "universe": {
+      "broker_instrument_ids": [
+        "broker-instrument-e8a5aa29ead846599dcaf17c",
+        "broker-instrument-1096a1d4b591007bae6c6fa1",
+        "broker-instrument-28d92e9cf20e62be0e727198",
+        "broker-instrument-94fe42a583a44aed92e97aff",
+        "broker-instrument-904843f5d8bfb438941f6201",
+        "broker-instrument-101bcfd78b8b8f5083da8e7b",
+        "broker-instrument-7a1c707c9ded52d56dd95030",
+        "broker-instrument-0d96a2e590efe2f64976ef40",
+        "broker-instrument-3f5e7076d94e751aa751e9ea",
+        "broker-instrument-5529c3a5c28a2054192b8193",
+        "broker-instrument-c90520df2f7dae1b067071f1",
+        "broker-instrument-7482275738aa852d114916e5",
+        "broker-instrument-5156ebefa4aae434b4db1bd0",
+        "broker-instrument-01973741c1cd3a6702e2cf17",
+        "broker-instrument-0f9cd1c2cfe82688493c3b32",
+        "broker-instrument-591d95d2cdbd634cd52e6a7e",
+        "broker-instrument-892ba5a16e912fd76093a0bc",
+        "broker-instrument-d876a752c985b1d2ed2a0902",
+        "broker-instrument-e61e490dbe1523c5a1d2d191",
+        "broker-instrument-4d1d3a45d6230c3223567e99",
+        "broker-instrument-86fdad3c4d6b96da6e771c99",
+        "broker-instrument-017ae7c71998d4e3595cceb7",
+        "broker-instrument-f4878de212620f085606ef1f",
+        "broker-instrument-eb52722d2ab86d52d372ad0b",
+        "broker-instrument-a45bd5f514b69da6390fd999"
+      ],
+      "limitations": [
+        "universe:engineering_integration_only",
+        "universe:not_survivorship_unbiased",
+        "universe:no_market_wide_alpha_claim"
+      ],
+      "mapping_ids": [
+        "instrument-mapping-3871619bfac1bb9555484569",
+        "instrument-mapping-a73f8edba05f17b9615c366a",
+        "instrument-mapping-38a38f43b12f1d4f64909838",
+        "instrument-mapping-714fe1933832a2b99d0e7733",
+        "instrument-mapping-3f5e6efe522534b19fd6061f",
+        "instrument-mapping-b9b2c65358b3e8ab6de4b96b",
+        "instrument-mapping-1c6396819bd175db59b2596d",
+        "instrument-mapping-022a46b4a5bac1ecdcbcc635",
+        "instrument-mapping-9eb3e83e1fd666570882e51b",
+        "instrument-mapping-9811b5868d97d2d2ea7d0366",
+        "instrument-mapping-79b799430dadd90776edbf3f",
+        "instrument-mapping-7c91bbf5da7a29aefe92b2e7",
+        "instrument-mapping-7917afa5db2f2b895e906899",
+        "instrument-mapping-60b6ca7762845c863066c425",
+        "instrument-mapping-2fd285181e160375cd18ee34",
+        "instrument-mapping-240ebc840810951cda7a5d72",
+        "instrument-mapping-229bcd1ac7154596f68b85f7",
+        "instrument-mapping-a590d3cb88e041e6beec3482",
+        "instrument-mapping-30fab5d1b8aadfd83bef9da8",
+        "instrument-mapping-64007907ef97fb6f031dbc2f",
+        "instrument-mapping-ecfecda3cda8f95ad207596a",
+        "instrument-mapping-b8d8bb796163cd06cf110c54",
+        "instrument-mapping-50102b2b01010167f74e92c0",
+        "instrument-mapping-6c3ebc81de32362aafe06a02",
+        "instrument-mapping-936fcfacd5c996bcb968430c"
+      ],
+      "research_instrument_ids": [
+        "research-instrument-d4fb11ca71e341bdb80739f5",
+        "research-instrument-3c5bf21898b2d3f6656d6d0f",
+        "research-instrument-9129fd493205f27f4b38321e",
+        "research-instrument-2f874c441bea5e66853945b0",
+        "research-instrument-bb532d6e271d16ed23c5367c",
+        "research-instrument-a9b9a579c06509e198f8ed86",
+        "research-instrument-40fc19c470ed445e9df05fd4",
+        "research-instrument-0ff2f5569a0d55f81c8bf766",
+        "research-instrument-2b4c71193d7fe4a39b06b843",
+        "research-instrument-495ad4980dbdb833a872d9db",
+        "research-instrument-9d5d2348c11ee9c2b052c76a",
+        "research-instrument-2184ecfded646eb74f235ae2",
+        "research-instrument-f257b6b236dfb07f68e5289b",
+        "research-instrument-5919de826e237b82cd9803b4",
+        "research-instrument-5275d70845b3cd7777c30ed2",
+        "research-instrument-e81ae448b5c09fe1835e0e49",
+        "research-instrument-fe8ca5958c5a816d7ba8170e",
+        "research-instrument-ad8fa1f679e5f5de9d82f0ec",
+        "research-instrument-4c32dee616f50e96efa0faa4",
+        "research-instrument-2697c48aa8cdcb66cfef24e4",
+        "research-instrument-50dd949194b181b4cd2a6767",
+        "research-instrument-fcc03a9a9cceb62ddee9e94b",
+        "research-instrument-d4ab844fa667dde48f456b51",
+        "research-instrument-3d1e6256ce0a79899cd1d0a0",
+        "research-instrument-7eafed28248fc75d7b7ba688"
+      ],
+      "schema_version": "finagent.engineering-universe.v1",
+      "universe_id": "engineering-universe-259e3975a25856bef28442ff"
+    },
+    "unmapped_requests": []
+  },
+  "missing_seed_symbols": [],
+  "policy": {
+    "maximum_count": 30,
+    "maximum_current_spread_bps": 50.0,
+    "maximum_future_quote_skew_seconds": 60,
+    "maximum_quote_age_seconds": 900,
+    "minimum_count": 20,
+    "policy_id": "us-universe-final-policy-038584f4e5927165f5c7e36b",
+    "require_broker_server_match": true,
+    "require_clock_evidence": true,
+    "require_operator_attestation": true,
+    "require_probe_identity_match": true,
+    "require_quote_probe_policy_match": true,
+    "require_seed_retention": true,
+    "require_tradable": true,
+    "schema_version": "finagent.us-engineering-universe-finalization-policy.v3",
+    "target_count": 25
+  },
+  "quote_evidence": {
+    "assessed_at": "2026-09-03T17:15:11.045542+00:00",
+    "assessment_id": "us-quote-evidence-dd139aea7900dd037e687b9a",
+    "blockers": [],
+    "candidate_broker_server": "TradeMaxGlobal-Live",
+    "candidate_mt5_probe_id": "mt5-capability-probe-17e5cc9c62b808c259294eb4",
+    "candidate_selection_id": "us-mapped-candidate-selection-ca07551e1e77acbf4604f277",
+    "clock_broker_server": "TradeMaxGlobal-Live",
+    "clock_evidence_id": "mt5-broker-clock-evidence-3b0cc2597055158b3c49b305",
+    "clock_evidence_passed": true,
+    "fresh_quote_count": 40,
+    "fresh_quote_symbols": [
+      "AAPL.NAS",
+      "ABT.NYS",
+      "ADBE.NAS",
+      "AMAT.NAS",
+      "AMD.NAS",
+      "AMZN.NAS",
+      "APH.NYS",
+      "AVGO.NAS",
+      "BA.NYS",
+      "BABA.NYS",
+      "BAC.NYS",
+      "BKNG.NAS",
+      "BMY.NYS",
+      "C.NYS",
+      "CMG.NYS",
+      "COF.NYS",
+      "COIN.NAS",
+      "COP.NYS",
+      "EEM.NYS",
+      "GLD.NYS",
+      "GOOG.NAS",
+      "GOOGL.NAS",
+      "HYG.NYS",
+      "INTC.NAS",
+      "IWM.NYS",
+      "JPM.NYS",
+      "META.NAS",
+      "MSFT.NAS",
+      "MSTR.NAS",
+      "MU.NAS",
+      "NFLX.NAS",
+      "NVDA.NAS",
+      "ORCL.NYS",
+      "PLTR.NYS",
+      "SNDK.NAS",
+      "TSLA.NAS",
+      "TSM.NYS",
+      "VNQ.NYS",
+      "XLE.NYS",
+      "XOM.NYS"
+    ],
+    "future_quote_symbols": [],
+    "inventory_broker_server": "TradeMaxGlobal-Live",
+    "passed": true,
+    "quote_broker_server": "TradeMaxGlobal-Live",
+    "quote_mt5_probe_id": "mt5-capability-probe-17e5cc9c62b808c259294eb4",
+    "quote_probe_policy_matches": true,
+    "quote_probe_ready": true,
+    "quote_report_id": "us-candidate-quote-probe-11f6f5f82da17df1a2c9e7cc",
+    "required_seed_symbols": [
+      "AMD.NAS",
+      "INTC.NAS",
+      "MSFT.NAS",
+      "NVDA.NAS"
+    ],
+    "schema_version": "finagent.us-quote-evidence-assessment.v2",
+    "stale_quote_symbols": []
+  },
+  "report_id": "us-engineering-universe-finalization-1fe7eb8b4b6b6b561028f054",
+  "required_seed_symbols": [
+    "AMD",
+    "INTC",
+    "MSFT",
+    "NVDA"
+  ],
+  "schema_version": "finagent.us-engineering-universe-finalization-report.v3",
+  "selected_symbols": [
+    "NVDA",
+    "TSLA",
+    "MU",
+    "IWM",
+    "MSFT",
+    "SNDK",
+    "AMZN",
+    "AAPL",
+    "GOOGL",
+    "META",
+    "AMD",
+    "AVGO",
+    "PLTR",
+    "GLD",
+    "GOOG",
+    "TSM",
+    "INTC",
+    "ORCL",
+    "NFLX",
+    "XLE",
+    "MSTR",
+    "XOM",
+    "EEM",
+    "JPM",
+    "COIN"
+  ],
+  "universe_id": "engineering-universe-259e3975a25856bef28442ff"
+}

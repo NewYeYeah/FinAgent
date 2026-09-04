@@ -1,0 +1,801 @@
+{
+  "accepted_candidate_count": 16,
+  "accepted_candidate_ids": [
+    "us-agent-value-candidate-41619b08059fbbd40c924da0",
+    "us-agent-value-candidate-98d3f18bed490c671cbb9e74",
+    "us-agent-value-candidate-39b4e8ee15e1fae3a53ee859",
+    "us-agent-value-candidate-35033b636e2f234961f887d2",
+    "us-agent-value-candidate-f19c5808303e292cad4f2b40",
+    "us-agent-value-candidate-2ca3e8be8421699aa7c23646",
+    "us-agent-value-candidate-38de1500a8fab962a09741a6",
+    "us-agent-value-candidate-ee9e717b07484527541d11f6",
+    "us-agent-value-candidate-d0a398f8a38ca304cad983d1",
+    "us-agent-value-candidate-3626155aa024e67a6b4b86cc",
+    "us-agent-value-candidate-19cffbbc01c0b98825f016e0",
+    "us-agent-value-candidate-dfb77a46df77fb9b69bf4387",
+    "us-agent-value-candidate-4e21108fb599aa192d038272",
+    "us-agent-value-candidate-4f77c83bbd9cbfc7bbe7aea6",
+    "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+    "us-agent-value-candidate-999abbbe61367860e2f0e737"
+  ],
+  "agent_value_gate_authority": false,
+  "alpha_authority": false,
+  "candidate_budget": 16,
+  "duplicate_slot_count": 0,
+  "event_count": 16,
+  "events": [
+    {
+      "arm": "PROGRAMMATIC",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-41619b08059fbbd40c924da0",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "return_volatility",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "return_volatility:6",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 6
+      },
+      "candidate_id": "us-agent-value-candidate-41619b08059fbbd40c924da0",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-9dd641df74fa7617845c873b",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Seeded bounded search over the same frozen structural vocabulary.",
+        "kind": "return_volatility",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-c783364d31074d2a768100cb",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 6
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-eefc8eda956d65851d0926ef",
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 1,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "PROGRAMMATIC",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-98d3f18bed490c671cbb9e74",
+        "input_fields": [
+          "volume"
+        ],
+        "kind": "volume_surprise",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "volume_surprise:9",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 9
+      },
+      "candidate_id": "us-agent-value-candidate-98d3f18bed490c671cbb9e74",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-8bb8e50cf6fe202a5649aa3e",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Seeded bounded search over the same frozen structural vocabulary.",
+        "kind": "volume_surprise",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-925fccbd311ac653d8cd89c3",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 9
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-9c26c72f6a8c45ebe9a9b908",
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 2,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "PROGRAMMATIC",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-39b4e8ee15e1fae3a53ee859",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:4",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 4
+      },
+      "candidate_id": "us-agent-value-candidate-39b4e8ee15e1fae3a53ee859",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-b829ed3e642af508e4c6f45e",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Seeded bounded search over the same frozen structural vocabulary.",
+        "kind": "reversal",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-f27ecb852d086f17c0ef59c6",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 4
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-c0f399818f20555166d3cf48",
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 3,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "PROGRAMMATIC",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-35033b636e2f234961f887d2",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:3",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 3
+      },
+      "candidate_id": "us-agent-value-candidate-35033b636e2f234961f887d2",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-24d9e0236c3db41fe0ffa426",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Seeded bounded search over the same frozen structural vocabulary.",
+        "kind": "range_mean",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-2955e49abe34d2d7538f2564",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 3
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-df2f13a325ffe4b7b891ea49",
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 4,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "PROGRAMMATIC",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-f19c5808303e292cad4f2b40",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:9",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 9
+      },
+      "candidate_id": "us-agent-value-candidate-f19c5808303e292cad4f2b40",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-b3261b337af919974971cbe5",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Seeded bounded search over the same frozen structural vocabulary.",
+        "kind": "range_mean",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-4dbb4d09831ab9240b56193a",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 9
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-30400899baa31823fefc6c0b",
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 5,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "PROGRAMMATIC",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-2ca3e8be8421699aa7c23646",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:6",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 6
+      },
+      "candidate_id": "us-agent-value-candidate-2ca3e8be8421699aa7c23646",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-c878199f4ee862548eb84202",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Seeded bounded search over the same frozen structural vocabulary.",
+        "kind": "range_mean",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-1c2a08d5deaa843415f8c427",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 6
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-2fc101260a06aac6af8be4c8",
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 6,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "PROGRAMMATIC",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-38de1500a8fab962a09741a6",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:12",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 12
+      },
+      "candidate_id": "us-agent-value-candidate-38de1500a8fab962a09741a6",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-74022c00caf98652162b146e",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Seeded bounded search over the same frozen structural vocabulary.",
+        "kind": "reversal",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-3ffc021f445de7a2fb8ecf50",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 12
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-6b18f925a006fe5eb2935a3c",
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 7,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "PROGRAMMATIC",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-ee9e717b07484527541d11f6",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "return_volatility",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "return_volatility:7",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 7
+      },
+      "candidate_id": "us-agent-value-candidate-ee9e717b07484527541d11f6",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-00b5b32bc0dae2ec4a96b739",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Seeded bounded search over the same frozen structural vocabulary.",
+        "kind": "return_volatility",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-d3edf2ee0c643c92f9542c3f",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 7
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-78f5b3d35a728b5df3506643",
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 8,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "PROGRAMMATIC",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-d0a398f8a38ca304cad983d1",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:5",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 5
+      },
+      "candidate_id": "us-agent-value-candidate-d0a398f8a38ca304cad983d1",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-6831805a1c89ef9f6c4dce86",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Seeded bounded search over the same frozen structural vocabulary.",
+        "kind": "reversal",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-7e73395a431ba01e14f72269",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 5
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-09513aeb6397778afddac50d",
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 9,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "PROGRAMMATIC",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-3626155aa024e67a6b4b86cc",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:13",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 13
+      },
+      "candidate_id": "us-agent-value-candidate-3626155aa024e67a6b4b86cc",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-4127f2263082f787c3066d2c",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Seeded bounded search over the same frozen structural vocabulary.",
+        "kind": "reversal",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-98937277068eae358d81caa4",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 13
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-f13ae5bc68af0a19ff666eee",
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 10,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "PROGRAMMATIC",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-19cffbbc01c0b98825f016e0",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:8",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 8
+      },
+      "candidate_id": "us-agent-value-candidate-19cffbbc01c0b98825f016e0",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-3e409b4732302a26681c8020",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Seeded bounded search over the same frozen structural vocabulary.",
+        "kind": "momentum",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-50f68c3321dc52b4740b37cd",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 8
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-52982d613bcc88deae3fe81e",
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 11,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "PROGRAMMATIC",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-dfb77a46df77fb9b69bf4387",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:10",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 10
+      },
+      "candidate_id": "us-agent-value-candidate-dfb77a46df77fb9b69bf4387",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-5a6092113ffdfc6759db6055",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Seeded bounded search over the same frozen structural vocabulary.",
+        "kind": "range_mean",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-4140db51923768a2449b62e4",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 10
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-7076de130c9ab780b0954abc",
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 12,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "PROGRAMMATIC",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-4e21108fb599aa192d038272",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:13",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 13
+      },
+      "candidate_id": "us-agent-value-candidate-4e21108fb599aa192d038272",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-1d1a7571593f97b73c09b13a",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Seeded bounded search over the same frozen structural vocabulary.",
+        "kind": "momentum",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-47c4a948bedc35d62002226e",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 13
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-42f888ba12545f0dc0e8aad8",
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 13,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "PROGRAMMATIC",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-4f77c83bbd9cbfc7bbe7aea6",
+        "input_fields": [
+          "volume"
+        ],
+        "kind": "volume_surprise",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "volume_surprise:4",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 4
+      },
+      "candidate_id": "us-agent-value-candidate-4f77c83bbd9cbfc7bbe7aea6",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-b36416de3bd00e599f9bc0dd",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Seeded bounded search over the same frozen structural vocabulary.",
+        "kind": "volume_surprise",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-a692867d190ff5eccc35c1b6",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 4
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-837f9a82470e96267942108c",
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 14,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "PROGRAMMATIC",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:3",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 3
+      },
+      "candidate_id": "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-a0755a9fad92c479a3a28bcd",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Seeded bounded search over the same frozen structural vocabulary.",
+        "kind": "momentum",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-7b6605fcab9edf19932b70eb",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 3
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-f9409e8738c8a4259162095d",
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 15,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "PROGRAMMATIC",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-999abbbe61367860e2f0e737",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:11",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 11
+      },
+      "candidate_id": "us-agent-value-candidate-999abbbe61367860e2f0e737",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-82152b60114d79ce20489de8",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-02T08:14:07.625755+00:00",
+        "hypothesis_summary": "Seeded bounded search over the same frozen structural vocabulary.",
+        "kind": "reversal",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-ba3fa4c68e9e06485115f109",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.0,
+          "input_tokens": 0,
+          "latency_ms": 0.0,
+          "llm_calls": 0,
+          "output_tokens": 0,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 0
+        },
+        "window_bars": 11
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-e02f8d0ec49728de1c4c8aea",
+      "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 16,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    }
+  ],
+  "invalid_slot_count": 0,
+  "repair_count": 0,
+  "replacement_count": 0,
+  "run_id": "us-agent-value-generation-run-94037a514ac060f3383c0b03",
+  "schema_version": "finagent.candidate-generation-run.v1",
+  "spec": {
+    "arm": "PROGRAMMATIC",
+    "candidate_budget": 16,
+    "generator_id": "us_a0_seeded_uniform_without_replacement_v1",
+    "model_id": null,
+    "phase": "PILOT",
+    "prompt_template_id": null,
+    "protocol_id": "us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03",
+    "provider_id": null,
+    "random_seed": 1729,
+    "run_ordinal": 1,
+    "run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+    "schema_version": "finagent.us-agent-value-generation-run-spec.v1"
+  },
+  "stage_exit_authority": false,
+  "usage": {
+    "cost_usd": 0.0,
+    "input_tokens": 0,
+    "latency_ms": 0.0,
+    "llm_calls": 0,
+    "output_tokens": 0,
+    "schema_version": "finagent.us-agent-value-generation-usage.v1",
+    "total_tokens": 0
+  }
+}

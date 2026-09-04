@@ -1,0 +1,68 @@
+{
+  "blockers": [],
+  "certified": true,
+  "inputs": {
+    "d1_asset_count": 4,
+    "d1_blockers": [],
+    "d1_partition_count": 3,
+    "d1_passed": true,
+    "d1_replay_match": true,
+    "d1_smoke_report_id": "minute-store-smoke-ac583e1435f96a227f460f00",
+    "d2_action_authority_passed": true,
+    "d2_blockers": [],
+    "d2_calendar_id": "trading-calendar-03a9c29f566d6634aedbbbdc",
+    "d2_passed": true,
+    "d2_scenario_names": [
+      "half_day",
+      "pre_dst",
+      "post_dst"
+    ],
+    "d2_smoke_report_id": "us-d2-transform-smoke-4b47e2fe2525d7f599d6579f",
+    "d2_unknown_label_unavailability_count": 0,
+    "engineering_universe_accepted": true,
+    "engineering_universe_count": 25,
+    "engineering_universe_id": "engineering-universe-259e3975a25856bef28442ff",
+    "inputs_id": "us-minute-cert-inputs-4fc51f496de6e6fcfa6eb4d8",
+    "inventory_id": "us-minute-inventory-c2cbf682b456f97eb613ed65",
+    "local_research_admitted": true,
+    "point_in_time_security_master_available": false,
+    "reconciliation_blockers": [],
+    "reconciliation_passed": true,
+    "reconciliation_report_id": "minute-reference-reconciliation-73e9897bcb5e43fd5ce0c53d",
+    "schema_version": "finagent.us-minute-certification-inputs.v1",
+    "source_admission_id": "us-minute-local-admission-f9634ce117862410d2d00135",
+    "source_authority_status": "reference_only",
+    "source_certification_passed": true,
+    "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56"
+  },
+  "limitations": [
+    "scope:local_non_redistributed_research_only",
+    "prices:intraday_raw_split_unadjusted",
+    "corporate_actions:adjusted_transform_unavailable",
+    "universe:engineering_integration_universe",
+    "source_authority:reference_only",
+    "identity:no_point_in_time_security_master",
+    "claim:no_survivorship_unbiased_market_wide_alpha"
+  ],
+  "outcome": "CERTIFIED_FOR_ENGINEERING_RESEARCH",
+  "policy": {
+    "expected_calendar_id": "trading-calendar-03a9c29f566d6634aedbbbdc",
+    "expected_inventory_id": "us-minute-inventory-c2cbf682b456f97eb613ed65",
+    "expected_source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+    "maximum_engineering_universe_size": 30,
+    "minimum_engineering_universe_size": 20,
+    "policy_id": "us-minute-cert-policy-4e83af2026763b02cd34d54d",
+    "require_action_authority_boundary": true,
+    "require_d1_replay_match": true,
+    "require_no_unknown_label_unavailability": true,
+    "require_reconciliation": true,
+    "required_scenarios": [
+      "half_day",
+      "pre_dst",
+      "post_dst"
+    ],
+    "schema_version": "finagent.us-minute-certification-policy.v1"
+  },
+  "report_id": "us-minute-research-cert-485aeeac152a32caa546fbb8",
+  "schema_version": "finagent.us-minute-certification-report.v1"
+}

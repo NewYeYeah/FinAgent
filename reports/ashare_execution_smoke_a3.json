@@ -1,0 +1,585 @@
+{
+  "boundaries": {
+    "T_plus_1_inventory": true,
+    "execution_price": "exact next-session open",
+    "long_only": true,
+    "portfolio_economic_validation": false,
+    "promotion_eligible": false,
+    "reserve_consumed": false
+  },
+  "buy_cycle": {
+    "compilation": {
+      "available_cash_before_buys": 1000000.0,
+      "decisions": [
+        {
+          "client_order_id": "a3-938dd2cffd6e711f73feb136",
+          "desired": {
+            "asset": "equity:SSE:600000:CNY",
+            "current_quantity": 0,
+            "reference_price": 6.63,
+            "requested_quantity": 60331.82503770739,
+            "side": "buy",
+            "target_quantity": 60331.82503770739
+          },
+          "estimated_fees": {
+            "broker_commission": 119.93669999999999,
+            "exchange_handling_fee": 0.0,
+            "regulatory_fee": 0.0,
+            "stamp_duty": 0.0,
+            "total": 123.93458999999999,
+            "transfer_fee": 3.9978900000000004
+          },
+          "executable_quantity": 60300,
+          "reason_codes": [
+            "BUY_LOT_ROUNDED"
+          ],
+          "rejected_quantity": 31.825037707392767,
+          "status": "adjusted"
+        },
+        {
+          "client_order_id": "a3-3635035488eadf8545f6e398",
+          "desired": {
+            "asset": "equity:SZSE:000001:CNY",
+            "current_quantity": 0,
+            "reference_price": 9.39,
+            "requested_quantity": 42598.50905218317,
+            "side": "buy",
+            "target_quantity": 42598.50905218317
+          },
+          "estimated_fees": {
+            "broker_commission": 119.7225,
+            "exchange_handling_fee": 0.0,
+            "regulatory_fee": 0.0,
+            "stamp_duty": 0.0,
+            "total": 123.71325,
+            "transfer_fee": 3.9907500000000002
+          },
+          "executable_quantity": 42500,
+          "reason_codes": [
+            "BUY_LOT_ROUNDED"
+          ],
+          "rejected_quantity": 98.50905218317348,
+          "status": "adjusted"
+        }
+      ],
+      "estimated_total_fees": 247.64783999999997,
+      "metadata": {
+        "cash_policy": "sell_proceeds_reusable_then_proportional_buy_scaling",
+        "compiler": "ashare-order-compiler-v1",
+        "execution_scope": "long_only_A_share_cash_equity",
+        "fee_schedule_id": "ashare-fee-schedule-ccf4df26a2abb26ac2ebf83b",
+        "slippage_bps": "0.0"
+      },
+      "orders": [
+        "a3-938dd2cffd6e711f73feb136",
+        "a3-3635035488eadf8545f6e398"
+      ],
+      "pretrade_nav": 1000000.0,
+      "session_date": "2024-01-02"
+    },
+    "execution": {
+      "fills": [
+        {
+          "asset": "equity:SSE:600000:CNY",
+          "client_order_id": "a3-938dd2cffd6e711f73feb136",
+          "executed_at": "2024-01-02T01:30:00+00:00",
+          "execution_price": 6.63,
+          "fees": {
+            "broker_commission": 119.93669999999999,
+            "exchange_handling_fee": 0.0,
+            "regulatory_fee": 0.0,
+            "stamp_duty": 0.0,
+            "total": 123.93458999999999,
+            "transfer_fee": 3.9978900000000004
+          },
+          "metadata": {
+            "board": "sse_main",
+            "exchange": "ashare-simulated-exchange-v1",
+            "fee_schedule_id": "ashare-fee-schedule-ccf4df26a2abb26ac2ebf83b"
+          },
+          "notional": 399789.0,
+          "quantity": 60300,
+          "reference_price": 6.63,
+          "side": "buy",
+          "slippage": 0.0
+        },
+        {
+          "asset": "equity:SZSE:000001:CNY",
+          "client_order_id": "a3-3635035488eadf8545f6e398",
+          "executed_at": "2024-01-02T01:30:00+00:00",
+          "execution_price": 9.39,
+          "fees": {
+            "broker_commission": 119.7225,
+            "exchange_handling_fee": 0.0,
+            "regulatory_fee": 0.0,
+            "stamp_duty": 0.0,
+            "total": 123.71325,
+            "transfer_fee": 3.9907500000000002
+          },
+          "metadata": {
+            "board": "szse_main",
+            "exchange": "ashare-simulated-exchange-v1",
+            "fee_schedule_id": "ashare-fee-schedule-ccf4df26a2abb26ac2ebf83b"
+          },
+          "notional": 399075.0,
+          "quantity": 42500,
+          "reference_price": 9.39,
+          "side": "buy",
+          "slippage": 0.0
+        }
+      ],
+      "finished_at": "2024-01-02T01:30:00+00:00",
+      "metadata": {
+        "exchange": "ashare-simulated-exchange-v1",
+        "execution_price_field": "open",
+        "fee_schedule_id": "ashare-fee-schedule-ccf4df26a2abb26ac2ebf83b",
+        "slippage_bps": "0.0"
+      },
+      "orders": [
+        "a3-938dd2cffd6e711f73feb136",
+        "a3-3635035488eadf8545f6e398"
+      ],
+      "rejections": {},
+      "session_date": "2024-01-02",
+      "started_at": "2024-01-02T01:30:00+00:00",
+      "total_fees": 247.64783999999997,
+      "total_slippage": 0.0
+    },
+    "state_after": {
+      "base_currency": "CNY",
+      "cash": 200888.35216000007,
+      "marks": {
+        "equity:SSE:600000:CNY": 6.63,
+        "equity:SZSE:000001:CNY": 9.39
+      },
+      "metadata": {
+        "last_execution_session": "2024-01-02",
+        "scope": "A3 execution-semantics smoke",
+        "settlement": "T+1 inventory rolled"
+      },
+      "nav": 999752.35216,
+      "positions": {
+        "equity:SSE:600000:CNY": {
+          "sellable_quantity": 0,
+          "total_quantity": 60300,
+          "unsettled_quantity": 60300
+        },
+        "equity:SZSE:000001:CNY": {
+          "sellable_quantity": 0,
+          "total_quantity": 42500,
+          "unsettled_quantity": 42500
+        }
+      },
+      "session_date": "2024-01-02"
+    },
+    "state_before": {
+      "base_currency": "CNY",
+      "cash": 1000000.0,
+      "marks": {},
+      "metadata": {
+        "scope": "A3 execution-semantics smoke",
+        "settlement": "T+1 inventory rolled"
+      },
+      "nav": 1000000.0,
+      "positions": {},
+      "session_date": "2024-01-02"
+    }
+  },
+  "buy_session": "2024-01-02",
+  "buy_snapshot": {
+    "asof": "2024-01-02T01:30:00+00:00",
+    "data_version": "local-ashare-frozen-96f1a2c07f285e6ff41575cf",
+    "metadata": {
+      "adapter": "LocalAshareDailyExecutionAdapter",
+      "execution_price_field": "open",
+      "frequency": "1d",
+      "price_limit_source": "vendor_up_limit_down_limit",
+      "session_semantics": "exact_row_no_stale_quote_fallback"
+    },
+    "session_date": "2024-01-02",
+    "states": {
+      "equity:SSE:600000:CNY": {
+        "asset": "equity:SSE:600000:CNY",
+        "at_lower_limit": false,
+        "at_upper_limit": false,
+        "board": "sse_main",
+        "execution_price": 6.63,
+        "is_st": false,
+        "lower_limit": 5.96,
+        "mark_price": 6.63,
+        "metadata": {
+          "amount_cny": "146066304.0",
+          "close": "6.6",
+          "require_price_limits": "True",
+          "source": "local_ashare_parquet_exact_session"
+        },
+        "observed_at": "2024-01-02T01:30:00+00:00",
+        "previous_close": 6.62,
+        "session_date": "2024-01-02",
+        "status": "tradable",
+        "upper_limit": 7.28,
+        "volume": 22066700.0
+      },
+      "equity:SZSE:000001:CNY": {
+        "asset": "equity:SZSE:000001:CNY",
+        "at_lower_limit": false,
+        "at_upper_limit": false,
+        "board": "szse_main",
+        "execution_price": 9.39,
+        "is_st": false,
+        "lower_limit": 8.45,
+        "mark_price": 9.39,
+        "metadata": {
+          "amount_cny": "1075742252.0",
+          "close": "9.21",
+          "require_price_limits": "True",
+          "source": "local_ashare_parquet_exact_session"
+        },
+        "observed_at": "2024-01-02T01:30:00+00:00",
+        "previous_close": 9.39,
+        "session_date": "2024-01-02",
+        "status": "tradable",
+        "upper_limit": 10.33,
+        "volume": 115836645.0
+      }
+    }
+  },
+  "checks": {
+    "buy_inventory_unsettled": true,
+    "buy_orders_executed": true,
+    "buy_stamp_duty_zero": true,
+    "cash_non_negative": true,
+    "integer_execution_quantities": true,
+    "next_session_sell_executed": true,
+    "positions_closed": true,
+    "same_session_sell_blocked_by_t1": true,
+    "sell_stamp_duty_positive": true
+  },
+  "data_version": "local-ashare-frozen-96f1a2c07f285e6ff41575cf",
+  "fee_schedule": {
+    "broker_commission_rate": 0.0003,
+    "bse_handling_rate": 0.000125,
+    "minimum_broker_commission": 5.0,
+    "pass_through_exchange_handling": false,
+    "pass_through_regulatory_fee": false,
+    "regulatory_fee_rate": 2e-05,
+    "schedule_id": "ashare-fee-schedule-ccf4df26a2abb26ac2ebf83b",
+    "sse_szse_handling_rate": 3.41e-05,
+    "stamp_duty_sell_rate": 0.0005,
+    "transfer_fee_rate": 1e-05
+  },
+  "manifest_version": "local-ashare-frozen-96f1a2c07f285e6ff41575cf",
+  "passed": true,
+  "same_session_compilation": {
+    "available_cash_before_buys": 200888.35216000007,
+    "decisions": [
+      {
+        "client_order_id": null,
+        "desired": {
+          "asset": "equity:SZSE:000001:CNY",
+          "current_quantity": 42500,
+          "reference_price": 9.39,
+          "requested_quantity": 42500.0,
+          "side": "sell",
+          "target_quantity": 0.0
+        },
+        "estimated_fees": {
+          "broker_commission": 0.0,
+          "exchange_handling_fee": 0.0,
+          "regulatory_fee": 0.0,
+          "stamp_duty": 0.0,
+          "total": 0.0,
+          "transfer_fee": 0.0
+        },
+        "executable_quantity": 0,
+        "reason_codes": [
+          "T1_SELLABLE_QUANTITY_CLIPPED",
+          "BELOW_MINIMUM_LOT"
+        ],
+        "rejected_quantity": 42500.0,
+        "status": "rejected"
+      },
+      {
+        "client_order_id": null,
+        "desired": {
+          "asset": "equity:SSE:600000:CNY",
+          "current_quantity": 60300,
+          "reference_price": 6.63,
+          "requested_quantity": 60300.0,
+          "side": "sell",
+          "target_quantity": 0.0
+        },
+        "estimated_fees": {
+          "broker_commission": 0.0,
+          "exchange_handling_fee": 0.0,
+          "regulatory_fee": 0.0,
+          "stamp_duty": 0.0,
+          "total": 0.0,
+          "transfer_fee": 0.0
+        },
+        "executable_quantity": 0,
+        "reason_codes": [
+          "T1_SELLABLE_QUANTITY_CLIPPED",
+          "BELOW_MINIMUM_LOT"
+        ],
+        "rejected_quantity": 60300.0,
+        "status": "rejected"
+      }
+    ],
+    "estimated_total_fees": 0.0,
+    "metadata": {
+      "cash_policy": "sell_proceeds_reusable_then_proportional_buy_scaling",
+      "compiler": "ashare-order-compiler-v1",
+      "execution_scope": "long_only_A_share_cash_equity",
+      "fee_schedule_id": "ashare-fee-schedule-ccf4df26a2abb26ac2ebf83b",
+      "slippage_bps": "0.0"
+    },
+    "orders": [],
+    "pretrade_nav": 999752.35216,
+    "session_date": "2024-01-02"
+  },
+  "schema_version": "finagent.ashare-execution-smoke.v1",
+  "scope": "historical A-share execution-semantics acceptance only; no factor reserve, promotion, PAPER, realtime or live-capital claim",
+  "sell_cycle": {
+    "compilation": {
+      "available_cash_before_buys": 988202.1110400001,
+      "decisions": [
+        {
+          "client_order_id": "a3-1a9e8904d29d5ef6d34f9b86",
+          "desired": {
+            "asset": "equity:SZSE:000001:CNY",
+            "current_quantity": 42500,
+            "reference_price": 9.19,
+            "requested_quantity": 42500.0,
+            "side": "sell",
+            "target_quantity": 0.0
+          },
+          "estimated_fees": {
+            "broker_commission": 117.17249999999999,
+            "exchange_handling_fee": 0.0,
+            "regulatory_fee": 0.0,
+            "stamp_duty": 195.2875,
+            "total": 316.36575,
+            "transfer_fee": 3.9057500000000003
+          },
+          "executable_quantity": 42500,
+          "reason_codes": [
+            "ACCEPTED"
+          ],
+          "rejected_quantity": 0.0,
+          "status": "accepted"
+        },
+        {
+          "client_order_id": "a3-7ffece5bcf231b6b367051a6",
+          "desired": {
+            "asset": "equity:SSE:600000:CNY",
+            "current_quantity": 60300,
+            "reference_price": 6.59,
+            "requested_quantity": 60300.0,
+            "side": "sell",
+            "target_quantity": 0.0
+          },
+          "estimated_fees": {
+            "broker_commission": 119.21309999999998,
+            "exchange_handling_fee": 0.0,
+            "regulatory_fee": 0.0,
+            "stamp_duty": 198.6885,
+            "total": 321.87537,
+            "transfer_fee": 3.9737700000000005
+          },
+          "executable_quantity": 60300,
+          "reason_codes": [
+            "ACCEPTED"
+          ],
+          "rejected_quantity": 0.0,
+          "status": "accepted"
+        }
+      ],
+      "estimated_total_fees": 638.2411199999999,
+      "metadata": {
+        "cash_policy": "sell_proceeds_reusable_then_proportional_buy_scaling",
+        "compiler": "ashare-order-compiler-v1",
+        "execution_scope": "long_only_A_share_cash_equity",
+        "fee_schedule_id": "ashare-fee-schedule-ccf4df26a2abb26ac2ebf83b",
+        "slippage_bps": "0.0"
+      },
+      "orders": [
+        "a3-1a9e8904d29d5ef6d34f9b86",
+        "a3-7ffece5bcf231b6b367051a6"
+      ],
+      "pretrade_nav": 988840.35216,
+      "session_date": "2024-01-03"
+    },
+    "execution": {
+      "fills": [
+        {
+          "asset": "equity:SZSE:000001:CNY",
+          "client_order_id": "a3-1a9e8904d29d5ef6d34f9b86",
+          "executed_at": "2024-01-03T01:30:00+00:00",
+          "execution_price": 9.19,
+          "fees": {
+            "broker_commission": 117.17249999999999,
+            "exchange_handling_fee": 0.0,
+            "regulatory_fee": 0.0,
+            "stamp_duty": 195.2875,
+            "total": 316.36575,
+            "transfer_fee": 3.9057500000000003
+          },
+          "metadata": {
+            "board": "szse_main",
+            "exchange": "ashare-simulated-exchange-v1",
+            "fee_schedule_id": "ashare-fee-schedule-ccf4df26a2abb26ac2ebf83b"
+          },
+          "notional": 390575.0,
+          "quantity": 42500,
+          "reference_price": 9.19,
+          "side": "sell",
+          "slippage": 0.0
+        },
+        {
+          "asset": "equity:SSE:600000:CNY",
+          "client_order_id": "a3-7ffece5bcf231b6b367051a6",
+          "executed_at": "2024-01-03T01:30:00+00:00",
+          "execution_price": 6.59,
+          "fees": {
+            "broker_commission": 119.21309999999998,
+            "exchange_handling_fee": 0.0,
+            "regulatory_fee": 0.0,
+            "stamp_duty": 198.6885,
+            "total": 321.87537,
+            "transfer_fee": 3.9737700000000005
+          },
+          "metadata": {
+            "board": "sse_main",
+            "exchange": "ashare-simulated-exchange-v1",
+            "fee_schedule_id": "ashare-fee-schedule-ccf4df26a2abb26ac2ebf83b"
+          },
+          "notional": 397377.0,
+          "quantity": 60300,
+          "reference_price": 6.59,
+          "side": "sell",
+          "slippage": 0.0
+        }
+      ],
+      "finished_at": "2024-01-03T01:30:00+00:00",
+      "metadata": {
+        "exchange": "ashare-simulated-exchange-v1",
+        "execution_price_field": "open",
+        "fee_schedule_id": "ashare-fee-schedule-ccf4df26a2abb26ac2ebf83b",
+        "slippage_bps": "0.0"
+      },
+      "orders": [
+        "a3-1a9e8904d29d5ef6d34f9b86",
+        "a3-7ffece5bcf231b6b367051a6"
+      ],
+      "rejections": {},
+      "session_date": "2024-01-03",
+      "started_at": "2024-01-03T01:30:00+00:00",
+      "total_fees": 638.2411199999999,
+      "total_slippage": 0.0
+    },
+    "state_after": {
+      "base_currency": "CNY",
+      "cash": 988202.1110400001,
+      "marks": {},
+      "metadata": {
+        "last_execution_session": "2024-01-03",
+        "scope": "A3 execution-semantics smoke",
+        "settlement": "T+1 inventory rolled"
+      },
+      "nav": 988202.1110400001,
+      "positions": {},
+      "session_date": "2024-01-03"
+    },
+    "state_before": {
+      "base_currency": "CNY",
+      "cash": 200888.35216000007,
+      "marks": {
+        "equity:SSE:600000:CNY": 6.59,
+        "equity:SZSE:000001:CNY": 9.19
+      },
+      "metadata": {
+        "last_execution_session": "2024-01-02",
+        "scope": "A3 execution-semantics smoke",
+        "settlement": "T+1 inventory rolled"
+      },
+      "nav": 988840.35216,
+      "positions": {
+        "equity:SSE:600000:CNY": {
+          "sellable_quantity": 60300,
+          "total_quantity": 60300,
+          "unsettled_quantity": 0
+        },
+        "equity:SZSE:000001:CNY": {
+          "sellable_quantity": 42500,
+          "total_quantity": 42500,
+          "unsettled_quantity": 0
+        }
+      },
+      "session_date": "2024-01-03"
+    }
+  },
+  "sell_session": "2024-01-03",
+  "sell_snapshot": {
+    "asof": "2024-01-03T01:30:00+00:00",
+    "data_version": "local-ashare-frozen-96f1a2c07f285e6ff41575cf",
+    "metadata": {
+      "adapter": "LocalAshareDailyExecutionAdapter",
+      "execution_price_field": "open",
+      "frequency": "1d",
+      "price_limit_source": "vendor_up_limit_down_limit",
+      "session_semantics": "exact_row_no_stale_quote_fallback"
+    },
+    "session_date": "2024-01-03",
+    "states": {
+      "equity:SSE:600000:CNY": {
+        "asset": "equity:SSE:600000:CNY",
+        "at_lower_limit": false,
+        "at_upper_limit": false,
+        "board": "sse_main",
+        "execution_price": 6.59,
+        "is_st": false,
+        "lower_limit": 5.94,
+        "mark_price": 6.59,
+        "metadata": {
+          "amount_cny": "120639706.0",
+          "close": "6.64",
+          "require_price_limits": "True",
+          "source": "local_ashare_parquet_exact_session"
+        },
+        "observed_at": "2024-01-03T01:30:00+00:00",
+        "previous_close": 6.6,
+        "session_date": "2024-01-03",
+        "status": "tradable",
+        "upper_limit": 7.26,
+        "volume": 18203654.0
+      },
+      "equity:SZSE:000001:CNY": {
+        "asset": "equity:SZSE:000001:CNY",
+        "at_lower_limit": false,
+        "at_upper_limit": false,
+        "board": "szse_main",
+        "execution_price": 9.19,
+        "is_st": false,
+        "lower_limit": 8.29,
+        "mark_price": 9.19,
+        "metadata": {
+          "amount_cny": "673673614.0",
+          "close": "9.2",
+          "require_price_limits": "True",
+          "source": "local_ashare_parquet_exact_session"
+        },
+        "observed_at": "2024-01-03T01:30:00+00:00",
+        "previous_close": 9.21,
+        "session_date": "2024-01-03",
+        "status": "tradable",
+        "upper_limit": 10.13,
+        "volume": 73361031.0
+      }
+    }
+  },
+  "symbols": [
+    "equity:SSE:600000:CNY",
+    "equity:SZSE:000001:CNY"
+  ]
+}

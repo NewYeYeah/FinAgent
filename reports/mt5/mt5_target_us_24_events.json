@@ -1,0 +1,484 @@
+{
+  "blockers": [],
+  "broker_account_authority": false,
+  "capability_probe_id": "mt5-capability-probe-a9da5370a4e1a780a419863a",
+  "clock_evidence_id": "mt5-broker-clock-evidence-d20cea7e04e4fefc577656eb",
+  "event_count": 25,
+  "events": [
+    {
+      "event_id": "realtime-event-d33c6af4b4e1464b25c0ea04",
+      "event_time": "2026-09-03T16:47:12.802093+00:00",
+      "kind": "CONNECTION",
+      "payload": {
+        "connection_id": "mt5:TradeMaxGlobal-Live",
+        "reason": "read-only MT5 terminal capability observation",
+        "status": "CONNECTED"
+      },
+      "received_at": "2026-09-03T16:47:12.802093+00:00",
+      "schema_version": "finagent.realtime-connection-event.v1",
+      "sequence": 0,
+      "source": "mt5.readonly.connection",
+      "source_event_id": "mt5-connection-observation-2ae61a6b8b0a0e50b86b86ee"
+    },
+    {
+      "event_id": "realtime-event-2053f3619d1f9cfd300f86be",
+      "event_time": "2026-09-03T16:47:10.210000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 227.85,
+        "ask_size": null,
+        "bid": 227.73,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "NVDA.NAS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 0,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-f15e841e4939d07b4df32eef"
+    },
+    {
+      "event_id": "realtime-event-760ce6a421edde84358d5de5",
+      "event_time": "2026-09-03T16:47:10.891000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 382.25,
+        "ask_size": null,
+        "bid": 382.13,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "TSLA.NAS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 1,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-eb54ec3e70026a4642f5f460"
+    },
+    {
+      "event_id": "realtime-event-a6321e1c432f89b14c74a7d0",
+      "event_time": "2026-09-03T16:47:07.959000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 946.12,
+        "ask_size": null,
+        "bid": 945.67,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "MU.NAS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 2,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-7ce81f56bf2833b3a61875bf"
+    },
+    {
+      "event_id": "realtime-event-c47ec1a0462036a87dac55dd",
+      "event_time": "2026-09-03T16:47:00.929000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 295.62,
+        "ask_size": null,
+        "bid": 294.6,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "IWM.NYS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 3,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-e28efa6145f8cc7e65926957"
+    },
+    {
+      "event_id": "realtime-event-8aacf9a31dfc388b1c46dc01",
+      "event_time": "2026-09-03T16:47:07.295000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 511.96,
+        "ask_size": null,
+        "bid": 511.79,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "MSFT.NAS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 4,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-46a3069b4ae8b0e8220cb4c8"
+    },
+    {
+      "event_id": "realtime-event-56babbd163bebd31edd54fef",
+      "event_time": "2026-09-03T16:47:09.713000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 1551.86,
+        "ask_size": null,
+        "bid": 1549.76,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "SNDK.NAS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 5,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-3e25223c78013021ef523baf"
+    },
+    {
+      "event_id": "realtime-event-28f9491d69b74323f1e0743e",
+      "event_time": "2026-09-03T16:47:09.970000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 258.56,
+        "ask_size": null,
+        "bid": 258.42,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "AMZN.NAS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 6,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-30efd6ce7eb24b137a97e2fa"
+    },
+    {
+      "event_id": "realtime-event-87aef817a3a47c4cb799c848",
+      "event_time": "2026-09-03T16:47:10.471000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 329.66,
+        "ask_size": null,
+        "bid": 329.52,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "AAPL.NAS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 7,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-15ba5d066b48c45e3cf89075"
+    },
+    {
+      "event_id": "realtime-event-748d9aeab152b4c2666d9fdb",
+      "event_time": "2026-09-03T16:47:10.560000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 341.87,
+        "ask_size": null,
+        "bid": 341.75,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "GOOGL.NAS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 8,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-acfccc520592bb7cdd6d2aa4"
+    },
+    {
+      "event_id": "realtime-event-7f5ed1f1cd5724052084c130",
+      "event_time": "2026-09-03T16:47:09.620000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 614.54,
+        "ask_size": null,
+        "bid": 614.25,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "META.NAS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 9,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-3b04249cdac35ddb6bab5126"
+    },
+    {
+      "event_id": "realtime-event-7473221592546e0aede47e75",
+      "event_time": "2026-09-03T16:47:09.699000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 459.53,
+        "ask_size": null,
+        "bid": 459.3,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "AMD.NAS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 10,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-d9af6254343988c13834328d"
+    },
+    {
+      "event_id": "realtime-event-e57e7031f690513afdd37dbf",
+      "event_time": "2026-09-03T16:47:10.265000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 356.02,
+        "ask_size": null,
+        "bid": 355.84,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "AVGO.NAS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 11,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-b1c2b370fa19258dae40bb8e"
+    },
+    {
+      "event_id": "realtime-event-2c3d6bea55230d1dae5a9719",
+      "event_time": "2026-09-03T16:47:05.586000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 183.01,
+        "ask_size": null,
+        "bid": 182.86,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "PLTR.NYS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 12,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-6e7ad49dd77ef55666123995"
+    },
+    {
+      "event_id": "realtime-event-1bce70436acc19f84cfa5e34",
+      "event_time": "2026-09-03T16:47:10.602000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 412.13,
+        "ask_size": null,
+        "bid": 411.1,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "GLD.NYS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 13,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-c2b4668ca40a0dba4c44e652"
+    },
+    {
+      "event_id": "realtime-event-6310e262e3f2d4f1686f0d00",
+      "event_time": "2026-09-03T16:47:10.597000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 338.54,
+        "ask_size": null,
+        "bid": 338.39,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "GOOG.NAS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 14,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-9eb559bc6a3df8cfd56b4c8a"
+    },
+    {
+      "event_id": "realtime-event-62a8500efff403a82c5bb42a",
+      "event_time": "2026-09-03T16:47:10.530000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 414.33,
+        "ask_size": null,
+        "bid": 414.13,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "TSM.NYS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 15,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-f2235ef156d2dbf0792ef1d1"
+    },
+    {
+      "event_id": "realtime-event-3acd80f361e3ac6e626900d5",
+      "event_time": "2026-09-03T16:47:05.818000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 90.75,
+        "ask_size": null,
+        "bid": 90.64,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "INTC.NAS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 16,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-bcf8bdff0027a2ed71db0d32"
+    },
+    {
+      "event_id": "realtime-event-6761ff0f415728d9e36f6c97",
+      "event_time": "2026-09-03T16:47:10.740000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 154.22,
+        "ask_size": null,
+        "bid": 154.06,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "ORCL.NYS"
+      },
+      "received_at": "2026-09-03T16:47:12.810129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 17,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-04bf315b628422dc1dd99279"
+    },
+    {
+      "event_id": "realtime-event-864e03b0b5db791a7de1ca05",
+      "event_time": "2026-09-03T16:47:10.148000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 81.9,
+        "ask_size": null,
+        "bid": 81.79,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "NFLX.NAS"
+      },
+      "received_at": "2026-09-03T16:47:12.811129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 18,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-752d33e35970286ced1078e1"
+    },
+    {
+      "event_id": "realtime-event-fa02f2a1ae5845422ed26bb4",
+      "event_time": "2026-09-03T16:47:03.300000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 65.15,
+        "ask_size": null,
+        "bid": 65.04,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "XLE.NYS"
+      },
+      "received_at": "2026-09-03T16:47:12.811129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 19,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-43368fb2fc87e53ef4b6e077"
+    },
+    {
+      "event_id": "realtime-event-2e4c4f93034e74e1de52bed9",
+      "event_time": "2026-09-03T16:47:10.226000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 140.46,
+        "ask_size": null,
+        "bid": 140.31,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "MSTR.NAS"
+      },
+      "received_at": "2026-09-03T16:47:12.811129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 20,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-1f2ac83de69fc33024ca83b8"
+    },
+    {
+      "event_id": "realtime-event-7ee2ee8c38a298e4b5a0aef1",
+      "event_time": "2026-09-03T16:47:09.760000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 163.67,
+        "ask_size": null,
+        "bid": 163.54,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "XOM.NYS"
+      },
+      "received_at": "2026-09-03T16:47:12.811129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 21,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-4ee29c400affab4928c4c954"
+    },
+    {
+      "event_id": "realtime-event-a0ee8b9fa68b75b80a04e632",
+      "event_time": "2026-09-03T16:46:54.706000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 67.43,
+        "ask_size": null,
+        "bid": 67.32,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "EEM.NYS"
+      },
+      "received_at": "2026-09-03T16:47:12.811129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 22,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-4b325a9894f694ee74b9eaa8"
+    },
+    {
+      "event_id": "realtime-event-8fc89348ce35d8c01dc8d6e1",
+      "event_time": "2026-09-03T16:47:05.093000+00:00",
+      "kind": "QUOTE",
+      "payload": {
+        "ask": 361.69,
+        "ask_size": null,
+        "bid": 361.43,
+        "bid_size": null,
+        "last": 0.0,
+        "symbol": "JPM.NYS"
+      },
+      "received_at": "2026-09-03T16:47:12.811129+00:00",
+      "schema_version": "finagent.realtime-quote-event.v1",
+      "sequence": 23,
+      "source": "mt5.readonly.quote",
+      "source_event_id": "mt5-observation-ca928382924cc49541f7c019"
+    }
+  ],
+  "execution_authority": false,
+  "feed_lane_inferred": false,
+  "generated_at": "2026-09-03T16:47:12.811129+00:00",
+  "implementation_ready_for_mt5_m1_acceptance": true,
+  "live_capital_authority": false,
+  "live_market_data_authority": false,
+  "order_send_used": false,
+  "paper_authority": false,
+  "passed": true,
+  "policy": {
+    "bar_source": "mt5.readonly.bar",
+    "broker_server": "TradeMaxGlobal-Live",
+    "connection_source": "mt5.readonly.connection",
+    "feed_lane": "target_broker_current_us_equity_or_cfd",
+    "feed_lane_inferred": false,
+    "mutation_authority": false,
+    "policy_id": "mt5-realtime-adapter-policy-0491dcad92d4f94ec9b69906",
+    "quote_source": "mt5.readonly.quote",
+    "read_only": true,
+    "schema_version": "finagent.mt5-realtime-adapter-policy.v1"
+  },
+  "read_only": true,
+  "report_id": "mt5-realtime-adapter-f466af18071eafdbf34671f7",
+  "schema_version": "finagent.mt5-realtime-adapter-report.v1",
+  "stage_exit_authority": false,
+  "status_authority": false,
+  "symbol_select_used": false,
+  "us_market_source_authority": false
+}

@@ -1,0 +1,189 @@
+{
+  "ac3": {
+    "acceptance_id": "ashare-historical-ac3-fbc5302a780786823a8c61a908c244daa47a1ef8",
+    "certification_artifact_sha256": "5fcaae159855459c840d0681d18d09dea1ec66f2f414559cb12619d8249b8308",
+    "certification_artifact_size_bytes": 5405,
+    "certification_command_run_id": "command-run-88c46726e4c16dd31dfbcebfe941ca07",
+    "certification_evidence_ids": [],
+    "command_run_ids": {
+      "data.certify_local_ashare": "command-run-88c46726e4c16dd31dfbcebfe941ca07",
+      "portfolio.run_a4": "command-run-627a839a8985b430306df694a2b3fdaa",
+      "research.run_a2p6": "command-run-f933e7a4aedb5870bd04f2dd93bf9dd0",
+      "research.run_development": "command-run-3a136fb8478f9bd2776b3e07e5d16537",
+      "review.export_bundle": "command-run-e58ccb52f0bcff2f8620ddc4cb68fc0c"
+    },
+    "data_version": "local-ashare-frozen-96f1a2c07f285e6ff41575cf",
+    "evidence_git_sha": "85e0acf5114139d53b4de87879672c6aade09944",
+    "git_sha": "85e0acf5114139d53b4de87879672c6aade09944",
+    "historical_core_drift": [],
+    "identities": {
+      "data_version": "local-ashare-frozen-96f1a2c07f285e6ff41575cf",
+      "development_acceptance_id": "ashare-factor-acceptance-1d5f392c10174ee72a37f9e9",
+      "factor_series_id": "factor-series-a65bbb2ffbdc5adc14a53ade737b5fecb31ddc98",
+      "market_bar_series_id": null,
+      "portfolio_validation_id": "ashare-portfolio-validation-5d39439bfe9d0c29dde1d62b",
+      "program_result_id": "ashare-robust-program-result-538f8ba57118c43a8b900d82",
+      "strategy_series_id": "strategy-decision-series-2c03e7a65b43ffc5a3fb68d0a3b5910fd000370e"
+    },
+    "no_alpha_terminal_reverified": true,
+    "post_ac3_non_economic_paths": [
+      "scripts/run_workbench_control.py",
+      "src/finagent/runtime/ashare_historical_acceptance_terminal.py"
+    ],
+    "research_outcome": "NO_ROBUST_FACTOR_FAMILY",
+    "reverification_git_sha": "52856ce69fb713d486c0476117528d4c86fcb9a7"
+  },
+  "ac4_audit_id": "ac4-audit-00344acf0bebbd2175f40eae",
+  "artifacts": [
+    {
+      "logical_name": "data/manifests/local_ashare_daily.json",
+      "role": "dataset_manifest",
+      "sha256": "c7ebfdd7ccd48cd2406c6b452e7afc27a604ba899b5bec963a98a74f15728ae1",
+      "size_bytes": 702
+    },
+    {
+      "logical_name": "ashare_historical_acceptance_ac3.json",
+      "role": "ac3_acceptance",
+      "sha256": "8a90fea7e690e64ca7615ec4ff75c8a037bc63551a24142990bd15ff903c7bf7",
+      "size_bytes": 24129
+    },
+    {
+      "logical_name": "ashare_initial_requirement_compliance_ac4.json",
+      "role": "ac4_compliance",
+      "sha256": "6a588b262713ed3a74fb386d531578b3264e1560aa68e7032da8cbcfe0e48047",
+      "size_bytes": 19641
+    },
+    {
+      "logical_name": "configs/acceptance/ashare_initial_requirement_compliance_ac4.toml",
+      "role": "ac4_manifest",
+      "sha256": "aa2ab779b044d744427e2a6167519839576ab76d97a3808d92615b4c9ed65b96",
+      "size_bytes": 14859
+    },
+    {
+      "logical_name": "local_ashare_portfolio_validation_a4.json",
+      "role": "ac3:a4",
+      "sha256": "860cba65271ae0a8e3b6e6a2db79a62a252b0cedf595f21b554cc11f6dfcba1b",
+      "size_bytes": 4641
+    },
+    {
+      "logical_name": "local_ashare_portfolio_validation_a4_ledger.jsonl",
+      "role": "ac3:a4_ledger",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size_bytes": 0
+    },
+    {
+      "logical_name": "commands.sqlite",
+      "role": "ac3:command_store",
+      "sha256": "361628cbc6b9486b9386558a7488b0b4636e6d609d3a5e0e9b8466eec4191597",
+      "size_bytes": 65536
+    },
+    {
+      "logical_name": "local_ashare_factor_research_a2p5.json",
+      "role": "ac3:development",
+      "sha256": "45c34f1c87980c0acd0b1c74068285da1f56dab67aa16bd2494967e3c5d0e6ee",
+      "size_bytes": 165480
+    },
+    {
+      "logical_name": "local_ashare_robust_research_a26.factor-series.json",
+      "role": "ac3:factor_manifest",
+      "sha256": "4f4f49373e9fa1dd5fb3876428ebc206d44c96bbacbad02133b757adc55e2d48",
+      "size_bytes": 3625
+    },
+    {
+      "logical_name": "finagent-review-ashare-portfolio-validation-5d39439bfe9d0c29dde1d62b.zip",
+      "role": "ac3:review_bundle",
+      "sha256": "e051729ac4926312c0b60fbd3f3556f43748eef703030dcfc418c7787f706c6f",
+      "size_bytes": 16902
+    },
+    {
+      "logical_name": "local_ashare_robust_research_a26.json",
+      "role": "ac3:robust",
+      "sha256": "75b83e71a308a2568e68aa1fe5f4c803d6261c2d4f54ed756291db5a52b94b57",
+      "size_bytes": 47501
+    },
+    {
+      "logical_name": "local_ashare_portfolio_validation_a4.strategy-decisions.json",
+      "role": "ac3:strategy_manifest",
+      "sha256": "57aca49174c0ce1af9cd36736914c53bc83c080a645ed9f14fd74ba1e2ce912c",
+      "size_bytes": 3267
+    },
+    {
+      "logical_name": "local_ashare_certification.json",
+      "role": "ac3:certification",
+      "sha256": "5fcaae159855459c840d0681d18d09dea1ec66f2f414559cb12619d8249b8308",
+      "size_bytes": 5405
+    },
+    {
+      "logical_name": "pyproject.toml",
+      "role": "environment",
+      "sha256": "40f6bf2d0d3f90ba33adefce2cb9484b34629832cd46ca392f4a80138aa4d1c5",
+      "size_bytes": 2605
+    },
+    {
+      "logical_name": "environment/environment.yml",
+      "role": "environment",
+      "sha256": "a62b77326b1dc3e41f817a7a54fbdc49ed166d703a6fad5807ceabf47ce5897a",
+      "size_bytes": 262
+    },
+    {
+      "logical_name": "environment/requirements.txt",
+      "role": "environment",
+      "sha256": "3171e31ff5df7146946c0224d2be463c3ff0a213c0e49bdaef8904b7f6487eda",
+      "size_bytes": 52
+    },
+    {
+      "logical_name": "environment/requirements-dev.txt",
+      "role": "environment",
+      "sha256": "1b529cd7b9277af7eac9960c6f329836b06d75075789d1f9492770af554a5910",
+      "size_bytes": 90
+    },
+    {
+      "logical_name": "workspace/package-lock.json",
+      "role": "environment",
+      "sha256": "a448e405cc969abb2c246df022da46e997b82ad5dde2d9747c8b13062097d074",
+      "size_bytes": 124733
+    }
+  ],
+  "checks": {
+    "ac3_contract_valid": true,
+    "ac3_historical_core_unchanged": true,
+    "ac3_real_acceptance_required": true,
+    "ac3_required_artifacts_verified": true,
+    "ac3_required_command_runs_verified": true,
+    "ac4_exact_replay": true,
+    "ac4_has_no_partial": true,
+    "ac4_on_release_sha": true,
+    "dataset_manifest_content_hashed": true,
+    "deferred_capabilities_frozen": true,
+    "historical_closure_did_not_consume_reserve": true,
+    "release_git_sha_resolved": true
+  },
+  "contract_valid": true,
+  "deferred_capabilities": [
+    "advanced_risk",
+    "benchmark_evidence",
+    "capacity_impact",
+    "corporate_actions",
+    "internal_paper",
+    "qmt",
+    "realtime_gateway"
+  ],
+  "freeze_id": "ashare-historical-v1-76ba98983c1ffc6efb4b0f9a16acd5192eb7dd6c",
+  "freeze_semantics": "CI fixtures validate only the freeze contract. Historical v1.0 is frozen only from real accepted A-C3 evidence, an exact A-C4 replay on the release Git SHA, a content-hashed dataset manifest, verified source artifacts and zero historical-core drift after the accepted A-C3 revision.",
+  "frozen": true,
+  "mode": "real_local_evidence",
+  "production_reserve": {
+    "historical_closure_consumed": false,
+    "live_capital_enabled_by_freeze": false,
+    "paper_enabled_by_freeze": false,
+    "promotion_eligible": false
+  },
+  "release_git_sha": "52856ce69fb713d486c0476117528d4c86fcb9a7",
+  "release_name": "FinAgent A-share Historical v1.0",
+  "reserve": {
+    "historical_closure_consumed": false,
+    "promotion_implied": false
+  },
+  "schema_version": "finagent.ashare-historical-v1-freeze.v1",
+  "stage": "A-C5"
+}

@@ -1,0 +1,33 @@
+{
+  "agent_generation_scope": "run_spec_frozen_real_run_id_pending_external_execution",
+  "agent_model_id": "deepseek-v4-flash",
+  "agent_prompt_template_id": "us-a0-structured-candidate-v1",
+  "agent_provider_id": "deepseek",
+  "agent_run_spec_ids": [
+    "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c"
+  ],
+  "agent_value_gate_authority": false,
+  "alpha_authority": false,
+  "control_generated_at": "2026-09-02T08:14:07.625755+00:00",
+  "control_generation_scope": "deterministic_pre_result_control_evidence_only",
+  "execution_plan_id": "us-agent-value-execution-plan-4312941b91abba09a44c34cb",
+  "expected_run_spec_ids": [
+    "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+    "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+    "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c"
+  ],
+  "gate_policy_id": "us-agent-value-gate-policy-3c5c42ff29892af134773010",
+  "launch_bundle_id": "us-agent-value-pilot-launch-bundle-0b5d0e37cc62681d70f95901",
+  "manual_generation_run_id": "us-agent-value-generation-run-cf34df9b22107cbc37405849",
+  "phase": "PILOT",
+  "preregistration_bundle_id": "us-agent-value-preregistration-9d592189de4ed0edf16e23c6",
+  "programmatic_generation_run_ids": [
+    "us-agent-value-generation-run-94037a514ac060f3383c0b03"
+  ],
+  "protocol_id": "us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03",
+  "provider_smoke_scope": "engineering_diagnostic_separate_from_research_authority",
+  "schema_version": "finagent.us-agent-value-pilot-launch-bundle.v1",
+  "stage_exit_authority": false,
+  "status_authority": false,
+  "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4"
+}

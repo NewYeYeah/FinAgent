@@ -1,0 +1,30 @@
+{
+  "alpha_authority": false,
+  "blockers": [],
+  "engineering_asset_count": 25,
+  "engineering_universe_id": "engineering-universe-259e3975a25856bef28442ff",
+  "evaluation_report_id": "us-baseline-evaluation-9dcbabaacd31bff890aa7e71",
+  "execution_spec": {
+    "evaluation_end": "2026-03-02T00:00:00+00:00",
+    "evaluation_start": "2026-02-17T00:00:00+00:00",
+    "execution_spec_id": "us-baseline-fold-execution-3d2761cbcfd00fe2c8ef63c8",
+    "fold_id": "us-baseline-fold-f3edf2f91244230bf668bdea",
+    "fold_ordinal": 1,
+    "protocol_id": "us-baseline-walk-forward-abec06d0d72302fcf11958a4",
+    "purpose": "cost_free_manual_baseline_evaluation",
+    "run_spec_id": "us-baseline-run-spec-4ac2ae1d8cb95c01c8a99a11",
+    "schema_version": "finagent.us-baseline-fold-execution-spec.v1",
+    "stage_exit_authority": false
+  },
+  "factor_selection_authority": false,
+  "input_materialization_id": "minute-materialization-a05e73e9d39183555779cef2",
+  "input_plan_id": "us-baseline-input-plan-53d5d869dc8ac93a4584e535",
+  "manifest_id": "us-baseline-fold-run-ce4958023e107afc76a5a121",
+  "materialization_report_id": "us-baseline-materialization-e2c713bce26edde2f588c9bc",
+  "observation_artifact_id": "us-baseline-observations-5509c0d1bae2579e6e50bf53",
+  "passed": true,
+  "schema_version": "finagent.us-baseline-fold-run-manifest.v1",
+  "stage_exit_authority": false,
+  "status_authority": false,
+  "window_binding": "runner_enforced_exact_frozen_fold_evaluation_window"
+}

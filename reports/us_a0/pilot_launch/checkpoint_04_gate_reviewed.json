@@ -1,0 +1,25 @@
+{
+  "agent_generation_run_id": "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7",
+  "agent_run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+  "agent_value_gate_authority": false,
+  "alpha_authority": false,
+  "checkpoint_id": "us-agent-value-pilot-checkpoint-c43bae9966fe3ae7cbc97be6",
+  "checkpoint_ordinal": 4,
+  "execution_plan_id": "us-agent-value-execution-plan-4312941b91abba09a44c34cb",
+  "experiment_evidence_graph_id": "us-agent-value-experiment-evidence-9527f71a12ded2ff661dc99f",
+  "gate_review_id": "us-agent-value-gate-review-7725562ec8f8e6a589f63e08",
+  "launch_bundle_id": "us-agent-value-pilot-launch-bundle-0b5d0e37cc62681d70f95901",
+  "mutation_semantics": "append_only_checkpoint_chain",
+  "previous_checkpoint_id": "us-agent-value-pilot-checkpoint-d22edcc7c2d46b1ea243d158",
+  "resume_semantics": "reuse_existing_frozen_evidence_never_rerun_to_cherry_pick",
+  "run_evidence_manifest_ids": [
+    "us-agent-value-run-evidence-e2e67a2bdf15f3e37b508db7",
+    "us-agent-value-run-evidence-d7f74fc8b45876bbcc19a665",
+    "us-agent-value-run-evidence-2afe225bfc1678c56e2dff26"
+  ],
+  "runtime_policy_id": "us-agent-value-deepseek-runtime-policy-b5e45fdf64fd0be48a819f19",
+  "schema_version": "finagent.us-agent-value-pilot-orchestration-checkpoint.v1",
+  "stage_exit_authority": false,
+  "state": "GATE_REVIEWED",
+  "status_authority": false
+}

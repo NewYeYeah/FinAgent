@@ -1,0 +1,913 @@
+{
+  "a0_experiment_id": "us-agent-value-experiment-550e3477fb740780e752fc94",
+  "a0_gate_decision": "PILOT_DO_NOT_PROCEED_TO_FORMAL",
+  "a0_gate_review_id": "us-agent-value-gate-review-7725562ec8f8e6a589f63e08",
+  "a0_phase": "PILOT",
+  "agent_scope": "CONTRACTED",
+  "alpha_authority": false,
+  "candidate_count": 37,
+  "candidate_ids": [
+    "us-agent-value-candidate-32151417ddc1442a6d10eec8",
+    "us-agent-value-candidate-340fbb96b15a633238d5fb63",
+    "us-agent-value-candidate-f131706d527cb8cbc40116fc",
+    "us-agent-value-candidate-2661049725ff182d0c04087f",
+    "us-agent-value-candidate-0da826673af58f71ed8252e6",
+    "us-agent-value-candidate-94f6f66824f90ff829727254",
+    "us-agent-value-candidate-98d3f18bed490c671cbb9e74",
+    "us-agent-value-candidate-ab398bc3d19261ecff036331",
+    "us-agent-value-candidate-9ed2d6a987c83d51f5339dca",
+    "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+    "us-agent-value-candidate-d0a398f8a38ca304cad983d1",
+    "us-agent-value-candidate-ae2d2c97a446bd0fad29ad80",
+    "us-agent-value-candidate-93ce47e9d4e8e803db00b016",
+    "us-agent-value-candidate-017d20c6abef5affa9b03b68",
+    "us-agent-value-candidate-cb59c3fc6d45deca3dc71613",
+    "us-agent-value-candidate-60b8299c009e84abae2fcb99",
+    "us-agent-value-candidate-41619b08059fbbd40c924da0",
+    "us-agent-value-candidate-39b4e8ee15e1fae3a53ee859",
+    "us-agent-value-candidate-35033b636e2f234961f887d2",
+    "us-agent-value-candidate-f19c5808303e292cad4f2b40",
+    "us-agent-value-candidate-2ca3e8be8421699aa7c23646",
+    "us-agent-value-candidate-38de1500a8fab962a09741a6",
+    "us-agent-value-candidate-ee9e717b07484527541d11f6",
+    "us-agent-value-candidate-3626155aa024e67a6b4b86cc",
+    "us-agent-value-candidate-19cffbbc01c0b98825f016e0",
+    "us-agent-value-candidate-dfb77a46df77fb9b69bf4387",
+    "us-agent-value-candidate-4e21108fb599aa192d038272",
+    "us-agent-value-candidate-4f77c83bbd9cbfc7bbe7aea6",
+    "us-agent-value-candidate-999abbbe61367860e2f0e737",
+    "us-agent-value-candidate-faab04bb6a76d58ed3e0095f",
+    "us-agent-value-candidate-8c0ba73998b666dcdc4cbb65",
+    "us-agent-value-candidate-0190be6c2225de9581a48e07",
+    "us-agent-value-candidate-c163a19d8f960532dca57e68",
+    "us-agent-value-candidate-5c11763d949b28b490042f61",
+    "us-agent-value-candidate-4a5fc89ed57ccbcffa457bf5",
+    "us-agent-value-candidate-7765832aae6f306b3aac5da3",
+    "us-agent-value-candidate-13b659edb06e01096ffa14cb"
+  ],
+  "candidates": [
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-32151417ddc1442a6d10eec8",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:2",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 2
+      },
+      "candidate_id": "us-agent-value-candidate-32151417ddc1442a6d10eec8",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "MANUAL",
+        "AGENT"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849",
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-340fbb96b15a633238d5fb63",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:3",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 3
+      },
+      "candidate_id": "us-agent-value-candidate-340fbb96b15a633238d5fb63",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "MANUAL",
+        "AGENT"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849",
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-f131706d527cb8cbc40116fc",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:5",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 5
+      },
+      "candidate_id": "us-agent-value-candidate-f131706d527cb8cbc40116fc",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "MANUAL",
+        "AGENT"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849",
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-2661049725ff182d0c04087f",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:9",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 9
+      },
+      "candidate_id": "us-agent-value-candidate-2661049725ff182d0c04087f",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "MANUAL"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-0da826673af58f71ed8252e6",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:4",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 4
+      },
+      "candidate_id": "us-agent-value-candidate-0da826673af58f71ed8252e6",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "MANUAL"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-94f6f66824f90ff829727254",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "return_volatility",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "return_volatility:5",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 5
+      },
+      "candidate_id": "us-agent-value-candidate-94f6f66824f90ff829727254",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "MANUAL"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-98d3f18bed490c671cbb9e74",
+        "input_fields": [
+          "volume"
+        ],
+        "kind": "volume_surprise",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "volume_surprise:9",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 9
+      },
+      "candidate_id": "us-agent-value-candidate-98d3f18bed490c671cbb9e74",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "MANUAL",
+        "PROGRAMMATIC"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849",
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-ab398bc3d19261ecff036331",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "close_location",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "close_location:1",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 1
+      },
+      "candidate_id": "us-agent-value-candidate-ab398bc3d19261ecff036331",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "MANUAL",
+        "AGENT"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849",
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-9ed2d6a987c83d51f5339dca",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:2",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 2
+      },
+      "candidate_id": "us-agent-value-candidate-9ed2d6a987c83d51f5339dca",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "MANUAL",
+        "AGENT"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849",
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:3",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 3
+      },
+      "candidate_id": "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "MANUAL",
+        "PROGRAMMATIC",
+        "AGENT"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849",
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03",
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-d0a398f8a38ca304cad983d1",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:5",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 5
+      },
+      "candidate_id": "us-agent-value-candidate-d0a398f8a38ca304cad983d1",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "MANUAL",
+        "PROGRAMMATIC"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849",
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-ae2d2c97a446bd0fad29ad80",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:9",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 9
+      },
+      "candidate_id": "us-agent-value-candidate-ae2d2c97a446bd0fad29ad80",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "MANUAL"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-93ce47e9d4e8e803db00b016",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:1",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 1
+      },
+      "candidate_id": "us-agent-value-candidate-93ce47e9d4e8e803db00b016",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "MANUAL"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-017d20c6abef5affa9b03b68",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:8",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 8
+      },
+      "candidate_id": "us-agent-value-candidate-017d20c6abef5affa9b03b68",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "MANUAL"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-cb59c3fc6d45deca3dc71613",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "return_volatility",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "return_volatility:9",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 9
+      },
+      "candidate_id": "us-agent-value-candidate-cb59c3fc6d45deca3dc71613",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "MANUAL"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-60b8299c009e84abae2fcb99",
+        "input_fields": [
+          "volume"
+        ],
+        "kind": "volume_surprise",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "volume_surprise:5",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 5
+      },
+      "candidate_id": "us-agent-value-candidate-60b8299c009e84abae2fcb99",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "MANUAL"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-41619b08059fbbd40c924da0",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "return_volatility",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "return_volatility:6",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 6
+      },
+      "candidate_id": "us-agent-value-candidate-41619b08059fbbd40c924da0",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "PROGRAMMATIC"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-39b4e8ee15e1fae3a53ee859",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:4",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 4
+      },
+      "candidate_id": "us-agent-value-candidate-39b4e8ee15e1fae3a53ee859",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "PROGRAMMATIC",
+        "AGENT"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03",
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-35033b636e2f234961f887d2",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:3",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 3
+      },
+      "candidate_id": "us-agent-value-candidate-35033b636e2f234961f887d2",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "PROGRAMMATIC"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-f19c5808303e292cad4f2b40",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:9",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 9
+      },
+      "candidate_id": "us-agent-value-candidate-f19c5808303e292cad4f2b40",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "PROGRAMMATIC"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-2ca3e8be8421699aa7c23646",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:6",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 6
+      },
+      "candidate_id": "us-agent-value-candidate-2ca3e8be8421699aa7c23646",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "PROGRAMMATIC"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-38de1500a8fab962a09741a6",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:12",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 12
+      },
+      "candidate_id": "us-agent-value-candidate-38de1500a8fab962a09741a6",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "PROGRAMMATIC"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-ee9e717b07484527541d11f6",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "return_volatility",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "return_volatility:7",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 7
+      },
+      "candidate_id": "us-agent-value-candidate-ee9e717b07484527541d11f6",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "PROGRAMMATIC"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-3626155aa024e67a6b4b86cc",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:13",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 13
+      },
+      "candidate_id": "us-agent-value-candidate-3626155aa024e67a6b4b86cc",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "PROGRAMMATIC"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-19cffbbc01c0b98825f016e0",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:8",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 8
+      },
+      "candidate_id": "us-agent-value-candidate-19cffbbc01c0b98825f016e0",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "PROGRAMMATIC"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-dfb77a46df77fb9b69bf4387",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:10",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 10
+      },
+      "candidate_id": "us-agent-value-candidate-dfb77a46df77fb9b69bf4387",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "PROGRAMMATIC"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-4e21108fb599aa192d038272",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:13",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 13
+      },
+      "candidate_id": "us-agent-value-candidate-4e21108fb599aa192d038272",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "PROGRAMMATIC"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-4f77c83bbd9cbfc7bbe7aea6",
+        "input_fields": [
+          "volume"
+        ],
+        "kind": "volume_surprise",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "volume_surprise:4",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 4
+      },
+      "candidate_id": "us-agent-value-candidate-4f77c83bbd9cbfc7bbe7aea6",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "PROGRAMMATIC",
+        "AGENT"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03",
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-999abbbe61367860e2f0e737",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:11",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 11
+      },
+      "candidate_id": "us-agent-value-candidate-999abbbe61367860e2f0e737",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "PROGRAMMATIC"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-faab04bb6a76d58ed3e0095f",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "return_volatility",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "return_volatility:4",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 4
+      },
+      "candidate_id": "us-agent-value-candidate-faab04bb6a76d58ed3e0095f",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "AGENT"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-8c0ba73998b666dcdc4cbb65",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:5",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 5
+      },
+      "candidate_id": "us-agent-value-candidate-8c0ba73998b666dcdc4cbb65",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "AGENT"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-0190be6c2225de9581a48e07",
+        "input_fields": [
+          "volume"
+        ],
+        "kind": "volume_surprise",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "volume_surprise:3",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 3
+      },
+      "candidate_id": "us-agent-value-candidate-0190be6c2225de9581a48e07",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "AGENT"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-c163a19d8f960532dca57e68",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:6",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 6
+      },
+      "candidate_id": "us-agent-value-candidate-c163a19d8f960532dca57e68",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "AGENT"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-5c11763d949b28b490042f61",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:2",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 2
+      },
+      "candidate_id": "us-agent-value-candidate-5c11763d949b28b490042f61",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "AGENT"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-4a5fc89ed57ccbcffa457bf5",
+        "input_fields": [
+          "volume"
+        ],
+        "kind": "volume_surprise",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "volume_surprise:2",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 2
+      },
+      "candidate_id": "us-agent-value-candidate-4a5fc89ed57ccbcffa457bf5",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "AGENT"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-7765832aae6f306b3aac5da3",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:4",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 4
+      },
+      "candidate_id": "us-agent-value-candidate-7765832aae6f306b3aac5da3",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "AGENT"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ]
+    },
+    {
+      "admission_semantics": "structural_union_no_a0_performance_filter",
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-13b659edb06e01096ffa14cb",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:7",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 7
+      },
+      "candidate_id": "us-agent-value-candidate-13b659edb06e01096ffa14cb",
+      "schema_version": "finagent.us-r1-candidate-provenance.v1",
+      "source_arms": [
+        "AGENT"
+      ],
+      "source_run_ids": [
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ]
+    }
+  ],
+  "denominator_id": "us-r1-denominator-be5184ac3883b0799c00c5dc",
+  "multiplicity_denominator": "all_admitted_unique_structural_candidates",
+  "performance_filter_applied": false,
+  "protocol_id": "us-r1-protocol-451a26b7217b52cbb20d2449",
+  "schema_version": "finagent.us-r1-candidate-denominator.v1",
+  "stage_exit_authority": false,
+  "status_authority": false
+}

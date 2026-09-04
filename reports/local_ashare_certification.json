@@ -1,0 +1,255 @@
+{
+  "basic": {
+    "columns": [
+      "act_ent_type",
+      "act_name",
+      "area",
+      "curr_type",
+      "delist_date",
+      "enname",
+      "exchange",
+      "fullname",
+      "industry",
+      "is_hs",
+      "list_date",
+      "list_status",
+      "market",
+      "name",
+      "symbol",
+      "ts_code"
+    ],
+    "duplicate_codes": 0,
+    "epoch_list_dates": 2,
+    "instruments": 5892,
+    "noncanonical_samples": [
+      {
+        "list_date": "2000-07-19 00:00:00",
+        "name": "上港集箱(退)",
+        "ts_code": "T00018.SH"
+      },
+      {
+        "list_date": "2000-07-19 00:00:00",
+        "name": "上港集箱(退)",
+        "ts_code": "T600018.SH"
+      },
+      {
+        "list_date": "2000-07-19 00:00:00",
+        "name": "上港集箱(退)",
+        "ts_code": "TS0018.SH"
+      }
+    ],
+    "noncanonical_ts_codes": 3,
+    "nonnull_delist_dates": 0,
+    "nonnull_list_status": 0,
+    "null_list_dates": 0,
+    "path": "D:\\Data\\A-Share\\stock_basic_data.parquet",
+    "rows": 5892,
+    "survivorship_certified": false
+  },
+  "daily": {
+    "anomaly_samples": [],
+    "canonical_amount_unit": "CNY",
+    "canonical_volume_unit": "shares",
+    "columns": [
+      "adj_factor",
+      "amount",
+      "change",
+      "circ_mv",
+      "close",
+      "down_limit",
+      "dv_ratio",
+      "dv_ttm",
+      "float_share",
+      "free_share",
+      "high",
+      "is_st",
+      "listed_days",
+      "low",
+      "open",
+      "pb",
+      "pct_chg",
+      "pe",
+      "pe_ttm",
+      "pre_close",
+      "ps",
+      "ps_ttm",
+      "suspend_timing",
+      "suspend_type",
+      "total_mv",
+      "total_share",
+      "trade_date",
+      "ts_code",
+      "turnover_rate",
+      "turnover_rate_f",
+      "up_limit",
+      "vol",
+      "volume_ratio"
+    ],
+    "duplicate_keys": 0,
+    "end_date": "2026-08-21",
+    "instruments": 5826,
+    "invalid_adj_factor": 0,
+    "invalid_ohlc": 0,
+    "negative_flow": 0,
+    "nonpositive_prices": 0,
+    "path": "D:\\Data\\A-Share\\stock_daily.parquet",
+    "return_price": "raw close * adj_factor",
+    "rows": 14573553,
+    "start_date": "2009-01-05",
+    "suspension_placeholder_rule": "open=high=low=0, close=pre_close>0, vol=amount=0; non-tradable/no PriceBar",
+    "suspension_placeholder_samples": [
+      {
+        "adj_factor": 4.5917,
+        "amount": 0.0,
+        "close": 5.23,
+        "high": 0.0,
+        "is_st": 0,
+        "low": 0.0,
+        "open": 0.0,
+        "pre_close": 5.23,
+        "suspend_timing": "",
+        "suspend_type": "S",
+        "trade_date": "2026-08-13 00:00:00",
+        "ts_code": "300176.SZ",
+        "vol": 0.0
+      },
+      {
+        "adj_factor": 3.356,
+        "amount": 0.0,
+        "close": 3.59,
+        "high": 0.0,
+        "is_st": 0,
+        "low": 0.0,
+        "open": 0.0,
+        "pre_close": 3.59,
+        "suspend_timing": "",
+        "suspend_type": "S",
+        "trade_date": "2026-08-17 00:00:00",
+        "ts_code": "002084.SZ",
+        "vol": 0.0
+      },
+      {
+        "adj_factor": 7.212,
+        "amount": 0.0,
+        "close": 3.06,
+        "high": 0.0,
+        "is_st": 0,
+        "low": 0.0,
+        "open": 0.0,
+        "pre_close": 3.06,
+        "suspend_timing": "",
+        "suspend_type": "S",
+        "trade_date": "2026-08-17 00:00:00",
+        "ts_code": "002445.SZ",
+        "vol": 0.0
+      },
+      {
+        "adj_factor": 1.0895,
+        "amount": 0.0,
+        "close": 25.66,
+        "high": 0.0,
+        "is_st": 0,
+        "low": 0.0,
+        "open": 0.0,
+        "pre_close": 25.66,
+        "suspend_timing": "",
+        "suspend_type": "S",
+        "trade_date": "2026-08-18 00:00:00",
+        "ts_code": "002906.SZ",
+        "vol": 0.0
+      },
+      {
+        "adj_factor": 2.518,
+        "amount": 0.0,
+        "close": 4.49,
+        "high": 0.0,
+        "is_st": 0,
+        "low": 0.0,
+        "open": 0.0,
+        "pre_close": 4.49,
+        "suspend_timing": "",
+        "suspend_type": "S",
+        "trade_date": "2026-08-21 00:00:00",
+        "ts_code": "600984.SH",
+        "vol": 0.0
+      }
+    ],
+    "suspension_placeholders": 5,
+    "vendor_amount_unit": "thousand CNY",
+    "vendor_volume_unit": "lots (100 shares)"
+  },
+  "data_version": "local-ashare-cert-fast-049d66654e1938e8",
+  "intraday": {
+    "canonical_continuous_rows": 240,
+    "date": "2009-01-05",
+    "first_time": "09:30",
+    "frequency": "1min",
+    "last_time": "15:00",
+    "opening_auction_row": true,
+    "path": "D:\\Data\\A-Share\\stock_1min\\000001.SZ.parquet",
+    "rows": 241,
+    "timestamp_convention": "bar-end; 09:30 is a separate opening-auction observation",
+    "ts_code": "000001.SZ",
+    "zero_volume_rows": 1
+  },
+  "issues": [
+    {
+      "code": "LA-BASIC-03",
+      "message": "basic parquet contains 2 1970-01-01 list-date placeholders",
+      "severity": "warning"
+    },
+    {
+      "code": "LA-BASIC-04",
+      "message": "basic parquet cannot certify survivorship-free history because delist/list-status coverage is absent",
+      "severity": "warning"
+    },
+    {
+      "code": "LA-BASIC-05",
+      "message": "basic parquet contains 3 non-canonical/legacy ts_code records; they are quarantined from the canonical research universe",
+      "severity": "warning"
+    },
+    {
+      "code": "LA-DAILY-07",
+      "message": "daily parquet contains 5 audited no-trade/suspension placeholder rows; the research adapter excludes them from PriceBar construction",
+      "severity": "warning"
+    },
+    {
+      "code": "LA-INTRA-04",
+      "message": "09:30 opening-auction row is excluded from continuous-minute research by default",
+      "severity": "warning"
+    }
+  ],
+  "passed": true,
+  "reconciliation": {
+    "date": "2009-01-05",
+    "expected_daily_normalized": {
+      "adj_factor": 35.906,
+      "amount_cny": 327584247.0,
+      "close": 9.71,
+      "high": 9.74,
+      "low": 9.51,
+      "open": 9.57,
+      "volume_shares": 34082718.0
+    },
+    "observed_intraday": {
+      "adj_factor_max": 35.906,
+      "adj_factor_min": 35.906,
+      "amount_cny": 327584256.0,
+      "close": 9.71,
+      "high": 9.74,
+      "low": 9.51,
+      "open": 9.57,
+      "volume_shares": 34082720.0
+    },
+    "passed": true,
+    "tolerances": {
+      "adj_factor": 1e-09,
+      "amount_cny": 1000.0,
+      "price": 1e-09,
+      "volume_shares": 100.0
+    },
+    "ts_code": "000001.SZ"
+  },
+  "root": "D:\\Data\\A-Share",
+  "schema_version": "finagent.local-ashare-certification.v1"
+}

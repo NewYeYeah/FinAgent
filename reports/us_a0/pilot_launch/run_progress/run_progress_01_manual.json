@@ -1,0 +1,37 @@
+{
+  "agent_generated_checkpoint_id": "us-agent-value-pilot-checkpoint-42eae4e7241d57556dbc95f2",
+  "agent_value_gate_authority": false,
+  "alpha_authority": false,
+  "completed_run_ids": [
+    "us-agent-value-generation-run-cf34df9b22107cbc37405849"
+  ],
+  "completed_run_manifest_ids": [
+    "us-agent-value-run-evidence-e2e67a2bdf15f3e37b508db7"
+  ],
+  "completed_runs": [
+    {
+      "arm": "MANUAL",
+      "commit_id": "us-agent-value-pilot-run-commit-be2077a83db149501f0325a7",
+      "commit_semantics": "validated_authoritative_run_evidence_never_overwrite",
+      "generation_run_id": "us-agent-value-generation-run-cf34df9b22107cbc37405849",
+      "run_evaluation_link_id": "us-agent-value-run-evaluation-link-de19ffbf68674199d67c5732",
+      "run_evaluation_report_id": "us-agent-value-run-evaluation-c1d4f709f5fd37a1763758bf",
+      "run_evidence_manifest_id": "us-agent-value-run-evidence-e2e67a2bdf15f3e37b508db7",
+      "run_order": 1,
+      "run_spec_id": "us-agent-value-generation-run-spec-9ec81b3df00991810108275e",
+      "schema_version": "finagent.us-agent-value-pilot-committed-run.v1",
+      "technical_passed": true
+    }
+  ],
+  "execution_plan_id": "us-agent-value-execution-plan-4312941b91abba09a44c34cb",
+  "launch_bundle_id": "us-agent-value-pilot-launch-bundle-0b5d0e37cc62681d70f95901",
+  "predecessor_binding_id": "us-agent-value-predecessor-19b127b5466479a1680c8e25",
+  "previous_progress_id": null,
+  "progress_id": "us-agent-value-pilot-run-progress-019fa1797dbecd555e08a1f8",
+  "progress_ordinal": 1,
+  "resume_semantics": "ordered_prefix_resume_without_replacing_committed_run_evidence",
+  "runtime_policy_id": "us-agent-value-deepseek-runtime-policy-b5e45fdf64fd0be48a819f19",
+  "schema_version": "finagent.us-agent-value-pilot-run-progress.v1",
+  "stage_exit_authority": false,
+  "status_authority": false
+}

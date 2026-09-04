@@ -1,0 +1,52 @@
+{
+  "acceptance_semantics": "CI fixtures validate the HW-1.0-RS contract but cannot accept the real frozen product. Real acceptance requires a frozen A-C5 release, a clean protected Workbench working tree, zero committed Workbench product drift and a passing production-build Playwright smoke over the locally verified A-C3 evidence. Test-only Workbench sources are outside the frozen product denominator. Backend-only execution is diagnostic and cannot accept the real product.",
+  "accepted": true,
+  "authority": "read_only_release_smoke_no_financial_or_operational_authority",
+  "browser": {
+    "detail": "Running 1 test using 1 worker\n\n[1/1] [chromium] › e2e\\historical-release-smoke-real.spec.ts:22:1 › Historical Workbench 1.0 renders the frozen release without inventing unavailable evidence\n  1 passed (2.2s)",
+    "required": true,
+    "status": "passed"
+  },
+  "browser_recomputation": false,
+  "checks": {
+    "configuration_surface_available": true,
+    "control_plane_not_embedded": true,
+    "evidence_plane_enabled": true,
+    "factor_identity_exact": true,
+    "freeze_identity_recomputed": true,
+    "freeze_package_embeds_exact_records": true,
+    "freeze_release_is_ancestor": true,
+    "linked_analytics_accepted": true,
+    "linked_missing_evidence_policy": true,
+    "linked_no_browser_recompute": true,
+    "no_alpha_execution_not_fabricated": true,
+    "no_alpha_factor_evidence_visible": true,
+    "no_alpha_market_bars_unavailable": true,
+    "no_alpha_portfolio_explicit_unavailable": true,
+    "no_alpha_strategy_dimensions_empty": true,
+    "no_alpha_strategy_explicit_empty": true,
+    "strategy_identity_exact": true,
+    "strategy_portfolio_binding_exact": true,
+    "workbench_product_unchanged_since_freeze": true,
+    "workbench_read_only": true
+  },
+  "contract_valid": true,
+  "freeze_id": "ashare-historical-v1-76ba98983c1ffc6efb4b0f9a16acd5192eb7dd6c",
+  "freeze_package_sha256": "3fd44860c0090fcefaaacb8720b8e37623adefc344d9ae364e9879f6d2885a13",
+  "freeze_release_git_sha": "52856ce69fb713d486c0476117528d4c86fcb9a7",
+  "identities": {
+    "factor_series_id": "factor-series-a65bbb2ffbdc5adc14a53ade737b5fecb31ddc98",
+    "market_bar_series_id": null,
+    "portfolio_validation_id": "ashare-portfolio-validation-5d39439bfe9d0c29dde1d62b",
+    "program_result_id": "ashare-robust-program-result-538f8ba57118c43a8b900d82",
+    "strategy_series_id": "strategy-decision-series-2c03e7a65b43ffc5a3fb68d0a3b5910fd000370e"
+  },
+  "mode": "real_frozen_release",
+  "production_reserve_consumed": false,
+  "research_outcome": "NO_ROBUST_FACTOR_FAMILY",
+  "schema_version": "finagent.historical-workbench-release-smoke.v1",
+  "smoke_git_sha": "977cb8c80a84329a6bb227734ef0e1de9a51014a",
+  "smoke_id": "historical-workbench-rs-7ad4e7bdfa86b3551da62c6691934933bc312c73",
+  "stage": "HW-1.0-RS",
+  "workbench_product_drift": []
+}

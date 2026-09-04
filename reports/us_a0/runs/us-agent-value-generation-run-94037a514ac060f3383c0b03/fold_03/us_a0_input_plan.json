@@ -1,0 +1,42 @@
+{
+  "data_version": "us-baseline-input-data-version-013b42899811352e9a8da51d",
+  "label_evidence_id": "label-series-4b5aa6354cecf14b931d0c9f",
+  "label_plan_id": "label-query-plan-bd904df28d0242aec1932a91",
+  "output_columns": [
+    "research_asset_id",
+    "session_date",
+    "session_id",
+    "event_time",
+    "available_at",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "bar_index",
+    "observed_minute_count",
+    "expected_minute_count",
+    "coverage_ratio",
+    "is_complete",
+    "source_event_time",
+    "source_available_at",
+    "source_price",
+    "target_event_time",
+    "target_available_at",
+    "label_value",
+    "label_available",
+    "unavailable_reason",
+    "label_row_present",
+    "close_anchor_difference"
+  ],
+  "partition_months": [
+    "2026-03"
+  ],
+  "plan_id": "us-baseline-input-plan-c28c20fd4b25ccfb91dd2e2a",
+  "resampled_plan_id": "minute-query-plan-3a7032640b81340a62b49ee4",
+  "resampling_evidence_id": "minute-resampling-1db4f49139befb309cbb7eb9",
+  "run_spec_id": "us-baseline-run-spec-67ec5b0d5bb66d8ba16f3d01",
+  "schema_version": "finagent.us-baseline-input-plan.v1",
+  "selected_size_bytes": 464192938,
+  "source_data_version": "sessionized-minute-data-version-501c840eb6055f405a65ca1b"
+}

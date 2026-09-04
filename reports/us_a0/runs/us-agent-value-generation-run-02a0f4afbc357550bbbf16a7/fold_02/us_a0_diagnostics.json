@@ -1,0 +1,223 @@
+{
+  "assets_without_complete_bar": [],
+  "blockers": [],
+  "candidate_checks": [
+    {
+      "available_feature_count": 5495,
+      "feature_coverage": 0.8455146945683951,
+      "feature_id": "a0_momentum_5bars_c40116fc",
+      "feature_spec_id": "us-baseline-feature-96de2186426427693b0e5293",
+      "observation_count": 6499,
+      "schema_version": "finagent.us-baseline-candidate-materialization-check.v1",
+      "unavailable_reason_counts": {
+        "cross_session_window": 900,
+        "incomplete_bar": 4,
+        "insufficient_history": 100
+      }
+    },
+    {
+      "available_feature_count": 5997,
+      "feature_coverage": 0.9227573472841976,
+      "feature_id": "a0_reversal_3bars_38d5fb63",
+      "feature_spec_id": "us-baseline-feature-9162e53e79ca26c9a96a58b9",
+      "observation_count": 6499,
+      "schema_version": "finagent.us-baseline-candidate-materialization-check.v1",
+      "unavailable_reason_counts": {
+        "cross_session_window": 450,
+        "incomplete_bar": 2,
+        "insufficient_history": 50
+      }
+    },
+    {
+      "available_feature_count": 5746,
+      "feature_coverage": 0.8841360209262964,
+      "feature_id": "a0_return_volatility_4bars_d3e0095f",
+      "feature_spec_id": "us-baseline-feature-03099a834c655e2ff2432563",
+      "observation_count": 6499,
+      "schema_version": "finagent.us-baseline-candidate-materialization-check.v1",
+      "unavailable_reason_counts": {
+        "cross_session_window": 675,
+        "incomplete_bar": 3,
+        "insufficient_history": 75
+      }
+    },
+    {
+      "available_feature_count": 6499,
+      "feature_coverage": 1.0,
+      "feature_id": "a0_close_location_1bars_ff036331",
+      "feature_spec_id": "us-baseline-feature-faff021073edb62880926b1e",
+      "observation_count": 6499,
+      "schema_version": "finagent.us-baseline-candidate-materialization-check.v1",
+      "unavailable_reason_counts": {}
+    },
+    {
+      "available_feature_count": 5495,
+      "feature_coverage": 0.8455146945683951,
+      "feature_id": "a0_range_mean_5bars_dc4cbb65",
+      "feature_spec_id": "us-baseline-feature-a66a043338d66e3dd88ab9e1",
+      "observation_count": 6499,
+      "schema_version": "finagent.us-baseline-candidate-materialization-check.v1",
+      "unavailable_reason_counts": {
+        "cross_session_window": 900,
+        "incomplete_bar": 4,
+        "insufficient_history": 100
+      }
+    },
+    {
+      "available_feature_count": 5997,
+      "feature_coverage": 0.9227573472841976,
+      "feature_id": "a0_volume_surprise_3bars_81a48e07",
+      "feature_spec_id": "us-baseline-feature-537ee0e78c88f95d3c72d133",
+      "observation_count": 6499,
+      "schema_version": "finagent.us-baseline-candidate-materialization-check.v1",
+      "unavailable_reason_counts": {
+        "cross_session_window": 450,
+        "incomplete_bar": 2,
+        "insufficient_history": 50
+      }
+    },
+    {
+      "available_feature_count": 5244,
+      "feature_coverage": 0.806893368210494,
+      "feature_id": "a0_momentum_6bars_dca57e68",
+      "feature_spec_id": "us-baseline-feature-c749131d209c79570496182b",
+      "observation_count": 6499,
+      "schema_version": "finagent.us-baseline-candidate-materialization-check.v1",
+      "unavailable_reason_counts": {
+        "cross_session_window": 1125,
+        "incomplete_bar": 5,
+        "insufficient_history": 125
+      }
+    },
+    {
+      "available_feature_count": 6248,
+      "feature_coverage": 0.9613786736420988,
+      "feature_id": "a0_range_mean_2bars_90042f61",
+      "feature_spec_id": "us-baseline-feature-2c9c0e1948cad3fe7d3dfd84",
+      "observation_count": 6499,
+      "schema_version": "finagent.us-baseline-candidate-materialization-check.v1",
+      "unavailable_reason_counts": {
+        "cross_session_window": 225,
+        "incomplete_bar": 1,
+        "insufficient_history": 25
+      }
+    },
+    {
+      "available_feature_count": 6248,
+      "feature_coverage": 0.9613786736420988,
+      "feature_id": "a0_momentum_2bars_f5339dca",
+      "feature_spec_id": "us-baseline-feature-23bdc01c38c1814d1dd72e73",
+      "observation_count": 6499,
+      "schema_version": "finagent.us-baseline-candidate-materialization-check.v1",
+      "unavailable_reason_counts": {
+        "cross_session_window": 225,
+        "incomplete_bar": 1,
+        "insufficient_history": 25
+      }
+    },
+    {
+      "available_feature_count": 6248,
+      "feature_coverage": 0.9613786736420988,
+      "feature_id": "a0_reversal_2bars_6d10eec8",
+      "feature_spec_id": "us-baseline-feature-183bad868c79e6bec0950837",
+      "observation_count": 6499,
+      "schema_version": "finagent.us-baseline-candidate-materialization-check.v1",
+      "unavailable_reason_counts": {
+        "cross_session_window": 225,
+        "incomplete_bar": 1,
+        "insufficient_history": 25
+      }
+    },
+    {
+      "available_feature_count": 5997,
+      "feature_coverage": 0.9227573472841976,
+      "feature_id": "a0_momentum_3bars_47984ddf",
+      "feature_spec_id": "us-baseline-feature-c87753645a21622317c332d2",
+      "observation_count": 6499,
+      "schema_version": "finagent.us-baseline-candidate-materialization-check.v1",
+      "unavailable_reason_counts": {
+        "cross_session_window": 450,
+        "incomplete_bar": 2,
+        "insufficient_history": 50
+      }
+    },
+    {
+      "available_feature_count": 5746,
+      "feature_coverage": 0.8841360209262964,
+      "feature_id": "a0_reversal_4bars_a53ee859",
+      "feature_spec_id": "us-baseline-feature-52ed72505e445dec5d6a5659",
+      "observation_count": 6499,
+      "schema_version": "finagent.us-baseline-candidate-materialization-check.v1",
+      "unavailable_reason_counts": {
+        "cross_session_window": 675,
+        "incomplete_bar": 3,
+        "insufficient_history": 75
+      }
+    },
+    {
+      "available_feature_count": 6248,
+      "feature_coverage": 0.9613786736420988,
+      "feature_id": "a0_volume_surprise_2bars_fa457bf5",
+      "feature_spec_id": "us-baseline-feature-af7ad15c12a88e91f361db68",
+      "observation_count": 6499,
+      "schema_version": "finagent.us-baseline-candidate-materialization-check.v1",
+      "unavailable_reason_counts": {
+        "cross_session_window": 225,
+        "incomplete_bar": 1,
+        "insufficient_history": 25
+      }
+    },
+    {
+      "available_feature_count": 5746,
+      "feature_coverage": 0.8841360209262964,
+      "feature_id": "a0_momentum_4bars_3aac5da3",
+      "feature_spec_id": "us-baseline-feature-36eb69361b1f40f38a207e41",
+      "observation_count": 6499,
+      "schema_version": "finagent.us-baseline-candidate-materialization-check.v1",
+      "unavailable_reason_counts": {
+        "cross_session_window": 675,
+        "incomplete_bar": 3,
+        "insufficient_history": 75
+      }
+    },
+    {
+      "available_feature_count": 5746,
+      "feature_coverage": 0.8841360209262964,
+      "feature_id": "a0_volume_surprise_4bars_bbe7aea6",
+      "feature_spec_id": "us-baseline-feature-f0320db5d26bff5e480c118f",
+      "observation_count": 6499,
+      "schema_version": "finagent.us-baseline-candidate-materialization-check.v1",
+      "unavailable_reason_counts": {
+        "cross_session_window": 675,
+        "incomplete_bar": 3,
+        "insufficient_history": 75
+      }
+    },
+    {
+      "available_feature_count": 4993,
+      "feature_coverage": 0.7682720418525927,
+      "feature_id": "a0_momentum_7bars_6ffa14cb",
+      "feature_spec_id": "us-baseline-feature-9a8795d5f7bb61b87deabc31",
+      "observation_count": 6499,
+      "schema_version": "finagent.us-baseline-candidate-materialization-check.v1",
+      "unavailable_reason_counts": {
+        "cross_session_window": 1350,
+        "incomplete_bar": 6,
+        "insufficient_history": 150
+      }
+    }
+  ],
+  "close_anchor_mismatch_count": 0,
+  "complete_bar_count": 6499,
+  "expected_asset_count": 25,
+  "incomplete_bar_count": 1,
+  "input_row_count": 6500,
+  "label_anchor_missing_count": 0,
+  "label_available_count": 5499,
+  "missing_assets": [],
+  "observed_asset_count": 25,
+  "passed": true,
+  "schema_version": "finagent.us-baseline-materialization-diagnostics.v1",
+  "target_crosses_session_count": 1000,
+  "target_minute_missing_count": 0
+}

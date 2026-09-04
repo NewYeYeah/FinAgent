@@ -1,0 +1,46 @@
+{
+  "assessment": {
+    "accepted": true,
+    "assessment_id": "mt5-p0-assessment-b63abd61c726e3b2466d2bed",
+    "blockers": [],
+    "limitations": [
+      "terminal:automated_trading_not_allowed",
+      "terminal:trade_api_disabled"
+    ],
+    "policy_id": "mt5-p0-policy-f12dcc72ecacf80e4a1401f7",
+    "probe_id": "mt5-capability-probe-17e5cc9c62b808c259294eb4",
+    "representative_symbols": [
+      "AMD.NAS",
+      "INTC.NAS",
+      "MSFT.NAS",
+      "NVDA.NAS"
+    ],
+    "schema_version": "finagent.mt5-p0-acceptance-assessment.v2",
+    "tick_probe_symbols": [
+      "NVDA.NAS"
+    ]
+  },
+  "policy": {
+    "expected_package_version": "5.0.6147",
+    "max_spread_staleness_seconds_at_probe_start": 300.0,
+    "maximum_history_window_skew_minutes": 360,
+    "minimum_inventory_symbols": 1,
+    "minimum_tick_window_m1_bars": 1,
+    "policy_id": "mt5-p0-policy-f12dcc72ecacf80e4a1401f7",
+    "representative_symbols": [
+      "AMD.NAS",
+      "INTC.NAS",
+      "MSFT.NAS",
+      "NVDA.NAS"
+    ],
+    "require_m1_history": true,
+    "require_spread": true,
+    "require_tick_measurement": true,
+    "require_tradable": true,
+    "require_visible": true,
+    "schema_version": "finagent.mt5-p0-acceptance-policy.v2",
+    "tick_probe_symbols": [
+      "NVDA.NAS"
+    ]
+  }
+}

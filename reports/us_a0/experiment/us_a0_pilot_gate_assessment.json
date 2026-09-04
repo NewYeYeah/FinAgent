@@ -1,0 +1,52 @@
+{
+  "agent_failure_rate": 0.0,
+  "agent_median_primary_quality": 0.008368998176039514,
+  "agent_median_secondary_quality": 0.03207218309739601,
+  "agent_novel_candidate_count": 8,
+  "agent_usage": {
+    "cost_usd": 0.00574186,
+    "latency_ms": 68053.52279999715,
+    "llm_calls": 16,
+    "total_tokens": 18063
+  },
+  "agent_valid_candidate_rate": 1.0,
+  "agent_value_gate_authority": false,
+  "alpha_authority": false,
+  "assessment_id": "us-agent-value-gate-assessment-c94b81d805f87bc6fbdee5ba",
+  "comparison_snapshot_id": "us-agent-value-comparison-72dc0f6e8981ce63786dabb6",
+  "criteria": {
+    "baseline_quality_available": true,
+    "complete_quality_vectors": true,
+    "efficiency_noninferiority_passed": true,
+    "meaningful_efficiency_advantage": false,
+    "median_quality_superiority_passed": false,
+    "novelty_support_passed": true,
+    "positive_rule_passed": false,
+    "quality_not_better": true,
+    "repeatability_passed": false
+  },
+  "decision": "PILOT_DO_NOT_PROCEED_TO_FORMAL",
+  "evidence_graph_id": "us-agent-value-experiment-evidence-9527f71a12ded2ff661dc99f",
+  "execution_plan_id": "us-agent-value-execution-plan-4312941b91abba09a44c34cb",
+  "experiment_id": "us-agent-value-experiment-550e3477fb740780e752fc94",
+  "manual_primary_quality": 0.012205192367844857,
+  "manual_secondary_quality": 0.03118908416140496,
+  "paired_quality_win_count": 0,
+  "phase": "PILOT",
+  "policy_id": "us-agent-value-gate-policy-3c5c42ff29892af134773010",
+  "predecessor_binding_id": "us-agent-value-predecessor-19b127b5466479a1680c8e25",
+  "programmatic_failure_rate": 0.0,
+  "programmatic_median_primary_quality": 0.014048697768807962,
+  "programmatic_median_secondary_quality": 0.03207218309739601,
+  "programmatic_valid_candidate_rate": 1.0,
+  "reasons": [
+    "median_quality_superiority_not_met",
+    "run_level_repeatability_not_met",
+    "agent_quality_not_better_than_both_baselines"
+  ],
+  "recommendation_authority": "deterministic_preregistered_policy_only",
+  "required_paired_quality_win_count": 1,
+  "schema_version": "finagent.us-agent-value-gate-assessment.v1",
+  "stage_exit_authority": false,
+  "status_authority": false
+}

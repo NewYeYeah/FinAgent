@@ -1,0 +1,663 @@
+{
+  "acceptance_id": "ashare-historical-ac3-fbc5302a780786823a8c61a908c244daa47a1ef8",
+  "acceptance_semantics": "NO_ROBUST_FACTOR_FOUND is a valid research terminal state. A-C3 accepts it only when A4 explicitly records NO_ROBUST_FACTOR_FAMILY, no portfolio backtest was executed, StrategyDecisionSeries is empty, MarketBarSeries is not inferred, the reserve is untouched, and Workbench unavailability is explicit.",
+  "accepted": true,
+  "artifacts": {
+    "a4": {
+      "path": "D:\\PythonWorkspace\\FinAgent\\reports\\local_ashare_portfolio_validation_a4.json",
+      "sha256": "860cba65271ae0a8e3b6e6a2db79a62a252b0cedf595f21b554cc11f6dfcba1b",
+      "size_bytes": 4641
+    },
+    "a4_ledger": {
+      "path": "D:\\PythonWorkspace\\FinAgent\\reports\\local_ashare_portfolio_validation_a4_ledger.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size_bytes": 0
+    },
+    "command_store": {
+      "path": "D:\\PythonWorkspace\\FinAgent\\.finagent\\ac3\\ac3-run-d6c961de4c1a494b15b382d8aedd9b1f\\commands.sqlite",
+      "sha256": "361628cbc6b9486b9386558a7488b0b4636e6d609d3a5e0e9b8466eec4191597",
+      "size_bytes": 65536
+    },
+    "development": {
+      "path": "D:\\PythonWorkspace\\FinAgent\\reports\\local_ashare_factor_research_a2p5.json",
+      "sha256": "45c34f1c87980c0acd0b1c74068285da1f56dab67aa16bd2494967e3c5d0e6ee",
+      "size_bytes": 165480
+    },
+    "factor_manifest": {
+      "path": "D:\\PythonWorkspace\\FinAgent\\reports\\local_ashare_robust_research_a26.factor-series.json",
+      "sha256": "4f4f49373e9fa1dd5fb3876428ebc206d44c96bbacbad02133b757adc55e2d48",
+      "size_bytes": 3625
+    },
+    "market_bar_manifest": null,
+    "review_bundle": {
+      "path": "D:\\PythonWorkspace\\FinAgent\\.finagent\\ac3\\ac3-run-d6c961de4c1a494b15b382d8aedd9b1f\\finagent-review-ashare-portfolio-validation-5d39439bfe9d0c29dde1d62b.zip",
+      "sha256": "e051729ac4926312c0b60fbd3f3556f43748eef703030dcfc418c7787f706c6f",
+      "size_bytes": 16902
+    },
+    "robust": {
+      "path": "D:\\PythonWorkspace\\FinAgent\\reports\\local_ashare_robust_research_a26.json",
+      "sha256": "75b83e71a308a2568e68aa1fe5f4c803d6261c2d4f54ed756291db5a52b94b57",
+      "size_bytes": 47501
+    },
+    "strategy_manifest": {
+      "path": "D:\\PythonWorkspace\\FinAgent\\reports\\local_ashare_portfolio_validation_a4.strategy-decisions.json",
+      "sha256": "57aca49174c0ce1af9cd36736914c53bc83c080a645ed9f14fd74ba1e2ce912c",
+      "size_bytes": 3267
+    }
+  },
+  "checks": {
+    "a4_binds_robust_program": true,
+    "a4_data_version_matches": true,
+    "a4_has_no_aggregate": true,
+    "a4_has_no_folds": true,
+    "a4_ledger_empty": true,
+    "a4_no_execution": true,
+    "a4_no_promotion": true,
+    "a4_reserve_untouched": true,
+    "command_runs_complete": true,
+    "dataset_content_hashed": true,
+    "dataset_content_verified": true,
+    "development_data_version_matches": true,
+    "development_passed": true,
+    "development_reserve_untouched": true,
+    "evidence_plane_v4_get_only": true,
+    "factor_binds_robust": true,
+    "factor_data_version_matches": true,
+    "factor_series_verified": true,
+    "git_sha_recorded": true,
+    "linked_analytics_accepted": true,
+    "linked_missing_policy_explicit": true,
+    "linked_no_browser_recompute": true,
+    "market_bars_explicitly_absent": true,
+    "no_alpha_terminal_exact": true,
+    "review_bundle_valid_zip": true,
+    "robust_program_frozen": true,
+    "robust_reserve_untouched": true,
+    "strategy_binds_a4": true,
+    "strategy_binds_robust": true,
+    "strategy_data_version_matches": true,
+    "strategy_empty_is_explicit": true,
+    "workbench_no_portfolio_explicit": true,
+    "workbench_portfolio_execution_omits_unavailable": true,
+    "workbench_strategy_dimensions_empty": true,
+    "workbench_strategy_identity_exact": true
+  },
+  "command_runs": {
+    "data.certify_local_ashare": {
+      "artifact_paths": [
+        "D:\\PythonWorkspace\\FinAgent\\.finagent\\ac3\\ac3-run-d6c961de4c1a494b15b382d8aedd9b1f\\local_ashare_certification.json"
+      ],
+      "command_run_id": "command-run-88c46726e4c16dd31dfbcebfe941ca07",
+      "config_snapshot_id": "config-snapshot-cd1fb154417c27ac7a16e6eb746d3b25",
+      "evidence_ids": [],
+      "ok": true,
+      "outputs": {
+        "output_path": "D:\\PythonWorkspace\\FinAgent\\.finagent\\ac3\\ac3-run-d6c961de4c1a494b15b382d8aedd9b1f\\local_ashare_certification.json",
+        "passed": true,
+        "report": {
+          "basic": {
+            "columns": [
+              "act_ent_type",
+              "act_name",
+              "area",
+              "curr_type",
+              "delist_date",
+              "enname",
+              "exchange",
+              "fullname",
+              "industry",
+              "is_hs",
+              "list_date",
+              "list_status",
+              "market",
+              "name",
+              "symbol",
+              "ts_code"
+            ],
+            "duplicate_codes": 0,
+            "epoch_list_dates": 2,
+            "instruments": 5892,
+            "noncanonical_samples": [
+              {
+                "list_date": "2000-07-19 00:00:00",
+                "name": "上港集箱(退)",
+                "ts_code": "T00018.SH"
+              },
+              {
+                "list_date": "2000-07-19 00:00:00",
+                "name": "上港集箱(退)",
+                "ts_code": "T600018.SH"
+              },
+              {
+                "list_date": "2000-07-19 00:00:00",
+                "name": "上港集箱(退)",
+                "ts_code": "TS0018.SH"
+              }
+            ],
+            "noncanonical_ts_codes": 3,
+            "nonnull_delist_dates": 0,
+            "nonnull_list_status": 0,
+            "null_list_dates": 0,
+            "path": "D:\\Data\\A-Share\\stock_basic_data.parquet",
+            "rows": 5892,
+            "survivorship_certified": false
+          },
+          "daily": {
+            "anomaly_samples": [],
+            "canonical_amount_unit": "CNY",
+            "canonical_volume_unit": "shares",
+            "columns": [
+              "adj_factor",
+              "amount",
+              "change",
+              "circ_mv",
+              "close",
+              "down_limit",
+              "dv_ratio",
+              "dv_ttm",
+              "float_share",
+              "free_share",
+              "high",
+              "is_st",
+              "listed_days",
+              "low",
+              "open",
+              "pb",
+              "pct_chg",
+              "pe",
+              "pe_ttm",
+              "pre_close",
+              "ps",
+              "ps_ttm",
+              "suspend_timing",
+              "suspend_type",
+              "total_mv",
+              "total_share",
+              "trade_date",
+              "ts_code",
+              "turnover_rate",
+              "turnover_rate_f",
+              "up_limit",
+              "vol",
+              "volume_ratio"
+            ],
+            "duplicate_keys": 0,
+            "end_date": "2026-08-21",
+            "instruments": 5826,
+            "invalid_adj_factor": 0,
+            "invalid_ohlc": 0,
+            "negative_flow": 0,
+            "nonpositive_prices": 0,
+            "path": "D:\\Data\\A-Share\\stock_daily.parquet",
+            "return_price": "raw close * adj_factor",
+            "rows": 14573553,
+            "start_date": "2009-01-05",
+            "suspension_placeholder_rule": "open=high=low=0, close=pre_close>0, vol=amount=0; non-tradable/no PriceBar",
+            "suspension_placeholder_samples": [
+              {
+                "adj_factor": 4.5917,
+                "amount": 0.0,
+                "close": 5.23,
+                "high": 0.0,
+                "is_st": 0,
+                "low": 0.0,
+                "open": 0.0,
+                "pre_close": 5.23,
+                "suspend_timing": "",
+                "suspend_type": "S",
+                "trade_date": "2026-08-13 00:00:00",
+                "ts_code": "300176.SZ",
+                "vol": 0.0
+              },
+              {
+                "adj_factor": 3.356,
+                "amount": 0.0,
+                "close": 3.59,
+                "high": 0.0,
+                "is_st": 0,
+                "low": 0.0,
+                "open": 0.0,
+                "pre_close": 3.59,
+                "suspend_timing": "",
+                "suspend_type": "S",
+                "trade_date": "2026-08-17 00:00:00",
+                "ts_code": "002084.SZ",
+                "vol": 0.0
+              },
+              {
+                "adj_factor": 7.212,
+                "amount": 0.0,
+                "close": 3.06,
+                "high": 0.0,
+                "is_st": 0,
+                "low": 0.0,
+                "open": 0.0,
+                "pre_close": 3.06,
+                "suspend_timing": "",
+                "suspend_type": "S",
+                "trade_date": "2026-08-17 00:00:00",
+                "ts_code": "002445.SZ",
+                "vol": 0.0
+              },
+              {
+                "adj_factor": 1.0895,
+                "amount": 0.0,
+                "close": 25.66,
+                "high": 0.0,
+                "is_st": 0,
+                "low": 0.0,
+                "open": 0.0,
+                "pre_close": 25.66,
+                "suspend_timing": "",
+                "suspend_type": "S",
+                "trade_date": "2026-08-18 00:00:00",
+                "ts_code": "002906.SZ",
+                "vol": 0.0
+              },
+              {
+                "adj_factor": 2.518,
+                "amount": 0.0,
+                "close": 4.49,
+                "high": 0.0,
+                "is_st": 0,
+                "low": 0.0,
+                "open": 0.0,
+                "pre_close": 4.49,
+                "suspend_timing": "",
+                "suspend_type": "S",
+                "trade_date": "2026-08-21 00:00:00",
+                "ts_code": "600984.SH",
+                "vol": 0.0
+              }
+            ],
+            "suspension_placeholders": 5,
+            "vendor_amount_unit": "thousand CNY",
+            "vendor_volume_unit": "lots (100 shares)"
+          },
+          "data_version": "local-ashare-cert-fast-049d66654e1938e8",
+          "intraday": {},
+          "issues": [
+            {
+              "code": "LA-BASIC-03",
+              "message": "basic parquet contains 2 1970-01-01 list-date placeholders",
+              "severity": "warning"
+            },
+            {
+              "code": "LA-BASIC-04",
+              "message": "basic parquet cannot certify survivorship-free history because delist/list-status coverage is absent",
+              "severity": "warning"
+            },
+            {
+              "code": "LA-BASIC-05",
+              "message": "basic parquet contains 3 non-canonical/legacy ts_code records; they are quarantined from the canonical research universe",
+              "severity": "warning"
+            },
+            {
+              "code": "LA-DAILY-07",
+              "message": "daily parquet contains 5 audited no-trade/suspension placeholder rows; the research adapter excludes them from PriceBar construction",
+              "severity": "warning"
+            }
+          ],
+          "passed": true,
+          "reconciliation": {},
+          "root": "D:\\Data\\A-Share",
+          "schema_version": "finagent.local-ashare-certification.v1"
+        }
+      },
+      "state": "succeeded"
+    },
+    "portfolio.run_a4": {
+      "artifact_paths": [
+        "reports\\local_ashare_portfolio_validation_a4.json",
+        "reports\\local_ashare_portfolio_validation_a4_ledger.jsonl"
+      ],
+      "command_run_id": "command-run-627a839a8985b430306df694a2b3fdaa",
+      "config_snapshot_id": "config-snapshot-3d546160c37220803e995d281a68adb2",
+      "evidence_ids": [
+        "ashare-portfolio-validation-5d39439bfe9d0c29dde1d62b"
+      ],
+      "ok": true,
+      "outputs": {
+        "evidence_id": "ashare-portfolio-validation-5d39439bfe9d0c29dde1d62b",
+        "report_path": "reports\\local_ashare_portfolio_validation_a4.json",
+        "reserve_access": "forbidden",
+        "scope": "historical_internal_portfolio_validation"
+      },
+      "state": "succeeded"
+    },
+    "research.run_a2p6": {
+      "artifact_paths": [
+        "reports\\local_ashare_robust_research_a26.json"
+      ],
+      "command_run_id": "command-run-f933e7a4aedb5870bd04f2dd93bf9dd0",
+      "config_snapshot_id": "config-snapshot-30502822100830af59462f76a3c59566",
+      "evidence_ids": [
+        "ashare-robust-program-result-538f8ba57118c43a8b900d82"
+      ],
+      "ok": true,
+      "outputs": {
+        "evidence_id": "ashare-robust-program-result-538f8ba57118c43a8b900d82",
+        "report_path": "reports\\local_ashare_robust_research_a26.json",
+        "reserve_access": "forbidden",
+        "scope": "historical_robust_research"
+      },
+      "state": "succeeded"
+    },
+    "research.run_development": {
+      "artifact_paths": [
+        "reports\\local_ashare_factor_research_a2p5.json"
+      ],
+      "command_run_id": "command-run-3a136fb8478f9bd2776b3e07e5d16537",
+      "config_snapshot_id": "config-snapshot-8891c34b5acfaa40eeb01950564dcc3f",
+      "evidence_ids": [
+        "ashare-factor-acceptance-1d5f392c10174ee72a37f9e9"
+      ],
+      "ok": true,
+      "outputs": {
+        "evidence_id": "ashare-factor-acceptance-1d5f392c10174ee72a37f9e9",
+        "report_path": "reports\\local_ashare_factor_research_a2p5.json",
+        "reserve_access": "forbidden",
+        "scope": "historical_development_research"
+      },
+      "state": "succeeded"
+    },
+    "review.export_bundle": {
+      "artifact_paths": [
+        "D:\\PythonWorkspace\\FinAgent\\.finagent\\ac3\\ac3-run-d6c961de4c1a494b15b382d8aedd9b1f\\finagent-review-ashare-portfolio-validation-5d39439bfe9d0c29dde1d62b.zip"
+      ],
+      "command_run_id": "command-run-e58ccb52f0bcff2f8620ddc4cb68fc0c",
+      "config_snapshot_id": null,
+      "evidence_ids": [
+        "ashare-portfolio-validation-5d39439bfe9d0c29dde1d62b"
+      ],
+      "ok": true,
+      "outputs": {
+        "output_path": "D:\\PythonWorkspace\\FinAgent\\.finagent\\ac3\\ac3-run-d6c961de4c1a494b15b382d8aedd9b1f\\finagent-review-ashare-portfolio-validation-5d39439bfe9d0c29dde1d62b.zip",
+        "sha256": "e051729ac4926312c0b60fbd3f3556f43748eef703030dcfc418c7787f706c6f",
+        "size_bytes": 16902,
+        "validation_id": "ashare-portfolio-validation-5d39439bfe9d0c29dde1d62b"
+      },
+      "state": "succeeded"
+    }
+  },
+  "contract_valid": true,
+  "data": {
+    "content_hashed": true,
+    "content_verified": true,
+    "dataset_version": "local-ashare-frozen-96f1a2c07f285e6ff41575cf",
+    "frozen_manifest": "D:\\PythonWorkspace\\FinAgent\\data\\manifests\\local_ashare_daily.json",
+    "root": "D:\\Data\\A-Share"
+  },
+  "evidence_plane": {
+    "linked_analytics": {
+      "accepted": true,
+      "authority": "acceptance_contract_only_no_financial_authority",
+      "browser_recomputation": false,
+      "browser_row_limit": 5000,
+      "context_keys": [
+        "program_id",
+        "factor_id",
+        "portfolio_validation_id",
+        "asset_id",
+        "order_id",
+        "date_range",
+        "session_date",
+        "fold_id"
+      ],
+      "context_semantics": "URL-backed presentation identity; values are preserved across module navigation/history/reload and never reinterpret evidence identity",
+      "control_authority_ceiling": [
+        "L0",
+        "L1"
+      ],
+      "evidence_plane_methods": [
+        "GET",
+        "HEAD",
+        "OPTIONS"
+      ],
+      "missing_evidence_policy": "explicit_unavailable_not_inferred",
+      "read_only": true,
+      "runtime_checks": {
+        "execution_order_identity_is_available": true,
+        "factors_missing_agent_chronology_is_explicit": true,
+        "factors_no_browser_recomputation": true,
+        "factors_read_only": true,
+        "portfolio_execution_no_browser_recomputation": true,
+        "portfolio_execution_read_only": true,
+        "portfolio_missing_benchmark_is_explicit": true,
+        "strategy_no_browser_recomputation": true,
+        "strategy_ohlc_authority_is_explicit": true,
+        "strategy_read_only": true
+      },
+      "schema_version": "finagent.linked-analytics-acceptance.status.v1",
+      "server_side_pagination_required_for_full_aggregates": true,
+      "surfaces": [
+        {
+          "authoritative_sources": [
+            "V4-0 close/reference/fill price rows",
+            "V4-0 alpha/target/realized weight rows",
+            "V4-0 desired/executable/filled quantity rows",
+            "V4-0 fees/slippage/gross/net PnL rows",
+            "V4-0 decision status/client_order_id/constraint_codes rows",
+            "A-C2 MarketBarSeriesEvidence raw OHLCV when explicitly bound"
+          ],
+          "browser_recomputation": false,
+          "context_keys": [
+            "portfolio_validation_id",
+            "asset_id",
+            "date_range",
+            "session_date",
+            "fold_id"
+          ],
+          "derived_presentation": [],
+          "required_evidence": [
+            "StrategyDecisionSeriesEvidence V4-0"
+          ],
+          "routes": [
+            "/strategy",
+            "/strategy/:seriesId"
+          ],
+          "surface": "strategy",
+          "unavailable_not_inferred": [
+            "OHLC candlesticks when no verified MarketBarSeriesEvidence is bound",
+            "per-asset per-factor contribution"
+          ]
+        },
+        {
+          "authoritative_sources": [
+            "V4-1 period IC/RankIC/turnover/coverage rows",
+            "V4-1 persisted derived rolling/NAV rows",
+            "frozen A2.6 inference/multiplicity/gate/correlation summary"
+          ],
+          "browser_recomputation": false,
+          "context_keys": [
+            "program_id",
+            "factor_id",
+            "date_range",
+            "fold_id"
+          ],
+          "derived_presentation": [
+            "fold/year IC means",
+            "factor correlation cluster ordering"
+          ],
+          "required_evidence": [
+            "FactorSeriesEvidence V4-1",
+            "frozen A2.6 ResearchProgram summary"
+          ],
+          "routes": [
+            "/factors",
+            "/factors/:seriesId"
+          ],
+          "surface": "factors",
+          "unavailable_not_inferred": [
+            "Agent generation chronology"
+          ]
+        },
+        {
+          "authoritative_sources": [
+            "A4 gross/net NAV and period returns",
+            "A4 frozen aggregate/fold/economic metrics",
+            "A4 execution-ledger identity"
+          ],
+          "browser_recomputation": false,
+          "context_keys": [
+            "portfolio_validation_id",
+            "asset_id",
+            "order_id",
+            "date_range",
+            "session_date",
+            "fold_id"
+          ],
+          "derived_presentation": [
+            "drawdown",
+            "rolling return/volatility/Sharpe",
+            "calendar monthly return matrix",
+            "filtered cost totals"
+          ],
+          "required_evidence": [
+            "authoritative A4 portfolio validation evidence",
+            "verified StrategyDecisionSeriesEvidence V4-0"
+          ],
+          "routes": [
+            "/portfolio",
+            "/portfolio/:validationId"
+          ],
+          "surface": "portfolio",
+          "unavailable_not_inferred": [
+            "benchmark return/NAV",
+            "benchmark-relative alpha/beta/information ratio",
+            "industry/style exposure",
+            "capacity",
+            "risk contribution"
+          ]
+        },
+        {
+          "authoritative_sources": [
+            "target/realized weights",
+            "client_order_id",
+            "desired/executable/filled quantities",
+            "reference/fill/close prices",
+            "fees/slippage/gross/net PnL",
+            "decision status and constraint_codes"
+          ],
+          "browser_recomputation": false,
+          "context_keys": [
+            "portfolio_validation_id",
+            "asset_id",
+            "order_id",
+            "date_range",
+            "session_date",
+            "fold_id"
+          ],
+          "derived_presentation": [
+            "desired/executable/filled funnel",
+            "constraint-code counts",
+            "filtered fee/slippage totals"
+          ],
+          "required_evidence": [
+            "verified StrategyDecisionSeriesEvidence V4-0",
+            "authoritative A3 decision semantics persisted in V4-0 rows"
+          ],
+          "routes": [
+            "/execution",
+            "/execution/:validationId"
+          ],
+          "surface": "execution",
+          "unavailable_not_inferred": [
+            "capacity/impact model",
+            "broker/live account state"
+          ]
+        }
+      ]
+    },
+    "read_only": true,
+    "v4_route_methods": {
+      "/api/v4/factor-series": [
+        "GET"
+      ],
+      "/api/v4/factor-series/by-program/{program_id}": [
+        "GET"
+      ],
+      "/api/v4/factor-series/status": [
+        "GET"
+      ],
+      "/api/v4/factor-series/{series_id}": [
+        "GET"
+      ],
+      "/api/v4/factor-series/{series_id}/correlations": [
+        "GET"
+      ],
+      "/api/v4/factor-series/{series_id}/dimensions": [
+        "GET"
+      ],
+      "/api/v4/factor-series/{series_id}/heatmap": [
+        "GET"
+      ],
+      "/api/v4/factor-series/{series_id}/provenance": [
+        "GET"
+      ],
+      "/api/v4/factor-series/{series_id}/rows": [
+        "GET"
+      ],
+      "/api/v4/factor-series/{series_id}/summary": [
+        "GET"
+      ],
+      "/api/v4/linked-analytics/status": [
+        "GET"
+      ],
+      "/api/v4/portfolio-execution": [
+        "GET"
+      ],
+      "/api/v4/portfolio-execution/status": [
+        "GET"
+      ],
+      "/api/v4/portfolio-execution/{validation_id}": [
+        "GET"
+      ],
+      "/api/v4/portfolio-execution/{validation_id}/analytics": [
+        "GET"
+      ],
+      "/api/v4/portfolio-execution/{validation_id}/decisions": [
+        "GET"
+      ],
+      "/api/v4/portfolio-execution/{validation_id}/series": [
+        "GET"
+      ],
+      "/api/v4/strategy-series": [
+        "GET"
+      ],
+      "/api/v4/strategy-series/by-portfolio/{portfolio_validation_id}": [
+        "GET"
+      ],
+      "/api/v4/strategy-series/{series_id}": [
+        "GET"
+      ],
+      "/api/v4/strategy-series/{series_id}/decisions": [
+        "GET"
+      ],
+      "/api/v4/strategy-series/{series_id}/dimensions": [
+        "GET"
+      ],
+      "/api/v4/strategy-series/{series_id}/market-bar-binding": [
+        "GET"
+      ],
+      "/api/v4/strategy-series/{series_id}/market-bars": [
+        "GET"
+      ]
+    }
+  },
+  "git_sha": "85e0acf5114139d53b4de87879672c6aade09944",
+  "identities": {
+    "data_version": "local-ashare-frozen-96f1a2c07f285e6ff41575cf",
+    "development_acceptance_id": "ashare-factor-acceptance-1d5f392c10174ee72a37f9e9",
+    "factor_series_id": "factor-series-a65bbb2ffbdc5adc14a53ade737b5fecb31ddc98",
+    "market_bar_series_id": null,
+    "portfolio_validation_id": "ashare-portfolio-validation-5d39439bfe9d0c29dde1d62b",
+    "program_result_id": "ashare-robust-program-result-538f8ba57118c43a8b900d82",
+    "strategy_series_id": "strategy-decision-series-2c03e7a65b43ffc5a3fb68d0a3b5910fd000370e"
+  },
+  "mode": "real_local_dataset",
+  "real_dataset_attested": true,
+  "schema_version": "finagent.ashare-historical-e2e-acceptance.v1",
+  "stage": "A-C3",
+  "terminal_state": "NO_ROBUST_FACTOR_FAMILY"
+}

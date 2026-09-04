@@ -1,0 +1,247 @@
+{
+  "agent_value_gate_authority": false,
+  "agent_value_gate_decision": "UNDECIDED_REQUIRES_SEPARATE_REVIEW",
+  "alpha_authority": false,
+  "arm_result_ids": [
+    "us-agent-value-search-arm-result-7951baeb324ae8533bfec4cf",
+    "us-agent-value-search-arm-result-8bdca8b0e7dd2636390ea31b",
+    "us-agent-value-search-arm-result-479a2dbdb2c4d1a21d3f1b41"
+  ],
+  "arm_results": [
+    {
+      "accepted_candidate_count": 16,
+      "agent_value_gate_authority": false,
+      "alpha_authority": false,
+      "arm": "MANUAL",
+      "blockers": [],
+      "duplicate_rate": 0.0,
+      "duplicate_slot_count": 0,
+      "evaluation_link_ids": [
+        "us-agent-value-run-evaluation-link-de19ffbf68674199d67c5732"
+      ],
+      "evaluation_links": [
+        {
+          "authoritative_evidence_id": "us-agent-value-run-evaluation-c1d4f709f5fd37a1763758bf",
+          "best_mean_rank_ic": 0.03118908416140496,
+          "best_worst_fold_rank_ic": 0.012205192367844857,
+          "blockers": [],
+          "evaluated_candidate_count": 16,
+          "generation_run_id": "us-agent-value-generation-run-cf34df9b22107cbc37405849",
+          "link_id": "us-agent-value-run-evaluation-link-de19ffbf68674199d67c5732",
+          "metric_authority": "copied_from_authoritative_split_bound_evidence_not_recomputed_here",
+          "passed": true,
+          "schema_version": "finagent.us-agent-value-run-evaluation-link.v1",
+          "valid_candidate_count": 16
+        }
+      ],
+      "generation_run_ids": [
+        "us-agent-value-generation-run-cf34df9b22107cbc37405849"
+      ],
+      "generation_run_spec_ids": [
+        "us-agent-value-generation-run-spec-9ec81b3df00991810108275e"
+      ],
+      "independent_run_count": 1,
+      "invalid_rate": 0.0,
+      "invalid_slot_count": 0,
+      "passed": true,
+      "phase": "PILOT",
+      "protocol_id": "us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03",
+      "repair_count": 0,
+      "replacement_count": 0,
+      "result_id": "us-agent-value-search-arm-result-7951baeb324ae8533bfec4cf",
+      "schema_version": "finagent.search-arm-result.v1",
+      "stage_exit_authority": false,
+      "trial_count": 16,
+      "usage": {
+        "cost_usd": 0.0,
+        "input_tokens": 0,
+        "latency_ms": 0.0,
+        "llm_calls": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "valid_candidate_rate": 1.0
+    },
+    {
+      "accepted_candidate_count": 16,
+      "agent_value_gate_authority": false,
+      "alpha_authority": false,
+      "arm": "PROGRAMMATIC",
+      "blockers": [],
+      "duplicate_rate": 0.0,
+      "duplicate_slot_count": 0,
+      "evaluation_link_ids": [
+        "us-agent-value-run-evaluation-link-83e091d9f003204e4bcd1b35"
+      ],
+      "evaluation_links": [
+        {
+          "authoritative_evidence_id": "us-agent-value-run-evaluation-f78611fb62f8b30a056928d0",
+          "best_mean_rank_ic": 0.03207218309739601,
+          "best_worst_fold_rank_ic": 0.014048697768807962,
+          "blockers": [],
+          "evaluated_candidate_count": 16,
+          "generation_run_id": "us-agent-value-generation-run-94037a514ac060f3383c0b03",
+          "link_id": "us-agent-value-run-evaluation-link-83e091d9f003204e4bcd1b35",
+          "metric_authority": "copied_from_authoritative_split_bound_evidence_not_recomputed_here",
+          "passed": true,
+          "schema_version": "finagent.us-agent-value-run-evaluation-link.v1",
+          "valid_candidate_count": 16
+        }
+      ],
+      "generation_run_ids": [
+        "us-agent-value-generation-run-94037a514ac060f3383c0b03"
+      ],
+      "generation_run_spec_ids": [
+        "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e"
+      ],
+      "independent_run_count": 1,
+      "invalid_rate": 0.0,
+      "invalid_slot_count": 0,
+      "passed": true,
+      "phase": "PILOT",
+      "protocol_id": "us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03",
+      "repair_count": 0,
+      "replacement_count": 0,
+      "result_id": "us-agent-value-search-arm-result-8bdca8b0e7dd2636390ea31b",
+      "schema_version": "finagent.search-arm-result.v1",
+      "stage_exit_authority": false,
+      "trial_count": 16,
+      "usage": {
+        "cost_usd": 0.0,
+        "input_tokens": 0,
+        "latency_ms": 0.0,
+        "llm_calls": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "valid_candidate_rate": 1.0
+    },
+    {
+      "accepted_candidate_count": 16,
+      "agent_value_gate_authority": false,
+      "alpha_authority": false,
+      "arm": "AGENT",
+      "blockers": [],
+      "duplicate_rate": 0.0,
+      "duplicate_slot_count": 0,
+      "evaluation_link_ids": [
+        "us-agent-value-run-evaluation-link-3f411b86dd70995cd3282b15"
+      ],
+      "evaluation_links": [
+        {
+          "authoritative_evidence_id": "us-agent-value-run-evaluation-19328315bba55de5623eac87",
+          "best_mean_rank_ic": 0.03207218309739601,
+          "best_worst_fold_rank_ic": 0.008368998176039514,
+          "blockers": [],
+          "evaluated_candidate_count": 16,
+          "generation_run_id": "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7",
+          "link_id": "us-agent-value-run-evaluation-link-3f411b86dd70995cd3282b15",
+          "metric_authority": "copied_from_authoritative_split_bound_evidence_not_recomputed_here",
+          "passed": true,
+          "schema_version": "finagent.us-agent-value-run-evaluation-link.v1",
+          "valid_candidate_count": 16
+        }
+      ],
+      "generation_run_ids": [
+        "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7"
+      ],
+      "generation_run_spec_ids": [
+        "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c"
+      ],
+      "independent_run_count": 1,
+      "invalid_rate": 0.0,
+      "invalid_slot_count": 0,
+      "passed": true,
+      "phase": "PILOT",
+      "protocol_id": "us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03",
+      "repair_count": 0,
+      "replacement_count": 0,
+      "result_id": "us-agent-value-search-arm-result-479a2dbdb2c4d1a21d3f1b41",
+      "schema_version": "finagent.search-arm-result.v1",
+      "stage_exit_authority": false,
+      "trial_count": 16,
+      "usage": {
+        "cost_usd": 0.00574186,
+        "input_tokens": 10327,
+        "latency_ms": 68053.52279999715,
+        "llm_calls": 16,
+        "output_tokens": 7736,
+        "total_tokens": 18063
+      },
+      "valid_candidate_rate": 1.0
+    }
+  ],
+  "comparison_scope": "generation_efficiency_novelty_and_authoritative_split_bound_quality_evidence",
+  "evidence_complete": true,
+  "experiment_id": "us-agent-value-experiment-550e3477fb740780e752fc94",
+  "predecessor": {
+    "authority": "accepted_split_bound_US-B0_predecessor_only",
+    "binding_id": "us-agent-value-predecessor-19b127b5466479a1680c8e25",
+    "candidate_count": 8,
+    "schema_version": "finagent.us-agent-value-predecessor-binding.v1",
+    "us_b0_aggregate_report_id": "us-baseline-walk-forward-aggregate-88131e0eb8b205a78a559525",
+    "us_b0_denominator_id": "us-baseline-denominator-b8bdb313856e1f7dc652bdd9",
+    "us_b0_evidence_graph_id": "us-baseline-walk-forward-evidence-1a541f4bf39b1abca833898b",
+    "us_b0_run_spec_id": "us-baseline-run-spec-4ac2ae1d8cb95c01c8a99a11",
+    "us_b0_walk_forward_protocol_id": "us-baseline-walk-forward-abec06d0d72302fcf11958a4"
+  },
+  "protocol": {
+    "agent_identity_policy": "provider_model_prompt_template_required_per_run",
+    "agent_min_independent_runs": 1,
+    "agent_value_gate_authority": false,
+    "alpha_authority": false,
+    "arms": [
+      "MANUAL",
+      "PROGRAMMATIC",
+      "AGENT"
+    ],
+    "budget_unit": "per_independent_run",
+    "candidate_budget_per_run": 16,
+    "invalid_and_duplicate_consume_slot": true,
+    "manual_candidate_ids": [
+      "us-agent-value-candidate-32151417ddc1442a6d10eec8",
+      "us-agent-value-candidate-340fbb96b15a633238d5fb63",
+      "us-agent-value-candidate-f131706d527cb8cbc40116fc",
+      "us-agent-value-candidate-2661049725ff182d0c04087f",
+      "us-agent-value-candidate-0da826673af58f71ed8252e6",
+      "us-agent-value-candidate-94f6f66824f90ff829727254",
+      "us-agent-value-candidate-98d3f18bed490c671cbb9e74",
+      "us-agent-value-candidate-ab398bc3d19261ecff036331",
+      "us-agent-value-candidate-9ed2d6a987c83d51f5339dca",
+      "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+      "us-agent-value-candidate-d0a398f8a38ca304cad983d1",
+      "us-agent-value-candidate-ae2d2c97a446bd0fad29ad80",
+      "us-agent-value-candidate-93ce47e9d4e8e803db00b016",
+      "us-agent-value-candidate-017d20c6abef5affa9b03b68",
+      "us-agent-value-candidate-cb59c3fc6d45deca3dc71613",
+      "us-agent-value-candidate-60b8299c009e84abae2fcb99"
+    ],
+    "manual_core_candidate_ids": [
+      "us-agent-value-candidate-32151417ddc1442a6d10eec8",
+      "us-agent-value-candidate-340fbb96b15a633238d5fb63",
+      "us-agent-value-candidate-f131706d527cb8cbc40116fc",
+      "us-agent-value-candidate-2661049725ff182d0c04087f",
+      "us-agent-value-candidate-0da826673af58f71ed8252e6",
+      "us-agent-value-candidate-94f6f66824f90ff829727254",
+      "us-agent-value-candidate-98d3f18bed490c671cbb9e74",
+      "us-agent-value-candidate-ab398bc3d19261ecff036331"
+    ],
+    "manual_min_independent_runs": 1,
+    "maximum_repairs_per_slot": 1,
+    "phase": "PILOT",
+    "predecessor_requirement": "accepted_US-B0_split_bound_evidence_before_formal_A0_execution",
+    "programmatic_min_independent_runs": 1,
+    "programmatic_seed_policy": "required_and_recorded_per_independent_run",
+    "proposal_storage": "structured_formula_fields_and_short_hypothesis_only_no_chain_of_thought",
+    "protocol_id": "us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03",
+    "replacements_allowed": false,
+    "schema_version": "finagent.us-agent-value-experiment-protocol.v1",
+    "status_authority": false,
+    "us_b0_walk_forward_protocol_id": "us-baseline-walk-forward-abec06d0d72302fcf11958a4",
+    "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4"
+  },
+  "ready_for_agent_value_gate_review": true,
+  "schema_version": "finagent.agent-value-experiment.v1",
+  "stage_exit_authority": false,
+  "status_authority": false
+}

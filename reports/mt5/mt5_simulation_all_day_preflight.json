@@ -1,0 +1,173 @@
+{
+  "blockers": [],
+  "continuous_smoke": {
+    "blockers": [],
+    "broker_server": "MetaQuotes-Demo",
+    "checks": [
+      {
+        "ask": 1.16001,
+        "bid": 1.16,
+        "blockers": [],
+        "normalized_sampled_at_utc": "2026-09-03T06:00:43.916000+00:00",
+        "passed": true,
+        "quote_age_seconds": 1.727566,
+        "raw_broker_time_msc": 1788426043916,
+        "retrieved_at_utc": "2026-09-03T06:00:45.643566+00:00",
+        "schema_version": "finagent.mt5-continuous-quote-check.v1",
+        "spread_bps": 0.08620652497243989,
+        "symbol": "EURUSD",
+        "tradable": true,
+        "visible": true
+      },
+      {
+        "ask": 1.34909,
+        "bid": 1.34909,
+        "blockers": [],
+        "normalized_sampled_at_utc": "2026-09-03T06:00:43.788000+00:00",
+        "passed": true,
+        "quote_age_seconds": 1.855566,
+        "raw_broker_time_msc": 1788426043788,
+        "retrieved_at_utc": "2026-09-03T06:00:45.643566+00:00",
+        "schema_version": "finagent.mt5-continuous-quote-check.v1",
+        "spread_bps": 0.0,
+        "symbol": "GBPUSD",
+        "tradable": true,
+        "visible": true
+      },
+      {
+        "ask": 157.338,
+        "bid": 157.338,
+        "blockers": [],
+        "normalized_sampled_at_utc": "2026-09-03T06:00:43.977000+00:00",
+        "passed": true,
+        "quote_age_seconds": 1.666566,
+        "raw_broker_time_msc": 1788426043977,
+        "retrieved_at_utc": "2026-09-03T06:00:45.643566+00:00",
+        "schema_version": "finagent.mt5-continuous-quote-check.v1",
+        "spread_bps": 0.0,
+        "symbol": "USDJPY",
+        "tradable": true,
+        "visible": true
+      }
+    ],
+    "clock_evidence": {
+      "authority": "observed_broker_clock_normalization_only",
+      "blockers": [],
+      "broker_server": "MetaQuotes-Demo",
+      "evidence_id": "mt5-broker-clock-evidence-34d6d0996458df1c71f7c87a",
+      "generated_at": "2026-09-03T06:00:45.643566+00:00",
+      "inferred_offset_seconds": 10800,
+      "maximum_abs_residual_seconds": 1.8555660000001808,
+      "observations": [
+        {
+          "ask": 1.16001,
+          "bid": 1.16,
+          "observation_id": "mt5-broker-clock-observation-5e9e59c765728af199a8bcad",
+          "observed_offset_seconds": 10798.272434,
+          "raw_broker_time_msc": 1788426043916,
+          "raw_broker_wall_time": "2026-09-03T09:00:43.916000+00:00",
+          "retrieved_at_utc": "2026-09-03T06:00:45.643566+00:00",
+          "schema_version": "finagent.mt5-broker-clock-observation.v1",
+          "symbol": "EURUSD"
+        },
+        {
+          "ask": 1.34909,
+          "bid": 1.34909,
+          "observation_id": "mt5-broker-clock-observation-81dd6ef7f06eeff290e7100a",
+          "observed_offset_seconds": 10798.144434,
+          "raw_broker_time_msc": 1788426043788,
+          "raw_broker_wall_time": "2026-09-03T09:00:43.788000+00:00",
+          "retrieved_at_utc": "2026-09-03T06:00:45.643566+00:00",
+          "schema_version": "finagent.mt5-broker-clock-observation.v1",
+          "symbol": "GBPUSD"
+        },
+        {
+          "ask": 157.338,
+          "bid": 157.338,
+          "observation_id": "mt5-broker-clock-observation-a955f28c1d41638b3524942b",
+          "observed_offset_seconds": 10798.333434,
+          "raw_broker_time_msc": 1788426043977,
+          "raw_broker_wall_time": "2026-09-03T09:00:43.977000+00:00",
+          "retrieved_at_utc": "2026-09-03T06:00:45.643566+00:00",
+          "schema_version": "finagent.mt5-broker-clock-observation.v1",
+          "symbol": "USDJPY"
+        }
+      ],
+      "passed": true,
+      "policy": {
+        "maximum_abs_offset_seconds": 50400,
+        "maximum_reference_residual_seconds": 15.0,
+        "minimum_reference_count": 3,
+        "offset_snap_seconds": 60,
+        "policy_id": "mt5-broker-clock-policy-e5b446d42f50b0b4a2ade7fa",
+        "schema_version": "finagent.mt5-broker-clock-policy.v1"
+      },
+      "reference_count": 3,
+      "reference_symbols": [
+        "EURUSD",
+        "GBPUSD",
+        "USDJPY"
+      ],
+      "schema_version": "finagent.mt5-broker-clock-evidence.v1"
+    },
+    "clock_evidence_id": "mt5-broker-clock-evidence-34d6d0996458df1c71f7c87a",
+    "execution_authority": false,
+    "generated_at": "2026-09-03T06:00:45.644200+00:00",
+    "passed": true,
+    "passed_symbol_count": 3,
+    "policy": {
+      "maximum_future_quote_skew_seconds": 5,
+      "maximum_quote_age_seconds": 60,
+      "minimum_symbol_count": 3,
+      "policy_id": "mt5-continuous-quote-policy-91bb37974db888a1213b102d",
+      "require_tradable": true,
+      "require_visible": true,
+      "schema_version": "finagent.mt5-continuous-quote-smoke-policy.v1"
+    },
+    "report_id": "mt5-continuous-quote-smoke-f86b64af2c52d610e0cff39a",
+    "requested_symbols": [
+      "EURUSD",
+      "GBPUSD",
+      "USDJPY"
+    ],
+    "research_universe_authority": false,
+    "schema_version": "finagent.mt5-continuous-quote-smoke-report.v1",
+    "scope": "engineering_smoke_only_not_us_i0_or_us_d3_evidence",
+    "stage_exit_authority": false
+  },
+  "continuous_smoke_report_id": "mt5-continuous-quote-smoke-f86b64af2c52d610e0cff39a",
+  "engineering_fixture_authority": true,
+  "execution_authority": false,
+  "live_capital_authority": false,
+  "live_executable_spread_authority": false,
+  "live_market_data_authority": false,
+  "order_authority": false,
+  "passed": true,
+  "passed_symbols": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY"
+  ],
+  "policy": {
+    "execution_authority": false,
+    "expected_broker_server": "MetaQuotes-Demo",
+    "minimum_passed_symbol_count": 3,
+    "policy_id": "mt5-simulation-all-day-preflight-policy-5634a38bce1cd246767a0101",
+    "product_scope": "continuous_or_near_continuous_engineering_fixture",
+    "required_symbols": [
+      "EURUSD",
+      "GBPUSD",
+      "USDJPY"
+    ],
+    "schema_version": "finagent.mt5-simulation-all-day-preflight-policy.v1",
+    "stage_exit_authority": false,
+    "us_research_universe_authority": false
+  },
+  "product_scope": "continuous_or_near_continuous_engineering_fixture",
+  "report_id": "mt5-simulation-all-day-preflight-3c1c7bdca6c5755e40b56125",
+  "schema_version": "finagent.mt5-simulation-all-day-preflight-report.v1",
+  "stage_exit_authority": false,
+  "status_authority": false,
+  "us_d3_certification_authority": false,
+  "us_research_universe_authority": false
+}

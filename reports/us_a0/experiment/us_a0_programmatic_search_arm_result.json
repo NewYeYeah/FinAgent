@@ -1,0 +1,54 @@
+{
+  "accepted_candidate_count": 16,
+  "agent_value_gate_authority": false,
+  "alpha_authority": false,
+  "arm": "PROGRAMMATIC",
+  "blockers": [],
+  "duplicate_rate": 0.0,
+  "duplicate_slot_count": 0,
+  "evaluation_link_ids": [
+    "us-agent-value-run-evaluation-link-83e091d9f003204e4bcd1b35"
+  ],
+  "evaluation_links": [
+    {
+      "authoritative_evidence_id": "us-agent-value-run-evaluation-f78611fb62f8b30a056928d0",
+      "best_mean_rank_ic": 0.03207218309739601,
+      "best_worst_fold_rank_ic": 0.014048697768807962,
+      "blockers": [],
+      "evaluated_candidate_count": 16,
+      "generation_run_id": "us-agent-value-generation-run-94037a514ac060f3383c0b03",
+      "link_id": "us-agent-value-run-evaluation-link-83e091d9f003204e4bcd1b35",
+      "metric_authority": "copied_from_authoritative_split_bound_evidence_not_recomputed_here",
+      "passed": true,
+      "schema_version": "finagent.us-agent-value-run-evaluation-link.v1",
+      "valid_candidate_count": 16
+    }
+  ],
+  "generation_run_ids": [
+    "us-agent-value-generation-run-94037a514ac060f3383c0b03"
+  ],
+  "generation_run_spec_ids": [
+    "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e"
+  ],
+  "independent_run_count": 1,
+  "invalid_rate": 0.0,
+  "invalid_slot_count": 0,
+  "passed": true,
+  "phase": "PILOT",
+  "protocol_id": "us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03",
+  "repair_count": 0,
+  "replacement_count": 0,
+  "result_id": "us-agent-value-search-arm-result-8bdca8b0e7dd2636390ea31b",
+  "schema_version": "finagent.search-arm-result.v1",
+  "stage_exit_authority": false,
+  "trial_count": 16,
+  "usage": {
+    "cost_usd": 0.0,
+    "input_tokens": 0,
+    "latency_ms": 0.0,
+    "llm_calls": 0,
+    "output_tokens": 0,
+    "total_tokens": 0
+  },
+  "valid_candidate_rate": 1.0
+}

@@ -1,0 +1,96 @@
+{
+  "diagnostic": {
+    "note": "RankIC is a deterministic system smoke diagnostic, not promotion evidence.",
+    "primary_feature": "simple_return_5",
+    "primary_label": "forward_simple_return_1"
+  },
+  "frozen_dataset_version": "local-ashare-frozen-96f1a2c07f285e6ff41575cf",
+  "passed": true,
+  "research_dataset": {
+    "artifact_id": "local-ashare-system-smoke",
+    "data_version": "local-ashare-frozen-96f1a2c07f285e6ff41575cf",
+    "digest": "bbaa5d84e4fae5c389e73b549b28a40f104d8258b10673465dd89a733341f7f9",
+    "features": [
+      "simple_return_1",
+      "simple_return_5",
+      "log_volume_change_1",
+      "turnover_rate",
+      "circ_mv"
+    ],
+    "labels": [
+      "forward_simple_return_1",
+      "forward_simple_return_5"
+    ],
+    "universe": [
+      "equity:SZSE:000001:CNY",
+      "equity:SZSE:000333:CNY",
+      "equity:SZSE:000651:CNY",
+      "equity:SZSE:000858:CNY",
+      "equity:SZSE:002415:CNY",
+      "equity:SZSE:300750:CNY",
+      "equity:SSE:600000:CNY",
+      "equity:SSE:600036:CNY",
+      "equity:SSE:600519:CNY",
+      "equity:SSE:600900:CNY",
+      "equity:SSE:601318:CNY",
+      "equity:SSE:601398:CNY",
+      "equity:SSE:601888:CNY",
+      "equity:SSE:603288:CNY",
+      "equity:SSE:688981:CNY"
+    ]
+  },
+  "schema_version": "finagent.local-ashare-system-smoke.v1",
+  "scope": "historical_daily_research_only_no_execution_no_realtime",
+  "security_master": {
+    "data_version": "local-basic-fast-05398f63d31cb8cf+ashare-supplement-2e0f8ef8f9c1f33e06c8ca33",
+    "limitations": [
+      "candidate-only universe: vendor basic data is not certified as a complete PIT security master",
+      "3 non-canonical vendor ts_code records were quarantined: T00018.SH, T600018.SH, TS0018.SH",
+      "2 list_date values used the 1970-01-01 placeholder",
+      "delist_date contains no observed values",
+      "list_status contains no observed values",
+      "supplemental reference data ashare-supplement-2e0f8ef8f9c1f33e06c8ca33 has coverage='partial'; 0 delisting dates applied"
+    ],
+    "survivorship_certified": false
+  },
+  "splits": {
+    "development": {
+      "assets": 15,
+      "eligible_cells": 7264,
+      "end": "2022-12-30T08:00:00+00:00",
+      "primary_feature_coverage": 1.0,
+      "primary_label_coverage": 0.9976596916299559,
+      "primary_rank_ic": -0.024823703790819635,
+      "rank_ic_periods": 484,
+      "start": "2021-01-04T08:00:00+00:00",
+      "timestamps": 485
+    },
+    "validation": {
+      "assets": 15,
+      "eligible_cells": 7260,
+      "end": "2024-12-31T08:00:00+00:00",
+      "primary_feature_coverage": 1.0,
+      "primary_label_coverage": 0.9979338842975206,
+      "primary_rank_ic": 0.009424724566323437,
+      "rank_ic_periods": 483,
+      "start": "2023-01-03T08:00:00+00:00",
+      "timestamps": 484
+    }
+  },
+  "supplement": {
+    "coverage": "partial",
+    "data_version": "ashare-supplement-2e0f8ef8f9c1f33e06c8ca33",
+    "notes": "Official exchange pages/announcements are registered as sources, but the repository does not claim a complete historical delisting/ST/suspension census.",
+    "records": {
+      "delistings": 0,
+      "st_periods": 0,
+      "suspensions": 0
+    },
+    "schema_version": "finagent.ashare-supplement.v1",
+    "source_ids": [
+      "bse_disclosure",
+      "sse_delisting",
+      "szse_company_notices"
+    ]
+  }
+}

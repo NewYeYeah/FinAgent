@@ -1,0 +1,14 @@
+{
+  "available_feature_count": 74507,
+  "available_label_count": 2747,
+  "blockers": [],
+  "close_anchor_mismatch_count": 0,
+  "complete_bar_count": 3248,
+  "diagnostics_id": "us-r1-observation-diagnostics-cb76b44609b5e8e7027e57f6",
+  "incomplete_bar_count": 2,
+  "input_row_count": 3250,
+  "label_anchor_missing_count": 0,
+  "observation_count": 120176,
+  "passed": true,
+  "schema_version": "finagent.us-r1-observation-diagnostics.v1"
+}

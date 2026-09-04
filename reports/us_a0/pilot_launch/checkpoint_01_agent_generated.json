@@ -1,0 +1,21 @@
+{
+  "agent_generation_run_id": "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7",
+  "agent_run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+  "agent_value_gate_authority": false,
+  "alpha_authority": false,
+  "checkpoint_id": "us-agent-value-pilot-checkpoint-42eae4e7241d57556dbc95f2",
+  "checkpoint_ordinal": 1,
+  "execution_plan_id": "us-agent-value-execution-plan-4312941b91abba09a44c34cb",
+  "experiment_evidence_graph_id": null,
+  "gate_review_id": null,
+  "launch_bundle_id": "us-agent-value-pilot-launch-bundle-0b5d0e37cc62681d70f95901",
+  "mutation_semantics": "append_only_checkpoint_chain",
+  "previous_checkpoint_id": "us-agent-value-pilot-checkpoint-dfe28f0878f20ce93c73fbc8",
+  "resume_semantics": "reuse_existing_frozen_evidence_never_rerun_to_cherry_pick",
+  "run_evidence_manifest_ids": [],
+  "runtime_policy_id": "us-agent-value-deepseek-runtime-policy-b5e45fdf64fd0be48a819f19",
+  "schema_version": "finagent.us-agent-value-pilot-orchestration-checkpoint.v1",
+  "stage_exit_authority": false,
+  "state": "AGENT_GENERATED",
+  "status_authority": false
+}

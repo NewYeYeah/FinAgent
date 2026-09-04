@@ -1,0 +1,375 @@
+{
+  "blockers": [
+    "quote_probe:insufficient_valid_quotes:0<20",
+    "quote_probe:seed_quote_invalid:AMD",
+    "quote_probe:seed_quote_invalid:INTC",
+    "quote_probe:seed_quote_invalid:MSFT",
+    "quote_probe:seed_quote_invalid:NVDA"
+  ],
+  "broker_clock_evidence": {
+    "authority": "observed_broker_clock_normalization_only",
+    "blockers": [],
+    "broker_server": "MetaQuotes-Demo",
+    "evidence_id": "mt5-broker-clock-evidence-ac2e2b77682166e6523fa674",
+    "generated_at": "2026-09-03T06:04:26.830361+00:00",
+    "inferred_offset_seconds": 10800,
+    "maximum_abs_residual_seconds": 2.497360999999728,
+    "observations": [
+      {
+        "ask": 1.15988,
+        "bid": 1.1598600000000001,
+        "observation_id": "mt5-broker-clock-observation-e324a738b482c3599a936206",
+        "observed_offset_seconds": 10797.502639,
+        "raw_broker_time_msc": 1788426264333,
+        "raw_broker_wall_time": "2026-09-03T09:04:24.333000+00:00",
+        "retrieved_at_utc": "2026-09-03T06:04:26.830361+00:00",
+        "schema_version": "finagent.mt5-broker-clock-observation.v1",
+        "symbol": "EURUSD"
+      },
+      {
+        "ask": 1.34867,
+        "bid": 1.34867,
+        "observation_id": "mt5-broker-clock-observation-e15bd3213bcbc493d770c4d4",
+        "observed_offset_seconds": 10798.288639,
+        "raw_broker_time_msc": 1788426265119,
+        "raw_broker_wall_time": "2026-09-03T09:04:25.119000+00:00",
+        "retrieved_at_utc": "2026-09-03T06:04:26.830361+00:00",
+        "schema_version": "finagent.mt5-broker-clock-observation.v1",
+        "symbol": "GBPUSD"
+      },
+      {
+        "ask": 157.37,
+        "bid": 157.367,
+        "observation_id": "mt5-broker-clock-observation-c247a5eba0d85a1588c13e3b",
+        "observed_offset_seconds": 10798.235639,
+        "raw_broker_time_msc": 1788426265066,
+        "raw_broker_wall_time": "2026-09-03T09:04:25.066000+00:00",
+        "retrieved_at_utc": "2026-09-03T06:04:26.830361+00:00",
+        "schema_version": "finagent.mt5-broker-clock-observation.v1",
+        "symbol": "USDJPY"
+      }
+    ],
+    "passed": true,
+    "policy": {
+      "maximum_abs_offset_seconds": 50400,
+      "maximum_reference_residual_seconds": 15.0,
+      "minimum_reference_count": 3,
+      "offset_snap_seconds": 60,
+      "policy_id": "mt5-broker-clock-policy-e5b446d42f50b0b4a2ade7fa",
+      "schema_version": "finagent.mt5-broker-clock-policy.v1"
+    },
+    "reference_count": 3,
+    "reference_symbols": [
+      "EURUSD",
+      "GBPUSD",
+      "USDJPY"
+    ],
+    "schema_version": "finagent.mt5-broker-clock-evidence.v1"
+  },
+  "broker_clock_evidence_id": "mt5-broker-clock-evidence-ac2e2b77682166e6523fa674",
+  "broker_server": "MetaQuotes-Demo",
+  "candidate_selection_id": "us-universe-candidate-selection-c35944d1c266c9fcd3d87fd4",
+  "fresh_quote_symbols": [],
+  "generated_at": "2026-09-03T06:04:26.835498+00:00",
+  "invalid_quote_reasons": {
+    "AAPL": [
+      "not_visible"
+    ],
+    "AMD": [
+      "stale_quote"
+    ],
+    "AMZN": [
+      "not_visible"
+    ],
+    "APP": [
+      "not_visible"
+    ],
+    "AVGO": [
+      "not_visible"
+    ],
+    "EEM": [
+      "not_visible"
+    ],
+    "EFA": [
+      "not_visible"
+    ],
+    "GLD": [
+      "not_visible"
+    ],
+    "GOOG": [
+      "not_visible"
+    ],
+    "GOOGL": [
+      "not_visible"
+    ],
+    "IBIT": [
+      "not_visible"
+    ],
+    "INTC": [
+      "stale_quote"
+    ],
+    "IVV": [
+      "not_visible"
+    ],
+    "IWM": [
+      "not_visible"
+    ],
+    "JPM": [
+      "not_visible"
+    ],
+    "META": [
+      "not_visible"
+    ],
+    "MSFT": [
+      "stale_quote"
+    ],
+    "MSTR": [
+      "not_visible"
+    ],
+    "MU": [
+      "not_visible"
+    ],
+    "NFLX": [
+      "not_visible"
+    ],
+    "NVDA": [
+      "stale_quote"
+    ],
+    "ORCL": [
+      "not_visible"
+    ],
+    "PLTR": [
+      "not_visible"
+    ],
+    "RSP": [
+      "not_visible"
+    ],
+    "SLV": [
+      "not_visible"
+    ],
+    "SMH": [
+      "not_visible"
+    ],
+    "SNDK": [
+      "not_visible"
+    ],
+    "SOXL": [
+      "not_visible"
+    ],
+    "SOXX": [
+      "not_visible"
+    ],
+    "SQQQ": [
+      "not_visible"
+    ],
+    "TQQQ": [
+      "not_visible"
+    ],
+    "TSLA": [
+      "not_visible"
+    ],
+    "TSM": [
+      "not_visible"
+    ],
+    "VOO": [
+      "not_visible"
+    ],
+    "XLE": [
+      "not_visible"
+    ],
+    "XLF": [
+      "not_visible"
+    ],
+    "XLI": [
+      "not_visible"
+    ],
+    "XLK": [
+      "not_visible"
+    ],
+    "XLV": [
+      "not_visible"
+    ],
+    "XOM": [
+      "not_visible"
+    ]
+  },
+  "invalid_reason_counts": {
+    "not_visible": 36,
+    "stale_quote": 4
+  },
+  "minimum_valid_quote_count": 20,
+  "missing_or_invalid_symbols": [
+    "AAPL",
+    "AMD",
+    "AMZN",
+    "APP",
+    "AVGO",
+    "EEM",
+    "EFA",
+    "GLD",
+    "GOOG",
+    "GOOGL",
+    "IBIT",
+    "INTC",
+    "IVV",
+    "IWM",
+    "JPM",
+    "META",
+    "MSFT",
+    "MSTR",
+    "MU",
+    "NFLX",
+    "NVDA",
+    "ORCL",
+    "PLTR",
+    "RSP",
+    "SLV",
+    "SMH",
+    "SNDK",
+    "SOXL",
+    "SOXX",
+    "SQQQ",
+    "TQQQ",
+    "TSLA",
+    "TSM",
+    "VOO",
+    "XLE",
+    "XLF",
+    "XLI",
+    "XLK",
+    "XLV",
+    "XOM"
+  ],
+  "mt5_capability_probe_id": "mt5-capability-probe-db652a528408fda2dd3a606e",
+  "policy": {
+    "maximum_future_quote_skew_seconds": 60,
+    "maximum_quote_age_seconds": 900,
+    "policy_id": "us-candidate-quote-policy-8ccc0f73653bad555931ffcb",
+    "require_tradable": true,
+    "require_visible": true,
+    "schema_version": "finagent.us-candidate-quote-probe-policy.v2"
+  },
+  "quotes": [
+    {
+      "ask": 457.0,
+      "bid": 456.68,
+      "broker_clock_offset_seconds": 10800,
+      "clock_evidence_id": "mt5-broker-clock-evidence-ac2e2b77682166e6523fa674",
+      "midpoint": 456.84000000000003,
+      "normalized_sampled_at_utc": "2026-09-03T00:00:00.223000+00:00",
+      "quote_age_at_retrieval_seconds": 21866.607361,
+      "raw_broker_time_msc": 1788404400223,
+      "raw_broker_wall_time": "2026-09-03T03:00:00.223000+00:00",
+      "retrieved_at_utc": "2026-09-03T06:04:26.830361+00:00",
+      "schema_version": "finagent.us-candidate-quote-snapshot.v2",
+      "spread_bps": 7.004640574380377,
+      "symbol": "AMD",
+      "tradable": true,
+      "visible": true
+    },
+    {
+      "ask": 90.55,
+      "bid": 90.11,
+      "broker_clock_offset_seconds": 10800,
+      "clock_evidence_id": "mt5-broker-clock-evidence-ac2e2b77682166e6523fa674",
+      "midpoint": 90.33,
+      "normalized_sampled_at_utc": "2026-09-03T00:00:00.229000+00:00",
+      "quote_age_at_retrieval_seconds": 21866.601361,
+      "raw_broker_time_msc": 1788404400229,
+      "raw_broker_wall_time": "2026-09-03T03:00:00.229000+00:00",
+      "retrieved_at_utc": "2026-09-03T06:04:26.830361+00:00",
+      "schema_version": "finagent.us-candidate-quote-snapshot.v2",
+      "spread_bps": 48.71028451234338,
+      "symbol": "INTC",
+      "tradable": true,
+      "visible": true
+    },
+    {
+      "ask": 498.0,
+      "bid": 496.3,
+      "broker_clock_offset_seconds": 10800,
+      "clock_evidence_id": "mt5-broker-clock-evidence-ac2e2b77682166e6523fa674",
+      "midpoint": 497.15,
+      "normalized_sampled_at_utc": "2026-09-03T00:00:00.226000+00:00",
+      "quote_age_at_retrieval_seconds": 21866.604361,
+      "raw_broker_time_msc": 1788404400226,
+      "raw_broker_wall_time": "2026-09-03T03:00:00.226000+00:00",
+      "retrieved_at_utc": "2026-09-03T06:04:26.830361+00:00",
+      "schema_version": "finagent.us-candidate-quote-snapshot.v2",
+      "spread_bps": 34.194910992657924,
+      "symbol": "MSFT",
+      "tradable": true,
+      "visible": true
+    },
+    {
+      "ask": 225.43,
+      "bid": 225.12,
+      "broker_clock_offset_seconds": 10800,
+      "clock_evidence_id": "mt5-broker-clock-evidence-ac2e2b77682166e6523fa674",
+      "midpoint": 225.275,
+      "normalized_sampled_at_utc": "2026-09-03T00:00:00.230000+00:00",
+      "quote_age_at_retrieval_seconds": 21866.600361,
+      "raw_broker_time_msc": 1788404400230,
+      "raw_broker_wall_time": "2026-09-03T03:00:00.230000+00:00",
+      "retrieved_at_utc": "2026-09-03T06:04:26.830361+00:00",
+      "schema_version": "finagent.us-candidate-quote-snapshot.v2",
+      "spread_bps": 13.76095882809909,
+      "symbol": "NVDA",
+      "tradable": true,
+      "visible": true
+    }
+  ],
+  "ready_for_finalization": false,
+  "report_id": "us-candidate-quote-probe-3905df24b2ec5ed607f0ae29",
+  "requested_symbols": [
+    "NVDA",
+    "TSLA",
+    "MU",
+    "IWM",
+    "MSFT",
+    "SNDK",
+    "AMZN",
+    "AAPL",
+    "GOOGL",
+    "META",
+    "AMD",
+    "AVGO",
+    "PLTR",
+    "GLD",
+    "GOOG",
+    "SLV",
+    "VOO",
+    "TQQQ",
+    "SOXL",
+    "TSM",
+    "SQQQ",
+    "INTC",
+    "IVV",
+    "RSP",
+    "ORCL",
+    "SMH",
+    "NFLX",
+    "XLE",
+    "XLF",
+    "MSTR",
+    "XOM",
+    "XLK",
+    "EEM",
+    "APP",
+    "JPM",
+    "IBIT",
+    "XLI",
+    "SOXX",
+    "XLV",
+    "EFA"
+  ],
+  "required_seed_symbols": [
+    "AMD",
+    "INTC",
+    "MSFT",
+    "NVDA"
+  ],
+  "schema_version": "finagent.us-candidate-quote-probe-report.v2",
+  "valid_quote_count": 0,
+  "valid_quote_symbols": []
+}

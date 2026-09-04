@@ -1,0 +1,314 @@
+{
+  "agent_value_gate_authority": false,
+  "alpha_authority": false,
+  "arm": "PROGRAMMATIC",
+  "binding_id": "us-agent-value-evaluation-binding-9b198796f871dfdff224914f",
+  "denominator": {
+    "agent_value_gate_authority": false,
+    "alpha_authority": false,
+    "arm": "PROGRAMMATIC",
+    "baseline_protocol": {
+      "availability_policy": "available_at",
+      "label_horizon_trading_minutes": 60,
+      "label_name": "us_same_session_60m_simple_return_raw",
+      "price_basis": "raw",
+      "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+      "require_complete_bars": true,
+      "robustness_intervals": [
+        "5m",
+        "30m"
+      ],
+      "same_session_only": true,
+      "schema_version": "finagent.us-baseline-protocol.v1",
+      "signal_interval": "15m"
+    },
+    "candidate_count": 16,
+    "candidate_ids": [
+      "us-agent-value-candidate-41619b08059fbbd40c924da0",
+      "us-agent-value-candidate-98d3f18bed490c671cbb9e74",
+      "us-agent-value-candidate-39b4e8ee15e1fae3a53ee859",
+      "us-agent-value-candidate-35033b636e2f234961f887d2",
+      "us-agent-value-candidate-f19c5808303e292cad4f2b40",
+      "us-agent-value-candidate-2ca3e8be8421699aa7c23646",
+      "us-agent-value-candidate-38de1500a8fab962a09741a6",
+      "us-agent-value-candidate-ee9e717b07484527541d11f6",
+      "us-agent-value-candidate-d0a398f8a38ca304cad983d1",
+      "us-agent-value-candidate-3626155aa024e67a6b4b86cc",
+      "us-agent-value-candidate-19cffbbc01c0b98825f016e0",
+      "us-agent-value-candidate-dfb77a46df77fb9b69bf4387",
+      "us-agent-value-candidate-4e21108fb599aa192d038272",
+      "us-agent-value-candidate-4f77c83bbd9cbfc7bbe7aea6",
+      "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+      "us-agent-value-candidate-999abbbe61367860e2f0e737"
+    ],
+    "denominator_id": "us-agent-value-evaluation-denominator-e7fc253641ec6dbfa337e0a5",
+    "feature_spec_ids": [
+      "us-baseline-feature-4c40176923030abff2842222",
+      "us-baseline-feature-b1a632fe5d74b5d36317669f",
+      "us-baseline-feature-52ed72505e445dec5d6a5659",
+      "us-baseline-feature-b1d485efe2495a8488575267",
+      "us-baseline-feature-4131acc13816c2a6372dbb9e",
+      "us-baseline-feature-10ff3945efbeeaa5b50c6528",
+      "us-baseline-feature-148fb814e3f580792e421ae0",
+      "us-baseline-feature-df2f0eefa75c906d59f7f5e4",
+      "us-baseline-feature-64e97ccc26351c8cba6a0654",
+      "us-baseline-feature-7890fd6ac5fd1bbd2f529af4",
+      "us-baseline-feature-e17f0d6410a161ea93e0badf",
+      "us-baseline-feature-a581ec409f68c5ce5f841df9",
+      "us-baseline-feature-837b9e40f0b91fa0650a242d",
+      "us-baseline-feature-f0320db5d26bff5e480c118f",
+      "us-baseline-feature-c87753645a21622317c332d2",
+      "us-baseline-feature-085d9126352bf19138898356"
+    ],
+    "features": [
+      {
+        "description": "Population volatility of 5 adjacent completed 15m log returns.",
+        "feature_id": "a0_return_volatility_6bars_0c924da0",
+        "hypothesis": "Recent intraday return dispersion may contain cross-sectional information.",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "return_volatility",
+        "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+        "schema_version": "finagent.us-baseline-feature-spec.v1",
+        "spec_id": "us-baseline-feature-4c40176923030abff2842222",
+        "window_bars": 6
+      },
+      {
+        "description": "Current completed 15m volume divided by the mean of the prior 8 completed bars minus one.",
+        "feature_id": "a0_volume_surprise_9bars_1cbb9e74",
+        "hypothesis": "Current volume relative to recent same-session volume may be informative.",
+        "input_fields": [
+          "volume"
+        ],
+        "kind": "volume_surprise",
+        "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+        "schema_version": "finagent.us-baseline-feature-spec.v1",
+        "spec_id": "us-baseline-feature-b1a632fe5d74b5d36317669f",
+        "window_bars": 9
+      },
+      {
+        "description": "Negative simple close return across 3 adjacent 15m intervals.",
+        "feature_id": "a0_reversal_4bars_a53ee859",
+        "hypothesis": "Completed intraday returns may partially reverse over the frozen lookback.",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+        "schema_version": "finagent.us-baseline-feature-spec.v1",
+        "spec_id": "us-baseline-feature-52ed72505e445dec5d6a5659",
+        "window_bars": 4
+      },
+      {
+        "description": "Mean normalized high-low range across 3 completed 15m bars.",
+        "feature_id": "a0_range_mean_3bars_61f887d2",
+        "hypothesis": "Recent normalized intraday range may contain cross-sectional information.",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+        "schema_version": "finagent.us-baseline-feature-spec.v1",
+        "spec_id": "us-baseline-feature-b1d485efe2495a8488575267",
+        "window_bars": 3
+      },
+      {
+        "description": "Mean normalized high-low range across 9 completed 15m bars.",
+        "feature_id": "a0_range_mean_9bars_ad4f2b40",
+        "hypothesis": "Recent normalized intraday range may contain cross-sectional information.",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+        "schema_version": "finagent.us-baseline-feature-spec.v1",
+        "spec_id": "us-baseline-feature-4131acc13816c2a6372dbb9e",
+        "window_bars": 9
+      },
+      {
+        "description": "Mean normalized high-low range across 6 completed 15m bars.",
+        "feature_id": "a0_range_mean_6bars_a7c23646",
+        "hypothesis": "Recent normalized intraday range may contain cross-sectional information.",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+        "schema_version": "finagent.us-baseline-feature-spec.v1",
+        "spec_id": "us-baseline-feature-10ff3945efbeeaa5b50c6528",
+        "window_bars": 6
+      },
+      {
+        "description": "Negative simple close return across 11 adjacent 15m intervals.",
+        "feature_id": "a0_reversal_12bars_a09741a6",
+        "hypothesis": "Completed intraday returns may partially reverse over the frozen lookback.",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+        "schema_version": "finagent.us-baseline-feature-spec.v1",
+        "spec_id": "us-baseline-feature-148fb814e3f580792e421ae0",
+        "window_bars": 12
+      },
+      {
+        "description": "Population volatility of 6 adjacent completed 15m log returns.",
+        "feature_id": "a0_return_volatility_7bars_541d11f6",
+        "hypothesis": "Recent intraday return dispersion may contain cross-sectional information.",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "return_volatility",
+        "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+        "schema_version": "finagent.us-baseline-feature-spec.v1",
+        "spec_id": "us-baseline-feature-df2f0eefa75c906d59f7f5e4",
+        "window_bars": 7
+      },
+      {
+        "description": "Negative simple close return across 4 adjacent 15m intervals.",
+        "feature_id": "a0_reversal_5bars_cad983d1",
+        "hypothesis": "Completed intraday returns may partially reverse over the frozen lookback.",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+        "schema_version": "finagent.us-baseline-feature-spec.v1",
+        "spec_id": "us-baseline-feature-64e97ccc26351c8cba6a0654",
+        "window_bars": 5
+      },
+      {
+        "description": "Negative simple close return across 12 adjacent 15m intervals.",
+        "feature_id": "a0_reversal_13bars_6b4b86cc",
+        "hypothesis": "Completed intraday returns may partially reverse over the frozen lookback.",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+        "schema_version": "finagent.us-baseline-feature-spec.v1",
+        "spec_id": "us-baseline-feature-7890fd6ac5fd1bbd2f529af4",
+        "window_bars": 13
+      },
+      {
+        "description": "Simple close return across 7 adjacent 15m intervals.",
+        "feature_id": "a0_momentum_8bars_25f016e0",
+        "hypothesis": "Completed intraday returns may continue over the frozen lookback.",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+        "schema_version": "finagent.us-baseline-feature-spec.v1",
+        "spec_id": "us-baseline-feature-e17f0d6410a161ea93e0badf",
+        "window_bars": 8
+      },
+      {
+        "description": "Mean normalized high-low range across 10 completed 15m bars.",
+        "feature_id": "a0_range_mean_10bars_69bf4387",
+        "hypothesis": "Recent normalized intraday range may contain cross-sectional information.",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+        "schema_version": "finagent.us-baseline-feature-spec.v1",
+        "spec_id": "us-baseline-feature-a581ec409f68c5ce5f841df9",
+        "window_bars": 10
+      },
+      {
+        "description": "Simple close return across 12 adjacent 15m intervals.",
+        "feature_id": "a0_momentum_13bars_2d038272",
+        "hypothesis": "Completed intraday returns may continue over the frozen lookback.",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+        "schema_version": "finagent.us-baseline-feature-spec.v1",
+        "spec_id": "us-baseline-feature-837b9e40f0b91fa0650a242d",
+        "window_bars": 13
+      },
+      {
+        "description": "Current completed 15m volume divided by the mean of the prior 3 completed bars minus one.",
+        "feature_id": "a0_volume_surprise_4bars_bbe7aea6",
+        "hypothesis": "Current volume relative to recent same-session volume may be informative.",
+        "input_fields": [
+          "volume"
+        ],
+        "kind": "volume_surprise",
+        "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+        "schema_version": "finagent.us-baseline-feature-spec.v1",
+        "spec_id": "us-baseline-feature-f0320db5d26bff5e480c118f",
+        "window_bars": 4
+      },
+      {
+        "description": "Simple close return across 2 adjacent 15m intervals.",
+        "feature_id": "a0_momentum_3bars_47984ddf",
+        "hypothesis": "Completed intraday returns may continue over the frozen lookback.",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+        "schema_version": "finagent.us-baseline-feature-spec.v1",
+        "spec_id": "us-baseline-feature-c87753645a21622317c332d2",
+        "window_bars": 3
+      },
+      {
+        "description": "Negative simple close return across 10 adjacent 15m intervals.",
+        "feature_id": "a0_reversal_11bars_e2f0e737",
+        "hypothesis": "Completed intraday returns may partially reverse over the frozen lookback.",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+        "schema_version": "finagent.us-baseline-feature-spec.v1",
+        "spec_id": "us-baseline-feature-085d9126352bf19138898356",
+        "window_bars": 11
+      }
+    ],
+    "generation_run_id": "us-agent-value-generation-run-94037a514ac060f3383c0b03",
+    "generation_run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+    "protocol_id": "us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03",
+    "schema_version": "finagent.us-agent-value-evaluation-denominator.v1",
+    "scope": "accepted_structural_candidates_compiled_to_shared_us_intraday_evaluator",
+    "selection_authority": false
+  },
+  "generation_run_id": "us-agent-value-generation-run-94037a514ac060f3383c0b03",
+  "generation_run_spec_id": "us-agent-value-generation-run-spec-18eb9cec17aa2b88a2af935e",
+  "phase": "PILOT",
+  "predecessor_binding_id": "us-agent-value-predecessor-19b127b5466479a1680c8e25",
+  "protocol_id": "us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03",
+  "run_spec": {
+    "certification_outcome": "CERTIFIED_FOR_ENGINEERING_RESEARCH",
+    "certification_report_id": "us-minute-research-cert-485aeeac152a32caa546fbb8",
+    "denominator_id": "us-agent-value-evaluation-denominator-e7fc253641ec6dbfa337e0a5",
+    "engineering_universe_id": "engineering-universe-259e3975a25856bef28442ff",
+    "fail_on_partial_realized_label": false,
+    "label_name": "us_same_session_60m_simple_return_raw",
+    "minimum_cross_section": 10,
+    "minimum_evaluated_periods": 20,
+    "minimum_ic_periods": 20,
+    "schema_version": "finagent.us-baseline-run-spec.v1",
+    "signal_interval": "15m",
+    "spec_id": "us-baseline-run-spec-67ec5b0d5bb66d8ba16f3d01"
+  },
+  "same_certification_report": true,
+  "same_engineering_universe": true,
+  "same_label": true,
+  "same_signal_interval": true,
+  "schema_version": "finagent.us-agent-value-evaluation-binding.v1",
+  "source_us_b0_run_spec_id": "us-baseline-run-spec-4ac2ae1d8cb95c01c8a99a11",
+  "stage_exit_authority": false
+}

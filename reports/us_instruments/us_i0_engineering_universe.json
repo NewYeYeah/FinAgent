@@ -1,0 +1,360 @@
+{
+  "accepted": true,
+  "blockers": [],
+  "broker_server": "MetaQuotes-Demo",
+  "generated_at": "2026-09-01T09:40:41.712708+00:00",
+  "limitations": [
+    "universe:engineering_integration_only",
+    "universe:not_survivorship_unbiased",
+    "identity:no_point_in_time_security_master",
+    "identity:broker_path_not_exchange_authority",
+    "identity:listed_venue_not_authoritative_from_ohlcv_source",
+    "evidence:broker_path_not_listed_exchange_authority",
+    "evidence:no_pit_security_master"
+  ],
+  "mappings": [
+    {
+      "broker": {
+        "broker_instrument_id": "broker-instrument-dac0eed4595be81ff914c040",
+        "broker_server": "MetaQuotes-Demo",
+        "broker_symbol": "MSFT",
+        "contract_size": 1.0,
+        "currency_base": "USD",
+        "currency_margin": "USD",
+        "currency_profit": "USD",
+        "filling_mode": 1,
+        "limitations": [
+          "identity:broker_path_not_exchange_authority"
+        ],
+        "margin_initial": 0.0,
+        "margin_maintenance": 0.0,
+        "order_mode": 127,
+        "path": "Nasdaq\\Stock\\MSFT",
+        "point": 0.01,
+        "schema_version": "finagent.broker-instrument.v1",
+        "swap_long": 0.0,
+        "swap_mode": 0,
+        "swap_short": 0.0,
+        "symbol_spec_id": "mt5-symbol-e98c7d56582eeacf6ed30423",
+        "terminal_capability_id": "mt5-terminal-dba98bf993e2e6495eee2bd8",
+        "tick_size": 0.01,
+        "tick_value": 0.01,
+        "tradable": true,
+        "trade_calc_mode": 32,
+        "trade_mode": 4,
+        "visible": true,
+        "volume_max": 1000000.0,
+        "volume_min": 1.0,
+        "volume_step": 1.0
+      },
+      "evidence": {
+        "broker_instrument_id": "broker-instrument-dac0eed4595be81ff914c040",
+        "broker_path": "Nasdaq\\Stock\\MSFT",
+        "broker_path_is_exchange_authority": false,
+        "broker_symbol": "MSFT",
+        "evidence_id": "instrument-mapping-evidence-cd87a9c03c15c48843c001c4",
+        "limitations": [
+          "evidence:broker_path_not_listed_exchange_authority",
+          "evidence:no_pit_security_master"
+        ],
+        "mt5_probe_id": "mt5-capability-probe-db652a528408fda2dd3a606e",
+        "observed_at": "2026-09-01T09:07:56.781154+00:00",
+        "operator_attested_same_security": true,
+        "quote_currency_matches": true,
+        "research_instrument_id": "research-instrument-bb532d6e271d16ed23c5367c",
+        "research_symbol": "MSFT",
+        "schema_version": "finagent.instrument-mapping-evidence.v1",
+        "symbol_text_matches": true
+      },
+      "mapping_id": "instrument-mapping-917c26b2295dcc1914397ba4",
+      "rejection_reason": null,
+      "research": {
+        "asset_class": "equity",
+        "lifecycle_policy": "historical_symbol_without_lifecycle",
+        "limitations": [
+          "identity:no_point_in_time_security_master",
+          "identity:listed_venue_not_authoritative_from_ohlcv_source"
+        ],
+        "quote_currency": "USD",
+        "research_instrument_id": "research-instrument-bb532d6e271d16ed23c5367c",
+        "schema_version": "finagent.research-instrument.v1",
+        "source_candidate": "hf-mito0o852-ohlcv-1m",
+        "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+        "source_symbol": "MSFT",
+        "venue_code": null
+      },
+      "schema_version": "finagent.instrument-mapping.v1",
+      "status": "accepted_for_engineering"
+    },
+    {
+      "broker": {
+        "broker_instrument_id": "broker-instrument-02277181856b52fa59390e69",
+        "broker_server": "MetaQuotes-Demo",
+        "broker_symbol": "NVDA",
+        "contract_size": 1.0,
+        "currency_base": "USD",
+        "currency_margin": "USD",
+        "currency_profit": "USD",
+        "filling_mode": 1,
+        "limitations": [
+          "identity:broker_path_not_exchange_authority"
+        ],
+        "margin_initial": 0.0,
+        "margin_maintenance": 0.0,
+        "order_mode": 127,
+        "path": "Nasdaq\\Stock\\NVDA",
+        "point": 0.01,
+        "schema_version": "finagent.broker-instrument.v1",
+        "swap_long": 0.0,
+        "swap_mode": 0,
+        "swap_short": 0.0,
+        "symbol_spec_id": "mt5-symbol-854ac6bbb79820eb354f13fc",
+        "terminal_capability_id": "mt5-terminal-dba98bf993e2e6495eee2bd8",
+        "tick_size": 0.01,
+        "tick_value": 0.01,
+        "tradable": true,
+        "trade_calc_mode": 32,
+        "trade_mode": 4,
+        "visible": true,
+        "volume_max": 1000000.0,
+        "volume_min": 1.0,
+        "volume_step": 1.0
+      },
+      "evidence": {
+        "broker_instrument_id": "broker-instrument-02277181856b52fa59390e69",
+        "broker_path": "Nasdaq\\Stock\\NVDA",
+        "broker_path_is_exchange_authority": false,
+        "broker_symbol": "NVDA",
+        "evidence_id": "instrument-mapping-evidence-1af036608d1207ede46bec0d",
+        "limitations": [
+          "evidence:broker_path_not_listed_exchange_authority",
+          "evidence:no_pit_security_master"
+        ],
+        "mt5_probe_id": "mt5-capability-probe-db652a528408fda2dd3a606e",
+        "observed_at": "2026-09-01T09:07:56.781154+00:00",
+        "operator_attested_same_security": true,
+        "quote_currency_matches": true,
+        "research_instrument_id": "research-instrument-d4fb11ca71e341bdb80739f5",
+        "research_symbol": "NVDA",
+        "schema_version": "finagent.instrument-mapping-evidence.v1",
+        "symbol_text_matches": true
+      },
+      "mapping_id": "instrument-mapping-c40e4611a414511feaa93a48",
+      "rejection_reason": null,
+      "research": {
+        "asset_class": "equity",
+        "lifecycle_policy": "historical_symbol_without_lifecycle",
+        "limitations": [
+          "identity:no_point_in_time_security_master",
+          "identity:listed_venue_not_authoritative_from_ohlcv_source"
+        ],
+        "quote_currency": "USD",
+        "research_instrument_id": "research-instrument-d4fb11ca71e341bdb80739f5",
+        "schema_version": "finagent.research-instrument.v1",
+        "source_candidate": "hf-mito0o852-ohlcv-1m",
+        "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+        "source_symbol": "NVDA",
+        "venue_code": null
+      },
+      "schema_version": "finagent.instrument-mapping.v1",
+      "status": "accepted_for_engineering"
+    },
+    {
+      "broker": {
+        "broker_instrument_id": "broker-instrument-93a4e948607277a0ff5a5738",
+        "broker_server": "MetaQuotes-Demo",
+        "broker_symbol": "AMD",
+        "contract_size": 1.0,
+        "currency_base": "USD",
+        "currency_margin": "USD",
+        "currency_profit": "USD",
+        "filling_mode": 1,
+        "limitations": [
+          "identity:broker_path_not_exchange_authority"
+        ],
+        "margin_initial": 0.0,
+        "margin_maintenance": 0.0,
+        "order_mode": 127,
+        "path": "Nasdaq\\Stock\\AMD",
+        "point": 0.01,
+        "schema_version": "finagent.broker-instrument.v1",
+        "swap_long": 0.0,
+        "swap_mode": 0,
+        "swap_short": 0.0,
+        "symbol_spec_id": "mt5-symbol-fd9a8799bbfc97f1f6b9fbc0",
+        "terminal_capability_id": "mt5-terminal-dba98bf993e2e6495eee2bd8",
+        "tick_size": 0.01,
+        "tick_value": 0.01,
+        "tradable": true,
+        "trade_calc_mode": 32,
+        "trade_mode": 4,
+        "visible": true,
+        "volume_max": 1000000.0,
+        "volume_min": 1.0,
+        "volume_step": 1.0
+      },
+      "evidence": {
+        "broker_instrument_id": "broker-instrument-93a4e948607277a0ff5a5738",
+        "broker_path": "Nasdaq\\Stock\\AMD",
+        "broker_path_is_exchange_authority": false,
+        "broker_symbol": "AMD",
+        "evidence_id": "instrument-mapping-evidence-e5801aac14ddee440cc9e13e",
+        "limitations": [
+          "evidence:broker_path_not_listed_exchange_authority",
+          "evidence:no_pit_security_master"
+        ],
+        "mt5_probe_id": "mt5-capability-probe-db652a528408fda2dd3a606e",
+        "observed_at": "2026-09-01T09:07:56.781154+00:00",
+        "operator_attested_same_security": true,
+        "quote_currency_matches": true,
+        "research_instrument_id": "research-instrument-9d5d2348c11ee9c2b052c76a",
+        "research_symbol": "AMD",
+        "schema_version": "finagent.instrument-mapping-evidence.v1",
+        "symbol_text_matches": true
+      },
+      "mapping_id": "instrument-mapping-e9a90e39f194fde31a5464c7",
+      "rejection_reason": null,
+      "research": {
+        "asset_class": "equity",
+        "lifecycle_policy": "historical_symbol_without_lifecycle",
+        "limitations": [
+          "identity:no_point_in_time_security_master",
+          "identity:listed_venue_not_authoritative_from_ohlcv_source"
+        ],
+        "quote_currency": "USD",
+        "research_instrument_id": "research-instrument-9d5d2348c11ee9c2b052c76a",
+        "schema_version": "finagent.research-instrument.v1",
+        "source_candidate": "hf-mito0o852-ohlcv-1m",
+        "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+        "source_symbol": "AMD",
+        "venue_code": null
+      },
+      "schema_version": "finagent.instrument-mapping.v1",
+      "status": "accepted_for_engineering"
+    },
+    {
+      "broker": {
+        "broker_instrument_id": "broker-instrument-f05a7a45f383dac53f3b3542",
+        "broker_server": "MetaQuotes-Demo",
+        "broker_symbol": "INTC",
+        "contract_size": 1.0,
+        "currency_base": "USD",
+        "currency_margin": "USD",
+        "currency_profit": "USD",
+        "filling_mode": 1,
+        "limitations": [
+          "identity:broker_path_not_exchange_authority"
+        ],
+        "margin_initial": 0.0,
+        "margin_maintenance": 0.0,
+        "order_mode": 127,
+        "path": "Nasdaq\\Stock\\INTC",
+        "point": 0.01,
+        "schema_version": "finagent.broker-instrument.v1",
+        "swap_long": 0.0,
+        "swap_mode": 0,
+        "swap_short": 0.0,
+        "symbol_spec_id": "mt5-symbol-1c0154e56f9a3c67a393da82",
+        "terminal_capability_id": "mt5-terminal-dba98bf993e2e6495eee2bd8",
+        "tick_size": 0.01,
+        "tick_value": 0.01,
+        "tradable": true,
+        "trade_calc_mode": 32,
+        "trade_mode": 4,
+        "visible": true,
+        "volume_max": 1000000.0,
+        "volume_min": 1.0,
+        "volume_step": 1.0
+      },
+      "evidence": {
+        "broker_instrument_id": "broker-instrument-f05a7a45f383dac53f3b3542",
+        "broker_path": "Nasdaq\\Stock\\INTC",
+        "broker_path_is_exchange_authority": false,
+        "broker_symbol": "INTC",
+        "evidence_id": "instrument-mapping-evidence-2553bdcae3035021740fcbcd",
+        "limitations": [
+          "evidence:broker_path_not_listed_exchange_authority",
+          "evidence:no_pit_security_master"
+        ],
+        "mt5_probe_id": "mt5-capability-probe-db652a528408fda2dd3a606e",
+        "observed_at": "2026-09-01T09:07:56.781154+00:00",
+        "operator_attested_same_security": true,
+        "quote_currency_matches": true,
+        "research_instrument_id": "research-instrument-fe8ca5958c5a816d7ba8170e",
+        "research_symbol": "INTC",
+        "schema_version": "finagent.instrument-mapping-evidence.v1",
+        "symbol_text_matches": true
+      },
+      "mapping_id": "instrument-mapping-b0274802dbab68a65888fee5",
+      "rejection_reason": null,
+      "research": {
+        "asset_class": "equity",
+        "lifecycle_policy": "historical_symbol_without_lifecycle",
+        "limitations": [
+          "identity:no_point_in_time_security_master",
+          "identity:listed_venue_not_authoritative_from_ohlcv_source"
+        ],
+        "quote_currency": "USD",
+        "research_instrument_id": "research-instrument-fe8ca5958c5a816d7ba8170e",
+        "schema_version": "finagent.research-instrument.v1",
+        "source_candidate": "hf-mito0o852-ohlcv-1m",
+        "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+        "source_symbol": "INTC",
+        "venue_code": null
+      },
+      "schema_version": "finagent.instrument-mapping.v1",
+      "status": "accepted_for_engineering"
+    }
+  ],
+  "materialization_id": "engineering-universe-materialization-1cfe4b41a041dde979d59362",
+  "mt5_probe_id": "mt5-capability-probe-db652a528408fda2dd3a606e",
+  "requested_pairs": [
+    {
+      "broker_symbol": "MSFT",
+      "research_symbol": "MSFT"
+    },
+    {
+      "broker_symbol": "NVDA",
+      "research_symbol": "NVDA"
+    },
+    {
+      "broker_symbol": "AMD",
+      "research_symbol": "AMD"
+    },
+    {
+      "broker_symbol": "INTC",
+      "research_symbol": "INTC"
+    }
+  ],
+  "schema_version": "finagent.engineering-universe-materialization.v1",
+  "source_candidate": "hf-mito0o852-ohlcv-1m",
+  "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+  "universe": {
+    "broker_instrument_ids": [
+      "broker-instrument-dac0eed4595be81ff914c040",
+      "broker-instrument-02277181856b52fa59390e69",
+      "broker-instrument-93a4e948607277a0ff5a5738",
+      "broker-instrument-f05a7a45f383dac53f3b3542"
+    ],
+    "limitations": [
+      "universe:engineering_integration_only",
+      "universe:not_survivorship_unbiased",
+      "universe:no_market_wide_alpha_claim"
+    ],
+    "mapping_ids": [
+      "instrument-mapping-917c26b2295dcc1914397ba4",
+      "instrument-mapping-c40e4611a414511feaa93a48",
+      "instrument-mapping-e9a90e39f194fde31a5464c7",
+      "instrument-mapping-b0274802dbab68a65888fee5"
+    ],
+    "research_instrument_ids": [
+      "research-instrument-bb532d6e271d16ed23c5367c",
+      "research-instrument-d4fb11ca71e341bdb80739f5",
+      "research-instrument-9d5d2348c11ee9c2b052c76a",
+      "research-instrument-fe8ca5958c5a816d7ba8170e"
+    ],
+    "schema_version": "finagent.engineering-universe.v1",
+    "universe_id": "engineering-universe-13c3e478ecef31cf69e74aa6"
+  },
+  "unmapped_requests": []
+}

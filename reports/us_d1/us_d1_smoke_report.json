@@ -1,0 +1,111 @@
+{
+  "actual_rows": 129398,
+  "asset_count": 4,
+  "blockers": [],
+  "execution_policy": {
+    "allow_temp_spill": true,
+    "max_temp_directory_size": "4GB",
+    "memory_limit": "512MB",
+    "policy_id": "duckdb-execution-policy-117a694bf219b8ea12068250",
+    "preserve_insertion_order": false,
+    "schema_version": "finagent.duckdb-execution-policy.v2",
+    "threads": 2
+  },
+  "execution_settings": {
+    "observed_max_temp_directory_size": "3.7 GiB",
+    "observed_memory_limit": "488.2 MiB",
+    "observed_preserve_insertion_order": false,
+    "observed_threads": 2,
+    "policy_id": "duckdb-execution-policy-117a694bf219b8ea12068250",
+    "schema_version": "finagent.duckdb-execution-settings.v2",
+    "temp_directory_configured": true,
+    "temp_spill_enabled": true
+  },
+  "partition_count": 3,
+  "passed": true,
+  "plan": {
+    "data_version": "minute-data-version-999f210df720fd8d9c998fd9",
+    "manifest_id": "minute-store-manifest-425d29a05cd26890d972c8f9",
+    "output_columns": [
+      "research_asset_id",
+      "session_date",
+      "event_time",
+      "available_at",
+      "interval",
+      "close",
+      "high",
+      "low",
+      "open",
+      "volume",
+      "session_type",
+      "source_id",
+      "source_revision",
+      "data_version"
+    ],
+    "partition_months": [
+      "2025-12",
+      "2026-01",
+      "2026-02"
+    ],
+    "plan_id": "minute-query-plan-9746d0925c96a56086c21865",
+    "query_id": "market-data-query-af0f6f905d8a8674607e88a1",
+    "schema_version": "finagent.minute-query-plan.v1",
+    "selected_size_bytes": 1228137154
+  },
+  "primary_materialization": {
+    "content_sha256": "dcfb8e623a024391a67551b3c870e152909551b06fb2ed11eedc4f424dd2a744",
+    "data_version": "minute-data-version-999f210df720fd8d9c998fd9",
+    "materialization_id": "minute-materialization-209027e1a1aa93b20184ad0e",
+    "output_filename": "seed_jan_feb.parquet",
+    "plan_id": "minute-query-plan-9746d0925c96a56086c21865",
+    "row_count": 129398,
+    "schema_version": "finagent.minute-materialization.v2",
+    "size_bytes": 2092059
+  },
+  "query": {
+    "adjustment_policy": "raw",
+    "assets": [
+      "AMD",
+      "INTC",
+      "MSFT",
+      "NVDA"
+    ],
+    "availability_policy": "available_at",
+    "end_exclusive": "2026-03-01T00:00:00+00:00",
+    "fields": [
+      "close",
+      "high",
+      "low",
+      "open",
+      "volume"
+    ],
+    "interval": "1m",
+    "market_id": "XNYS",
+    "query_id": "market-data-query-af0f6f905d8a8674607e88a1",
+    "schema_version": "finagent.market-data-query.v1",
+    "session_policy": "all_observed",
+    "start_inclusive": "2026-01-01T00:00:00+00:00"
+  },
+  "ran_at": "2026-09-01T11:34:13.611131+00:00",
+  "replay_match": true,
+  "replay_materialization": {
+    "content_sha256": "dcfb8e623a024391a67551b3c870e152909551b06fb2ed11eedc4f424dd2a744",
+    "data_version": "minute-data-version-999f210df720fd8d9c998fd9",
+    "materialization_id": "minute-materialization-209027e1a1aa93b20184ad0e",
+    "output_filename": "seed_jan_feb.replay.parquet",
+    "plan_id": "minute-query-plan-9746d0925c96a56086c21865",
+    "row_count": 129398,
+    "schema_version": "finagent.minute-materialization.v2",
+    "size_bytes": 2092059
+  },
+  "report_id": "minute-store-smoke-ac583e1435f96a227f460f00",
+  "schema_version": "finagent.minute-store-smoke-report.v2",
+  "smoke_policy": {
+    "minimum_assets": 4,
+    "minimum_partitions": 2,
+    "policy_id": "minute-store-smoke-policy-609041fa27f3857a736a5483",
+    "require_materialization": true,
+    "require_replay_match": true,
+    "schema_version": "finagent.minute-store-smoke-policy.v1"
+  }
+}

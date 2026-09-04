@@ -1,0 +1,13 @@
+{
+  "artifact_id": "us-r1-observations-d5e9f0655da4962fdfb1f702",
+  "content_sha256": "50484c403be0f909f9f76fe28c29aa08cfbcc14ad750f5ca3391d15615826898",
+  "denominator_id": "us-r1-denominator-be5184ac3883b0799c00c5dc",
+  "execution_spec_id": "us-r1-fold-execution-9ada0de1823e16dd2779b971",
+  "input_plan_id": "us-r1-input-plan-30fd9656f906c5570af8bf24",
+  "label_horizon_trading_minutes": 30,
+  "output_filename": "us_r1_observations.jsonl",
+  "role": "EVALUATION",
+  "row_count": 216339,
+  "schema_version": "finagent.us-r1-observation-artifact.v1",
+  "signal_interval": "15m"
+}

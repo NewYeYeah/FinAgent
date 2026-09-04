@@ -1,0 +1,14 @@
+{
+  "blockers": [],
+  "diagnostics_id": "us-r1-observation-diagnostics-d524abda845ac35179bbf0dd",
+  "input_materialization_id": "minute-materialization-75c3a47bb0e30fd1a4217783",
+  "input_plan_id": "us-r1-input-plan-20d704e17c6ce8c779765649",
+  "input_row_count": 6500,
+  "label_horizon_trading_minutes": 30,
+  "observation_artifact_id": "us-r1-observations-5f015a3edd86c6fdf990f93e",
+  "observation_row_count": 240463,
+  "passed": true,
+  "role": "EVALUATION",
+  "schema_version": "finagent.us-r1-materialization-slice.v1",
+  "signal_interval": "15m"
+}

@@ -1,0 +1,1016 @@
+{
+  "diagnostic": {
+    "conflicting_duplicate_extra_row_count": 407,
+    "conflicting_duplicate_key_count": 392,
+    "conflicting_keys_over_two_rows": 11,
+    "conflicting_raw_row_count": 799,
+    "conflicting_ticker_count": 333,
+    "diagnosed_at": "2026-09-01T06:03:04.387258+00:00",
+    "diagnostic_id": "us-minute-conflict-diagnostic-798426d5f48a381d3608f40b",
+    "duplicate_key_count": 409,
+    "exact_duplicate_extra_row_count": 17,
+    "exact_duplicate_key_count": 17,
+    "examples": [
+      {
+        "close_range": [
+          9.1139,
+          9.1354
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 4,
+        "group_rows": 4,
+        "high_range": [
+          9.1139,
+          9.1354
+        ],
+        "low_range": [
+          9.1139,
+          9.1354
+        ],
+        "open_range": [
+          9.1139,
+          9.1354
+        ],
+        "ticker": "DALXF",
+        "timestamp": "2026-04-01 01:49:00+08",
+        "volume_range": [
+          200.0,
+          1571.0
+        ]
+      },
+      {
+        "close_range": [
+          9.0912,
+          9.1101
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 4,
+        "group_rows": 4,
+        "high_range": [
+          9.0984,
+          9.1101
+        ],
+        "low_range": [
+          9.0912,
+          9.1101
+        ],
+        "open_range": [
+          9.0984,
+          9.1101
+        ],
+        "ticker": "DALXF",
+        "timestamp": "2026-04-01 01:50:00+08",
+        "volume_range": [
+          100.0,
+          9079.0
+        ]
+      },
+      {
+        "close_range": [
+          0.39,
+          0.42
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 4,
+        "group_rows": 4,
+        "high_range": [
+          0.39,
+          0.42
+        ],
+        "low_range": [
+          0.39,
+          0.42
+        ],
+        "open_range": [
+          0.39,
+          0.42
+        ],
+        "ticker": "MTMCF",
+        "timestamp": "2026-03-31 21:30:00+08",
+        "volume_range": [
+          675.0,
+          20077.0
+        ]
+      },
+      {
+        "close_range": [
+          0.40755,
+          0.42
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 4,
+        "group_rows": 4,
+        "high_range": [
+          0.40755,
+          0.42
+        ],
+        "low_range": [
+          0.40755,
+          0.42
+        ],
+        "open_range": [
+          0.40755,
+          0.42
+        ],
+        "ticker": "MTMCF",
+        "timestamp": "2026-04-01 05:30:00+08",
+        "volume_range": [
+          10500.0,
+          91830.0
+        ]
+      },
+      {
+        "close_range": [
+          0.88455,
+          0.92
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 3,
+        "group_rows": 3,
+        "high_range": [
+          0.88455,
+          0.92
+        ],
+        "low_range": [
+          0.88455,
+          0.92
+        ],
+        "open_range": [
+          0.88455,
+          0.92
+        ],
+        "ticker": "LTSRF",
+        "timestamp": "2026-04-01 05:27:00+08",
+        "volume_range": [
+          1000.0,
+          19766.0
+        ]
+      },
+      {
+        "close_range": [
+          0.39,
+          0.41
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 3,
+        "high_range": [
+          0.39,
+          0.41
+        ],
+        "low_range": [
+          0.39,
+          0.41
+        ],
+        "open_range": [
+          0.39,
+          0.41
+        ],
+        "ticker": "MTMCF",
+        "timestamp": "2026-04-01 05:28:00+08",
+        "volume_range": [
+          1000.0,
+          1000.0
+        ]
+      },
+      {
+        "close_range": [
+          0.4,
+          0.41
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 3,
+        "group_rows": 3,
+        "high_range": [
+          0.4,
+          0.41
+        ],
+        "low_range": [
+          0.4,
+          0.41
+        ],
+        "open_range": [
+          0.4,
+          0.41
+        ],
+        "ticker": "MTMCF",
+        "timestamp": "2026-04-01 05:29:00+08",
+        "volume_range": [
+          5000.0,
+          7228.0
+        ]
+      },
+      {
+        "close_range": [
+          336.65,
+          336.82
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 3,
+        "group_rows": 3,
+        "high_range": [
+          336.76,
+          336.84
+        ],
+        "low_range": [
+          336.54,
+          336.65
+        ],
+        "open_range": [
+          336.63,
+          336.83
+        ],
+        "ticker": "MU",
+        "timestamp": "2026-04-01 03:39:00+08",
+        "volume_range": [
+          9331.0,
+          61649.0
+        ]
+      },
+      {
+        "close_range": [
+          0.16,
+          0.16
+        ],
+        "differing_fields": [
+          "volume"
+        ],
+        "distinct_variant_count": 3,
+        "group_rows": 3,
+        "high_range": [
+          0.16,
+          0.16
+        ],
+        "low_range": [
+          0.16,
+          0.16
+        ],
+        "open_range": [
+          0.16,
+          0.16
+        ],
+        "ticker": "NVNXF",
+        "timestamp": "2026-04-01 02:03:00+08",
+        "volume_range": [
+          3010.0,
+          8010.0
+        ]
+      },
+      {
+        "close_range": [
+          0.0655,
+          0.071
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 3,
+        "group_rows": 3,
+        "high_range": [
+          0.0655,
+          0.071
+        ],
+        "low_range": [
+          0.0655,
+          0.071
+        ],
+        "open_range": [
+          0.0655,
+          0.071
+        ],
+        "ticker": "TERCF",
+        "timestamp": "2026-03-31 23:33:00+08",
+        "volume_range": [
+          2500.0,
+          80000.0
+        ]
+      },
+      {
+        "close_range": [
+          0.0655,
+          0.0723
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 3,
+        "group_rows": 3,
+        "high_range": [
+          0.0655,
+          0.0723
+        ],
+        "low_range": [
+          0.0655,
+          0.0723
+        ],
+        "open_range": [
+          0.0655,
+          0.0723
+        ],
+        "ticker": "TERCF",
+        "timestamp": "2026-04-01 05:33:00+08",
+        "volume_range": [
+          2500.0,
+          77500.0
+        ]
+      },
+      {
+        "close_range": [
+          65.64,
+          65.73
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          65.64,
+          65.73
+        ],
+        "low_range": [
+          65.63,
+          65.66
+        ],
+        "open_range": [
+          65.63,
+          65.66
+        ],
+        "ticker": "AA",
+        "timestamp": "2026-04-01 02:07:00+08",
+        "volume_range": [
+          4010.0,
+          6316.0
+        ]
+      },
+      {
+        "close_range": [
+          10.72,
+          10.72
+        ],
+        "differing_fields": [
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          10.72,
+          10.72
+        ],
+        "low_range": [
+          10.72,
+          10.72
+        ],
+        "open_range": [
+          10.72,
+          10.72
+        ],
+        "ticker": "AAL",
+        "timestamp": "2026-04-01 04:15:00+08",
+        "volume_range": [
+          501.0,
+          1982.0
+        ]
+      },
+      {
+        "close_range": [
+          248.705,
+          248.75
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          248.75,
+          248.77
+        ],
+        "low_range": [
+          248.61,
+          248.72
+        ],
+        "open_range": [
+          248.71,
+          248.74
+        ],
+        "ticker": "AAPL",
+        "timestamp": "2026-03-31 22:21:00+08",
+        "volume_range": [
+          7428.0,
+          31785.0
+        ]
+      },
+      {
+        "close_range": [
+          248.48,
+          248.54
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          248.58,
+          248.63
+        ],
+        "low_range": [
+          248.46,
+          248.48
+        ],
+        "open_range": [
+          248.48,
+          248.62
+        ],
+        "ticker": "AAPL",
+        "timestamp": "2026-03-31 22:34:00+08",
+        "volume_range": [
+          19837.0,
+          53025.0
+        ]
+      },
+      {
+        "close_range": [
+          253.02,
+          253.11
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          253.04,
+          253.13
+        ],
+        "low_range": [
+          252.97,
+          252.99
+        ],
+        "open_range": [
+          252.98,
+          253.04
+        ],
+        "ticker": "AAPL",
+        "timestamp": "2026-04-01 02:07:00+08",
+        "volume_range": [
+          7907.0,
+          18836.0
+        ]
+      },
+      {
+        "close_range": [
+          216.795,
+          216.82
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          216.85,
+          216.92
+        ],
+        "low_range": [
+          216.79,
+          216.795
+        ],
+        "open_range": [
+          216.85,
+          216.88
+        ],
+        "ticker": "ABBV",
+        "timestamp": "2026-04-01 02:07:00+08",
+        "volume_range": [
+          1349.0,
+          6285.0
+        ]
+      },
+      {
+        "close_range": [
+          126.29,
+          126.3
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          126.3,
+          126.32
+        ],
+        "low_range": [
+          126.23,
+          126.29
+        ],
+        "open_range": [
+          126.23,
+          126.31
+        ],
+        "ticker": "ABNB",
+        "timestamp": "2026-04-01 02:07:00+08",
+        "volume_range": [
+          1644.0,
+          2101.0
+        ]
+      },
+      {
+        "close_range": [
+          102.11,
+          102.155
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          102.15,
+          102.155
+        ],
+        "low_range": [
+          102.09,
+          102.13
+        ],
+        "open_range": [
+          102.14,
+          102.15
+        ],
+        "ticker": "ABT",
+        "timestamp": "2026-04-01 02:07:00+08",
+        "volume_range": [
+          7008.0,
+          9001.0
+        ]
+      },
+      {
+        "close_range": [
+          95.58,
+          95.6
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          95.58,
+          95.6
+        ],
+        "low_range": [
+          95.58,
+          95.6
+        ],
+        "open_range": [
+          95.58,
+          95.6
+        ],
+        "ticker": "ACGL",
+        "timestamp": "2026-04-01 02:07:00+08",
+        "volume_range": [
+          459.0,
+          752.0
+        ]
+      },
+      {
+        "close_range": [
+          197.84,
+          197.89
+        ],
+        "differing_fields": [
+          "open",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          197.89,
+          197.89
+        ],
+        "low_range": [
+          197.705,
+          197.84
+        ],
+        "open_range": [
+          197.72,
+          197.85
+        ],
+        "ticker": "ACN",
+        "timestamp": "2026-04-01 02:07:00+08",
+        "volume_range": [
+          2646.0,
+          7641.0
+        ]
+      },
+      {
+        "close_range": [
+          242.27,
+          242.79
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          242.27,
+          242.79
+        ],
+        "low_range": [
+          242.13,
+          242.24
+        ],
+        "open_range": [
+          242.13,
+          242.24
+        ],
+        "ticker": "ADBE",
+        "timestamp": "2026-04-01 02:07:00+08",
+        "volume_range": [
+          1663.0,
+          8443.0
+        ]
+      },
+      {
+        "close_range": [
+          242.75,
+          242.75
+        ],
+        "differing_fields": [
+          "open",
+          "low",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          242.75,
+          242.75
+        ],
+        "low_range": [
+          242.74,
+          242.75
+        ],
+        "open_range": [
+          242.74,
+          242.75
+        ],
+        "ticker": "ADBE",
+        "timestamp": "2026-04-01 04:15:00+08",
+        "volume_range": [
+          95.0,
+          122.0
+        ]
+      },
+      {
+        "close_range": [
+          78.66,
+          78.66
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          78.66,
+          78.8
+        ],
+        "low_range": [
+          78.66,
+          78.66
+        ],
+        "open_range": [
+          78.66,
+          78.8
+        ],
+        "ticker": "ADDYY",
+        "timestamp": "2026-03-31 23:38:00+08",
+        "volume_range": [
+          16.0,
+          181.0
+        ]
+      },
+      {
+        "close_range": [
+          315.96,
+          316.16
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          315.96,
+          316.16
+        ],
+        "low_range": [
+          315.96,
+          316.05
+        ],
+        "open_range": [
+          315.96,
+          316.15
+        ],
+        "ticker": "ADI",
+        "timestamp": "2026-04-01 02:07:00+08",
+        "volume_range": [
+          1067.0,
+          1306.0
+        ]
+      },
+      {
+        "close_range": [
+          203.38,
+          203.46
+        ],
+        "differing_fields": [
+          "high",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          203.38,
+          203.46
+        ],
+        "low_range": [
+          203.38,
+          203.38
+        ],
+        "open_range": [
+          203.38,
+          203.38
+        ],
+        "ticker": "ADP",
+        "timestamp": "2026-04-01 02:07:00+08",
+        "volume_range": [
+          520.0,
+          1786.0
+        ]
+      },
+      {
+        "close_range": [
+          238.385,
+          238.505
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          238.385,
+          238.505
+        ],
+        "low_range": [
+          238.385,
+          238.47
+        ],
+        "open_range": [
+          238.385,
+          238.47
+        ],
+        "ticker": "ADSK",
+        "timestamp": "2026-04-01 02:07:00+08",
+        "volume_range": [
+          141.0,
+          443.0
+        ]
+      },
+      {
+        "close_range": [
+          215.51,
+          215.58
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          215.53,
+          215.66
+        ],
+        "low_range": [
+          215.4,
+          215.485
+        ],
+        "open_range": [
+          215.4,
+          215.53
+        ],
+        "ticker": "AJG",
+        "timestamp": "2026-04-01 02:07:00+08",
+        "volume_range": [
+          536.0,
+          3885.0
+        ]
+      },
+      {
+        "close_range": [
+          114.42,
+          114.45
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          114.425,
+          114.45
+        ],
+        "low_range": [
+          114.38,
+          114.42
+        ],
+        "open_range": [
+          114.38,
+          114.425
+        ],
+        "ticker": "AKAM",
+        "timestamp": "2026-04-01 02:07:00+08",
+        "volume_range": [
+          1634.0,
+          2613.0
+        ]
+      },
+      {
+        "close_range": [
+          181.54,
+          181.88
+        ],
+        "differing_fields": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "distinct_variant_count": 2,
+        "group_rows": 2,
+        "high_range": [
+          181.55,
+          181.88
+        ],
+        "low_range": [
+          181.54,
+          181.87
+        ],
+        "open_range": [
+          181.55,
+          181.87
+        ],
+        "ticker": "ALB",
+        "timestamp": "2026-04-01 02:07:00+08",
+        "volume_range": [
+          1000.0,
+          1631.0
+        ]
+      }
+    ],
+    "field_conflict_counts": {
+      "close": 350,
+      "high": 347,
+      "low": 340,
+      "open": 337,
+      "volume": 391
+    },
+    "inventory_id": "us-minute-inventory-c2cbf682b456f97eb613ed65",
+    "max_conflict_timestamp": "2026-03-31T21:33:00+00:00",
+    "max_rows_per_conflicting_key": 4,
+    "min_conflict_timestamp": "2026-03-31T13:30:00+00:00",
+    "month": "2026-03",
+    "pattern_counts": {
+      "price_and_volume": 378,
+      "price_only": 1,
+      "volume_only": 13
+    },
+    "revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+    "rows_output": "reports\\us_minute_conflicting_rows_2026-03.csv",
+    "schema_version": "finagent.us-minute-conflict-diagnostic.v1",
+    "unresolved": true
+  },
+  "recommended_terminal": "UNRESOLVED_CONFLICTING_DUPLICATES",
+  "research_admission_unchanged": true,
+  "source_authority": "reference_only",
+  "source_candidate": "hf-mito0o852-ohlcv-1m",
+  "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56"
+}

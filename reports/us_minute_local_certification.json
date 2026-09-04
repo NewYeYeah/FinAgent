@@ -1,0 +1,246 @@
+{
+  "admission": {
+    "admission_id": "us-minute-local-admission-f9634ce117862410d2d00135",
+    "admitted_at": "2026-09-01T06:52:13.031603+00:00",
+    "certification_id": "us-minute-certification-8e585c22fef175a2a4ce58ed",
+    "cleaning_policy_id": "us-minute-cleaning-stack-a0d745a4a75d25a63e3a8244",
+    "inventory_id": "us-minute-inventory-c2cbf682b456f97eb613ed65",
+    "limitations": [
+      "upstream_origin:declared_only",
+      "usage_rights:unresolved",
+      "session_coverage:unknown",
+      "scope:local_non_redistributed_research_only",
+      "prices:intraday_raw_split_unadjusted",
+      "corporate_actions:not_embedded_in_ohlcv",
+      "symbol_lifecycle:no_point_in_time_security_master",
+      "quality:certification_is_sampled_not_full_corpus_row_scan",
+      "cleaning:drop_sparse_invalid_ohlc_rows",
+      "cleaning:collapse_exact_duplicate_full_rows",
+      "cleaning:quarantine_entire_conflicting_duplicate_key_group",
+      "cleaning_stack:us-minute-cleaning-stack-a0d745a4a75d25a63e3a8244",
+      "session:extended_hours_observed_in_certification_samples",
+      "session:outside_0400_2000_observed_diagnostic_only"
+    ],
+    "schema_version": "finagent.us-minute-local-research-admission.v3",
+    "scope": "local_non_redistributed_research",
+    "source_authority_status": "reference_only",
+    "source_identity": {
+      "authority_decision_id": "dataset-authority-9949ae1b9af022b0942113fb",
+      "candidate_id": "hf-mito0o852-ohlcv-1m",
+      "provenance_id": "dataset-provenance-b72c5a487b70445921ce49f6",
+      "revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+      "revision_kind": "git_commit"
+    }
+  },
+  "certification": {
+    "base_certification": {
+      "certification_id": "us-minute-certification-a787f432813efcb400b0c280",
+      "certified_at": "2026-09-01T06:51:46.673177+00:00",
+      "cleaning_policy": {
+        "exact_duplicate_action": "collapse_full_row",
+        "invalid_ohlc_action": "drop",
+        "max_exact_duplicate_extra_row_rate": 0.0001,
+        "max_invalid_ohlc_rate": 1e-06,
+        "policy_id": "us-minute-cleaning-policy-b4265dc1696a83633c0a0de8",
+        "reject_conflicting_duplicate_keys": false,
+        "reject_invalid_identity_rows": true,
+        "reject_negative_or_null_volume": true,
+        "schema_version": "finagent.us-minute-cleaning-policy.v2"
+      },
+      "coverage_end": "2026-03",
+      "coverage_start": "1992-01",
+      "expected_coverage_end": "2026-03",
+      "expected_coverage_start": "1992-01",
+      "extended_hours_observed": true,
+      "inventory_id": "us-minute-inventory-c2cbf682b456f97eb613ed65",
+      "missing_months": [],
+      "passed": true,
+      "revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+      "sample_checks": [
+        {
+          "conflict_quarantine_passed": true,
+          "conflicting_duplicate_extra_row_count": 0,
+          "conflicting_duplicate_key_count": 0,
+          "conflicting_raw_row_count": 0,
+          "conflicting_raw_row_rate": 0.0,
+          "duplicate_key_count": 0,
+          "exact_duplicate_extra_row_count": 0,
+          "exact_duplicate_extra_row_rate": 0.0,
+          "exact_duplicate_key_count": 0,
+          "invalid_identity_count": 0,
+          "invalid_ohlc_count": 1,
+          "invalid_ohlc_rate": 2.1692096311172255e-07,
+          "max_timestamp": "1992-01-31T22:14:00+00:00",
+          "min_timestamp": "1992-01-02T14:30:00+00:00",
+          "month": "1992-01",
+          "negative_volume_count": 0,
+          "outside_0400_2000_count": 0,
+          "outside_regular_hours_count": 121246,
+          "passed": true,
+          "row_count": 4609974,
+          "ticker_count": 6338,
+          "warning_codes": [
+            "quarantine:invalid_ohlc"
+          ]
+        },
+        {
+          "conflict_quarantine_passed": true,
+          "conflicting_duplicate_extra_row_count": 0,
+          "conflicting_duplicate_key_count": 0,
+          "conflicting_raw_row_count": 0,
+          "conflicting_raw_row_rate": 0.0,
+          "duplicate_key_count": 0,
+          "exact_duplicate_extra_row_count": 0,
+          "exact_duplicate_extra_row_rate": 0.0,
+          "exact_duplicate_key_count": 0,
+          "invalid_identity_count": 0,
+          "invalid_ohlc_count": 1,
+          "invalid_ohlc_rate": 7.37610431345729e-08,
+          "max_timestamp": "2000-01-31T23:29:00+00:00",
+          "min_timestamp": "2000-01-03T13:00:00+00:00",
+          "month": "2000-01",
+          "negative_volume_count": 0,
+          "outside_0400_2000_count": 0,
+          "outside_regular_hours_count": 471872,
+          "passed": true,
+          "row_count": 13557292,
+          "ticker_count": 9980,
+          "warning_codes": [
+            "quarantine:invalid_ohlc"
+          ]
+        },
+        {
+          "conflict_quarantine_passed": true,
+          "conflicting_duplicate_extra_row_count": 0,
+          "conflicting_duplicate_key_count": 0,
+          "conflicting_raw_row_count": 0,
+          "conflicting_raw_row_rate": 0.0,
+          "duplicate_key_count": 0,
+          "exact_duplicate_extra_row_count": 0,
+          "exact_duplicate_extra_row_rate": 0.0,
+          "exact_duplicate_key_count": 0,
+          "invalid_identity_count": 0,
+          "invalid_ohlc_count": 0,
+          "invalid_ohlc_rate": 0.0,
+          "max_timestamp": "2014-06-30T23:59:00+00:00",
+          "min_timestamp": "2014-06-02T08:00:00+00:00",
+          "month": "2014-06",
+          "negative_volume_count": 0,
+          "outside_0400_2000_count": 0,
+          "outside_regular_hours_count": 368191,
+          "passed": true,
+          "row_count": 21454208,
+          "ticker_count": 8100,
+          "warning_codes": []
+        },
+        {
+          "conflict_quarantine_passed": true,
+          "conflicting_duplicate_extra_row_count": 0,
+          "conflicting_duplicate_key_count": 0,
+          "conflicting_raw_row_count": 0,
+          "conflicting_raw_row_rate": 0.0,
+          "duplicate_key_count": 0,
+          "exact_duplicate_extra_row_count": 0,
+          "exact_duplicate_extra_row_rate": 0.0,
+          "exact_duplicate_key_count": 0,
+          "invalid_identity_count": 0,
+          "invalid_ohlc_count": 0,
+          "invalid_ohlc_rate": 0.0,
+          "max_timestamp": "2020-09-01T00:00:00+00:00",
+          "min_timestamp": "2020-08-03T05:30:00+00:00",
+          "month": "2020-08",
+          "negative_volume_count": 0,
+          "outside_0400_2000_count": 12613,
+          "outside_regular_hours_count": 1378954,
+          "passed": true,
+          "row_count": 24643838,
+          "ticker_count": 9041,
+          "warning_codes": [
+            "session:outside_0400_2000_observed"
+          ]
+        },
+        {
+          "conflict_quarantine_passed": true,
+          "conflicting_duplicate_extra_row_count": 407,
+          "conflicting_duplicate_key_count": 392,
+          "conflicting_raw_row_count": 799,
+          "conflicting_raw_row_rate": 2.3240305309548796e-05,
+          "duplicate_key_count": 409,
+          "exact_duplicate_extra_row_count": 17,
+          "exact_duplicate_extra_row_rate": 4.944745810542297e-07,
+          "exact_duplicate_key_count": 17,
+          "invalid_identity_count": 0,
+          "invalid_ohlc_count": 0,
+          "invalid_ohlc_rate": 0.0,
+          "max_timestamp": "2026-03-31T23:59:00+00:00",
+          "min_timestamp": "2026-03-02T09:00:00+00:00",
+          "month": "2026-03",
+          "negative_volume_count": 0,
+          "outside_0400_2000_count": 1,
+          "outside_regular_hours_count": 3093885,
+          "passed": true,
+          "row_count": 34379927,
+          "ticker_count": 22057,
+          "warning_codes": [
+            "collapse:exact_duplicate_rows",
+            "session:outside_0400_2000_observed"
+          ]
+        }
+      ],
+      "schema": [
+        {
+          "name": "timestamp",
+          "type": "TIMESTAMP WITH TIME ZONE"
+        },
+        {
+          "name": "open",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "high",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "low",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "close",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "volume",
+          "type": "DOUBLE"
+        },
+        {
+          "name": "ticker",
+          "type": "VARCHAR"
+        }
+      ],
+      "schema_version": "finagent.us-minute-local-certification.v2",
+      "warning_codes": [
+        "quarantine:invalid_ohlc",
+        "session:outside_0400_2000_observed",
+        "collapse:exact_duplicate_rows"
+      ]
+    },
+    "certification_id": "us-minute-certification-8e585c22fef175a2a4ce58ed",
+    "certified_at": "2026-09-01T06:51:46.673177+00:00",
+    "cleaning_identity": "us-minute-cleaning-stack-a0d745a4a75d25a63e3a8244",
+    "conflict_quarantine_policy": {
+      "action": "drop_entire_key_group",
+      "max_conflicting_raw_row_rate": 5e-05,
+      "policy_id": "us-minute-conflict-policy-bb3e82878d94725388806d02",
+      "schema_version": "finagent.us-minute-conflict-quarantine-policy.v1"
+    },
+    "passed": true,
+    "post_clean_conflicting_duplicate_key_count": 0,
+    "quarantined_conflicting_key_count": 392,
+    "quarantined_conflicting_raw_row_count": 799,
+    "schema_version": "finagent.us-minute-local-certification.v3"
+  },
+  "local_research_admitted": true,
+  "source_authority": "reference_only",
+  "source_candidate": "hf-mito0o852-ohlcv-1m",
+  "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56"
+}

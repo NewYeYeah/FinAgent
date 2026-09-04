@@ -1,0 +1,3309 @@
+{
+  "alpha_authority": false,
+  "candidate_count": 37,
+  "candidate_ids": [
+    "us-agent-value-candidate-32151417ddc1442a6d10eec8",
+    "us-agent-value-candidate-340fbb96b15a633238d5fb63",
+    "us-agent-value-candidate-f131706d527cb8cbc40116fc",
+    "us-agent-value-candidate-2661049725ff182d0c04087f",
+    "us-agent-value-candidate-0da826673af58f71ed8252e6",
+    "us-agent-value-candidate-94f6f66824f90ff829727254",
+    "us-agent-value-candidate-98d3f18bed490c671cbb9e74",
+    "us-agent-value-candidate-ab398bc3d19261ecff036331",
+    "us-agent-value-candidate-9ed2d6a987c83d51f5339dca",
+    "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+    "us-agent-value-candidate-d0a398f8a38ca304cad983d1",
+    "us-agent-value-candidate-ae2d2c97a446bd0fad29ad80",
+    "us-agent-value-candidate-93ce47e9d4e8e803db00b016",
+    "us-agent-value-candidate-017d20c6abef5affa9b03b68",
+    "us-agent-value-candidate-cb59c3fc6d45deca3dc71613",
+    "us-agent-value-candidate-60b8299c009e84abae2fcb99",
+    "us-agent-value-candidate-41619b08059fbbd40c924da0",
+    "us-agent-value-candidate-39b4e8ee15e1fae3a53ee859",
+    "us-agent-value-candidate-35033b636e2f234961f887d2",
+    "us-agent-value-candidate-f19c5808303e292cad4f2b40",
+    "us-agent-value-candidate-2ca3e8be8421699aa7c23646",
+    "us-agent-value-candidate-38de1500a8fab962a09741a6",
+    "us-agent-value-candidate-ee9e717b07484527541d11f6",
+    "us-agent-value-candidate-3626155aa024e67a6b4b86cc",
+    "us-agent-value-candidate-19cffbbc01c0b98825f016e0",
+    "us-agent-value-candidate-dfb77a46df77fb9b69bf4387",
+    "us-agent-value-candidate-4e21108fb599aa192d038272",
+    "us-agent-value-candidate-4f77c83bbd9cbfc7bbe7aea6",
+    "us-agent-value-candidate-999abbbe61367860e2f0e737",
+    "us-agent-value-candidate-faab04bb6a76d58ed3e0095f",
+    "us-agent-value-candidate-8c0ba73998b666dcdc4cbb65",
+    "us-agent-value-candidate-0190be6c2225de9581a48e07",
+    "us-agent-value-candidate-c163a19d8f960532dca57e68",
+    "us-agent-value-candidate-5c11763d949b28b490042f61",
+    "us-agent-value-candidate-4a5fc89ed57ccbcffa457bf5",
+    "us-agent-value-candidate-7765832aae6f306b3aac5da3",
+    "us-agent-value-candidate-13b659edb06e01096ffa14cb"
+  ],
+  "candidates": [
+    {
+      "candidate_id": "us-agent-value-candidate-32151417ddc1442a6d10eec8",
+      "multiplicity": {
+        "bh_qvalue": 0.22317291770936803,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.034661904679575695
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-32151417ddc1442a6d10eec8",
+        "coverage_mean": 0.9996710526315791,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": -0.02594896618320999,
+          "30m": -0.02865432551838781,
+          "60m": -0.0261359946288217
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9993650793650793,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 3.342631445493251,
+            "mean_one_way_turnover": 1.4859788359788362,
+            "mean_rank_ic": -0.003981125604891226,
+            "periods": 189,
+            "quantile_monotonicity_mean": 0.052380952380952375,
+            "rank_icir": -0.013714175083262637,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9998095238095238,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -6.939138027346447,
+            "mean_one_way_turnover": 1.543571428571429,
+            "mean_rank_ic": -0.060885795749790673,
+            "periods": 210,
+            "quantile_monotonicity_mean": -0.1419047619047619,
+            "rank_icir": -0.21019772014013338,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9998086124401915,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": 0.577461428689857,
+            "mean_one_way_turnover": 1.4849282296650719,
+            "mean_rank_ic": -0.01125471238058905,
+            "periods": 209,
+            "quantile_monotonicity_mean": -0.005263157894736845,
+            "rank_icir": -0.037677238265731834,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.0261359946288217,
+          "30m": -0.0232537936494998,
+          "5m": -0.02344037906765174
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.034661904679575695,
+          "tstat": -2.112286247891324
+        },
+        "mean_fold_rank_icir": -0.08719637782970929,
+        "mean_long_short_return_bps": -1.1591648091255737,
+        "mean_one_way_turnover": 1.5055098684210528,
+        "positive_fold_ratio": 0.0,
+        "primary_mean_rank_ic": -0.0261359946288217,
+        "quantile_monotonicity": -0.03453947368421053,
+        "return_per_turnover_bps": -0.7699483300905104,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.0494447935446463,
+          "ci_upper": -0.0030694619271721345,
+          "pvalue": 0.026986506746626688
+        },
+        "worst_fold_rank_ic": -0.060885795749790673,
+        "worst_fold_rank_icir": -0.21019772014013338
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-340fbb96b15a633238d5fb63",
+      "multiplicity": {
+        "bh_qvalue": 0.22317291770936803,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.031059115038762544
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-340fbb96b15a633238d5fb63",
+        "coverage_mean": 0.9993091537132989,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": -0.028764649371684183,
+          "30m": -0.027556208832176573,
+          "60m": -0.03209712782742748
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9986666666666666,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 1.2140752289784211,
+            "mean_one_way_turnover": 1.106111111111111,
+            "mean_rank_ic": -0.005402017363290353,
+            "periods": 180,
+            "quantile_monotonicity_mean": 0.015555555555555545,
+            "rank_icir": -0.018112340043608035,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9996,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -9.032499496779286,
+            "mean_one_way_turnover": 1.1267500000000001,
+            "mean_rank_ic": -0.06699209762426582,
+            "periods": 200,
+            "quantile_monotonicity_mean": -0.15250000000000002,
+            "rank_icir": -0.246867852781453,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9995979899497488,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -4.280851362482735,
+            "mean_one_way_turnover": 1.072361809045226,
+            "mean_rank_ic": -0.021173137496658685,
+            "periods": 199,
+            "quantile_monotonicity_mean": -0.05477386934673367,
+            "rank_icir": -0.06741553968024408,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.03209712782742748,
+          "30m": -0.0232537936494998,
+          "5m": -0.02602432848935692
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.031059115038762544,
+          "tstat": -2.156314509729832
+        },
+        "mean_fold_rank_icir": -0.11079857750176836,
+        "mean_long_short_return_bps": -4.213913262994481,
+        "mean_one_way_turnover": 1.1016407599309153,
+        "positive_fold_ratio": 0.0,
+        "primary_mean_rank_ic": -0.03209712782742748,
+        "quantile_monotonicity": -0.06666666666666667,
+        "return_per_turnover_bps": -3.825124683348444,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.055805006463420556,
+          "ci_upper": -0.009766666941380942,
+          "pvalue": 0.004497751124437781
+        },
+        "worst_fold_rank_ic": -0.06699209762426582,
+        "worst_fold_rank_icir": -0.246867852781453
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-f131706d527cb8cbc40116fc",
+      "multiplicity": {
+        "bh_qvalue": 0.32095216166427937,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.10856913114573188
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-f131706d527cb8cbc40116fc",
+        "coverage_mean": 0.9986180422264874,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": -0.03463632996274807,
+          "30m": -0.042452609393844244,
+          "60m": -0.029465317649311266
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": 1,
+        "folds": [
+          {
+            "coverage_mean": 0.997530864197531,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": -0.38560282986191224,
+            "mean_one_way_turnover": 0.857716049382716,
+            "mean_rank_ic": -0.0005177725204582417,
+            "periods": 162,
+            "quantile_monotonicity_mean": 0.024691358024691357,
+            "rank_icir": -0.0017587411069811142,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9991111111111112,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -4.409397096496583,
+            "mean_one_way_turnover": 0.8744444444444444,
+            "mean_rank_ic": -0.043736597786925915,
+            "periods": 180,
+            "quantile_monotonicity_mean": -0.07666666666666666,
+            "rank_icir": -0.14831346578677682,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9991061452513966,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -3.7996915446392094,
+            "mean_one_way_turnover": 0.8268156424581006,
+            "mean_rank_ic": -0.0413126466219568,
+            "periods": 179,
+            "quantile_monotonicity_mean": -0.08100558659217877,
+            "rank_icir": -0.13611467984220593,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.029465317649311266,
+          "30m": -0.01684997587047089,
+          "5m": -0.025507423871592636
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.10856913114573188,
+          "tstat": -1.6046578117905443
+        },
+        "mean_fold_rank_icir": -0.09539562891198795,
+        "mean_long_short_return_bps": -2.948759927634229,
+        "mean_one_way_turnover": 0.8528790786948177,
+        "positive_fold_ratio": 0.0,
+        "primary_mean_rank_ic": -0.029465317649311266,
+        "quantile_monotonicity": -0.046641074856046065,
+        "return_per_turnover_bps": -3.4574185266061286,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.05293822706211399,
+          "ci_upper": -0.007887941276173767,
+          "pvalue": 0.010994502748625687
+        },
+        "worst_fold_rank_ic": -0.043736597786925915,
+        "worst_fold_rank_icir": -0.14831346578677682
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-2661049725ff182d0c04087f",
+      "multiplicity": {
+        "bh_qvalue": 0.4965090422177066,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.41705320560105774
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-2661049725ff182d0c04087f",
+        "coverage_mean": 0.9972345679012345,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": -0.013399954845149503,
+          "30m": -0.028032964095710485,
+          "60m": -0.01829334590544461
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": 1,
+        "folds": [
+          {
+            "coverage_mean": 0.9942857142857143,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 0.134701560152643,
+            "mean_one_way_turnover": 0.6503968253968253,
+            "mean_rank_ic": -0.004056106522838948,
+            "periods": 126,
+            "quantile_monotonicity_mean": 0.0031746031746031863,
+            "rank_icir": -0.013382315308749762,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9988571428571429,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 1.37252575638078,
+            "mean_one_way_turnover": 0.6646428571428571,
+            "mean_rank_ic": -0.015284095431897708,
+            "periods": 140,
+            "quantile_monotonicity_mean": -0.0042857142857142955,
+            "rank_icir": -0.048311342051801195,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.998273381294964,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -2.162030398968371,
+            "mean_one_way_turnover": 0.6381294964028776,
+            "mean_rank_ic": -0.034229944671666776,
+            "periods": 139,
+            "quantile_monotonicity_mean": -0.07985611510791366,
+            "rank_icir": -0.12167153155255585,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.01829334590544461,
+          "30m": -0.02152181497149189,
+          "5m": -0.009111313694315212
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.41705320560105774,
+          "tstat": -0.8115442264998622
+        },
+        "mean_fold_rank_icir": -0.061121729637702266,
+        "mean_long_short_return_bps": -0.22566968638039825,
+        "mean_one_way_turnover": 0.6511111111111111,
+        "positive_fold_ratio": 0.0,
+        "primary_mean_rank_ic": -0.01829334590544461,
+        "quantile_monotonicity": -0.027901234567901237,
+        "return_per_turnover_bps": -0.34659166850231815,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.05600659241744664,
+          "ci_upper": 0.016090273943729725,
+          "pvalue": 0.30834582708645675
+        },
+        "worst_fold_rank_ic": -0.034229944671666776,
+        "worst_fold_rank_icir": -0.12167153155255585
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-0da826673af58f71ed8252e6",
+      "multiplicity": {
+        "bh_qvalue": 0.3614069161346102,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.2148905987827412
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-0da826673af58f71ed8252e6",
+        "coverage_mean": 0.9989818181818183,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.038582482350043634,
+          "30m": 0.015594981694630763,
+          "60m": 0.031993325719905964
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9981286549707603,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 6.082163188606217,
+            "mean_one_way_turnover": 0.32222222222222224,
+            "mean_rank_ic": 0.07592016643341316,
+            "periods": 171,
+            "quantile_monotonicity_mean": 0.10526315789473684,
+            "rank_icir": 0.21614232787166485,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9993684210526316,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 2.4081199799470885,
+            "mean_one_way_turnover": 0.3681578947368422,
+            "mean_rank_ic": 0.032496777848980585,
+            "periods": 190,
+            "quantile_monotonicity_mean": 0.04736842105263156,
+            "rank_icir": 0.09357076858101211,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9993650793650793,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": 4.678800522367518,
+            "mean_one_way_turnover": 0.3812169312169313,
+            "mean_rank_ic": -0.008256122251172912,
+            "periods": 189,
+            "quantile_monotonicity_mean": -0.03174603174603175,
+            "rank_icir": -0.020062056720394454,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.031993325719905964,
+          "30m": 0.03587241140189417,
+          "5m": 0.03300700785595131
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.2148905987827412,
+          "tstat": 1.2402292869821565
+        },
+        "mean_fold_rank_icir": 0.0965503465774275,
+        "mean_long_short_return_bps": 4.33070181848922,
+        "mean_one_way_turnover": 0.35836363636363633,
+        "positive_fold_ratio": 0.6666666666666666,
+        "primary_mean_rank_ic": 0.031993325719905964,
+        "quantile_monotonicity": 0.038181818181818185,
+        "return_per_turnover_bps": 12.08465753510437,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.013271120236919006,
+          "ci_upper": 0.07736770870869071,
+          "pvalue": 0.1629185407296352
+        },
+        "worst_fold_rank_ic": -0.008256122251172912,
+        "worst_fold_rank_icir": -0.020062056720394454
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-94f6f66824f90ff829727254",
+      "multiplicity": {
+        "bh_qvalue": 0.4274953591135759,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.288848215617281
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-94f6f66824f90ff829727254",
+        "coverage_mean": 0.9986180422264874,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.005430789204163682,
+          "30m": 0.015916382713512665,
+          "60m": 0.02302757943383903
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.997530864197531,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 5.796342892955135,
+            "mean_one_way_turnover": 0.5978395061728394,
+            "mean_rank_ic": 0.04606087627517432,
+            "periods": 162,
+            "quantile_monotonicity_mean": 0.11296296296296295,
+            "rank_icir": 0.14671558465050086,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9991111111111112,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 9.174947733075058,
+            "mean_one_way_turnover": 0.7025,
+            "mean_rank_ic": 0.04742431385371825,
+            "periods": 180,
+            "quantile_monotonicity_mean": 0.10944444444444446,
+            "rank_icir": 0.16319164330757732,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9991061452513966,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": 1.7020255700055829,
+            "mean_one_way_turnover": 0.6782122905027933,
+            "mean_rank_ic": -0.022351226621326197,
+            "periods": 179,
+            "quantile_monotonicity_mean": -0.018435754189944132,
+            "rank_icir": -0.06560361606698945,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.02302757943383903,
+          "30m": 0.012048720658645502,
+          "5m": 0.0353207643878597
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.288848215617281,
+          "tstat": 1.060651704827791
+        },
+        "mean_fold_rank_icir": 0.08143453729702958,
+        "mean_long_short_return_bps": 5.556930360159771,
+        "mean_one_way_turnover": 0.6616122840690979,
+        "positive_fold_ratio": 0.6666666666666666,
+        "primary_mean_rank_ic": 0.02302757943383903,
+        "quantile_monotonicity": 0.06660268714011516,
+        "return_per_turnover_bps": 8.399073738448624,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.015258587395319587,
+          "ci_upper": 0.060066556007171854,
+          "pvalue": 0.2303848075962019
+        },
+        "worst_fold_rank_ic": -0.022351226621326197,
+        "worst_fold_rank_icir": -0.06560361606698945
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-98d3f18bed490c671cbb9e74",
+      "multiplicity": {
+        "bh_qvalue": 0.32095216166427937,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.13247858280219252
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-98d3f18bed490c671cbb9e74",
+        "coverage_mean": 0.9972345679012345,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": -0.016876576550495948,
+          "30m": -0.01231941902293794,
+          "60m": -0.01814886559633672
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9942857142857143,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": -3.2800299917887723,
+            "mean_one_way_turnover": 1.238888888888889,
+            "mean_rank_ic": -0.025847922304286765,
+            "periods": 126,
+            "quantile_monotonicity_mean": -0.07777777777777775,
+            "rank_icir": -0.14495416504102387,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9988571428571429,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -1.0995879441567833,
+            "mean_one_way_turnover": 1.2357142857142858,
+            "mean_rank_ic": -0.017120932978898596,
+            "periods": 140,
+            "quantile_monotonicity_mean": -0.09285714285714287,
+            "rank_icir": -0.07044388898542808,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.998273381294964,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -2.3634018890589883,
+            "mean_one_way_turnover": 1.266546762589928,
+            "mean_rank_ic": -0.012205192367844859,
+            "periods": 139,
+            "quantile_monotonicity_mean": -0.053237410071942444,
+            "rank_icir": -0.056487099321671085,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.01814886559633672,
+          "30m": -0.022699116818017746,
+          "5m": -0.004953914373456485
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.13247858280219252,
+          "tstat": -1.5043993062693375
+        },
+        "mean_fold_rank_icir": -0.09062838444937434,
+        "mean_long_short_return_bps": -2.21170112031243,
+        "mean_one_way_turnover": 1.247283950617284,
+        "positive_fold_ratio": 0.0,
+        "primary_mean_rank_ic": -0.01814886559633672,
+        "quantile_monotonicity": -0.0745679012345679,
+        "return_per_turnover_bps": -1.7732138052589017,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.031907308028647594,
+          "ci_upper": -0.00222352122488525,
+          "pvalue": 0.014992503748125937
+        },
+        "worst_fold_rank_ic": -0.025847922304286765,
+        "worst_fold_rank_icir": -0.14495416504102387
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-ab398bc3d19261ecff036331",
+      "multiplicity": {
+        "bh_qvalue": 0.22317291770936803,
+        "holm_adjusted_pvalue": 0.2310380091504424,
+        "raw_hac_pvalue": 0.006244270517579524
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-ab398bc3d19261ecff036331",
+        "coverage_mean": 1.0,
+        "coverage_min": 1.0,
+        "decay_rank_ic": {
+          "120m": -0.02151022625869117,
+          "30m": -0.02670579166613672,
+          "60m": -0.027338387345895946
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": 1,
+        "folds": [
+          {
+            "coverage_mean": 1.0,
+            "coverage_min": 1.0,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": -3.2449263546382308,
+            "mean_one_way_turnover": 1.5393939393939395,
+            "mean_rank_ic": -0.025467201201275578,
+            "periods": 198,
+            "quantile_monotonicity_mean": -0.030303030303030307,
+            "rank_icir": -0.09733034968968683,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 1.0,
+            "coverage_min": 1.0,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -4.549814265101129,
+            "mean_one_way_turnover": 1.5863636363636369,
+            "mean_rank_ic": -0.04059656445120168,
+            "periods": 220,
+            "quantile_monotonicity_mean": -0.08272727272727275,
+            "rank_icir": -0.17688338470315573,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 1.0,
+            "coverage_min": 1.0,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -1.8487219679491078,
+            "mean_one_way_turnover": 1.562557077625571,
+            "mean_rank_ic": -0.015711427955336896,
+            "periods": 219,
+            "quantile_monotonicity_mean": -0.035159817351598184,
+            "rank_icir": -0.06131839945479106,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.027338387345895946,
+          "30m": -0.01748838194974297,
+          "5m": -0.01429548894972109
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.006244270517579524,
+          "tstat": -2.734670722713285
+        },
+        "mean_fold_rank_icir": -0.11184404461587788,
+        "mean_long_short_return_bps": -3.215580325779393,
+        "mean_one_way_turnover": 1.5635792778649924,
+        "positive_fold_ratio": 0.0,
+        "primary_mean_rank_ic": -0.027338387345895946,
+        "quantile_monotonicity": -0.05007849293563579,
+        "return_per_turnover_bps": -2.056550871005495,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.0475511564964477,
+          "ci_upper": -0.008723126560936196,
+          "pvalue": 0.005497251374312844
+        },
+        "worst_fold_rank_ic": -0.04059656445120168,
+        "worst_fold_rank_icir": -0.17688338470315573
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-9ed2d6a987c83d51f5339dca",
+      "multiplicity": {
+        "bh_qvalue": 0.22317291770936803,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.034661904679575695
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-9ed2d6a987c83d51f5339dca",
+        "coverage_mean": 0.9996710526315791,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": -0.02594896618320999,
+          "30m": -0.02865432551838781,
+          "60m": -0.0261359946288217
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": 1,
+        "folds": [
+          {
+            "coverage_mean": 0.9993650793650793,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 3.401358614004099,
+            "mean_one_way_turnover": 1.4830687830687832,
+            "mean_rank_ic": -0.003981125604891226,
+            "periods": 189,
+            "quantile_monotonicity_mean": 0.04603174603174603,
+            "rank_icir": -0.013714175083262637,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9998095238095238,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -6.931131634803809,
+            "mean_one_way_turnover": 1.5445238095238096,
+            "mean_rank_ic": -0.060885795749790673,
+            "periods": 210,
+            "quantile_monotonicity_mean": -0.14238095238095239,
+            "rank_icir": -0.21019772014013338,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9998086124401915,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": 0.9588584134511593,
+            "mean_one_way_turnover": 1.4839712918660286,
+            "mean_rank_ic": -0.01125471238058905,
+            "periods": 209,
+            "quantile_monotonicity_mean": -0.0033492822966507186,
+            "rank_icir": -0.037677238265731834,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.0261359946288217,
+          "30m": -0.0232537936494998,
+          "5m": -0.02344037906765174
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.034661904679575695,
+          "tstat": -2.112286247891324
+        },
+        "mean_fold_rank_icir": -0.08719637782970929,
+        "mean_long_short_return_bps": -1.0070385803465995,
+        "mean_one_way_turnover": 1.5046052631578948,
+        "positive_fold_ratio": 0.0,
+        "primary_mean_rank_ic": -0.0261359946288217,
+        "quantile_monotonicity": -0.036019736842105264,
+        "return_per_turnover_bps": -0.6693041723335511,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.0494447935446463,
+          "ci_upper": -0.0030694619271721345,
+          "pvalue": 0.026986506746626688
+        },
+        "worst_fold_rank_ic": -0.060885795749790673,
+        "worst_fold_rank_icir": -0.21019772014013338
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+      "multiplicity": {
+        "bh_qvalue": 0.22317291770936803,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.031059115038762544
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+        "coverage_mean": 0.9993091537132989,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": -0.028764649371684183,
+          "30m": -0.027556208832176573,
+          "60m": -0.03209712782742748
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": 1,
+        "folds": [
+          {
+            "coverage_mean": 0.9986666666666666,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 1.1537548486881357,
+            "mean_one_way_turnover": 1.1011111111111112,
+            "mean_rank_ic": -0.005402017363290353,
+            "periods": 180,
+            "quantile_monotonicity_mean": 0.012777777777777766,
+            "rank_icir": -0.018112340043608035,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9996,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -8.929080340394556,
+            "mean_one_way_turnover": 1.12825,
+            "mean_rank_ic": -0.06699209762426582,
+            "periods": 200,
+            "quantile_monotonicity_mean": -0.1505,
+            "rank_icir": -0.246867852781453,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9995979899497488,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -4.116279291428721,
+            "mean_one_way_turnover": 1.0690954773869348,
+            "mean_rank_ic": -0.021173137496658685,
+            "periods": 199,
+            "quantile_monotonicity_mean": -0.05527638190954775,
+            "rank_icir": -0.06741553968024408,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.03209712782742748,
+          "30m": -0.0232537936494998,
+          "5m": -0.02602432848935692
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.031059115038762544,
+          "tstat": -2.156314509729832
+        },
+        "mean_fold_rank_icir": -0.11079857750176836,
+        "mean_long_short_return_bps": -4.140379575663838,
+        "mean_one_way_turnover": 1.099481865284974,
+        "positive_fold_ratio": 0.0,
+        "primary_mean_rank_ic": -0.03209712782742748,
+        "quantile_monotonicity": -0.06701208981001727,
+        "return_per_turnover_bps": -3.7657552219751214,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.055805006463420556,
+          "ci_upper": -0.009766666941380942,
+          "pvalue": 0.004497751124437781
+        },
+        "worst_fold_rank_ic": -0.06699209762426582,
+        "worst_fold_rank_icir": -0.246867852781453
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-d0a398f8a38ca304cad983d1",
+      "multiplicity": {
+        "bh_qvalue": 0.32095216166427937,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.10856913114573188
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-d0a398f8a38ca304cad983d1",
+        "coverage_mean": 0.9986180422264874,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": -0.03463632996274807,
+          "30m": -0.042452609393844244,
+          "60m": -0.029465317649311266
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.997530864197531,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": -0.44999696094399333,
+            "mean_one_way_turnover": 0.8626543209876543,
+            "mean_rank_ic": -0.0005177725204582417,
+            "periods": 162,
+            "quantile_monotonicity_mean": 0.030246913580246927,
+            "rank_icir": -0.0017587411069811142,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9991111111111112,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -4.203296863719947,
+            "mean_one_way_turnover": 0.8758333333333332,
+            "mean_rank_ic": -0.043736597786925915,
+            "periods": 180,
+            "quantile_monotonicity_mean": -0.07333333333333333,
+            "rank_icir": -0.14831346578677682,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9991061452513966,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -4.2705077206854165,
+            "mean_one_way_turnover": 0.8254189944134078,
+            "mean_rank_ic": -0.0413126466219568,
+            "periods": 179,
+            "quantile_monotonicity_mean": -0.08156424581005588,
+            "rank_icir": -0.13611467984220593,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.029465317649311266,
+          "30m": -0.01684997587047089,
+          "5m": -0.025507423871592636
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.10856913114573188,
+          "tstat": -1.6046578117905443
+        },
+        "mean_fold_rank_icir": -0.09539562891198795,
+        "mean_long_short_return_bps": -3.0593355569005887,
+        "mean_one_way_turnover": 0.8544145873320537,
+        "positive_fold_ratio": 0.0,
+        "primary_mean_rank_ic": -0.029465317649311266,
+        "quantile_monotonicity": -0.04395393474088292,
+        "return_per_turnover_bps": -3.5806218693591076,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.05293822706211399,
+          "ci_upper": -0.007887941276173767,
+          "pvalue": 0.010994502748625687
+        },
+        "worst_fold_rank_ic": -0.043736597786925915,
+        "worst_fold_rank_icir": -0.14831346578677682
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-ae2d2c97a446bd0fad29ad80",
+      "multiplicity": {
+        "bh_qvalue": 0.4965090422177066,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.41705320560105774
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-ae2d2c97a446bd0fad29ad80",
+        "coverage_mean": 0.9972345679012345,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": -0.013399954845149503,
+          "30m": -0.028032964095710485,
+          "60m": -0.01829334590544461
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9942857142857143,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": -0.0748330139757187,
+            "mean_one_way_turnover": 0.6646825396825397,
+            "mean_rank_ic": -0.004056106522838948,
+            "periods": 126,
+            "quantile_monotonicity_mean": -0.00714285714285713,
+            "rank_icir": -0.013382315308749762,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9988571428571429,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 1.521546206790796,
+            "mean_one_way_turnover": 0.6632142857142856,
+            "mean_rank_ic": -0.015284095431897708,
+            "periods": 140,
+            "quantile_monotonicity_mean": 0.0014285714285714236,
+            "rank_icir": -0.048311342051801195,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.998273381294964,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -2.198137908941772,
+            "mean_one_way_turnover": 0.6392086330935252,
+            "mean_rank_ic": -0.034229944671666776,
+            "periods": 139,
+            "quantile_monotonicity_mean": -0.07913669064748201,
+            "rank_icir": -0.12167153155255585,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.01829334590544461,
+          "30m": -0.02152181497149189,
+          "5m": -0.009111313694315212
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.41705320560105774,
+          "tstat": -0.8115442264998622
+        },
+        "mean_fold_rank_icir": -0.061121729637702266,
+        "mean_long_short_return_bps": -0.2517374324768775,
+        "mean_one_way_turnover": 0.6554320987654322,
+        "positive_fold_ratio": 0.0,
+        "primary_mean_rank_ic": -0.01829334590544461,
+        "quantile_monotonicity": -0.028888888888888877,
+        "return_per_turnover_bps": -0.3840785841142791,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.05600659241744664,
+          "ci_upper": 0.016090273943729725,
+          "pvalue": 0.30834582708645675
+        },
+        "worst_fold_rank_ic": -0.034229944671666776,
+        "worst_fold_rank_icir": -0.12167153155255585
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-93ce47e9d4e8e803db00b016",
+      "multiplicity": {
+        "bh_qvalue": 0.44701988171037527,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.32620369746432787
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-93ce47e9d4e8e803db00b016",
+        "coverage_mean": 1.0,
+        "coverage_min": 1.0,
+        "decay_rank_ic": {
+          "120m": 0.028895534855697135,
+          "30m": 0.011104293504838323,
+          "60m": 0.02029202709625191
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 1.0,
+            "coverage_min": 1.0,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 1.8212655311969619,
+            "mean_one_way_turnover": 0.7999999999999999,
+            "mean_rank_ic": 0.04243397995332262,
+            "periods": 198,
+            "quantile_monotonicity_mean": 0.09242424242424241,
+            "rank_icir": 0.12312275698815536,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 1.0,
+            "coverage_min": 1.0,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -0.9220775417826422,
+            "mean_one_way_turnover": 0.9272727272727271,
+            "mean_rank_ic": 0.024190422939605848,
+            "periods": 220,
+            "quantile_monotonicity_mean": 0.03454545454545454,
+            "rank_icir": 0.07454438387879435,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 1.0,
+            "coverage_min": 1.0,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": 5.396045976466266,
+            "mean_one_way_turnover": 0.9196347031963471,
+            "mean_rank_ic": -0.0036429215395374233,
+            "periods": 219,
+            "quantile_monotonicity_mean": -0.005479452054794509,
+            "rank_icir": -0.009952925231622303,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.02029202709625191,
+          "30m": 0.020160724124876333,
+          "5m": 0.019353541052233823
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.32620369746432787,
+          "tstat": 0.9817892252092073
+        },
+        "mean_fold_rank_icir": 0.0625714052117758,
+        "mean_long_short_return_bps": 2.102806255621553,
+        "mean_one_way_turnover": 0.8850863422291994,
+        "positive_fold_ratio": 0.6666666666666666,
+        "primary_mean_rank_ic": 0.02029202709625191,
+        "quantile_monotonicity": 0.03877551020408164,
+        "return_per_turnover_bps": 2.3758204768196687,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.014126114801183335,
+          "ci_upper": 0.04997079434443873,
+          "pvalue": 0.21189405297351324
+        },
+        "worst_fold_rank_ic": -0.0036429215395374233,
+        "worst_fold_rank_icir": -0.009952925231622303
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-017d20c6abef5affa9b03b68",
+      "multiplicity": {
+        "bh_qvalue": 0.32095216166427937,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.14421645039383685
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-017d20c6abef5affa9b03b68",
+        "coverage_mean": 0.9976036866359448,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.043266546794836984,
+          "30m": 0.01904090051596964,
+          "60m": 0.04332660686899031
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9952592592592594,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 13.318076728289835,
+            "mean_one_way_turnover": 0.25296296296296295,
+            "mean_rank_ic": 0.10127013840629905,
+            "periods": 135,
+            "quantile_monotonicity_mean": 0.1577777777777778,
+            "rank_icir": 0.27669267947113746,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9989333333333333,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 7.697045119552487,
+            "mean_one_way_turnover": 0.24400000000000002,
+            "mean_rank_ic": 0.07197907090727171,
+            "periods": 150,
+            "quantile_monotonicity_mean": 0.07600000000000001,
+            "rank_icir": 0.20891456133968989,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9983892617449663,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -5.871419025678665,
+            "mean_one_way_turnover": 0.2540268456375839,
+            "mean_rank_ic": -0.03801732845502907,
+            "periods": 149,
+            "quantile_monotonicity_mean": -0.09328859060402683,
+            "rank_icir": -0.09395523812031974,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.04332660686899031,
+          "30m": 0.0388057518849414,
+          "5m": 0.049970990683017254
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.14421645039383685,
+          "tstat": 1.4602679369618685
+        },
+        "mean_fold_rank_icir": 0.13055066756350253,
+        "mean_long_short_return_bps": 4.787225095451336,
+        "mean_one_way_turnover": 0.2502304147465438,
+        "positive_fold_ratio": 0.6666666666666666,
+        "primary_mean_rank_ic": 0.04332660686899031,
+        "quantile_monotonicity": 0.043317972350230424,
+        "return_per_turnover_bps": 19.131267876849723,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.030838623033236305,
+          "ci_upper": 0.11134305762872565,
+          "pvalue": 0.2318840579710145
+        },
+        "worst_fold_rank_ic": -0.03801732845502907,
+        "worst_fold_rank_icir": -0.09395523812031974
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-cb59c3fc6d45deca3dc71613",
+      "multiplicity": {
+        "bh_qvalue": 0.4965090422177066,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.4294132257018003
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-cb59c3fc6d45deca3dc71613",
+        "coverage_mean": 0.9972345679012345,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.012378554273671193,
+          "30m": 0.014259980983045073,
+          "60m": 0.022822701018222723
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9942857142857143,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 8.789052642889393,
+            "mean_one_way_turnover": 0.3591269841269842,
+            "mean_rank_ic": 0.07806271406844009,
+            "periods": 126,
+            "quantile_monotonicity_mean": 0.13809523809523808,
+            "rank_icir": 0.23248644799655405,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9988571428571429,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 11.911607501754801,
+            "mean_one_way_turnover": 0.4078571428571428,
+            "mean_rank_ic": 0.06822241495430643,
+            "periods": 140,
+            "quantile_monotonicity_mean": 0.12142857142857143,
+            "rank_icir": 0.2049278720079639,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.998273381294964,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -8.318685319167262,
+            "mean_one_way_turnover": 0.42805755395683454,
+            "mean_rank_ic": -0.07297731045932485,
+            "periods": 139,
+            "quantile_monotonicity_mean": -0.1366906474820144,
+            "rank_icir": -0.19493081731298165,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.022822701018222723,
+          "30m": 0.020044027681363,
+          "5m": 0.039346616164001265
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.4294132257018003,
+          "tstat": 0.7901961472916148
+        },
+        "mean_fold_rank_icir": 0.08082783423051211,
+        "mean_long_short_return_bps": 3.996909688606138,
+        "mean_one_way_turnover": 0.39962962962962967,
+        "positive_fold_ratio": 0.6666666666666666,
+        "primary_mean_rank_ic": 0.022822701018222723,
+        "quantile_monotonicity": 0.038024691358024686,
+        "return_per_turnover_bps": 10.00153490198014,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.06004536387344502,
+          "ci_upper": 0.09925889835245456,
+          "pvalue": 0.5642178910544727
+        },
+        "worst_fold_rank_ic": -0.07297731045932485,
+        "worst_fold_rank_icir": -0.19493081731298165
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-60b8299c009e84abae2fcb99",
+      "multiplicity": {
+        "bh_qvalue": 0.22317291770936803,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.054285304307684114
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-60b8299c009e84abae2fcb99",
+        "coverage_mean": 0.9986180422264874,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": -0.002661997048249237,
+          "30m": -0.006672757315851102,
+          "60m": -0.018245573321760265
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.997530864197531,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": -3.8077444333665693,
+            "mean_one_way_turnover": 1.337345679012346,
+            "mean_rank_ic": -0.031785163655424144,
+            "periods": 162,
+            "quantile_monotonicity_mean": -0.048765432098765445,
+            "rank_icir": -0.1552173779285324,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9991111111111112,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -1.3628766932792238,
+            "mean_one_way_turnover": 1.3508333333333336,
+            "mean_rank_ic": -0.010883452421944592,
+            "periods": 180,
+            "quantile_monotonicity_mean": -0.023888888888888894,
+            "rank_icir": -0.05088700900138445,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9991061452513966,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -1.2687476930943649,
+            "mean_one_way_turnover": 1.3539106145251398,
+            "mean_rank_ic": -0.013395115935800894,
+            "periods": 179,
+            "quantile_monotonicity_mean": -0.022346368715083782,
+            "rank_icir": -0.06027120811520826,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.018245573321760265,
+          "30m": -0.02005133401045881,
+          "5m": -0.007360314073482198
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.054285304307684114,
+          "tstat": -1.924552998608806
+        },
+        "mean_fold_rank_icir": -0.08879186501504172,
+        "mean_long_short_return_bps": -2.0907451824559224,
+        "mean_one_way_turnover": 1.3476967370441457,
+        "positive_fold_ratio": 0.0,
+        "primary_mean_rank_ic": -0.018245573321760265,
+        "quantile_monotonicity": -0.03109404990403071,
+        "return_per_turnover_bps": -1.5513469202585426,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.03479867634826059,
+          "ci_upper": -0.0002054841065418588,
+          "pvalue": 0.0384807596201899
+        },
+        "worst_fold_rank_ic": -0.031785163655424144,
+        "worst_fold_rank_icir": -0.1552173779285324
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-41619b08059fbbd40c924da0",
+      "multiplicity": {
+        "bh_qvalue": 0.44701988171037527,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.3209668565660856
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-41619b08059fbbd40c924da0",
+        "coverage_mean": 0.9982926829268293,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.007000330103630486,
+          "30m": 0.015516205048976573,
+          "60m": 0.023372025792477418
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9968627450980393,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 9.037776949474996,
+            "mean_one_way_turnover": 0.4957516339869282,
+            "mean_rank_ic": 0.06426197054556826,
+            "periods": 153,
+            "quantile_monotonicity_mean": 0.10849673202614378,
+            "rank_icir": 0.20424215253291417,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9990588235294118,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 8.839652782035357,
+            "mean_one_way_turnover": 0.5905882352941176,
+            "mean_rank_ic": 0.05019751335297377,
+            "periods": 170,
+            "quantile_monotonicity_mean": 0.08705882352941179,
+            "rank_icir": 0.1650331013761292,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9988165680473373,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -0.89879763671394,
+            "mean_one_way_turnover": 0.5718934911242604,
+            "mean_rank_ic": -0.04063089984366033,
+            "periods": 169,
+            "quantile_monotonicity_mean": -0.10059171597633136,
+            "rank_icir": -0.11464881667616673,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.023372025792477418,
+          "30m": 0.020712464427454676,
+          "5m": 0.03937924659613446
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.3209668565660856,
+          "tstat": 0.9924729743262515
+        },
+        "mean_fold_rank_icir": 0.08487547907762555,
+        "mean_long_short_return_bps": 5.556146434168758,
+        "mean_one_way_turnover": 0.5546747967479674,
+        "positive_fold_ratio": 0.6666666666666666,
+        "primary_mean_rank_ic": 0.023372025792477418,
+        "quantile_monotonicity": 0.029268292682926834,
+        "return_per_turnover_bps": 10.016944102642102,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.02570333291745227,
+          "ci_upper": 0.06671066804752698,
+          "pvalue": 0.3263368315842079
+        },
+        "worst_fold_rank_ic": -0.04063089984366033,
+        "worst_fold_rank_icir": -0.11464881667616673
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-39b4e8ee15e1fae3a53ee859",
+      "multiplicity": {
+        "bh_qvalue": 0.22317291770936803,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.05056375673015974
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-39b4e8ee15e1fae3a53ee859",
+        "coverage_mean": 0.9989818181818183,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": -0.03107305484270655,
+          "30m": -0.03512708647235805,
+          "60m": -0.03338275535054087
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9981286549707603,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 2.7007995980401156,
+            "mean_one_way_turnover": 0.9330409356725147,
+            "mean_rank_ic": 0.005894839473116798,
+            "periods": 171,
+            "quantile_monotonicity_mean": 0.026315789473684216,
+            "rank_icir": 0.019897590231626135,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9993684210526316,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -6.529583393200408,
+            "mean_one_way_turnover": 0.9849999999999999,
+            "mean_rank_ic": -0.06948051605783441,
+            "periods": 190,
+            "quantile_monotonicity_mean": -0.08210526315789474,
+            "rank_icir": -0.2397780400418442,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9993650793650793,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -5.2565135856011915,
+            "mean_one_way_turnover": 0.9269841269841269,
+            "mean_rank_ic": -0.03263087270747043,
+            "periods": 189,
+            "quantile_monotonicity_mean": -0.053439153439153425,
+            "rank_icir": -0.10440785517130935,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.03338275535054087,
+          "30m": -0.01684997587047089,
+          "5m": -0.029502624826688084
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.05056375673015974,
+          "tstat": -1.9551636565864081
+        },
+        "mean_fold_rank_icir": -0.10809610166050913,
+        "mean_long_short_return_bps": -3.2223003293124424,
+        "mean_one_way_turnover": 0.948909090909091,
+        "positive_fold_ratio": 0.3333333333333333,
+        "primary_mean_rank_ic": -0.03338275535054087,
+        "quantile_monotonicity": -0.03854545454545454,
+        "return_per_turnover_bps": -3.3957945604940467,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.05939584992032221,
+          "ci_upper": -0.008169027696409212,
+          "pvalue": 0.010494752623688156
+        },
+        "worst_fold_rank_ic": -0.06948051605783441,
+        "worst_fold_rank_icir": -0.2397780400418442
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-35033b636e2f234961f887d2",
+      "multiplicity": {
+        "bh_qvalue": 0.35348163258751597,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.19916023332860544
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-35033b636e2f234961f887d2",
+        "coverage_mean": 0.9993091537132989,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.038626736779098975,
+          "30m": 0.01190009697993344,
+          "60m": 0.031309806705413216
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9986666666666666,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 3.311957538993391,
+            "mean_one_way_turnover": 0.3716666666666667,
+            "mean_rank_ic": 0.07087557055323714,
+            "periods": 180,
+            "quantile_monotonicity_mean": 0.08944444444444445,
+            "rank_icir": 0.20605227063607787,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9996,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -0.5434939140408548,
+            "mean_one_way_turnover": 0.4525,
+            "mean_rank_ic": 0.030386196654999774,
+            "periods": 200,
+            "quantile_monotonicity_mean": 0.066,
+            "rank_icir": 0.08721363759320568,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9995979899497488,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": 5.224745833742544,
+            "mean_one_way_turnover": 0.45251256281407043,
+            "mean_rank_ic": -0.003550070091197942,
+            "periods": 199,
+            "quantile_monotonicity_mean": -0.028643216080402014,
+            "rank_icir": -0.008899774090638864,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.031309806705413216,
+          "30m": 0.029534642456673258,
+          "5m": 0.029594541430806157
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.19916023332860544,
+          "tstat": 1.283947763632734
+        },
+        "mean_fold_rank_icir": 0.09478871137954824,
+        "mean_long_short_return_bps": 2.6376131176604587,
+        "mean_one_way_turnover": 0.42737478411053537,
+        "positive_fold_ratio": 0.6666666666666666,
+        "primary_mean_rank_ic": 0.031309806705413216,
+        "quantile_monotonicity": 0.040759930915371334,
+        "return_per_turnover_bps": 6.171662942515279,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.011229345353524076,
+          "ci_upper": 0.07378740534712966,
+          "pvalue": 0.14792603698150925
+        },
+        "worst_fold_rank_ic": -0.003550070091197942,
+        "worst_fold_rank_icir": -0.008899774090638864
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-f19c5808303e292cad4f2b40",
+      "multiplicity": {
+        "bh_qvalue": 0.35348163258751597,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.20062471038750906
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-f19c5808303e292cad4f2b40",
+        "coverage_mean": 0.9972345679012345,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.0370410030210438,
+          "30m": 0.022106747661426906,
+          "60m": 0.040527587883767174
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9942857142857143,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 11.839340128406544,
+            "mean_one_way_turnover": 0.23650793650793647,
+            "mean_rank_ic": 0.09897296308521804,
+            "periods": 126,
+            "quantile_monotonicity_mean": 0.1603174603174603,
+            "rank_icir": 0.26595785378902037,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9988571428571429,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 8.920866253914763,
+            "mean_one_way_turnover": 0.2371428571428571,
+            "mean_rank_ic": 0.08057885436006407,
+            "periods": 140,
+            "quantile_monotonicity_mean": 0.07642857142857143,
+            "rank_icir": 0.22596435796953018,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.998273381294964,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -7.7686450538234855,
+            "mean_one_way_turnover": 0.23884892086330936,
+            "mean_rank_ic": -0.0527910781742499,
+            "periods": 139,
+            "quantile_monotonicity_mean": -0.08776978417266186,
+            "rank_icir": -0.12881918106622967,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.040527587883767174,
+          "30m": 0.0388057518849414,
+          "5m": 0.049338021299332825
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.20062471038750906,
+          "tstat": 1.2797737727571583
+        },
+        "mean_fold_rank_icir": 0.12103434356410696,
+        "mean_long_short_return_bps": 4.100830788261302,
+        "mean_one_way_turnover": 0.23753086419753083,
+        "positive_fold_ratio": 0.6666666666666666,
+        "primary_mean_rank_ic": 0.040527587883767174,
+        "quantile_monotonicity": 0.046172839506172854,
+        "return_per_turnover_bps": 17.26441236222274,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.0413651606415405,
+          "ci_upper": 0.11623085100351906,
+          "pvalue": 0.31784107946026985
+        },
+        "worst_fold_rank_ic": -0.0527910781742499,
+        "worst_fold_rank_icir": -0.12881918106622967
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-2ca3e8be8421699aa7c23646",
+      "multiplicity": {
+        "bh_qvalue": 0.32095216166427937,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.15613888945829807
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-2ca3e8be8421699aa7c23646",
+        "coverage_mean": 0.9982926829268293,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.04434211407732019,
+          "30m": 0.02156716716304164,
+          "60m": 0.039164849338821674
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9968627450980393,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 11.669172567086093,
+            "mean_one_way_turnover": 0.2705882352941177,
+            "mean_rank_ic": 0.09674424271119564,
+            "periods": 153,
+            "quantile_monotonicity_mean": 0.12483660130718956,
+            "rank_icir": 0.2743663259529977,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9990588235294118,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 5.0618009185102775,
+            "mean_one_way_turnover": 0.29,
+            "mean_rank_ic": 0.048892460854344115,
+            "periods": 170,
+            "quantile_monotonicity_mean": 0.05705882352941177,
+            "rank_icir": 0.14107241412664134,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9988165680473373,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -1.2961369843752257,
+            "mean_one_way_turnover": 0.2961538461538462,
+            "mean_rank_ic": -0.022748411865983253,
+            "periods": 169,
+            "quantile_monotonicity_mean": -0.05207100591715977,
+            "rank_icir": -0.05487057915196481,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.039164849338821674,
+          "30m": 0.040413644995106045,
+          "5m": 0.042425162921369865
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.15613888945829807,
+          "tstat": 1.4181777045552069
+        },
+        "mean_fold_rank_icir": 0.12018938697589142,
+        "mean_long_short_return_bps": 4.932606521446151,
+        "mean_one_way_turnover": 0.2860772357723577,
+        "positive_fold_ratio": 0.6666666666666666,
+        "primary_mean_rank_ic": 0.039164849338821674,
+        "quantile_monotonicity": 0.04065040650406504,
+        "return_per_turnover_bps": 17.24221959894498,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.0168241749300143,
+          "ci_upper": 0.09254169221443527,
+          "pvalue": 0.15642178910544727
+        },
+        "worst_fold_rank_ic": -0.022748411865983253,
+        "worst_fold_rank_icir": -0.05487057915196481
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-38de1500a8fab962a09741a6",
+      "multiplicity": {
+        "bh_qvalue": 0.6421093917218351,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.6247550838374611
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-38de1500a8fab962a09741a6",
+        "coverage_mean": 0.9964779874213836,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.013230091798526453,
+          "30m": 0.019530282428854562,
+          "60m": 0.012679544598932507
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": 1,
+        "folds": [
+          {
+            "coverage_mean": 0.9927272727272728,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": -2.0553882311449567,
+            "mean_one_way_turnover": 0.5555555555555556,
+            "mean_rank_ic": -0.003946826120739163,
+            "periods": 99,
+            "quantile_monotonicity_mean": -0.020202020202020204,
+            "rank_icir": -0.012950932013630047,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9985454545454546,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 2.122295590196764,
+            "mean_one_way_turnover": 0.5936363636363637,
+            "mean_rank_ic": 0.02608624078916694,
+            "periods": 110,
+            "quantile_monotonicity_mean": 0.055454545454545465,
+            "rank_icir": 0.07829785740837251,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9977981651376148,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -1.1317565877535136,
+            "mean_one_way_turnover": 0.5582568807339451,
+            "mean_rank_ic": 0.014250866803718815,
+            "periods": 109,
+            "quantile_monotonicity_mean": 0.006422018348623845,
+            "rank_icir": 0.0524441287773057,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.012679544598932507,
+          "30m": 0.030071999256781872,
+          "5m": 0.00754488056362756
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.6247550838374611,
+          "tstat": 0.48912234340439226
+        },
+        "mean_fold_rank_icir": 0.039263684724016056,
+        "mean_long_short_return_bps": -0.29368675480138245,
+        "mean_one_way_turnover": 0.5696540880503145,
+        "positive_fold_ratio": 0.6666666666666666,
+        "primary_mean_rank_ic": 0.012679544598932507,
+        "quantile_monotonicity": 0.015094339622641511,
+        "return_per_turnover_bps": -0.5155527906532686,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.035498361833069474,
+          "ci_upper": 0.05888054706446454,
+          "pvalue": 0.6196901549225388
+        },
+        "worst_fold_rank_ic": -0.003946826120739163,
+        "worst_fold_rank_icir": -0.012950932013630047
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-ee9e717b07484527541d11f6",
+      "multiplicity": {
+        "bh_qvalue": 0.4965090422177066,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.3881773212971753
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-ee9e717b07484527541d11f6",
+        "coverage_mean": 0.99792656587473,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.006494318658377789,
+          "30m": 0.011973277098261757,
+          "60m": 0.021785463304016272
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9961111111111111,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 10.566077280115056,
+            "mean_one_way_turnover": 0.4076388888888889,
+            "mean_rank_ic": 0.07313606965089477,
+            "periods": 144,
+            "quantile_monotonicity_mean": 0.12430555555555554,
+            "rank_icir": 0.2272439909011159,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.999,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 9.948693243084467,
+            "mean_one_way_turnover": 0.5046875,
+            "mean_rank_ic": 0.05272235720169682,
+            "periods": 160,
+            "quantile_monotonicity_mean": 0.059375,
+            "rank_icir": 0.16550864374527383,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9984905660377358,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -4.602361706243066,
+            "mean_one_way_turnover": 0.489308176100629,
+            "mean_rank_ic": -0.0558522117750994,
+            "periods": 159,
+            "quantile_monotonicity_mean": -0.13584905660377358,
+            "rank_icir": -0.15702564579638584,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.021785463304016272,
+          "30m": 0.020712464427454676,
+          "5m": 0.042821295253352855
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.3881773212971753,
+          "tstat": 0.8629275152563144
+        },
+        "mean_fold_rank_icir": 0.0785756629500013,
+        "mean_long_short_return_bps": 5.143694462067894,
+        "mean_one_way_turnover": 0.46922246220302377,
+        "positive_fold_ratio": 0.6666666666666666,
+        "primary_mean_rank_ic": 0.021785463304016272,
+        "quantile_monotonicity": 0.012526997840172787,
+        "return_per_turnover_bps": 10.962165873129734,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.03873365026525066,
+          "ci_upper": 0.07550624920658497,
+          "pvalue": 0.4682658670664668
+        },
+        "worst_fold_rank_ic": -0.0558522117750994,
+        "worst_fold_rank_icir": -0.15702564579638584
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-3626155aa024e67a6b4b86cc",
+      "multiplicity": {
+        "bh_qvalue": 0.56993426894611,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.5391270111652392
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-3626155aa024e67a6b4b86cc",
+        "coverage_mean": 0.9961245674740484,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.029362706370310295,
+          "30m": 0.019600320367313444,
+          "60m": 0.016910070052277574
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": 1,
+        "folds": [
+          {
+            "coverage_mean": 0.992,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": -2.0688451664835448,
+            "mean_one_way_turnover": 0.5566666666666666,
+            "mean_rank_ic": 0.018710516536603487,
+            "periods": 90,
+            "quantile_monotonicity_mean": -0.023333333333333338,
+            "rank_icir": 0.06028278600176134,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9984000000000001,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 3.8182821169316274,
+            "mean_one_way_turnover": 0.6115,
+            "mean_rank_ic": 0.014048697768807952,
+            "periods": 100,
+            "quantile_monotonicity_mean": 0.030000000000000016,
+            "rank_icir": 0.043914634601720966,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9975757575757577,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -1.0722589964134417,
+            "mean_one_way_turnover": 0.5787878787878789,
+            "mean_rank_ic": 0.0181635755548799,
+            "periods": 99,
+            "quantile_monotonicity_mean": 0.02727272727272727,
+            "rank_icir": 0.06292062559439845,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.016910070052277574,
+          "30m": 0.030071999256781872,
+          "5m": 0.007386454914055896
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.5391270111652392,
+          "tstat": 0.6141336537005007
+        },
+        "mean_fold_rank_icir": 0.05570601539929359,
+        "mean_long_short_return_bps": 0.30961420783637744,
+        "mean_one_way_turnover": 0.5832179930795848,
+        "positive_fold_ratio": 1.0,
+        "primary_mean_rank_ic": 0.016910070052277574,
+        "quantile_monotonicity": 0.012456747404844287,
+        "return_per_turnover_bps": 0.5308721807458504,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.03495543111234171,
+          "ci_upper": 0.0662809990127836,
+          "pvalue": 0.5392303848075962
+        },
+        "worst_fold_rank_ic": 0.014048697768807952,
+        "worst_fold_rank_icir": 0.043914634601720966
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-19cffbbc01c0b98825f016e0",
+      "multiplicity": {
+        "bh_qvalue": 0.56993426894611,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.5295610212035107
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-19cffbbc01c0b98825f016e0",
+        "coverage_mean": 0.9976036866359448,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": -0.006282532948677618,
+          "30m": -0.023454761075090383,
+          "60m": -0.013164832076588574
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": 1,
+        "folds": [
+          {
+            "coverage_mean": 0.9952592592592594,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 0.6107771457775828,
+            "mean_one_way_turnover": 0.6688888888888889,
+            "mean_rank_ic": -0.0014508793762821363,
+            "periods": 135,
+            "quantile_monotonicity_mean": -0.010370370370370379,
+            "rank_icir": -0.004548054521619813,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9989333333333333,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 0.5983834271265609,
+            "mean_one_way_turnover": 0.6983333333333334,
+            "mean_rank_ic": -0.012237312677773449,
+            "periods": 150,
+            "quantile_monotonicity_mean": 0.004666666666666663,
+            "rank_icir": -0.0411154066818063,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9983892617449663,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -0.9144367036580273,
+            "mean_one_way_turnover": 0.6795302013422819,
+            "mean_rank_ic": -0.02471188928708281,
+            "periods": 149,
+            "quantile_monotonicity_mean": -0.04161073825503357,
+            "rank_icir": -0.09056144116410797,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.013164832076588574,
+          "30m": -0.02152181497149189,
+          "5m": -0.010818750047407932
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.5295610212035107,
+          "tstat": -0.6286762630920631
+        },
+        "mean_fold_rank_icir": -0.045408300789178034,
+        "mean_long_short_return_bps": 0.08286027627629469,
+        "mean_one_way_turnover": 0.6827188940092165,
+        "positive_fold_ratio": 0.0,
+        "primary_mean_rank_ic": -0.013164832076588574,
+        "quantile_monotonicity": -0.015898617511520732,
+        "return_per_turnover_bps": 0.12136807257479548,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.04479919996894452,
+          "ci_upper": 0.015107804823988337,
+          "pvalue": 0.3758120939530235
+        },
+        "worst_fold_rank_ic": -0.02471188928708281,
+        "worst_fold_rank_icir": -0.09056144116410797
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-dfb77a46df77fb9b69bf4387",
+      "multiplicity": {
+        "bh_qvalue": 0.3988190959020909,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.25869346761216705
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-dfb77a46df77fb9b69bf4387",
+        "coverage_mean": 0.9970212765957447,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.031159905909559117,
+          "30m": 0.01869049487196388,
+          "60m": 0.03726778317143713
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9938461538461538,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 10.905429661335326,
+            "mean_one_way_turnover": 0.247008547008547,
+            "mean_rank_ic": 0.08502070032223905,
+            "periods": 117,
+            "quantile_monotonicity_mean": 0.13076923076923078,
+            "rank_icir": 0.22795957555244015,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9987692307692307,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 10.812628156782209,
+            "mean_one_way_turnover": 0.23076923076923075,
+            "mean_rank_ic": 0.08734432971167379,
+            "periods": 130,
+            "quantile_monotonicity_mean": 0.07999999999999999,
+            "rank_icir": 0.24395045406287078,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9981395348837209,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -8.631972615368513,
+            "mean_one_way_turnover": 0.2604651162790698,
+            "mean_rank_ic": -0.0565077389748775,
+            "periods": 129,
+            "quantile_monotonicity_mean": -0.08062015503875969,
+            "rank_icir": -0.13667005487467762,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.03726778317143713,
+          "30m": 0.038106791424207864,
+          "5m": 0.043843188829531046
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.25869346761216705,
+          "tstat": 1.1294845876160886
+        },
+        "mean_fold_rank_icir": 0.11174665824687775,
+        "mean_long_short_return_bps": 4.170352296211123,
+        "mean_one_way_turnover": 0.24601063829787237,
+        "positive_fold_ratio": 0.6666666666666666,
+        "primary_mean_rank_ic": 0.03726778317143713,
+        "quantile_monotonicity": 0.04069148936170213,
+        "return_per_turnover_bps": 16.951918522977103,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.044876521401280366,
+          "ci_upper": 0.11102209556436693,
+          "pvalue": 0.34782608695652173
+        },
+        "worst_fold_rank_ic": -0.0565077389748775,
+        "worst_fold_rank_icir": -0.13667005487467762
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-4e21108fb599aa192d038272",
+      "multiplicity": {
+        "bh_qvalue": 0.56993426894611,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.5391270111652392
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-4e21108fb599aa192d038272",
+        "coverage_mean": 0.9961245674740484,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.029362706370310295,
+          "30m": 0.019600320367313444,
+          "60m": 0.016910070052277574
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.992,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": -1.577912167263084,
+            "mean_one_way_turnover": 0.57,
+            "mean_rank_ic": 0.018710516536603487,
+            "periods": 90,
+            "quantile_monotonicity_mean": -0.010000000000000016,
+            "rank_icir": 0.06028278600176134,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9984000000000001,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 4.006026902114372,
+            "mean_one_way_turnover": 0.6105000000000002,
+            "mean_rank_ic": 0.014048697768807952,
+            "periods": 100,
+            "quantile_monotonicity_mean": 0.03300000000000001,
+            "rank_icir": 0.043914634601720966,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9975757575757577,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -1.3546353699614773,
+            "mean_one_way_turnover": 0.591919191919192,
+            "mean_rank_ic": 0.0181635755548799,
+            "periods": 99,
+            "quantile_monotonicity_mean": 0.027272727272727275,
+            "rank_icir": 0.06292062559439845,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.016910070052277574,
+          "30m": 0.030071999256781872,
+          "5m": 0.007386454914055896
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.5391270111652392,
+          "tstat": 0.6141336537005007
+        },
+        "mean_fold_rank_icir": 0.05570601539929359,
+        "mean_long_short_return_bps": 0.43073250356945836,
+        "mean_one_way_turnover": 0.591522491349481,
+        "positive_fold_ratio": 1.0,
+        "primary_mean_rank_ic": 0.016910070052277574,
+        "quantile_monotonicity": 0.017647058823529405,
+        "return_per_turnover_bps": 0.728176037037575,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.03495543111234171,
+          "ci_upper": 0.0662809990127836,
+          "pvalue": 0.5392303848075962
+        },
+        "worst_fold_rank_ic": 0.014048697768807952,
+        "worst_fold_rank_icir": 0.043914634601720966
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-4f77c83bbd9cbfc7bbe7aea6",
+      "multiplicity": {
+        "bh_qvalue": 0.22317291770936803,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.03811281673489093
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-4f77c83bbd9cbfc7bbe7aea6",
+        "coverage_mean": 0.9989818181818183,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": -0.0012272353885544795,
+          "30m": -0.006288787399270183,
+          "60m": -0.018138676655944198
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9981286549707603,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": -3.1770497368535455,
+            "mean_one_way_turnover": 1.4078947368421055,
+            "mean_rank_ic": -0.03758634633232408,
+            "periods": 171,
+            "quantile_monotonicity_mean": -0.038011695906432746,
+            "rank_icir": -0.19177400905665748,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9993684210526316,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -0.10159509141846608,
+            "mean_one_way_turnover": 1.4021052631578945,
+            "mean_rank_ic": -0.008368998176039517,
+            "periods": 190,
+            "quantile_monotonicity_mean": 0.0010526315789473769,
+            "rank_icir": -0.03922075272461903,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9993650793650793,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -1.2749897339210783,
+            "mean_one_way_turnover": 1.437830687830688,
+            "mean_rank_ic": -0.01036453589679568,
+            "periods": 189,
+            "quantile_monotonicity_mean": -0.002645502645502648,
+            "rank_icir": -0.04709299245909477,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.018138676655944198,
+          "30m": -0.02005133401045881,
+          "5m": -0.005508115993747916
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.03811281673489093,
+          "tstat": -2.073639361466494
+        },
+        "mean_fold_rank_icir": -0.09269591808012377,
+        "mean_long_short_return_bps": -1.4610029674228155,
+        "mean_one_way_turnover": 1.4161818181818184,
+        "positive_fold_ratio": 0.0,
+        "primary_mean_rank_ic": -0.018138676655944198,
+        "quantile_monotonicity": -0.012363636363636363,
+        "return_per_turnover_bps": -1.0316492901303742,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.03535987586496137,
+          "ci_upper": -0.0012850580825300888,
+          "pvalue": 0.04097951024487756
+        },
+        "worst_fold_rank_ic": -0.03758634633232408,
+        "worst_fold_rank_icir": -0.19177400905665748
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-999abbbe61367860e2f0e737",
+      "multiplicity": {
+        "bh_qvalue": 0.7301485643749449,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.7301485643749449
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-999abbbe61367860e2f0e737",
+        "coverage_mean": 0.9967723342939481,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.014000819293254165,
+          "30m": 0.021382231900054376,
+          "60m": 0.00873039111177504
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": 1,
+        "folds": [
+          {
+            "coverage_mean": 0.9933333333333333,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": -1.8010742845821521,
+            "mean_one_way_turnover": 0.575925925925926,
+            "mean_rank_ic": -0.019850445191615315,
+            "periods": 108,
+            "quantile_monotonicity_mean": -0.048148148148148155,
+            "rank_icir": -0.06125445789238135,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9986666666666667,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 1.5057198022082503,
+            "mean_one_way_turnover": 0.6495833333333333,
+            "mean_rank_ic": 0.028921818426634265,
+            "periods": 120,
+            "quantile_monotonicity_mean": 0.04,
+            "rank_icir": 0.08881433392244997,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.997983193277311,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -3.2424432576564186,
+            "mean_one_way_turnover": 0.6012605042016805,
+            "mean_rank_ic": 0.014308198195666227,
+            "periods": 119,
+            "quantile_monotonicity_mean": 0.01008403361344539,
+            "rank_icir": 0.05178332566191543,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.00873039111177504,
+          "30m": 0.009843988632628992,
+          "5m": 0.006406498147626022
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.7301485643749449,
+          "tstat": 0.34492791434687126
+        },
+        "mean_fold_rank_icir": 0.02644773389732802,
+        "mean_long_short_return_bps": -1.1518166977838513,
+        "mean_one_way_turnover": 0.610086455331412,
+        "positive_fold_ratio": 0.6666666666666666,
+        "primary_mean_rank_ic": 0.00873039111177504,
+        "quantile_monotonicity": 0.0023054755043227745,
+        "return_per_turnover_bps": -1.8879565145535968,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.035444887436855005,
+          "ci_upper": 0.0512007029396699,
+          "pvalue": 0.7131434282858571
+        },
+        "worst_fold_rank_ic": -0.019850445191615315,
+        "worst_fold_rank_icir": -0.06125445789238135
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-faab04bb6a76d58ed3e0095f",
+      "multiplicity": {
+        "bh_qvalue": 0.32095216166427937,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.15600671967148683
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-faab04bb6a76d58ed3e0095f",
+        "coverage_mean": 0.9989818181818183,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.005272622974739252,
+          "30m": 0.007197867211403057,
+          "60m": 0.026624657014955064
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9981286549707603,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 0.7058026533098729,
+            "mean_one_way_turnover": 0.8116959064327485,
+            "mean_rank_ic": 0.033886545778245125,
+            "periods": 171,
+            "quantile_monotonicity_mean": 0.05263157894736842,
+            "rank_icir": 0.11985040481593626,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9993684210526316,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 6.6650643480869896,
+            "mean_one_way_turnover": 0.8978947368421051,
+            "mean_rank_ic": 0.0497583133036849,
+            "periods": 190,
+            "quantile_monotonicity_mean": 0.09105263157894739,
+            "rank_icir": 0.17786172096541725,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9993650793650793,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": 3.7232335744645333,
+            "mean_one_way_turnover": 0.8867724867724869,
+            "mean_rank_ic": -0.003201679881242115,
+            "periods": 189,
+            "quantile_monotonicity_mean": -0.031746031746031744,
+            "rank_icir": -0.009803237879629226,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.026624657014955064,
+          "30m": 0.012048720658645502,
+          "5m": 0.029790299801563506
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.15600671967148683,
+          "tstat": 1.4186306691305954
+        },
+        "mean_fold_rank_icir": 0.09596962930057477,
+        "mean_long_short_return_bps": 3.801355682593297,
+        "mean_one_way_turnover": 0.8672727272727273,
+        "positive_fold_ratio": 0.6666666666666666,
+        "primary_mean_rank_ic": 0.026624657014955064,
+        "quantile_monotonicity": 0.03690909090909092,
+        "return_per_turnover_bps": 4.3831145187134455,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.0036124196991380872,
+          "ci_upper": 0.05701662540008072,
+          "pvalue": 0.08695652173913043
+        },
+        "worst_fold_rank_ic": -0.003201679881242115,
+        "worst_fold_rank_icir": -0.009803237879629226
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-8c0ba73998b666dcdc4cbb65",
+      "multiplicity": {
+        "bh_qvalue": 0.33580494785746123,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.17244037862950712
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-8c0ba73998b666dcdc4cbb65",
+        "coverage_mean": 0.9986180422264874,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.04289089292023852,
+          "30m": 0.021700665432793403,
+          "60m": 0.03658376909750418
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.997530864197531,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 9.00165547091117,
+            "mean_one_way_turnover": 0.29567901234567906,
+            "mean_rank_ic": 0.08898433476145222,
+            "periods": 162,
+            "quantile_monotonicity_mean": 0.09567901234567901,
+            "rank_icir": 0.2513523397740008,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9991111111111112,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 3.782958668311099,
+            "mean_one_way_turnover": 0.3,
+            "mean_rank_ic": 0.040653655872628786,
+            "periods": 180,
+            "quantile_monotonicity_mean": 0.05888888888888889,
+            "rank_icir": 0.11784767920711986,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9991061452513966,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": 1.816098465798406,
+            "mean_one_way_turnover": 0.3365921787709497,
+            "mean_rank_ic": -0.014932830104071301,
+            "periods": 179,
+            "quantile_monotonicity_mean": -0.034078212290502806,
+            "rank_icir": -0.035748626626056275,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.03658376909750418,
+          "30m": 0.03587241140189417,
+          "5m": 0.03643512565148762
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.17244037862950712,
+          "tstat": 1.364404225871169
+        },
+        "mean_fold_rank_icir": 0.11115046411835479,
+        "mean_long_short_return_bps": 4.729908583419427,
+        "mean_one_way_turnover": 0.3112284069097889,
+        "positive_fold_ratio": 0.6666666666666666,
+        "primary_mean_rank_ic": 0.03658376909750418,
+        "quantile_monotonicity": 0.03838771593090211,
+        "return_per_turnover_bps": 15.19754777651262,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.012067396963272421,
+          "ci_upper": 0.08422437043327925,
+          "pvalue": 0.13793103448275862
+        },
+        "worst_fold_rank_ic": -0.014932830104071301,
+        "worst_fold_rank_icir": -0.035748626626056275
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-0190be6c2225de9581a48e07",
+      "multiplicity": {
+        "bh_qvalue": 0.32095216166427937,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.10295376603193897
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-0190be6c2225de9581a48e07",
+        "coverage_mean": 0.9993091537132989,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.0014061068472965676,
+          "30m": -0.005926497681633591,
+          "60m": -0.013125422069503453
+        },
+        "decay_sign_consistency": 0.3333333333333333,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9986666666666666,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": -3.0310666696212247,
+            "mean_one_way_turnover": 1.493888888888889,
+            "mean_rank_ic": -0.02862960195940153,
+            "periods": 180,
+            "quantile_monotonicity_mean": -0.07666666666666665,
+            "rank_icir": -0.14441925552847168,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9996,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -1.2352807878794598,
+            "mean_one_way_turnover": 1.52,
+            "mean_rank_ic": -0.0017564081467428521,
+            "periods": 200,
+            "quantile_monotonicity_mean": 0.003000000000000004,
+            "rank_icir": -0.007882732383651066,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9995979899497488,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -1.562596780911045,
+            "mean_one_way_turnover": 1.5304020100502516,
+            "mean_rank_ic": -0.01052768540804851,
+            "periods": 199,
+            "quantile_monotonicity_mean": -0.021608040201005027,
+            "rank_icir": -0.04506518093410316,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.013125422069503453,
+          "30m": -0.010338020306373426,
+          "5m": 0.00020732885635750233
+        },
+        "frequency_sign_consistency": 0.3333333333333333,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.10295376603193897,
+          "tstat": -1.6306993868917796
+        },
+        "mean_fold_rank_icir": -0.0657890562820753,
+        "mean_long_short_return_bps": -1.9060533981157344,
+        "mean_one_way_turnover": 1.5154576856649395,
+        "positive_fold_ratio": 0.0,
+        "primary_mean_rank_ic": -0.013125422069503453,
+        "quantile_monotonicity": -0.030224525043177894,
+        "return_per_turnover_bps": -1.2577410878215398,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.028778018263536726,
+          "ci_upper": 0.0013040264555234389,
+          "pvalue": 0.09995002498750624
+        },
+        "worst_fold_rank_ic": -0.02862960195940153,
+        "worst_fold_rank_icir": -0.14441925552847168
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-c163a19d8f960532dca57e68",
+      "multiplicity": {
+        "bh_qvalue": 0.32095216166427937,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.13349771791980639
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-c163a19d8f960532dca57e68",
+        "coverage_mean": 0.9982926829268293,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": -0.02632243755196288,
+          "30m": -0.03559732882861233,
+          "60m": -0.027859340011559326
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": 1,
+        "folds": [
+          {
+            "coverage_mean": 0.9968627450980393,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 0.5108485376800528,
+            "mean_one_way_turnover": 0.7522875816993464,
+            "mean_rank_ic": -0.006658363506529927,
+            "periods": 153,
+            "quantile_monotonicity_mean": 0.01568627450980391,
+            "rank_icir": -0.023249956545496362,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9990588235294118,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -2.9232374551011353,
+            "mean_one_way_turnover": 0.8038235294117646,
+            "mean_rank_ic": -0.034328971770356966,
+            "periods": 170,
+            "quantile_monotonicity_mean": -0.08176470588235295,
+            "rank_icir": -0.1225637918491948,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9988165680473373,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -3.7495413149732206,
+            "mean_one_way_turnover": 0.7408284023668639,
+            "mean_rank_ic": -0.0405452098711682,
+            "periods": 169,
+            "quantile_monotonicity_mean": -0.0775147928994083,
+            "rank_icir": -0.13394825424870405,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.027859340011559326,
+          "30m": -0.00743490382821847,
+          "5m": -0.0253871007891595
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.13349771791980639,
+          "tstat": -1.500450610823245
+        },
+        "mean_fold_rank_icir": -0.09325400088113174,
+        "mean_long_short_return_bps": -2.1391524864484124,
+        "mean_one_way_turnover": 0.7661585365853658,
+        "positive_fold_ratio": 0.0,
+        "primary_mean_rank_ic": -0.027859340011559326,
+        "quantile_monotonicity": -0.05,
+        "return_per_turnover_bps": -2.7920494053126914,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.05377730847173217,
+          "ci_upper": -0.004003246910047724,
+          "pvalue": 0.031984007996002
+        },
+        "worst_fold_rank_ic": -0.0405452098711682,
+        "worst_fold_rank_icir": -0.13394825424870405
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-5c11763d949b28b490042f61",
+      "multiplicity": {
+        "bh_qvalue": 0.3866943625414639,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.24037757671496407
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-5c11763d949b28b490042f61",
+        "coverage_mean": 0.9996710526315791,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.034552025302977844,
+          "30m": 0.011392803912025655,
+          "60m": 0.026979247814415384
+        },
+        "decay_sign_consistency": 1.0,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9993650793650793,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 3.207143739851996,
+            "mean_one_way_turnover": 0.48862433862433857,
+            "mean_rank_ic": 0.058030513438219224,
+            "periods": 189,
+            "quantile_monotonicity_mean": 0.07460317460317462,
+            "rank_icir": 0.1652800008998377,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9998095238095238,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -0.617890089905164,
+            "mean_one_way_turnover": 0.5745238095238094,
+            "mean_rank_ic": 0.02952852396887321,
+            "periods": 210,
+            "quantile_monotonicity_mean": 0.029047619047619044,
+            "rank_icir": 0.08638721555865382,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9998086124401915,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": 6.420504362749631,
+            "mean_one_way_turnover": 0.5753588516746411,
+            "mean_rank_ic": -0.0036620784790538626,
+            "periods": 209,
+            "quantile_monotonicity_mean": -0.04688995215311005,
+            "rank_icir": -0.009505145023775596,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": 0.026979247814415384,
+          "30m": 0.029534642456673258,
+          "5m": 0.027422540616517114
+        },
+        "frequency_sign_consistency": 1.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.24037757671496407,
+          "tstat": 1.1740435640454783
+        },
+        "mean_fold_rank_icir": 0.08072069047823864,
+        "mean_long_short_return_bps": 2.9905899009319334,
+        "mean_one_way_turnover": 0.548108552631579,
+        "positive_fold_ratio": 0.6666666666666666,
+        "primary_mean_rank_ic": 0.026979247814415384,
+        "quantile_monotonicity": 0.01710526315789474,
+        "return_per_turnover_bps": 5.456200029307173,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.011196449104574305,
+          "ci_upper": 0.06111410896358247,
+          "pvalue": 0.14442778610694654
+        },
+        "worst_fold_rank_ic": -0.0036620784790538626,
+        "worst_fold_rank_icir": -0.009505145023775596
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-4a5fc89ed57ccbcffa457bf5",
+      "multiplicity": {
+        "bh_qvalue": 0.32095216166427937,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.14271717151786759
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-4a5fc89ed57ccbcffa457bf5",
+        "coverage_mean": 0.9996710526315791,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": 0.005341355669650702,
+          "30m": -0.001047135022644057,
+          "60m": -0.00974676591622975
+        },
+        "decay_sign_consistency": 0.3333333333333333,
+        "dominant_direction": -1,
+        "folds": [
+          {
+            "coverage_mean": 0.9993650793650793,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": -1.8580925123094318,
+            "mean_one_way_turnover": 1.754497354497355,
+            "mean_rank_ic": -0.024595479344047325,
+            "periods": 189,
+            "quantile_monotonicity_mean": -0.04074074074074074,
+            "rank_icir": -0.12015838751527934,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9998095238095238,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": 2.2226984261566898,
+            "mean_one_way_turnover": 1.7447619047619052,
+            "mean_rank_ic": -0.0005411879855653089,
+            "periods": 210,
+            "quantile_monotonicity_mean": 0.03380952380952381,
+            "rank_icir": -0.0025130625476651723,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9998086124401915,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -0.421561981510333,
+            "mean_one_way_turnover": 1.7521531100478471,
+            "mean_rank_ic": -0.00556860576111975,
+            "periods": 209,
+            "quantile_monotonicity_mean": -0.017224880382775126,
+            "rank_icir": -0.02394862275050575,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.00974676591622975,
+          "30m": -0.010338020306373426,
+          "5m": 0.0019998281298826
+        },
+        "frequency_sign_consistency": 0.3333333333333333,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.14271717151786759,
+          "tstat": -1.4657471952256933
+        },
+        "mean_fold_rank_icir": -0.04887335760448342,
+        "mean_long_short_return_bps": 0.04519856995191287,
+        "mean_one_way_turnover": 1.7503289473684212,
+        "positive_fold_ratio": 0.0,
+        "primary_mean_rank_ic": -0.00974676591622975,
+        "quantile_monotonicity": -0.0069078947368421085,
+        "return_per_turnover_bps": 0.02582290032960254,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.022414320706809876,
+          "ci_upper": 0.003220986451329242,
+          "pvalue": 0.14642678660669664
+        },
+        "worst_fold_rank_ic": -0.024595479344047325,
+        "worst_fold_rank_icir": -0.12015838751527934
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-7765832aae6f306b3aac5da3",
+      "multiplicity": {
+        "bh_qvalue": 0.22317291770936803,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.05056375673015974
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-7765832aae6f306b3aac5da3",
+        "coverage_mean": 0.9989818181818183,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": -0.03107305484270655,
+          "30m": -0.03512708647235805,
+          "60m": -0.03338275535054087
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": 1,
+        "folds": [
+          {
+            "coverage_mean": 0.9981286549707603,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 2.2372730569598986,
+            "mean_one_way_turnover": 0.94093567251462,
+            "mean_rank_ic": 0.005894839473116798,
+            "periods": 171,
+            "quantile_monotonicity_mean": 0.02514619883040936,
+            "rank_icir": 0.019897590231626135,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.9993684210526316,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -6.459378053666148,
+            "mean_one_way_turnover": 0.9826315789473684,
+            "mean_rank_ic": -0.06948051605783441,
+            "periods": 190,
+            "quantile_monotonicity_mean": -0.0826315789473684,
+            "rank_icir": -0.2397780400418442,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9993650793650793,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -4.926782416016166,
+            "mean_one_way_turnover": 0.9261904761904761,
+            "mean_rank_ic": -0.03263087270747043,
+            "periods": 189,
+            "quantile_monotonicity_mean": -0.0492063492063492,
+            "rank_icir": -0.10440785517130935,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.03338275535054087,
+          "30m": -0.01684997587047089,
+          "5m": -0.029502624826688084
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.05056375673015974,
+          "tstat": -1.9551636565864081
+        },
+        "mean_fold_rank_icir": -0.10809610166050913,
+        "mean_long_short_return_bps": -3.2288545710608743,
+        "mean_one_way_turnover": 0.9502727272727273,
+        "positive_fold_ratio": 0.3333333333333333,
+        "primary_mean_rank_ic": -0.03338275535054087,
+        "quantile_monotonicity": -0.03763636363636363,
+        "return_per_turnover_bps": -3.3978188349439984,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.05939584992032221,
+          "ci_upper": -0.008169027696409212,
+          "pvalue": 0.010494752623688156
+        },
+        "worst_fold_rank_ic": -0.06948051605783441,
+        "worst_fold_rank_icir": -0.2397780400418442
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    },
+    {
+      "candidate_id": "us-agent-value-candidate-13b659edb06e01096ffa14cb",
+      "multiplicity": {
+        "bh_qvalue": 0.4965090422177066,
+        "holm_adjusted_pvalue": 1.0,
+        "raw_hac_pvalue": 0.40826620797515056
+      },
+      "raw": {
+        "candidate_id": "us-agent-value-candidate-13b659edb06e01096ffa14cb",
+        "coverage_mean": 0.99792656587473,
+        "coverage_min": 0.96,
+        "decay_rank_ic": {
+          "120m": -0.011457083382124816,
+          "30m": -0.02457351070242845,
+          "60m": -0.016737811827740406
+        },
+        "decay_sign_consistency": 0.0,
+        "dominant_direction": 1,
+        "folds": [
+          {
+            "coverage_mean": 0.9961111111111111,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-cf0b4eef7f68bc32297f8f5f",
+            "mean_long_short_return_bps": 1.2843146250473123,
+            "mean_one_way_turnover": 0.7093750000000001,
+            "mean_rank_ic": 0.0041862126329955075,
+            "periods": 144,
+            "quantile_monotonicity_mean": 0.010416666666666654,
+            "rank_icir": 0.013448899542247367,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 9
+          },
+          {
+            "coverage_mean": 0.999,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-8cbef704496b92557948e507",
+            "mean_long_short_return_bps": -0.9675548579151296,
+            "mean_one_way_turnover": 0.7396874999999999,
+            "mean_rank_ic": -0.01354941528267461,
+            "periods": 160,
+            "quantile_monotonicity_mean": -0.002500000000000001,
+            "rank_icir": -0.045555166735822994,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          },
+          {
+            "coverage_mean": 0.9984905660377358,
+            "coverage_min": 0.96,
+            "fold_id": "us-r1-fold-4a67d304894fef90e32cb339",
+            "mean_long_short_return_bps": -5.2326322033661725,
+            "mean_one_way_turnover": 0.7119496855345911,
+            "mean_rank_ic": -0.038896321070234115,
+            "periods": 159,
+            "quantile_monotonicity_mean": -0.0930817610062893,
+            "rank_icir": -0.13513853774606438,
+            "schema_version": "finagent.us-r1-fold-summary.v1",
+            "sessions": 10
+          }
+        ],
+        "frequency_rank_ic": {
+          "15m": -0.016737811827740406,
+          "30m": -0.00743490382821847,
+          "5m": -0.02057549252477135
+        },
+        "frequency_sign_consistency": 0.0,
+        "hac": {
+          "lags": 4,
+          "raw_pvalue": 0.40826620797515056,
+          "tstat": -0.82694857783918
+        },
+        "mean_fold_rank_icir": -0.055748268313213334,
+        "mean_long_short_return_bps": -1.731870392213454,
+        "mean_one_way_turnover": 0.7207343412526996,
+        "positive_fold_ratio": 0.3333333333333333,
+        "primary_mean_rank_ic": -0.016737811827740406,
+        "quantile_monotonicity": -0.029589632829373647,
+        "return_per_turnover_bps": -2.402924757551182,
+        "schema_version": "finagent.us-r1-raw-candidate-evidence.v1",
+        "session_block_bootstrap": {
+          "ci_lower": -0.04889231992244878,
+          "ci_upper": 0.009008060858251583,
+          "pvalue": 0.28285857071464265
+        },
+        "worst_fold_rank_ic": -0.038896321070234115,
+        "worst_fold_rank_icir": -0.13513853774606438
+      },
+      "schema_version": "finagent.us-r1-candidate-robust-evidence.v1"
+    }
+  ],
+  "denominator_id": "us-r1-denominator-be5184ac3883b0799c00c5dc",
+  "evidence_id": "us-r1-family-evidence-c66f370c5b80321b56279580",
+  "multiplicity_semantics": "Holm_and_BH_over_exact_frozen_structural_denominator",
+  "protocol_id": "us-r1-protocol-451a26b7217b52cbb20d2449",
+  "schema_version": "finagent.us-r1-family-evidence.v1",
+  "stage_exit_authority": false,
+  "status_authority": false,
+  "technical_blockers": []
+}

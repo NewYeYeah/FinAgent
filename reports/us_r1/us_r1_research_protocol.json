@@ -1,0 +1,42 @@
+{
+  "annualization_semantics": "presentation_only_frequency_aware_never_used_as_statistical_sample_size",
+  "baseline_protocol_id": "us-baseline-protocol-4e158b8511a57484bcc6f734",
+  "candidate_admission_rule": "latest_completed_a0_phase_all_valid_unique_structural_candidates_deduplicated_no_performance_filter",
+  "decay_horizon_trading_minutes": [
+    30,
+    120
+  ],
+  "embargo_trading_minutes": 60,
+  "hac_lags": {
+    "15m": 4,
+    "30m": 2,
+    "5m": 12
+  },
+  "intraday_flat": true,
+  "label_horizon_trading_minutes": 60,
+  "label_name": "us_same_session_60m_simple_return_raw",
+  "live_capital_authority": false,
+  "multiplicity_methods": [
+    "HOLM",
+    "BH"
+  ],
+  "order_authority": false,
+  "primary_interval": "15m",
+  "protocol_id": "us-r1-protocol-451a26b7217b52cbb20d2449",
+  "purge_trading_minutes": 60,
+  "research_scope": "engineering_universe_bounded_not_marketwide_survivorship_safe_claim",
+  "robustness_intervals": [
+    "5m",
+    "30m"
+  ],
+  "same_session_only": true,
+  "schema_version": "finagent.us-r1-research-protocol.v1",
+  "session_block_bootstrap": {
+    "block_sessions": 5,
+    "samples": 2000,
+    "seed": 20260902,
+    "unit": "session"
+  },
+  "stage_exit_authority": false,
+  "status_authority": false
+}

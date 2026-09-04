@@ -1,0 +1,41 @@
+{
+  "data_version": "us-r1-input-data-version-7338de0088abfdb960faff9a",
+  "denominator_id": "us-r1-denominator-be5184ac3883b0799c00c5dc",
+  "execution_spec_id": "us-r1-fold-execution-24951ec14d5d5c8c77a8b53a",
+  "formation_policy_id": "us-r1-feature-formation-policy-d025d4f6fefbd42c9b139e79",
+  "label_evidence_id": "label-series-df07ac03ecd7997d7846064e",
+  "label_horizon_trading_minutes": 30,
+  "label_plan_id": "label-query-plan-acd0bb5c976b85be2e0dac77",
+  "output_columns": [
+    "research_asset_id",
+    "session_date",
+    "session_id",
+    "event_time",
+    "available_at",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "is_complete",
+    "source_available_at",
+    "source_price",
+    "target_available_at",
+    "label_value",
+    "label_available",
+    "unavailable_reason",
+    "label_row_present",
+    "close_anchor_difference"
+  ],
+  "partition_months": [
+    "2026-03"
+  ],
+  "plan_id": "us-r1-input-plan-131a9fc9352f713cdd7bd7d2",
+  "resampled_plan_id": "minute-query-plan-3a7032640b81340a62b49ee4",
+  "resampling_evidence_id": "minute-resampling-1db4f49139befb309cbb7eb9",
+  "role": "EVALUATION",
+  "schema_version": "finagent.us-r1-input-plan.v1",
+  "selected_size_bytes": 464192938,
+  "signal_interval": "15m",
+  "source_data_version": "sessionized-minute-data-version-501c840eb6055f405a65ca1b"
+}

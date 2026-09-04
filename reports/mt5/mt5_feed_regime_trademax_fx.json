@@ -1,0 +1,120 @@
+{
+  "broker_server": "TradeMaxGlobal-Live",
+  "capability_probe_id": "mt5-capability-probe-311cbc84cf03609f1a56d4de",
+  "complete_for_diagnostic": true,
+  "evidence": [
+    {
+      "broker_server": "TradeMaxGlobal-Live",
+      "capability_probe_id": "mt5-capability-probe-311cbc84cf03609f1a56d4de",
+      "chart_mode": 0,
+      "evidence_id": "mt5-feed-regime-evidence-86f9b8386cee24e7546842df",
+      "execution_authority": false,
+      "feed_lane": "fx_continuous_engineering_fixture",
+      "limitations": [
+        "subscription_delay:unavailable_not_inferred"
+      ],
+      "live_executable_spread_authority": false,
+      "live_market_data_authority": false,
+      "mt5_d0_authority": false,
+      "observed_at": "2026-09-03T16:05:43.898090+00:00",
+      "paper_authority": false,
+      "research_universe_authority": false,
+      "schema_version": "finagent.mt5-feed-regime-evidence.v1",
+      "scope": "mt5_feed_regime_diagnostic_only",
+      "stage_exit_authority": false,
+      "subscription_delay": null,
+      "symbol": "EURUSD",
+      "symbol_spec_id": "mt5-symbol-f825cfa1cdc4e02d2decf972",
+      "ticks_bookdepth": 0,
+      "trade_exemode": 2,
+      "unknown_fields": [
+        "subscription_delay"
+      ],
+      "us_d3_authority": false,
+      "us_i0_authority": false,
+      "visible": true
+    },
+    {
+      "broker_server": "TradeMaxGlobal-Live",
+      "capability_probe_id": "mt5-capability-probe-311cbc84cf03609f1a56d4de",
+      "chart_mode": 0,
+      "evidence_id": "mt5-feed-regime-evidence-f1ec9bade952d81e14b723d3",
+      "execution_authority": false,
+      "feed_lane": "fx_continuous_engineering_fixture",
+      "limitations": [
+        "subscription_delay:unavailable_not_inferred"
+      ],
+      "live_executable_spread_authority": false,
+      "live_market_data_authority": false,
+      "mt5_d0_authority": false,
+      "observed_at": "2026-09-03T16:05:43.898090+00:00",
+      "paper_authority": false,
+      "research_universe_authority": false,
+      "schema_version": "finagent.mt5-feed-regime-evidence.v1",
+      "scope": "mt5_feed_regime_diagnostic_only",
+      "stage_exit_authority": false,
+      "subscription_delay": null,
+      "symbol": "GBPUSD",
+      "symbol_spec_id": "mt5-symbol-c285818478b911307d94d446",
+      "ticks_bookdepth": 0,
+      "trade_exemode": 2,
+      "unknown_fields": [
+        "subscription_delay"
+      ],
+      "us_d3_authority": false,
+      "us_i0_authority": false,
+      "visible": true
+    },
+    {
+      "broker_server": "TradeMaxGlobal-Live",
+      "capability_probe_id": "mt5-capability-probe-311cbc84cf03609f1a56d4de",
+      "chart_mode": 0,
+      "evidence_id": "mt5-feed-regime-evidence-13637a39c7a51911a3def42f",
+      "execution_authority": false,
+      "feed_lane": "fx_continuous_engineering_fixture",
+      "limitations": [
+        "subscription_delay:unavailable_not_inferred"
+      ],
+      "live_executable_spread_authority": false,
+      "live_market_data_authority": false,
+      "mt5_d0_authority": false,
+      "observed_at": "2026-09-03T16:05:43.898090+00:00",
+      "paper_authority": false,
+      "research_universe_authority": false,
+      "schema_version": "finagent.mt5-feed-regime-evidence.v1",
+      "scope": "mt5_feed_regime_diagnostic_only",
+      "stage_exit_authority": false,
+      "subscription_delay": null,
+      "symbol": "USDJPY",
+      "symbol_spec_id": "mt5-symbol-7ef3b7079e8e08c2f9b1d158",
+      "ticks_bookdepth": 0,
+      "trade_exemode": 2,
+      "unknown_fields": [
+        "subscription_delay"
+      ],
+      "us_d3_authority": false,
+      "us_i0_authority": false,
+      "visible": true
+    }
+  ],
+  "execution_authority": false,
+  "feed_lane": "fx_continuous_engineering_fixture",
+  "generated_at": "2026-09-03T16:05:43.898090+00:00",
+  "issues": [],
+  "live_executable_spread_authority": false,
+  "live_market_data_authority": false,
+  "mt5_d0_authority": false,
+  "paper_authority": false,
+  "report_id": "mt5-feed-regime-report-09bcfe4f3cb8cc8fd6fe2c8c",
+  "requested_symbols": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY"
+  ],
+  "research_universe_authority": false,
+  "schema_version": "finagent.mt5-feed-regime-report.v1",
+  "scope": "mt5_feed_regime_diagnostic_only",
+  "stage_exit_authority": false,
+  "us_d3_authority": false,
+  "us_i0_authority": false
+}

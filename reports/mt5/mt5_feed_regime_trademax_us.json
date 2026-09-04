@@ -1,0 +1,156 @@
+{
+  "broker_server": "TradeMaxGlobal-Live",
+  "capability_probe_id": "mt5-capability-probe-1d3942fc246d4f32be5ac579",
+  "complete_for_diagnostic": true,
+  "evidence": [
+    {
+      "broker_server": "TradeMaxGlobal-Live",
+      "capability_probe_id": "mt5-capability-probe-1d3942fc246d4f32be5ac579",
+      "chart_mode": 0,
+      "evidence_id": "mt5-feed-regime-evidence-4e27d62471b2e232425ed4e0",
+      "execution_authority": false,
+      "feed_lane": "target_broker_current_us_equity_or_cfd",
+      "limitations": [
+        "symbol:not_visible",
+        "subscription_delay:unavailable_symbol_not_visible"
+      ],
+      "live_executable_spread_authority": false,
+      "live_market_data_authority": false,
+      "mt5_d0_authority": false,
+      "observed_at": "2026-09-03T16:05:45.228970+00:00",
+      "paper_authority": false,
+      "research_universe_authority": false,
+      "schema_version": "finagent.mt5-feed-regime-evidence.v1",
+      "scope": "mt5_feed_regime_diagnostic_only",
+      "stage_exit_authority": false,
+      "subscription_delay": null,
+      "symbol": "AMD.NAS",
+      "symbol_spec_id": "mt5-symbol-3d44d7e2983964e9d8c23ca3",
+      "ticks_bookdepth": 0,
+      "trade_exemode": 2,
+      "unknown_fields": [
+        "subscription_delay"
+      ],
+      "us_d3_authority": false,
+      "us_i0_authority": false,
+      "visible": false
+    },
+    {
+      "broker_server": "TradeMaxGlobal-Live",
+      "capability_probe_id": "mt5-capability-probe-1d3942fc246d4f32be5ac579",
+      "chart_mode": 0,
+      "evidence_id": "mt5-feed-regime-evidence-5a5770cc0d16cffe25205f25",
+      "execution_authority": false,
+      "feed_lane": "target_broker_current_us_equity_or_cfd",
+      "limitations": [
+        "symbol:not_visible",
+        "subscription_delay:unavailable_symbol_not_visible"
+      ],
+      "live_executable_spread_authority": false,
+      "live_market_data_authority": false,
+      "mt5_d0_authority": false,
+      "observed_at": "2026-09-03T16:05:45.228970+00:00",
+      "paper_authority": false,
+      "research_universe_authority": false,
+      "schema_version": "finagent.mt5-feed-regime-evidence.v1",
+      "scope": "mt5_feed_regime_diagnostic_only",
+      "stage_exit_authority": false,
+      "subscription_delay": null,
+      "symbol": "INTC.NAS",
+      "symbol_spec_id": "mt5-symbol-3f40c95e82dace02d0650294",
+      "ticks_bookdepth": 0,
+      "trade_exemode": 2,
+      "unknown_fields": [
+        "subscription_delay"
+      ],
+      "us_d3_authority": false,
+      "us_i0_authority": false,
+      "visible": false
+    },
+    {
+      "broker_server": "TradeMaxGlobal-Live",
+      "capability_probe_id": "mt5-capability-probe-1d3942fc246d4f32be5ac579",
+      "chart_mode": 0,
+      "evidence_id": "mt5-feed-regime-evidence-b22ab7c40ec847fc40ff8419",
+      "execution_authority": false,
+      "feed_lane": "target_broker_current_us_equity_or_cfd",
+      "limitations": [
+        "symbol:not_visible",
+        "subscription_delay:unavailable_symbol_not_visible"
+      ],
+      "live_executable_spread_authority": false,
+      "live_market_data_authority": false,
+      "mt5_d0_authority": false,
+      "observed_at": "2026-09-03T16:05:45.228970+00:00",
+      "paper_authority": false,
+      "research_universe_authority": false,
+      "schema_version": "finagent.mt5-feed-regime-evidence.v1",
+      "scope": "mt5_feed_regime_diagnostic_only",
+      "stage_exit_authority": false,
+      "subscription_delay": null,
+      "symbol": "MSFT.NAS",
+      "symbol_spec_id": "mt5-symbol-d486f62c9c4275041ecb61f6",
+      "ticks_bookdepth": 0,
+      "trade_exemode": 2,
+      "unknown_fields": [
+        "subscription_delay"
+      ],
+      "us_d3_authority": false,
+      "us_i0_authority": false,
+      "visible": false
+    },
+    {
+      "broker_server": "TradeMaxGlobal-Live",
+      "capability_probe_id": "mt5-capability-probe-1d3942fc246d4f32be5ac579",
+      "chart_mode": 0,
+      "evidence_id": "mt5-feed-regime-evidence-9e57485a161f96472837e23f",
+      "execution_authority": false,
+      "feed_lane": "target_broker_current_us_equity_or_cfd",
+      "limitations": [
+        "symbol:not_visible",
+        "subscription_delay:unavailable_symbol_not_visible"
+      ],
+      "live_executable_spread_authority": false,
+      "live_market_data_authority": false,
+      "mt5_d0_authority": false,
+      "observed_at": "2026-09-03T16:05:45.228970+00:00",
+      "paper_authority": false,
+      "research_universe_authority": false,
+      "schema_version": "finagent.mt5-feed-regime-evidence.v1",
+      "scope": "mt5_feed_regime_diagnostic_only",
+      "stage_exit_authority": false,
+      "subscription_delay": null,
+      "symbol": "NVDA.NAS",
+      "symbol_spec_id": "mt5-symbol-ea2e9b93a3ea43323349f0e5",
+      "ticks_bookdepth": 0,
+      "trade_exemode": 2,
+      "unknown_fields": [
+        "subscription_delay"
+      ],
+      "us_d3_authority": false,
+      "us_i0_authority": false,
+      "visible": false
+    }
+  ],
+  "execution_authority": false,
+  "feed_lane": "target_broker_current_us_equity_or_cfd",
+  "generated_at": "2026-09-03T16:05:45.228970+00:00",
+  "issues": [],
+  "live_executable_spread_authority": false,
+  "live_market_data_authority": false,
+  "mt5_d0_authority": false,
+  "paper_authority": false,
+  "report_id": "mt5-feed-regime-report-d80abf4e7e62e7c801f6f426",
+  "requested_symbols": [
+    "AMD.NAS",
+    "INTC.NAS",
+    "MSFT.NAS",
+    "NVDA.NAS"
+  ],
+  "research_universe_authority": false,
+  "schema_version": "finagent.mt5-feed-regime-report.v1",
+  "scope": "mt5_feed_regime_diagnostic_only",
+  "stage_exit_authority": false,
+  "us_d3_authority": false,
+  "us_i0_authority": false
+}

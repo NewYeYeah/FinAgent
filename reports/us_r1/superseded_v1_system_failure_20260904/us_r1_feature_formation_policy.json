@@ -1,0 +1,16 @@
+{
+  "alpha_authority": false,
+  "policy_id": "us-r1-feature-formation-policy-d025d4f6fefbd42c9b139e79",
+  "require_complete_bars": true,
+  "research_protocol_id": "us-r1-protocol-451a26b7217b52cbb20d2449",
+  "reuse_boundary": "existing_us_b0_a0_structural_feature_evaluator",
+  "same_session_only": true,
+  "schema_version": "finagent.us-r1-feature-formation-policy.v1",
+  "status_authority": false,
+  "supported_intervals": [
+    "5m",
+    "15m",
+    "30m"
+  ],
+  "window_semantics": "same_structural_window_bars_at_each_frequency"
+}

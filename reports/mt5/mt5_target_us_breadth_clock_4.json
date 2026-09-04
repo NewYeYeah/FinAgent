@@ -1,0 +1,60 @@
+{
+  "authority": "observed_broker_clock_normalization_only",
+  "blockers": [],
+  "broker_server": "TradeMaxGlobal-Live",
+  "evidence_id": "mt5-broker-clock-evidence-8e222adc931cd68a9f9ba571",
+  "generated_at": "2026-09-03T16:39:55.720031+00:00",
+  "inferred_offset_seconds": 10800,
+  "maximum_abs_residual_seconds": 2.693031000000701,
+  "observations": [
+    {
+      "ask": 1.16363,
+      "bid": 1.16356,
+      "observation_id": "mt5-broker-clock-observation-04c661161dd369b119598fb1",
+      "observed_offset_seconds": 10797.371969,
+      "raw_broker_time_msc": 1788464393092,
+      "raw_broker_wall_time": "2026-09-03T19:39:53.092000+00:00",
+      "retrieved_at_utc": "2026-09-03T16:39:55.720031+00:00",
+      "schema_version": "finagent.mt5-broker-clock-observation.v1",
+      "symbol": "EURUSD"
+    },
+    {
+      "ask": 1.3544,
+      "bid": 1.35432,
+      "observation_id": "mt5-broker-clock-observation-f56e56de9bcefc7109817a1a",
+      "observed_offset_seconds": 10797.805969,
+      "raw_broker_time_msc": 1788464393526,
+      "raw_broker_wall_time": "2026-09-03T19:39:53.526000+00:00",
+      "retrieved_at_utc": "2026-09-03T16:39:55.720031+00:00",
+      "schema_version": "finagent.mt5-broker-clock-observation.v1",
+      "symbol": "GBPUSD"
+    },
+    {
+      "ask": 155.362,
+      "bid": 155.354,
+      "observation_id": "mt5-broker-clock-observation-d21218e2fc5d54c25dc52611",
+      "observed_offset_seconds": 10797.306969,
+      "raw_broker_time_msc": 1788464393027,
+      "raw_broker_wall_time": "2026-09-03T19:39:53.027000+00:00",
+      "retrieved_at_utc": "2026-09-03T16:39:55.720031+00:00",
+      "schema_version": "finagent.mt5-broker-clock-observation.v1",
+      "symbol": "USDJPY"
+    }
+  ],
+  "passed": true,
+  "policy": {
+    "maximum_abs_offset_seconds": 50400,
+    "maximum_reference_residual_seconds": 15.0,
+    "minimum_reference_count": 3,
+    "offset_snap_seconds": 60,
+    "policy_id": "mt5-broker-clock-policy-e5b446d42f50b0b4a2ade7fa",
+    "schema_version": "finagent.mt5-broker-clock-policy.v1"
+  },
+  "reference_count": 3,
+  "reference_symbols": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY"
+  ],
+  "schema_version": "finagent.mt5-broker-clock-evidence.v1"
+}

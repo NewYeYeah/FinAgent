@@ -1,0 +1,21 @@
+{
+  "alpha_authority": false,
+  "candidate_count": 0,
+  "candidate_ids": [],
+  "candidates": [],
+  "denominator_id": "us-r1-denominator-be5184ac3883b0799c00c5dc",
+  "evidence_id": "us-r1-family-evidence-f5e0031256774aaa16681f26",
+  "multiplicity_semantics": "Holm_and_BH_over_exact_frozen_structural_denominator",
+  "protocol_id": "us-r1-protocol-451a26b7217b52cbb20d2449",
+  "schema_version": "finagent.us-r1-family-evidence.v1",
+  "stage_exit_authority": false,
+  "status_authority": false,
+  "technical_blockers": [
+    "candidate:us-agent-value-candidate-38de1500a8fab962a09741a6:30m:60m:insufficient_metric_periods:0<20",
+    "candidate:us-agent-value-candidate-3626155aa024e67a6b4b86cc:30m:60m:insufficient_metric_periods:0<20",
+    "candidate:us-agent-value-candidate-dfb77a46df77fb9b69bf4387:30m:60m:insufficient_metric_periods:18<20",
+    "candidate:us-agent-value-candidate-4e21108fb599aa192d038272:30m:60m:insufficient_metric_periods:0<20",
+    "candidate:us-agent-value-candidate-999abbbe61367860e2f0e737:30m:60m:insufficient_metric_periods:9<20",
+    "candidate:us-agent-value-candidate-999abbbe61367860e2f0e737:30m:60m:insufficient_metric_periods:10<20"
+  ]
+}

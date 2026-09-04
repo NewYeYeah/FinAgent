@@ -11,7 +11,6 @@ build/
 .env
 .DS_Store
 /data/
-/reports/
 /.finagent/
 /configs/*secrets*.toml
 !/configs/llm-secrets.example.toml

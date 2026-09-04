@@ -1,0 +1,48 @@
+{
+  "alpha_authority": false,
+  "calendar_id": "trading-calendar-03a9c29f566d6634aedbbbdc",
+  "fold_count": 3,
+  "folds": [
+    {
+      "evaluation_end": "2026-03-02T00:00:00+00:00",
+      "evaluation_start": "2026-02-17T00:00:00+00:00",
+      "fold_id": "us-baseline-fold-f3edf2f91244230bf668bdea",
+      "ordinal": 1,
+      "schema_version": "finagent.us-baseline-walk-forward-fold.v1",
+      "train_end": "2026-02-02T00:00:00+00:00",
+      "train_start": "2026-01-02T00:00:00+00:00",
+      "validation_end": "2026-02-17T00:00:00+00:00",
+      "validation_start": "2026-02-02T00:00:00+00:00"
+    },
+    {
+      "evaluation_end": "2026-03-16T00:00:00+00:00",
+      "evaluation_start": "2026-03-02T00:00:00+00:00",
+      "fold_id": "us-baseline-fold-88d4fcd64816f7613cf60f1b",
+      "ordinal": 2,
+      "schema_version": "finagent.us-baseline-walk-forward-fold.v1",
+      "train_end": "2026-02-17T00:00:00+00:00",
+      "train_start": "2026-01-02T00:00:00+00:00",
+      "validation_end": "2026-03-02T00:00:00+00:00",
+      "validation_start": "2026-02-17T00:00:00+00:00"
+    },
+    {
+      "evaluation_end": "2026-03-30T00:00:00+00:00",
+      "evaluation_start": "2026-03-16T00:00:00+00:00",
+      "fold_id": "us-baseline-fold-1420b446d3a1046150099eaa",
+      "ordinal": 3,
+      "schema_version": "finagent.us-baseline-walk-forward-fold.v1",
+      "train_end": "2026-03-02T00:00:00+00:00",
+      "train_start": "2026-01-02T00:00:00+00:00",
+      "validation_end": "2026-03-16T00:00:00+00:00",
+      "validation_start": "2026-03-02T00:00:00+00:00"
+    }
+  ],
+  "label_name": "us_same_session_60m_simple_return_raw",
+  "market_id": "XNYS",
+  "protocol_id": "us-baseline-walk-forward-abec06d0d72302fcf11958a4",
+  "schema_version": "finagent.us-baseline-walk-forward-protocol.v1",
+  "selection_authority": false,
+  "signal_interval": "15m",
+  "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+  "split_basis": "utc_day_boundaries_filtered_by_xnys_regular_sessions"
+}

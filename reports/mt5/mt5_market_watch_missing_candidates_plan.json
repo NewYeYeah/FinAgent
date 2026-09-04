@@ -1,0 +1,108 @@
+{
+  "add_only": true,
+  "changed_count": 0,
+  "changes": [
+    {
+      "changed": false,
+      "is_visible": false,
+      "symbol": "TSLA.NAS",
+      "was_visible": false
+    },
+    {
+      "changed": false,
+      "is_visible": false,
+      "symbol": "MU.NAS",
+      "was_visible": false
+    },
+    {
+      "changed": false,
+      "is_visible": false,
+      "symbol": "SNDK.NAS",
+      "was_visible": false
+    },
+    {
+      "changed": false,
+      "is_visible": false,
+      "symbol": "GOOGL.NAS",
+      "was_visible": false
+    },
+    {
+      "changed": false,
+      "is_visible": false,
+      "symbol": "META.NAS",
+      "was_visible": false
+    },
+    {
+      "changed": false,
+      "is_visible": false,
+      "symbol": "PLTR.NYS",
+      "was_visible": false
+    },
+    {
+      "changed": false,
+      "is_visible": false,
+      "symbol": "GOOG.NAS",
+      "was_visible": false
+    },
+    {
+      "changed": false,
+      "is_visible": false,
+      "symbol": "TSM.NYS",
+      "was_visible": false
+    },
+    {
+      "changed": false,
+      "is_visible": false,
+      "symbol": "ORCL.NYS",
+      "was_visible": false
+    },
+    {
+      "changed": false,
+      "is_visible": false,
+      "symbol": "NFLX.NAS",
+      "was_visible": false
+    },
+    {
+      "changed": false,
+      "is_visible": false,
+      "symbol": "MSTR.NAS",
+      "was_visible": false
+    },
+    {
+      "changed": false,
+      "is_visible": false,
+      "symbol": "XOM.NYS",
+      "was_visible": false
+    },
+    {
+      "changed": false,
+      "is_visible": false,
+      "symbol": "JPM.NYS",
+      "was_visible": false
+    }
+  ],
+  "execution_authority": false,
+  "live_capital_authority": false,
+  "mode": "dry_run",
+  "order_check_authority": false,
+  "order_send_authority": false,
+  "position_query_authority": false,
+  "requested_symbols": [
+    "TSLA.NAS",
+    "MU.NAS",
+    "SNDK.NAS",
+    "GOOGL.NAS",
+    "META.NAS",
+    "PLTR.NYS",
+    "GOOG.NAS",
+    "TSM.NYS",
+    "ORCL.NYS",
+    "NFLX.NAS",
+    "MSTR.NAS",
+    "XOM.NYS",
+    "JPM.NYS"
+  ],
+  "schema_version": "finagent.mt5-market-watch-change.v1",
+  "stage_exit_authority": false,
+  "terminal_state_mutation": false
+}

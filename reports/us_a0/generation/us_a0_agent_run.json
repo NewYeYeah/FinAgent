@@ -1,0 +1,799 @@
+{
+  "accepted_candidate_count": 16,
+  "accepted_candidate_ids": [
+    "us-agent-value-candidate-f131706d527cb8cbc40116fc",
+    "us-agent-value-candidate-340fbb96b15a633238d5fb63",
+    "us-agent-value-candidate-faab04bb6a76d58ed3e0095f",
+    "us-agent-value-candidate-ab398bc3d19261ecff036331",
+    "us-agent-value-candidate-8c0ba73998b666dcdc4cbb65",
+    "us-agent-value-candidate-0190be6c2225de9581a48e07",
+    "us-agent-value-candidate-c163a19d8f960532dca57e68",
+    "us-agent-value-candidate-5c11763d949b28b490042f61",
+    "us-agent-value-candidate-9ed2d6a987c83d51f5339dca",
+    "us-agent-value-candidate-32151417ddc1442a6d10eec8",
+    "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+    "us-agent-value-candidate-39b4e8ee15e1fae3a53ee859",
+    "us-agent-value-candidate-4a5fc89ed57ccbcffa457bf5",
+    "us-agent-value-candidate-7765832aae6f306b3aac5da3",
+    "us-agent-value-candidate-4f77c83bbd9cbfc7bbe7aea6",
+    "us-agent-value-candidate-13b659edb06e01096ffa14cb"
+  ],
+  "agent_value_gate_authority": false,
+  "alpha_authority": false,
+  "candidate_budget": 16,
+  "duplicate_slot_count": 0,
+  "event_count": 16,
+  "events": [
+    {
+      "arm": "AGENT",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-f131706d527cb8cbc40116fc",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:5",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 5
+      },
+      "candidate_id": "us-agent-value-candidate-f131706d527cb8cbc40116fc",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-d3130abe2f3cb6ebd1708d1c",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-03T18:05:26.667624+00:00",
+        "hypothesis_summary": "Short-term price continuation: recent relative strength over the prior five bars reflects persistent order flow and investor underreaction, so the next move is expected to follow the established trend.",
+        "kind": "momentum",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-0b44b6ce4b09ad71202a3591",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.00030777999999999996,
+          "input_tokens": 598,
+          "latency_ms": 3344.959899999594,
+          "llm_calls": 1,
+          "output_tokens": 267,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 865
+        },
+        "window_bars": 5
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-2d69287f6add45f91afe55de",
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 1,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "AGENT",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-340fbb96b15a633238d5fb63",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:3",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 3
+      },
+      "candidate_id": "us-agent-value-candidate-340fbb96b15a633238d5fb63",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-88153357ba78c9e645a4cd03",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-03T18:05:29.767932+00:00",
+        "hypothesis_summary": "Short-term price extremes tend to reverse over a brief window; a 3-bar lookback captures transient overreaction and mean reversion.",
+        "kind": "reversal",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-9c9d9ec4cdfe7111116e3bab",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.00021698399999999998,
+          "input_tokens": 603,
+          "latency_ms": 3080.512999998973,
+          "llm_calls": 1,
+          "output_tokens": 293,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 896
+        },
+        "window_bars": 3
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-c2a4de0cf7740239a5804c4a",
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 2,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "AGENT",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-faab04bb6a76d58ed3e0095f",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "return_volatility",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "return_volatility:4",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 4
+      },
+      "candidate_id": "us-agent-value-candidate-faab04bb6a76d58ed3e0095f",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-7e0707d6617e8f5aa55ddfa4",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-03T18:05:33.434152+00:00",
+        "hypothesis_summary": "Elevated recent price variability signals heightened uncertainty and unstable order flow, after which short-horizon mean reversion often occurs as liquidity providers adjust.",
+        "kind": "return_volatility",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-d3f64398d54b636510bd21d5",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.00023546400000000003,
+          "input_tokens": 609,
+          "latency_ms": 3646.00739999878,
+          "llm_calls": 1,
+          "output_tokens": 319,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 928
+        },
+        "window_bars": 4
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-f407300cff8cc64917efb072",
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 3,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "AGENT",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-ab398bc3d19261ecff036331",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "close_location",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "close_location:1",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 1
+      },
+      "candidate_id": "us-agent-value-candidate-ab398bc3d19261ecff036331",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-79f39759d6b5e693fb6f1c39",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-03T18:05:36.759367+00:00",
+        "hypothesis_summary": "Captures where the current close sits within the bar's range, indicating intraday sentiment and possible immediate reversal when prices close near extremes.",
+        "kind": "close_location",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-9727ed272ef525345ddad0a8",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.00027748400000000004,
+          "input_tokens": 617,
+          "latency_ms": 3276.896299999862,
+          "llm_calls": 1,
+          "output_tokens": 380,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 997
+        },
+        "window_bars": 1
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-88fbca6ad976b6e4d259bd32",
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 4,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "AGENT",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-8c0ba73998b666dcdc4cbb65",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:5",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 5
+      },
+      "candidate_id": "us-agent-value-candidate-8c0ba73998b666dcdc4cbb65",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-62ae4cf9c6a65b4201835db3",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-03T18:05:39.007581+00:00",
+        "hypothesis_summary": "Price action tends to revert toward its recent average range, indicating a stable intraday volatility regime that can be exploited as a mean-reversion signal.",
+        "kind": "range_mean",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-a46c254f7ad95a5e157dbd44",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.000189704,
+          "input_tokens": 623,
+          "latency_ms": 2205.5648999994446,
+          "llm_calls": 1,
+          "output_tokens": 245,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 868
+        },
+        "window_bars": 5
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-0c6b3baf1f4ff3ae16a74a6f",
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 5,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "AGENT",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-0190be6c2225de9581a48e07",
+        "input_fields": [
+          "volume"
+        ],
+        "kind": "volume_surprise",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "volume_surprise:3",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 3
+      },
+      "candidate_id": "us-agent-value-candidate-0190be6c2225de9581a48e07",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-a10f3bfbcb6cc0958a5401f3",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-03T18:05:42.146210+00:00",
+        "hypothesis_summary": "A short-term volume spike relative to the prior three bars reflects a concentrated information event, and the resulting directional imbalance tends to persist over the same short horizon.",
+        "kind": "volume_surprise",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-be5fefe568bc871abb96bc9f",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.000267584,
+          "input_tokens": 629,
+          "latency_ms": 3119.145999999091,
+          "llm_calls": 1,
+          "output_tokens": 361,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 990
+        },
+        "window_bars": 3
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-1a522c0e080edf037e49a967",
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 6,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "AGENT",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-c163a19d8f960532dca57e68",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:6",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 6
+      },
+      "candidate_id": "us-agent-value-candidate-c163a19d8f960532dca57e68",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-e718958fdef6ef844e2b8673",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-03T18:05:51.985608+00:00",
+        "hypothesis_summary": "A six-bar momentum factor captures gradual information diffusion, where sustained price changes persist as institutional rebalancing drives trend continuation.",
+        "kind": "momentum",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-aa3a05fe68723fd836600a26",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.000832984,
+          "input_tokens": 637,
+          "latency_ms": 9821.7652000003,
+          "llm_calls": 1,
+          "output_tokens": 1215,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 1852
+        },
+        "window_bars": 6
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-fc26105e8d22436940397466",
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 7,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "AGENT",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-5c11763d949b28b490042f61",
+        "input_fields": [
+          "high",
+          "low",
+          "close"
+        ],
+        "kind": "range_mean",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "range_mean:2",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 2
+      },
+      "candidate_id": "us-agent-value-candidate-5c11763d949b28b490042f61",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-138a55c79954907eef0166b9",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-03T18:05:54.446554+00:00",
+        "hypothesis_summary": "Range compression over a very short window reflects temporary consolidation and uncertainty; when the mean range is unusually low relative to recent bars, it often precedes an expansion or reversion that this structure aims to capture.",
+        "kind": "range_mean",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-3697fa6f9b9ec794fc615efd",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.000200704,
+          "input_tokens": 643,
+          "latency_ms": 2442.0332000008784,
+          "llm_calls": 1,
+          "output_tokens": 255,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 898
+        },
+        "window_bars": 2
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-0e3d99126b87fe8a8eed9958",
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 8,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "AGENT",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-9ed2d6a987c83d51f5339dca",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:2",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 2
+      },
+      "candidate_id": "us-agent-value-candidate-9ed2d6a987c83d51f5339dca",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-4160c93b7f6fd6bf5352e658",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-03T18:05:57.424458+00:00",
+        "hypothesis_summary": "A two-bar momentum structure exploits the tendency for short-term price persistence to follow recent directional moves in high-frequency equity data.",
+        "kind": "momentum",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-2aef6c7129d61bd8465c22b5",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.000282544,
+          "input_tokens": 649,
+          "latency_ms": 2935.80750000001,
+          "llm_calls": 1,
+          "output_tokens": 377,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 1026
+        },
+        "window_bars": 2
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-df3840fc3a368efc34604a63",
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 9,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "AGENT",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-32151417ddc1442a6d10eec8",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:2",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 2
+      },
+      "candidate_id": "us-agent-value-candidate-32151417ddc1442a6d10eec8",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-87dcdc7ea3dbb77675647ede",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-03T18:06:02.255260+00:00",
+        "hypothesis_summary": "Over a 2-bar horizon, sharp price moves tend to revert, offering a contrarian signal from short-term overreaction.",
+        "kind": "reversal",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-965d7ac615de5dfb3819b74c",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.000425104,
+          "input_tokens": 655,
+          "latency_ms": 4811.063499999364,
+          "llm_calls": 1,
+          "output_tokens": 591,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 1246
+        },
+        "window_bars": 2
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-528d36d159b3ea204f46c3cd",
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 10,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "AGENT",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:3",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 3
+      },
+      "candidate_id": "us-agent-value-candidate-1ad23ebdf8e2ee1547984ddf",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-6455d9703da53e69143ad839",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-03T18:06:05.690029+00:00",
+        "hypothesis_summary": "Over the past three bars, sustained directional moves tend to persist due to order flow inertia; entering with the short-term trend captures follow-through while limiting horizon risk.",
+        "kind": "momentum",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-dfec9ec3dd0a337a18f70128",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.00027660400000000006,
+          "input_tokens": 661,
+          "latency_ms": 3417.12170000028,
+          "llm_calls": 1,
+          "output_tokens": 364,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 1025
+        },
+        "window_bars": 3
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-ee38e658727918c188f32622",
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 11,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "AGENT",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-39b4e8ee15e1fae3a53ee859",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "reversal",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "reversal:4",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 4
+      },
+      "candidate_id": "us-agent-value-candidate-39b4e8ee15e1fae3a53ee859",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-0119b496771f56d55e98b670",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-03T18:06:08.617047+00:00",
+        "hypothesis_summary": "Short-term price declines over the past 4 bars tend to be followed by a bounce as traders overreact to recent moves, creating a mean-reverting opportunity.",
+        "kind": "reversal",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-bb22080168c3964121e025a0",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.000295744,
+          "input_tokens": 667,
+          "latency_ms": 2867.4448000001576,
+          "llm_calls": 1,
+          "output_tokens": 391,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 1058
+        },
+        "window_bars": 4
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-3d5de4de62d8eb949dff7603",
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 12,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "AGENT",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-4a5fc89ed57ccbcffa457bf5",
+        "input_fields": [
+          "volume"
+        ],
+        "kind": "volume_surprise",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "volume_surprise:2",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 2
+      },
+      "candidate_id": "us-agent-value-candidate-4a5fc89ed57ccbcffa457bf5",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-9f33d8c45bcc50e8e9d462b5",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-03T18:06:13.721900+00:00",
+        "hypothesis_summary": "A two-bar volume spike signals heightened information-driven participation, so abnormal trading activity may precede a short-term continuation in price direction.",
+        "kind": "volume_surprise",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-f5e4b6cef65829e9df2a0c41",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.000391444,
+          "input_tokens": 673,
+          "latency_ms": 5082.192600000781,
+          "llm_calls": 1,
+          "output_tokens": 534,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 1207
+        },
+        "window_bars": 2
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-38aa88d6cdc594378ed2b06f",
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 13,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "AGENT",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-7765832aae6f306b3aac5da3",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:4",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 4
+      },
+      "candidate_id": "us-agent-value-candidate-7765832aae6f306b3aac5da3",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-3063fc85fb973de48af01bb1",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-03T18:06:19.019361+00:00",
+        "hypothesis_summary": "Four-bar momentum captures short-lived directional persistence in price as markets absorb order flow, balancing signal strength with reduced late-entry risk.",
+        "kind": "momentum",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-afe1a7dbf2e063670fa2df60",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.00045722400000000005,
+          "input_tokens": 681,
+          "latency_ms": 5255.090999999084,
+          "llm_calls": 1,
+          "output_tokens": 631,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 1312
+        },
+        "window_bars": 4
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-94b1d97d8122f3cab688da12",
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 14,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "AGENT",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-4f77c83bbd9cbfc7bbe7aea6",
+        "input_fields": [
+          "volume"
+        ],
+        "kind": "volume_surprise",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "volume_surprise:4",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 4
+      },
+      "candidate_id": "us-agent-value-candidate-4f77c83bbd9cbfc7bbe7aea6",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-f7cb9198db33f71e45b96afd",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-03T18:06:27.961406+00:00",
+        "hypothesis_summary": "An outsized rise in trading volume relative to its recent norm signals fresh information or heightened participation, and a four-bar window captures whether that unusual activity persists enough to drive a more sustained price move.",
+        "kind": "volume_surprise",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-f2508423d7d4b280f319c2c0",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.000754224,
+          "input_tokens": 687,
+          "latency_ms": 8899.62000000014,
+          "llm_calls": 1,
+          "output_tokens": 1079,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 1766
+        },
+        "window_bars": 4
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-fe4040345fef464435237e9b",
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 15,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    },
+    {
+      "arm": "AGENT",
+      "attempt_index": 0,
+      "candidate": {
+        "candidate_id": "us-agent-value-candidate-13b659edb06e01096ffa14cb",
+        "input_fields": [
+          "close"
+        ],
+        "kind": "momentum",
+        "schema_version": "finagent.us-agent-value-candidate-spec.v1",
+        "structural_key": "momentum:7",
+        "vocabulary_id": "us-agent-value-vocabulary-a25485cf3c63c1c4ffd3bbc4",
+        "window_bars": 7
+      },
+      "candidate_id": "us-agent-value-candidate-13b659edb06e01096ffa14cb",
+      "duplicate_of_candidate_id": null,
+      "event_id": "us-agent-value-generation-event-b73f4bf93d6fa63b5c235a33",
+      "parent_candidate_id": null,
+      "proposal": {
+        "generated_at": "2026-09-03T18:06:31.828661+00:00",
+        "hypothesis_summary": "Short-term price trends persist over the past seven bars, capturing continuation in returns.",
+        "kind": "momentum",
+        "parent_candidate_id": null,
+        "proposal_id": "us-agent-value-proposal-cdc855b3df81ca888c27e736",
+        "schema_version": "finagent.us-agent-value-structured-proposal.v1",
+        "stored_reasoning_scope": "structured_formula_and_short_hypothesis_only_no_chain_of_thought",
+        "usage": {
+          "cost_usd": 0.00033028399999999997,
+          "input_tokens": 695,
+          "latency_ms": 3848.2958000004146,
+          "llm_calls": 1,
+          "output_tokens": 434,
+          "schema_version": "finagent.us-agent-value-generation-usage.v1",
+          "total_tokens": 1129
+        },
+        "window_bars": 7
+      },
+      "repair_attempt": false,
+      "replacement_attempt": false,
+      "round_id": "us-agent-value-round-8d7ce2c8b579fe01d6208462",
+      "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+      "schema_version": "finagent.candidate-generation-event.v1",
+      "slot_index": 16,
+      "status": "VALID_UNIQUE",
+      "validation_reason": null
+    }
+  ],
+  "invalid_slot_count": 0,
+  "repair_count": 0,
+  "replacement_count": 0,
+  "run_id": "us-agent-value-generation-run-02a0f4afbc357550bbbf16a7",
+  "schema_version": "finagent.candidate-generation-run.v1",
+  "spec": {
+    "arm": "AGENT",
+    "candidate_budget": 16,
+    "generator_id": "us_a0_structured_agent_generator_v1",
+    "model_id": "deepseek-v4-flash",
+    "phase": "PILOT",
+    "prompt_template_id": "us-a0-structured-candidate-v1",
+    "protocol_id": "us-agent-value-experiment-protocol-d8b568d76dfa994b2711aa03",
+    "provider_id": "deepseek",
+    "random_seed": null,
+    "run_ordinal": 1,
+    "run_spec_id": "us-agent-value-generation-run-spec-90d98b3925764c799c35e08c",
+    "schema_version": "finagent.us-agent-value-generation-run-spec.v1"
+  },
+  "stage_exit_authority": false,
+  "usage": {
+    "cost_usd": 0.00574186,
+    "input_tokens": 10327,
+    "latency_ms": 68053.52279999715,
+    "llm_calls": 16,
+    "output_tokens": 7736,
+    "schema_version": "finagent.us-agent-value-generation-usage.v1",
+    "total_tokens": 18063
+  }
+}

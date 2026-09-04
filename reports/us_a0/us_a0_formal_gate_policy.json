@@ -1,0 +1,26 @@
+{
+  "agent_value_gate_authority": false,
+  "alpha_authority": false,
+  "cost_treatment": "recorded_and_reported_as_diagnostic_in_v1_no_provider-independent_usd_ceiling",
+  "failure_rate_noninferiority_tolerance": 0.1,
+  "inconclusive_rule": "all complete-evidence outcomes between positive and negative rules",
+  "meaningful_efficiency_advantage_margin": 0.1,
+  "minimum_agent_novel_candidate_count": 1,
+  "negative_rule": "no AGENT run is better than both MANUAL and its ordinal-matched PROGRAMMATIC run on both quality metrics, and AGENT has no meaningful search-efficiency advantage",
+  "phase": "FORMAL",
+  "policy_id": "us-agent-value-gate-policy-d924141d42b767570c5f83f6",
+  "positive_rule": "median quality superiority versus MANUAL and PROGRAMMATIC by the practical margin, preregistered run-level repeatability, PROGRAMMATIC-relative search efficiency non-inferiority, and at least one structurally novel AGENT candidate",
+  "practical_rank_ic_margin": 0.01,
+  "primary_quality_metric": "best_worst_fold_rank_ic",
+  "protocol_id": "us-agent-value-experiment-protocol-d214ae1745ebf76284ec1887",
+  "required_agent_run_win_fraction": {
+    "denominator": 3,
+    "numerator": 2
+  },
+  "schema_version": "finagent.us-agent-value-gate-policy.v1",
+  "secondary_quality_metric": "best_mean_rank_ic",
+  "stage_exit_authority": false,
+  "statistical_interpretation": "preregistered_practical_effect_rule_not_a_p_value_or_deployment_alpha_claim",
+  "status_authority": false,
+  "valid_candidate_rate_noninferiority_tolerance": 0.1
+}

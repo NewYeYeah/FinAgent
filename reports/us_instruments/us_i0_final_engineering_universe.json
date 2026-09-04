@@ -1,0 +1,102 @@
+{
+  "accepted": false,
+  "accepted_mapping_count": 0,
+  "base_finalization": null,
+  "blockers": [
+    "quote_evidence:quote_probe_not_ready",
+    "quote_evidence:insufficient_fresh_quotes:0<20",
+    "quote_evidence:seed_quote_not_fresh:AMD",
+    "quote_evidence:seed_quote_not_fresh:INTC",
+    "quote_evidence:seed_quote_not_fresh:MSFT",
+    "quote_evidence:seed_quote_not_fresh:NVDA",
+    "universe:required_seed_missing:AMD",
+    "universe:required_seed_missing:INTC",
+    "universe:required_seed_missing:MSFT",
+    "universe:required_seed_missing:NVDA",
+    "universe:base_finalization_not_executed"
+  ],
+  "candidate_selection_id": "us-universe-candidate-selection-c35944d1c266c9fcd3d87fd4",
+  "clock_evidence_id": "mt5-broker-clock-evidence-38cc95328e0f621f4f2a53ce",
+  "excluded_by_quote_quality": [],
+  "excluded_by_spread": [],
+  "generated_at": "2026-09-02T04:01:46.091453+00:00",
+  "limitations": [
+    "universe:engineering_integration_only",
+    "universe:not_survivorship_unbiased",
+    "identity:no_point_in_time_security_master",
+    "identity:exact_symbol_match_requires_operator_attestation",
+    "spread:single_quote_snapshot_is_engineering_filter_not_execution_cost_authority",
+    "quote_freshness:bounded_at_probe_and_finalization_time",
+    "broker_clock:normalization_bound_to_observed_clock_evidence"
+  ],
+  "materialization": null,
+  "missing_seed_symbols": [
+    "AMD",
+    "INTC",
+    "MSFT",
+    "NVDA"
+  ],
+  "policy": {
+    "maximum_count": 30,
+    "maximum_current_spread_bps": 50.0,
+    "maximum_future_quote_skew_seconds": 60,
+    "maximum_quote_age_seconds": 900,
+    "minimum_count": 20,
+    "policy_id": "us-universe-final-policy-038584f4e5927165f5c7e36b",
+    "require_broker_server_match": true,
+    "require_clock_evidence": true,
+    "require_operator_attestation": true,
+    "require_probe_identity_match": true,
+    "require_quote_probe_policy_match": true,
+    "require_seed_retention": true,
+    "require_tradable": true,
+    "schema_version": "finagent.us-engineering-universe-finalization-policy.v3",
+    "target_count": 25
+  },
+  "quote_evidence": {
+    "assessed_at": "2026-09-02T04:01:46.091453+00:00",
+    "assessment_id": "us-quote-evidence-b06c9d18e51c3145d9ab126f",
+    "blockers": [
+      "quote_evidence:quote_probe_not_ready",
+      "quote_evidence:insufficient_fresh_quotes:0<20",
+      "quote_evidence:seed_quote_not_fresh:AMD",
+      "quote_evidence:seed_quote_not_fresh:INTC",
+      "quote_evidence:seed_quote_not_fresh:MSFT",
+      "quote_evidence:seed_quote_not_fresh:NVDA"
+    ],
+    "candidate_broker_server": "MetaQuotes-Demo",
+    "candidate_mt5_probe_id": "mt5-capability-probe-db652a528408fda2dd3a606e",
+    "candidate_selection_id": "us-universe-candidate-selection-c35944d1c266c9fcd3d87fd4",
+    "clock_broker_server": "MetaQuotes-Demo",
+    "clock_evidence_id": "mt5-broker-clock-evidence-38cc95328e0f621f4f2a53ce",
+    "clock_evidence_passed": true,
+    "fresh_quote_count": 0,
+    "fresh_quote_symbols": [],
+    "future_quote_symbols": [],
+    "inventory_broker_server": "MetaQuotes-Demo",
+    "passed": false,
+    "quote_broker_server": "MetaQuotes-Demo",
+    "quote_mt5_probe_id": "mt5-capability-probe-db652a528408fda2dd3a606e",
+    "quote_probe_policy_matches": true,
+    "quote_probe_ready": false,
+    "quote_report_id": "us-candidate-quote-probe-1f71941224f3aeb2c5871d4f",
+    "required_seed_symbols": [
+      "AMD",
+      "INTC",
+      "MSFT",
+      "NVDA"
+    ],
+    "schema_version": "finagent.us-quote-evidence-assessment.v2",
+    "stale_quote_symbols": []
+  },
+  "report_id": "us-engineering-universe-finalization-5ab465ffa076c00a0bc113fe",
+  "required_seed_symbols": [
+    "AMD",
+    "INTC",
+    "MSFT",
+    "NVDA"
+  ],
+  "schema_version": "finagent.us-engineering-universe-finalization-report.v3",
+  "selected_symbols": [],
+  "universe_id": null
+}

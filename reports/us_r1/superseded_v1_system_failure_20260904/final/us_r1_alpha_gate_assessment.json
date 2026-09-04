@@ -1,0 +1,24 @@
+{
+  "alpha_authority": false,
+  "assessment_id": "us-r1-alpha-gate-assessment-8167fbf86d663ddd3ea2bcd6",
+  "candidates": [],
+  "denominator_id": "us-r1-denominator-be5184ac3883b0799c00c5dc",
+  "family_evidence_id": "us-r1-family-evidence-f5e0031256774aaa16681f26",
+  "live_capital_authority": false,
+  "order_authority": false,
+  "policy_id": "us-r1-alpha-gate-policy-92c02d52e0b6227daaf8da4c",
+  "recommendation_authority": "deterministic_preregistered_policy_only",
+  "robust_candidate_ids": [],
+  "schema_version": "finagent.us-r1-alpha-gate-assessment.v1",
+  "stage_exit_authority": false,
+  "status_authority": false,
+  "technical_blockers": [
+    "candidate:us-agent-value-candidate-38de1500a8fab962a09741a6:30m:60m:insufficient_metric_periods:0<20",
+    "candidate:us-agent-value-candidate-3626155aa024e67a6b4b86cc:30m:60m:insufficient_metric_periods:0<20",
+    "candidate:us-agent-value-candidate-dfb77a46df77fb9b69bf4387:30m:60m:insufficient_metric_periods:18<20",
+    "candidate:us-agent-value-candidate-4e21108fb599aa192d038272:30m:60m:insufficient_metric_periods:0<20",
+    "candidate:us-agent-value-candidate-999abbbe61367860e2f0e737:30m:60m:insufficient_metric_periods:9<20",
+    "candidate:us-agent-value-candidate-999abbbe61367860e2f0e737:30m:60m:insufficient_metric_periods:10<20"
+  ],
+  "terminal": "SYSTEM_FAILURE"
+}

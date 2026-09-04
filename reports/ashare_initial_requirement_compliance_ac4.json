@@ -1,0 +1,458 @@
+{
+  "audit_complete": true,
+  "audit_id": "ac4-audit-00344acf0bebbd2175f40eae",
+  "audit_name": "FinAgent A-share Historical v1.0 initial requirement compliance",
+  "authority": "read_only_compliance_audit_no_financial_or_operational_authority",
+  "deferred_capabilities": [
+    "benchmark_evidence",
+    "corporate_actions",
+    "capacity_impact",
+    "advanced_risk",
+    "internal_paper",
+    "realtime_gateway",
+    "qmt"
+  ],
+  "git_sha": "52856ce69fb713d486c0476117528d4c86fcb9a7",
+  "historical_freeze_ready": true,
+  "manifest": {
+    "path": "configs/acceptance/ashare_initial_requirement_compliance_ac4.toml",
+    "sha256": "aa2ab779b044d744427e2a6167519839576ab76d97a3808d92615b4c9ed65b96"
+  },
+  "production_reserve_authority": false,
+  "required_requirement_ids": [
+    "pit_data_adapter_research_dataset",
+    "agent_research_framework",
+    "robust_factor_a2p6",
+    "a3_ashare_execution_semantics",
+    "a4_execution_aware_portfolio",
+    "immutable_evidence_identity_replay",
+    "a5_one_shot_infrastructure",
+    "evidence_governance",
+    "workbench_foundation",
+    "strategy_analytics",
+    "factor_analytics",
+    "portfolio_execution_analytics",
+    "v4_linked_acceptance",
+    "historical_workbench_control",
+    "ohlc_evidence",
+    "benchmark_evidence",
+    "corporate_actions",
+    "capacity_impact",
+    "advanced_risk",
+    "internal_paper",
+    "realtime_gateway",
+    "qmt"
+  ],
+  "requirements": [
+    {
+      "disposition": "close in Historical v1.0",
+      "implementation": [
+        "src/finagent/ports.py",
+        "src/finagent/domain/research.py",
+        "src/finagent/data/local_ashare_adapter.py"
+      ],
+      "rationale": "Point-in-time dataset, explicit split and local frozen A-share adapter contracts are implemented and regression-tested.",
+      "requirement": "PIT DataAdapter / ResearchDataset numerical contract",
+      "requirement_id": "pit_data_adapter_research_dataset",
+      "source_plan": [
+        "docs/development/current-development-plan-v2.md",
+        "docs/development/current-development-plan-v4.0.md"
+      ],
+      "status": "PASS",
+      "test_evidence": [
+        "tests/test_data_adapter_phase1.py",
+        "tests/test_numerical_data_contract.py",
+        "tests/test_local_ashare_data_layer_v126.py"
+      ]
+    },
+    {
+      "disposition": "close in Historical v1.0",
+      "implementation": [
+        "src/finagent/agents/llm_feature.py",
+        "src/finagent/research/factor_discovery.py",
+        "src/finagent/research/resilient_candidate_generator.py"
+      ],
+      "rationale": "Generated code is bounded by schema/AST/sandbox rules, repair/replacement is bounded, and validation/reserve evidence is excluded from Agent feedback.",
+      "requirement": "Bounded Agent research and generated-feature framework",
+      "requirement_id": "agent_research_framework",
+      "source_plan": [
+        "docs/development/current-development-plan-v2.md"
+      ],
+      "status": "PASS",
+      "test_evidence": [
+        "tests/test_agent_factor_discovery_v123.py",
+        "tests/test_agent_generation_robustness_observability.py",
+        "tests/test_phase3d_feature_generation.py"
+      ]
+    },
+    {
+      "disposition": "close in Historical v1.0",
+      "implementation": [
+        "src/finagent/research/ashare_robust_program.py",
+        "src/finagent/application/ashare_research_workflows.py"
+      ],
+      "rationale": "Immutable program identity, expanding walk-forward, multiplicity-aware gate, exact replay and explicit no-alpha terminal state are implemented.",
+      "requirement": "Robust Factor / A2.6 research program",
+      "requirement_id": "robust_factor_a2p6",
+      "source_plan": [
+        "docs/development/current-development-plan-v2.md",
+        "docs/development/current-development-plan-v4.0.md"
+      ],
+      "status": "PASS",
+      "test_evidence": [
+        "tests/test_ashare_robust_research_a26.py",
+        "tests/test_ashare_factor_acceptance_a2.py"
+      ]
+    },
+    {
+      "disposition": "close in Historical v1.0",
+      "implementation": [
+        "src/finagent/domain/ashare_execution.py",
+        "src/finagent/data/ashare_execution.py",
+        "src/finagent/services/ashare_execution.py"
+      ],
+      "rationale": "T+1 inventory, board quantity rules, suspension/price-limit tradeability, fee and cash semantics are isolated and tested as A-share-specific behavior.",
+      "requirement": "A3 A-share execution semantics",
+      "requirement_id": "a3_ashare_execution_semantics",
+      "source_plan": [
+        "docs/development/current-development-plan-v2.md"
+      ],
+      "status": "PASS",
+      "test_evidence": [
+        "tests/test_ashare_execution_a3.py",
+        "tests/test_ashare_execution_edge_cases_a3.py",
+        "tests/test_ashare_suspension_session_semantics_v127.py"
+      ]
+    },
+    {
+      "disposition": "close in Historical v1.0",
+      "implementation": [
+        "src/finagent/backtest/ashare_portfolio.py",
+        "src/finagent/application/ashare_portfolio_workflow.py"
+      ],
+      "rationale": "Frozen A2.6 factors feed execution-aware long-only portfolio validation with gross/net ledgers, costs, risk estimates and replayable economic evidence.",
+      "requirement": "A4 execution-aware historical portfolio validation",
+      "requirement_id": "a4_execution_aware_portfolio",
+      "source_plan": [
+        "docs/development/current-development-plan-v2.md",
+        "docs/development/current-development-plan-v4.0.md"
+      ],
+      "status": "PASS",
+      "test_evidence": [
+        "tests/test_ashare_portfolio_validation_a4.py",
+        "tests/test_phase4_portfolio_research.py"
+      ]
+    },
+    {
+      "disposition": "close in Historical v1.0",
+      "implementation": [
+        "src/finagent/operations/evidence.py",
+        "src/finagent/backtest/strategy_decision_series.py",
+        "src/finagent/research/factor_series.py"
+      ],
+      "rationale": "Core research and analytical series use immutable identities/digests and fail closed on binding or replay mismatch.",
+      "requirement": "Immutable evidence, content identity and exact replay",
+      "requirement_id": "immutable_evidence_identity_replay",
+      "source_plan": [
+        "docs/development/current-development-plan-v2.md",
+        "docs/development/current-development-plan-v3.1.md"
+      ],
+      "status": "PASS",
+      "test_evidence": [
+        "tests/test_strategy_decision_series_v40.py",
+        "tests/test_factor_series_v41.py",
+        "tests/test_ashare_portfolio_validation_a4.py"
+      ]
+    },
+    {
+      "disposition": "close infrastructure requirement; do not consume production reserve for Historical v1.0",
+      "implementation": [
+        "src/finagent/research/ashare_reserve.py",
+        "src/finagent/research/ashare_reserve_runner.py",
+        "src/finagent/research/ashare_reserve_lifecycle.py"
+      ],
+      "rationale": "Eligibility seal, one-shot runner, durable pre-access CONSUMED claim, crash recovery and replay audit are implemented; real reserve use remains separately human-authorized.",
+      "requirement": "A5 one-shot reserve infrastructure",
+      "requirement_id": "a5_one_shot_infrastructure",
+      "source_plan": [
+        "docs/development/current-development-plan-v2.md",
+        "docs/development/current-development-plan-v4.0.md"
+      ],
+      "status": "PASS",
+      "test_evidence": [
+        "tests/test_ashare_reserve_eligibility_a5.py",
+        "tests/test_ashare_reserve_runner_a5.py",
+        "tests/test_ashare_reserve_lifecycle_a5.py"
+      ]
+    },
+    {
+      "disposition": "close in Historical v1.0",
+      "implementation": [
+        "src/finagent/visualization/workspace_v2.py",
+        "src/finagent/visualization/workbench_links.py",
+        "src/finagent/operations/evidence.py"
+      ],
+      "rationale": "Evidence lineage, protocol review, deep links and read-only governance projections are implemented without creating a second financial authority.",
+      "requirement": "Evidence / Governance product surface",
+      "requirement_id": "evidence_governance",
+      "source_plan": [
+        "docs/development/current-development-plan-v2.md",
+        "docs/development/current-development-plan-v3.1.md"
+      ],
+      "status": "PASS",
+      "test_evidence": [
+        "tests/test_workspace_api_v2.py",
+        "tests/test_visualization_semantic_contract_v2.py",
+        "tests/test_workbench_deep_links_v33.py"
+      ]
+    },
+    {
+      "disposition": "close in Historical v1.0",
+      "implementation": [
+        "src/finagent/visualization/workbench_api.py",
+        "src/finagent/visualization/workbench_control_api.py",
+        "workspace/src/workbench/shell.tsx"
+      ],
+      "rationale": "The Evidence/Control two-plane shell, typed context, bounded command vocabulary and deep-link substrate are accepted.",
+      "requirement": "FinAgent Workbench Foundation",
+      "requirement_id": "workbench_foundation",
+      "source_plan": [
+        "docs/development/current-development-plan-v3.1.md"
+      ],
+      "status": "PASS",
+      "test_evidence": [
+        "tests/test_workbench_foundation_v35.py",
+        "tests/test_workspace_api_v2.py",
+        "workspace/e2e/workbench-v3.spec.ts"
+      ]
+    },
+    {
+      "disposition": "close in Historical v1.0",
+      "implementation": [
+        "src/finagent/visualization/strategy_explorer.py",
+        "workspace/src/workbench/strategy.tsx"
+      ],
+      "rationale": "StrategyDecisionSeries authority is projected through bounded read-only routes with target/order/fill/cost context and no browser financial recomputation.",
+      "requirement": "Strategy analytical Workbench",
+      "requirement_id": "strategy_analytics",
+      "source_plan": [
+        "docs/development/current-development-plan-v3.1.md"
+      ],
+      "status": "PASS",
+      "test_evidence": [
+        "tests/test_strategy_explorer_v42.py",
+        "workspace/e2e/strategy-v4.spec.ts"
+      ]
+    },
+    {
+      "disposition": "close in Historical v1.0",
+      "implementation": [
+        "src/finagent/visualization/factor_tearsheet.py",
+        "workspace/src/workbench/factor.tsx"
+      ],
+      "rationale": "FactorSeries and frozen A2.6 inference/gate/correlation evidence are linked with explicit derived-versus-authoritative semantics.",
+      "requirement": "Factor analytical Workbench",
+      "requirement_id": "factor_analytics",
+      "source_plan": [
+        "docs/development/current-development-plan-v3.1.md"
+      ],
+      "status": "PASS",
+      "test_evidence": [
+        "tests/test_factor_tearsheet_v43.py",
+        "tests/test_factor_tearsheet_authority_v43.py",
+        "workspace/e2e/factor-v4.spec.ts"
+      ]
+    },
+    {
+      "disposition": "close in Historical v1.0",
+      "implementation": [
+        "src/finagent/visualization/portfolio_execution.py",
+        "workspace/src/workbench/portfolioExecution.tsx"
+      ],
+      "rationale": "A4 portfolio and V4 strategy/execution evidence are linked for NAV, cost, turnover, order lifecycle and constraint attribution while unavailable evidence remains explicit.",
+      "requirement": "Portfolio and Execution analytical Workbench",
+      "requirement_id": "portfolio_execution_analytics",
+      "source_plan": [
+        "docs/development/current-development-plan-v3.1.md"
+      ],
+      "status": "PASS",
+      "test_evidence": [
+        "tests/test_portfolio_execution_v44.py",
+        "workspace/e2e/portfolio-execution-v4.spec.ts"
+      ]
+    },
+    {
+      "disposition": "close in Historical v1.0",
+      "implementation": [
+        "src/finagent/visualization/linked_analytics_acceptance.py",
+        "src/finagent/visualization/linked_analytics_acceptance_routes.py"
+      ],
+      "rationale": "Linked context, authority declarations, bounded API semantics and no-browser-recomputation policy are machine-accepted.",
+      "requirement": "V4 linked Strategy / Factor / Portfolio / Execution acceptance",
+      "requirement_id": "v4_linked_acceptance",
+      "source_plan": [
+        "docs/development/roadmap-v4.0.md",
+        "docs/development/current-development-plan-v4.0.md"
+      ],
+      "status": "PASS",
+      "test_evidence": [
+        "tests/test_linked_analytics_acceptance_v45.py",
+        "workspace/e2e/linked-analytics-v45.spec.ts"
+      ]
+    },
+    {
+      "disposition": "close in Historical v1.0",
+      "implementation": [
+        "src/finagent/application/ashare_research_workflows.py",
+        "src/finagent/application/ashare_portfolio_workflow.py",
+        "src/finagent/visualization/historical_workbench_control_api.py"
+      ],
+      "rationale": "Reviewed typed historical application services are available through local-only L0/L1 Control with durable CommandRun audit and no reserve/PAPER/broker authority.",
+      "requirement": "Historical Workbench bounded L0/L1 execution",
+      "requirement_id": "historical_workbench_control",
+      "source_plan": [
+        "docs/development/current-development-plan-v3.1.md",
+        "docs/development/current-development-plan-v4.0.md"
+      ],
+      "status": "PASS",
+      "test_evidence": [
+        "tests/test_historical_workbench_operations_ac1.py",
+        "tests/test_control_application_services_v32c1.py"
+      ]
+    },
+    {
+      "disposition": "close daily historical evidence contract; reuse for U.S. intraday",
+      "implementation": [
+        "src/finagent/domain/market_bars.py",
+        "src/finagent/data/market_bar_series.py",
+        "workspace/src/workbench/marketBarChart.tsx"
+      ],
+      "rationale": "Interval/session/timestamp-aware MarketBarSeries evidence is content-addressed, identity-bound and rendered only when verified.",
+      "requirement": "Provider-neutral authoritative OHLC / MarketBarSeries evidence",
+      "requirement_id": "ohlc_evidence",
+      "source_plan": [
+        "docs/development/current-development-plan-v4.0.md"
+      ],
+      "status": "PASS",
+      "test_evidence": [
+        "tests/test_market_bar_series_ac2.py",
+        "workspace/src/workbench/strategyMarketBars.test.tsx"
+      ]
+    },
+    {
+      "disposition": "follow up after authoritative benchmark series is frozen",
+      "implementation": [
+        "src/finagent/portfolio/benchmarks.py"
+      ],
+      "rationale": "Benchmark primitives exist, but Historical v1.0 intentionally does not fabricate benchmark NAV/alpha/beta/information-ratio evidence; v4.0 explicitly permits unavailable state.",
+      "requirement": "Authoritative benchmark and benchmark-relative analytical evidence",
+      "requirement_id": "benchmark_evidence",
+      "source_plan": [
+        "docs/development/current-development-plan-v3.1.md",
+        "docs/development/current-development-plan-v4.0.md"
+      ],
+      "status": "DEFERRED",
+      "test_evidence": []
+    },
+    {
+      "disposition": "follow up in US-D1 with provider-neutral CorporateActionEvent/CashEvent",
+      "implementation": [
+        "src/finagent/operations/corporate_actions.py"
+      ],
+      "rationale": "A-share research uses adjustment-aware market features, but an authoritative cross-market event series is intentionally deferred to the U.S. intraday data contract.",
+      "requirement": "Explicit corporate-action / cash-event evidence contract",
+      "requirement_id": "corporate_actions",
+      "source_plan": [
+        "docs/development/current-development-plan-v4.0.md"
+      ],
+      "status": "DEFERRED",
+      "test_evidence": []
+    },
+    {
+      "disposition": "follow up after preregistered liquidity/impact evidence exists",
+      "implementation": [],
+      "rationale": "A4 records ex-post participation diagnostics but does not claim a capacity or impact model; Historical v1.0 must keep this unavailable.",
+      "requirement": "Capacity / market-impact evidence and analytics",
+      "requirement_id": "capacity_impact",
+      "source_plan": [
+        "docs/development/current-development-plan-v3.1.md",
+        "docs/development/current-development-plan-v4.0.md"
+      ],
+      "status": "DEFERRED",
+      "test_evidence": []
+    },
+    {
+      "disposition": "follow up when authoritative exposure/risk-contribution evidence is persisted",
+      "implementation": [
+        "src/finagent/models/risk/shrinkage.py",
+        "src/finagent/models/risk/factor.py",
+        "src/finagent/models/risk/garch.py"
+      ],
+      "rationale": "Risk models exist and support portfolio construction, but style/industry exposure and risk-contribution product evidence are explicitly outside Historical Workbench 1.0.",
+      "requirement": "Advanced risk attribution / exposure analytics",
+      "requirement_id": "advanced_risk",
+      "source_plan": [
+        "docs/development/current-development-plan-v3.1.md",
+        "docs/development/current-development-plan-v4.0.md"
+      ],
+      "status": "DEFERRED",
+      "test_evidence": [
+        "tests/test_risk_models_phase1.py"
+      ]
+    },
+    {
+      "disposition": "follow up only if an operational A-share strategy resumes; U.S. path uses MT5 demo/PAPER",
+      "implementation": [
+        "src/finagent/operations/paper.py",
+        "src/finagent/operations/paper_strategy.py",
+        "src/finagent/operations/shadow.py"
+      ],
+      "rationale": "Operational primitives are implemented, but v4.0 deliberately does not promote the current A-share historical line to PAPER merely to close v1.0.",
+      "requirement": "Internal PAPER / shadow operational deployment",
+      "requirement_id": "internal_paper",
+      "source_plan": [
+        "docs/development/current-development-plan-v2.md",
+        "docs/development/current-development-plan-v4.0.md"
+      ],
+      "status": "DEFERRED",
+      "test_evidence": [
+        "tests/test_paper_strategy_runtime_v122.py",
+        "tests/test_operations_release_v1.py"
+      ]
+    },
+    {
+      "disposition": "follow up in RT-R0 / RT-R1 before broker integration",
+      "implementation": [],
+      "rationale": "Realtime market/account/order event authority is a post-historical milestone and must not be invented from historical evidence.",
+      "requirement": "Provider-neutral realtime gateway and replayable event substrate",
+      "requirement_id": "realtime_gateway",
+      "source_plan": [
+        "docs/development/current-development-plan-v2.md",
+        "docs/development/current-development-plan-v4.0.md"
+      ],
+      "status": "DEFERRED",
+      "test_evidence": []
+    },
+    {
+      "disposition": "follow up as a future adapter when a real QMT SDK/account can be verified",
+      "implementation": [],
+      "rationale": "v4.0 explicitly defers untestable QMT callback/order/account code and reuses the future provider-neutral realtime architecture instead.",
+      "requirement": "QMT external broker gateway",
+      "requirement_id": "qmt",
+      "source_plan": [
+        "docs/development/current-development-plan-v2.md",
+        "docs/development/current-development-plan-v4.0.md"
+      ],
+      "status": "DEFERRED",
+      "test_evidence": []
+    }
+  ],
+  "reserve_accessed_by_audit": false,
+  "schema_version": "finagent.initial-requirement-compliance-audit.v1",
+  "summary": {
+    "DEFERRED": 7,
+    "N/A": 0,
+    "PARTIAL": 0,
+    "PASS": 15
+  }
+}

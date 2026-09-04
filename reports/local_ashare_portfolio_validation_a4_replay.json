@@ -1,0 +1,117 @@
+{
+  "aggregate": null,
+  "folds": [],
+  "ledger_digest": "a4-execution-ledger-4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "mode": "replay",
+  "portfolio_validation_id": "ashare-portfolio-validation-5d39439bfe9d0c29dde1d62b",
+  "research_outcome": {
+    "execution_validation_passed": false,
+    "policy": {
+      "max_abs_drawdown": 0.35,
+      "max_bootstrap_pvalue": 0.1,
+      "max_cash_fallback_ratio": 0.25,
+      "max_ex_post_participation": 0.1,
+      "max_gross_to_net_return_drag": 0.1,
+      "max_hac_pvalue": 0.1,
+      "max_rejected_order_ratio": 0.5,
+      "min_net_annualized_return": 0.0,
+      "min_net_sharpe": 0.0,
+      "min_positive_fold_ratio": 0.5
+    },
+    "promotion_eligible": false,
+    "reason_codes": [
+      "NO_A2P6_FACTOR_PASSED_PREREGISTERED_GATE",
+      "NO_PORTFOLIO_BACKTEST_EXECUTED",
+      "RESERVE_UNTOUCHED"
+    ],
+    "status": "NO_ROBUST_FACTOR_FAMILY"
+  },
+  "reserve": {
+    "end": "2026-08-21T16:00:00+00:00",
+    "reserve_id": "ashare-reserve-ec17f7003bb4bda337194ed6",
+    "start": "2024-12-31T16:00:00+00:00",
+    "status": "untouched"
+  },
+  "schema_version": "finagent.ashare-portfolio-validation.v1",
+  "scope": "A4 internal execution-aware portfolio validation; no reserve consumption, promotion, PAPER, realtime or live-capital claim",
+  "source_research_status": "NO_ROBUST_FACTOR_FOUND",
+  "system_acceptance": {
+    "passed": true,
+    "status": "PASS"
+  },
+  "validation_spec": {
+    "candidate_selection_id": "ashare-candidate-universe-fc8bd3c86ac304f2d24a8da4",
+    "data_version": "local-ashare-frozen-96f1a2c07f285e6ff41575cf",
+    "fee_schedule_id": "ashare-fee-schedule-ccf4df26a2abb26ac2ebf83b",
+    "gross_execution_config": {
+      "fees": 0.0,
+      "same_tradeability_and_lot_rules": true,
+      "slippage_bps": 0.0
+    },
+    "net_execution_config": {
+      "fee_schedule": {
+        "broker_commission_rate": 0.0003,
+        "bse_handling_rate": 0.000125,
+        "minimum_broker_commission": 5.0,
+        "pass_through_exchange_handling": false,
+        "pass_through_regulatory_fee": false,
+        "regulatory_fee_rate": 2e-05,
+        "schedule_id": "ashare-fee-schedule-ccf4df26a2abb26ac2ebf83b",
+        "sse_szse_handling_rate": 3.41e-05,
+        "stamp_duty_sell_rate": 0.0005,
+        "transfer_fee_rate": 1e-05
+      },
+      "inference_universe_policy_version": "ashare-universe-policy-181bdfc396fee89fea80228d",
+      "require_price_limits": true,
+      "slippage_bps": 5.0
+    },
+    "plan_id": "ashare-walk-forward-plan-26500f9887a91ba5c991f893",
+    "reserve_id": "ashare-reserve-ec17f7003bb4bda337194ed6",
+    "schema_version": "finagent.ashare-portfolio-validation-spec.v1",
+    "scope": "internal execution-aware walk-forward; reserve untouched",
+    "selected_directions": [],
+    "selected_feature_digests": [],
+    "selected_weights": [],
+    "source_program_result_id": "ashare-robust-program-result-538f8ba57118c43a8b900d82",
+    "source_program_spec_id": "ashare-research-program-spec-e268d82871a6ac2f3c4ac5c6",
+    "source_report_digest": "21a007be06bd832979a18996f4093147a27b46d0dd42b928fd288785f9f86ec9",
+    "source_selection_id": "ashare-robust-factor-selection-3806cd3aae7627988ec64bae",
+    "spec_id": "ashare-portfolio-validation-spec-926d56de4185caef2402c5cb",
+    "universe_policy_version": "ashare-universe-policy-181bdfc396fee89fea80228d",
+    "validation_config": {
+      "active_asset_count": 20,
+      "alpha_min_observations": 1000,
+      "alpha_ridge": 1e-08,
+      "annualization": 252.0,
+      "bootstrap_block_length": 20,
+      "bootstrap_samples": 500,
+      "bootstrap_seed": 20260828,
+      "cash_fallback_on_model_error": true,
+      "hac_lags": 5,
+      "initial_cash": 10000000.0,
+      "max_asset_weight": 0.1,
+      "min_active_assets": 10,
+      "minimum_expected_return": 0.0,
+      "optimizer_turnover_penalty": 0.01,
+      "policy": {
+        "max_abs_drawdown": 0.35,
+        "max_bootstrap_pvalue": 0.1,
+        "max_cash_fallback_ratio": 0.25,
+        "max_ex_post_participation": 0.1,
+        "max_gross_to_net_return_drag": 0.1,
+        "max_hac_pvalue": 0.1,
+        "max_rejected_order_ratio": 0.5,
+        "min_net_annualized_return": 0.0,
+        "min_net_sharpe": 0.0,
+        "min_positive_fold_ratio": 0.5
+      },
+      "rebalance_every": 5,
+      "risk_aversion": 5.0,
+      "risk_lookback": 120,
+      "risk_min_observations": 60,
+      "target_cash_weight": 0.05,
+      "winsor_lower_quantile": 0.01,
+      "winsor_upper_quantile": 0.99
+    }
+  }
+}

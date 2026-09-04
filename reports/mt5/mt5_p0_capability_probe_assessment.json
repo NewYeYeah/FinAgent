@@ -1,0 +1,45 @@
+{
+  "assessment": {
+    "accepted": true,
+    "assessment_id": "mt5-p0-assessment-31cbb83d554010e791698384",
+    "blockers": [],
+    "limitations": [
+      "terminal:automated_trading_not_allowed",
+      "history:MSFT:tick_history_unavailable_in_observed_m1_window"
+    ],
+    "policy_id": "mt5-p0-policy-a9e0145cc6af9018f16f75c5",
+    "probe_id": "mt5-capability-probe-db652a528408fda2dd3a606e",
+    "representative_symbols": [
+      "MSFT",
+      "NVDA",
+      "AMD",
+      "INTC"
+    ],
+    "schema_version": "finagent.mt5-p0-acceptance-assessment.v2",
+    "tick_probe_symbols": [
+      "MSFT"
+    ]
+  },
+  "policy": {
+    "expected_package_version": "5.0.6147",
+    "max_spread_staleness_seconds_at_probe_start": 300.0,
+    "minimum_inventory_symbols": 1,
+    "minimum_tick_window_m1_bars": 1,
+    "policy_id": "mt5-p0-policy-a9e0145cc6af9018f16f75c5",
+    "representative_symbols": [
+      "MSFT",
+      "NVDA",
+      "AMD",
+      "INTC"
+    ],
+    "require_m1_history": true,
+    "require_spread": true,
+    "require_tick_measurement": true,
+    "require_tradable": true,
+    "require_visible": true,
+    "schema_version": "finagent.mt5-p0-acceptance-policy.v2",
+    "tick_probe_symbols": [
+      "MSFT"
+    ]
+  }
+}
