@@ -14,6 +14,7 @@ from typing import cast
 import numpy as np
 
 from finagent.domain.market_bars import BarInterval
+from finagent.research.us_a1_factor_graph import FactorGraphSpec
 from finagent.research.us_a1_factor_materialization import (
     CompiledFactorBatch,
     compile_factor_graph_batch,
@@ -248,12 +249,30 @@ class USR2RobustnessCandidateExecution:
             raise ValueError("US-R2 robustness execution candidate slots changed")
         if any(item.signal_interval is not self.signal_interval for item in self.bindings):
             raise ValueError("US-R2 robustness execution mixes signal intervals")
+        root_by_candidate = {item.candidate_id: item for item in self.compiled.roots}
+        bound_candidate_ids = {item.a1_candidate_id for item in self.bindings}
+        if bound_candidate_ids != set(root_by_candidate):
+            raise ValueError("US-R2 robustness compiled numeric roots/bindings differ")
+        for binding in self.bindings:
+            root = root_by_candidate[binding.a1_candidate_id]
+            if binding.root_execution_id != root.root_execution_id:
+                raise ValueError("US-R2 robustness binding/root execution identity mismatch")
+
+    @property
+    def numeric_graph_count(self) -> int:
+        return len(self.compiled.roots)
+
+    @property
+    def collapsed_numeric_graph_count(self) -> int:
+        return len(self.bindings) - self.numeric_graph_count
 
     def to_dict(self) -> dict[str, object]:
         return {
             "signal_interval": self.signal_interval.value,
             "compiled_batch_id": self.compiled.batch_id,
             "candidate_count": len(self.bindings),
+            "numeric_graph_count": self.numeric_graph_count,
+            "collapsed_numeric_graph_count": self.collapsed_numeric_graph_count,
             "naive_node_count": self.compiled.naive_node_count,
             "unique_node_count": self.compiled.unique_node_count,
             "reused_node_count": self.compiled.reused_node_count,
@@ -272,10 +291,10 @@ def compile_us_r2_robustness_candidate_execution(
     if len(denominator.candidates) != FROZEN_CANDIDATE_COUNT:
         raise ValueError("US-R2 robustness candidate execution requires exactly 37 candidates")
 
-    graphs = []
     graph_ids: list[str] = []
     effective_windows: list[int] = []
     feature_spec_ids: list[str] = []
+    unique_graphs: dict[str, FactorGraphSpec] = {}
     for provenance in denominator.candidates:
         candidate = provenance.candidate
         effective_window = effective_us_r1_window_bars(candidate, signal_interval)
@@ -283,21 +302,36 @@ def compile_us_r2_robustness_candidate_execution(
         graph_evidence = validate_factor_graph(graph)
         if not graph_evidence.valid or graph_evidence.canonicalization is None:
             raise RuntimeError("scaled legacy factor graph failed A1 canonical validation")
-        graphs.append(graph)
-        graph_ids.append(graph_evidence.canonicalization.candidate_id)
+        numeric_candidate_id = graph_evidence.canonicalization.candidate_id
+        existing = unique_graphs.get(numeric_candidate_id)
+        if existing is None:
+            unique_graphs[numeric_candidate_id] = graph
+        else:
+            existing_evidence = validate_factor_graph(existing)
+            if (
+                not existing_evidence.valid
+                or existing_evidence.canonicalization is None
+                or existing_evidence.canonicalization.root_digest
+                != graph_evidence.canonicalization.root_digest
+            ):
+                raise RuntimeError("canonical robustness graph identity collision")
+        graph_ids.append(numeric_candidate_id)
         effective_windows.append(effective_window)
         feature_spec_ids.append(compile_us_r1_feature_spec(candidate, signal_interval).spec_id)
 
-    compiled = compile_factor_graph_batch(tuple(graphs))
-    if signal_interval is BarInterval.MINUTE_15 and compiled.batch_id != FROZEN_COMPILED_CANDIDATE_BATCH_ID:
-        raise RuntimeError("15m robustness graph batch diverged from the reviewed primary shared DAG")
+    compiled = compile_factor_graph_batch(tuple(unique_graphs.values()))
+    if signal_interval is BarInterval.MINUTE_15:
+        if len(unique_graphs) != FROZEN_CANDIDATE_COUNT:
+            raise RuntimeError("15m primary-compatible robustness graphs unexpectedly collapsed")
+        if compiled.batch_id != FROZEN_COMPILED_CANDIDATE_BATCH_ID:
+            raise RuntimeError("15m robustness graph batch diverged from the reviewed primary shared DAG")
     root_by_candidate = {item.candidate_id: item for item in compiled.roots}
     bindings = []
     for slot, provenance in enumerate(denominator.candidates):
         a1_candidate_id = graph_ids[slot]
         root = root_by_candidate.get(a1_candidate_id)
         if root is None:
-            raise RuntimeError("compiled robustness DAG lost a candidate root")
+            raise RuntimeError("compiled robustness DAG lost a numeric candidate root")
         candidate = provenance.candidate
         bindings.append(
             USR2RobustnessCandidateBinding(
@@ -357,6 +391,7 @@ class USR2CandidateRobustnessPlan:
             "feature_interval_evaluation_count_per_year": 3,
             "robustness_slice_count": 4,
             "window_conversion": "1+ceil((base_window_bars-1)*15/target_interval_minutes)",
+            "numeric_graph_collisions_preserve_external_candidate_slots": True,
             "direction_refit_allowed": False,
             "primary_15m_60m_feature_recomputation": False,
             "performance_filter_applied": False,
@@ -535,7 +570,9 @@ def _materialize_candidate_matrix(
     for index, row in enumerate(rows):
         indices_by_asset.setdefault(row.research_asset_id, []).append(index)
     node_evaluations = 0
-    binding_by_a1 = {item.a1_candidate_id: item for item in execution.bindings}
+    bindings_by_a1: dict[str, list[USR2RobustnessCandidateBinding]] = {}
+    for binding in execution.bindings:
+        bindings_by_a1.setdefault(binding.a1_candidate_id, []).append(binding)
     for asset in FROZEN_ASSETS:
         indices = indices_by_asset.get(asset)
         if not indices:
@@ -561,14 +598,15 @@ def _materialize_candidate_matrix(
         )
         node_evaluations += materialized.node_series_evaluation_count
         for series in materialized.candidates:
-            binding = binding_by_a1.get(series.candidate_id)
-            if binding is None:
-                raise RuntimeError("robustness materialization returned an unknown candidate")
+            bindings = bindings_by_a1.get(series.candidate_id)
+            if not bindings:
+                raise RuntimeError("robustness materialization returned an unbound numeric candidate")
             if len(series.values) != len(indices):
                 raise RuntimeError("robustness candidate series length mismatch")
-            for local_index, value in enumerate(series.values):
-                if value is not None:
-                    values[indices[local_index], binding.slot] = value
+            for binding in bindings:
+                for local_index, value in enumerate(series.values):
+                    if value is not None:
+                        values[indices[local_index], binding.slot] = value
     return values, node_evaluations
 
 
@@ -830,7 +868,9 @@ def evaluate_us_r2_annual_candidate_robustness(
     stats = USR2AnnualRobustnessEvaluationStats(
         feature_interval_evaluation_count=3,
         node_series_evaluation_count=node_series_evaluation_count,
-        source_slice_row_counts=tuple((slice_id, len(rows_by_slice[slice_id])) for slice_id in expected_slice_ids),
+        source_slice_row_counts=tuple(
+            (slice_id, len(rows_by_slice[slice_id])) for slice_id in expected_slice_ids
+        ),
         metric_slice_formation_counts=tuple(metric_slice_counts),
     )
     return arrays, stats
@@ -1000,17 +1040,26 @@ def parse_us_r2_annual_candidate_robustness_evidence(
         ),
         source_slice_row_counts=tuple(
             (str(key), _integer(value, f"source_slice_row_counts.{key}"))
-            for key, value in sorted(_mapping(document.get("source_slice_row_counts"), "source_slice_row_counts").items())
+            for key, value in sorted(
+                _mapping(
+                    document.get("source_slice_row_counts"), "source_slice_row_counts"
+                ).items()
+            )
         ),
         metric_slice_formation_counts=tuple(
             (str(key), _integer(value, f"metric_slice_formation_counts.{key}"))
             for key, value in sorted(
-                _mapping(document.get("metric_slice_formation_counts"), "metric_slice_formation_counts").items()
+                _mapping(
+                    document.get("metric_slice_formation_counts"),
+                    "metric_slice_formation_counts",
+                ).items()
             )
         ),
         status_counts=tuple(
             (str(key), _integer(value, f"status_counts.{key}"))
-            for key, value in sorted(_mapping(document.get("status_counts"), "status_counts").items())
+            for key, value in sorted(
+                _mapping(document.get("status_counts"), "status_counts").items()
+            )
         ),
         output_filename=_text(document.get("output_filename"), "output_filename"),
         output_size_bytes=_integer(document.get("output_size_bytes"), "output_size_bytes"),
@@ -1167,10 +1216,14 @@ class USR2CandidateRobustnessReport:
             "primary_statistics_report_id": self.primary_statistics_report_id,
             "candidate_count": len(self.candidates),
             "regime_count": len(FROZEN_REGIME_LABELS),
-            "annual_robustness_metric_evidence_ids": list(self.annual_robustness_metric_evidence_ids),
+            "annual_robustness_metric_evidence_ids": list(
+                self.annual_robustness_metric_evidence_ids
+            ),
             "annual_primary_metric_evidence_ids": list(self.annual_primary_metric_evidence_ids),
             "candidates": [item.to_dict() for item in self.candidates],
-            "robustness_passed_candidate_count": sum(item.robustness_passed for item in self.candidates),
+            "robustness_passed_candidate_count": sum(
+                item.robustness_passed for item in self.candidates
+            ),
             "frequency_robustness_evaluated": True,
             "decay_robustness_evaluated": True,
             "direction_refit_applied": False,
