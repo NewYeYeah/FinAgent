@@ -18,7 +18,11 @@ from finagent.research.us_r2_candidate_cache import (
     CANDIDATE_CACHE_FILENAME,
     CANDIDATE_CACHE_PLAN_FILENAME,
     FROZEN_CANDIDATE_COUNT,
+    USR2AnnualCandidateCacheArrays,
+    USR2AnnualCandidateCacheEvidence,
+    USR2AssetCandidateCache,
     USR2CandidateCacheBatchEvidence,
+    USR2CandidateExecution,
     build_us_r2_annual_candidate_cache_evidence,
     build_us_r2_candidate_cache_plan,
     combine_us_r2_asset_candidate_caches,
@@ -102,13 +106,13 @@ def _materialize_year(
     *,
     year: int,
     base_path: Path,
-    execution,
+    execution: USR2CandidateExecution,
     output_path: Path,
     memory_limit: str,
     threads: int,
     temp_directory: Path,
     max_temp_directory_size: str,
-):
+) -> tuple[USR2AnnualCandidateCacheArrays, str, int, tuple[str, ...]]:
     connection = duckdb.connect(database=":memory:")
     try:
         _configure_duckdb(
@@ -125,7 +129,7 @@ def _materialize_year(
             "ORDER BY research_asset_id, available_at"
         )
         cursor = connection.execute(sql)
-        caches = []
+        caches: list[USR2AssetCandidateCache] = []
         current_asset: str | None = None
         current_rows: list[Mapping[str, object]] = []
         seen_assets: set[str] = set()
@@ -258,7 +262,7 @@ def main() -> int:
     source_by_year = {item.year: item for item in base_batch.annual_panels}
     preexisting_years: list[int] = []
     materialized_years: list[int] = []
-    annual_evidence = []
+    annual_evidence: list[USR2AnnualCandidateCacheEvidence] = []
     observed_assets_by_year: dict[int, tuple[str, ...]] = {}
 
     for year in base_batch.requested_years:
