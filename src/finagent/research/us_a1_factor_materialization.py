@@ -322,9 +322,9 @@ def compile_factor_graph_batch(graphs: tuple[FactorGraphSpec, ...]) -> CompiledF
         graph_node_by_id = {item.node_id: item for item in graph.nodes}
         local_execution_ids: dict[str, str] = {}
         for node_id in _topological_node_ids(graph):
-            node = graph_node_by_id[node_id]
-            child_execution_ids = tuple(local_execution_ids[item] for item in node.inputs)
-            compiled = CompiledFactorNode.from_node(node, child_execution_ids)
+            graph_node = graph_node_by_id[node_id]
+            child_execution_ids = tuple(local_execution_ids[item] for item in graph_node.inputs)
+            compiled = CompiledFactorNode.from_node(graph_node, child_execution_ids)
             existing = node_by_execution_id.get(compiled.execution_id)
             if existing is not None and existing.to_dict() != compiled.to_dict():
                 raise RuntimeError("canonical execution ID collision")
