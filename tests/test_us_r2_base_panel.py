@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 
 import duckdb
 import pytest
 
-from finagent.data.minute_store import MinuteMaterialization, MinuteQueryPlan
+from finagent.data.minute_store import (
+    MinuteMaterialization,
+    MinuteQueryPlan,
+    fetch_plan_rows,
+)
 from finagent.data.minute_transform import (
     LabelMaterializationSpec,
     ResamplingSpec,
@@ -35,6 +40,14 @@ from finagent.research.us_r2_frozen_protocol import (
 from finagent.research.us_r2_regime_projection_v2 import (
     canonical_us_r2_regime_endpoint_policy,
 )
+
+
+@dataclass(frozen=True, slots=True)
+class _TestPlan:
+    plan_id: str
+    data_version: str
+    sql: str
+    output_columns: tuple[str, ...]
 
 
 def _calendar() -> TradingCalendarEvidence:
@@ -170,11 +183,17 @@ def _regime_document() -> dict[str, object]:
 def _execute(sql: str) -> tuple[dict[str, object], ...]:
     connection = duckdb.connect(database=":memory:")
     try:
-        cursor = connection.execute(sql)
+        cursor = connection.execute(f"SELECT * FROM ({sql}) AS described_query LIMIT 0")
         columns = tuple(str(item[0]) for item in cursor.description)
-        return tuple(dict(zip(columns, row, strict=True)) for row in cursor.fetchall())
     finally:
         connection.close()
+    plan = _TestPlan(
+        plan_id="synthetic-test-plan",
+        data_version="synthetic-test-data-version",
+        sql=sql,
+        output_columns=columns,
+    )
+    return fetch_plan_rows(plan, limit=100_000)
 
 
 def _reference_rows(
