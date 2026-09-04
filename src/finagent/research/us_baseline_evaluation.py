@@ -91,8 +91,13 @@ def _rank_weights(feature_values: Mapping[str, float]) -> dict[str, float]:
 
 
 def _turnover(previous: Mapping[str, float], current: Mapping[str, float]) -> tuple[float, float]:
-    assets = set(previous).union(current)
-    gross_traded = sum(
+    # Evidence IDs include aggregate turnover diagnostics.  Iterating a set here
+    # made the final floating-point bits depend on PYTHONHASHSEED, which in turn
+    # made otherwise identical B0/A0 evidence non-reproducible across processes.
+    # Sort the asset denominator and use fsum so the reduction order is explicit
+    # and numerically stable.
+    assets = sorted(set(previous).union(current))
+    gross_traded = math.fsum(
         abs(current.get(asset, 0.0) - previous.get(asset, 0.0)) for asset in assets
     )
     return 0.5 * gross_traded, gross_traded
