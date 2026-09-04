@@ -29,6 +29,7 @@ from finagent.research.us_r2_base_panel import (
 )
 from finagent.research.us_r2_frozen_protocol import (
     FROZEN_ASSETS,
+    FROZEN_CALENDAR_ID,
     canonical_us_r2_frozen_protocol,
 )
 from finagent.research.us_r2_regime_projection_v2 import (
@@ -131,7 +132,7 @@ def _source_plan() -> tuple[MinuteQueryPlan, SessionizationEvidence]:
     )
     sessionization = SessionizationEvidence(
         spec_id="synthetic-sessionization-spec",
-        calendar_id=calendar.calendar_id,
+        calendar_id=FROZEN_CALENDAR_ID,
         base_plan_id="synthetic-base-plan",
         sessionized_plan_id=plan.plan_id,
         source_data_version="synthetic-raw-v1",
