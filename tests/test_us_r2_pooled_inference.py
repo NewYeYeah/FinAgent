@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 import pytest
@@ -14,6 +15,9 @@ from finagent.research.us_r1_inference import (
     session_block_bootstrap_mean_test,
 )
 from finagent.research.us_r1_protocol import canonical_us_r1_research_protocol
+from finagent.research.us_r2_evaluation_policy import (
+    canonical_us_r2_statistical_evaluation_policy,
+)
 from finagent.research.us_r2_frozen_protocol import FROZEN_REGIME_LABELS
 from finagent.research.us_r2_pooled_inference import (
     FROZEN_PRIMARY_DIRECTION_EVIDENCE_ID,
@@ -31,6 +35,8 @@ from finagent.research.us_r2_pooled_inference import (
 from finagent.research.us_r2_primary_statistics import (
     METRIC_AVAILABLE,
     USR2AnnualPrimaryMetricArrays,
+    USR2PrimaryDirectionEvidenceSet,
+    USR2PrimaryStatisticsPlan,
 )
 
 _EPOCH_DATE = date(1970, 1, 1)
@@ -301,12 +307,9 @@ def test_primary_report_gate_rejects_any_nonreviewed_content() -> None:
     with pytest.raises(ValueError, match="content-addressed identity mismatch"):
         validate_us_r2_primary_statistics_report_gate(
             document,
-            plan=_Plan(),  # type: ignore[arg-type]
-            direction=_Direction(),  # type: ignore[arg-type]
-            policy=__import__(
-                "finagent.research.us_r2_evaluation_policy",
-                fromlist=["canonical_us_r2_statistical_evaluation_policy"],
-            ).canonical_us_r2_statistical_evaluation_policy(),
+            plan=cast(USR2PrimaryStatisticsPlan, _Plan()),
+            direction=cast(USR2PrimaryDirectionEvidenceSet, _Direction()),
+            policy=canonical_us_r2_statistical_evaluation_policy(),
         )
 
 
