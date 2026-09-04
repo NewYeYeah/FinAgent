@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "src/finagent/research/us_r2_candidate_cache.py"
+      - "src/finagent/research/us_r2_candidate_runtime.py"
       - "scripts/materialize_us_r2_candidate_cache.py"
       - "tests/test_us_r2_candidate_cache.py"
       - "docs/guides/us-r2-candidate-cache.md"
@@ -43,11 +44,14 @@ jobs:
         run: |
           uv run --frozen ruff check \
             src/finagent/research/us_r2_candidate_cache.py \
+            src/finagent/research/us_r2_candidate_runtime.py \
             scripts/materialize_us_r2_candidate_cache.py \
             tests/test_us_r2_candidate_cache.py
           uv run --frozen mypy --strict \
             src/finagent/research/us_r2_candidate_cache.py \
+            src/finagent/research/us_r2_candidate_runtime.py \
             scripts/materialize_us_r2_candidate_cache.py
           uv run --frozen python -m py_compile \
             src/finagent/research/us_r2_candidate_cache.py \
+            src/finagent/research/us_r2_candidate_runtime.py \
             scripts/materialize_us_r2_candidate_cache.py
