@@ -2,21 +2,29 @@ from __future__ import annotations
 
 import argparse
 import json
-from collections.abc import Mapping
+import sys
+from collections.abc import Generator, Mapping
+from contextlib import closing
+from functools import partial
 from pathlib import Path
 from typing import cast
 
 import duckdb
 
+from finagent.data.minute_store.execution import (
+    DuckDBExecutionPolicy,
+    configure_duckdb_connection,
+)
 from finagent.research.us_r2_candidate_robustness import (
     ROBUSTNESS_METRIC_EVIDENCE_FILENAME,
     ROBUSTNESS_METRIC_FILENAME,
     ROBUSTNESS_PLAN_FILENAME,
     ROBUSTNESS_REPORT_FILENAME,
+    USR2RobustnessBaseRow,
     build_us_r2_annual_candidate_robustness_evidence,
     build_us_r2_candidate_robustness_plan,
     build_us_r2_candidate_robustness_report,
-    evaluate_us_r2_annual_candidate_robustness,
+    evaluate_us_r2_annual_candidate_robustness_streaming,
     inspect_completed_us_r2_candidate_robustness_metric,
     load_us_r2_robustness_metric_npz,
     parse_us_r2_robustness_base_row,
@@ -75,6 +83,11 @@ def _write_or_verify_json(path: Path, document: Mapping[str, object] | dict[str,
     )
 
 
+def _progress(event: str, **details: object) -> None:
+    payload = {"event": event, **details}
+    print(json.dumps(payload, sort_keys=True, ensure_ascii=False), file=sys.stderr, flush=True)
+
+
 def _regime_rows(path: Path) -> tuple[Mapping[str, object], ...]:
     target = path.expanduser().resolve()
     if not target.is_file():
@@ -92,18 +105,31 @@ def _regime_rows(path: Path) -> tuple[Mapping[str, object], ...]:
         connection.close()
 
 
-def _load_annual_robustness_rows(
+def _iter_annual_robustness_slices(
     path: Path,
-) -> tuple[dict[str, tuple[object, ...]], int]:
+    *,
+    batch_size: int,
+    execution_policy: DuckDBExecutionPolicy,
+    temp_directory: Path,
+) -> Generator[tuple[str, tuple[USR2RobustnessBaseRow, ...]], None, None]:
     target = path.expanduser().resolve()
     if not target.is_file() or target.name != ROBUSTNESS_BASE_FILENAME:
         raise FileNotFoundError(f"US-R2 annual robustness-base Parquet is missing: {target}")
+    if not 1 <= batch_size <= 100_000:
+        raise ValueError("US-R2 robustness row batch size must be in 1..100000")
     connection = duckdb.connect(database=":memory:")
     try:
-        # One physical annual Parquet scan. All four slice reads below hit only this temp relation.
-        connection.execute(
+        configure_duckdb_connection(
+            connection,
+            execution_policy,
+            temp_directory=temp_directory,
+        )
+        specs = canonical_us_r2_robustness_slices()
+        order_sql = " ".join(
+            f"WHEN '{spec.slice_id}' THEN {index}" for index, spec in enumerate(specs)
+        )
+        cursor = connection.execute(
             """
-            CREATE TEMP TABLE robustness_year AS
             SELECT
                 slice_id,
                 research_asset_id,
@@ -123,44 +149,32 @@ def _load_annual_robustness_rows(
                 unavailable_reason,
                 label_row_present
             FROM read_parquet(?)
+            ORDER BY CASE slice_id """
+            + order_sql
+            + """ ELSE 999 END, available_at, research_asset_id
             """,
             [str(target)],
         )
-        result: dict[str, tuple[object, ...]] = {}
-        for spec in canonical_us_r2_robustness_slices():
-            cursor = connection.execute(
-                """
-                SELECT
-                    slice_id,
-                    research_asset_id,
-                    session_date,
-                    session_id,
-                    event_time,
-                    available_at,
-                    bar_index,
-                    open,
-                    high,
-                    low,
-                    close,
-                    volume,
-                    is_complete,
-                    label_value,
-                    label_available,
-                    unavailable_reason,
-                    label_row_present
-                FROM robustness_year
-                WHERE slice_id = ?
-                ORDER BY available_at, research_asset_id
-                """,
-                [spec.slice_id],
-            )
-            columns = tuple(str(item[0]) for item in cursor.description)
-            rows = tuple(
-                parse_us_r2_robustness_base_row(dict(zip(columns, row, strict=True)))
-                for row in cursor.fetchall()
-            )
-            result[spec.slice_id] = rows
-        return result, 1
+        columns = tuple(str(item[0]) for item in cursor.description)
+        current_slice_id: str | None = None
+        current_rows: list[USR2RobustnessBaseRow] = []
+        while True:
+            raw_rows = cursor.fetchmany(batch_size)
+            if not raw_rows:
+                break
+            for raw_row in raw_rows:
+                row = parse_us_r2_robustness_base_row(
+                    dict(zip(columns, raw_row, strict=True))
+                )
+                if current_slice_id is None:
+                    current_slice_id = row.slice_id
+                elif row.slice_id != current_slice_id:
+                    yield current_slice_id, tuple(current_rows)
+                    current_slice_id = row.slice_id
+                    current_rows = []
+                current_rows.append(row)
+        if current_slice_id is not None:
+            yield current_slice_id, tuple(current_rows)
     finally:
         connection.close()
 
@@ -231,11 +245,45 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("reports/us_r2/robustness/candidate"),
     )
+    parser.add_argument(
+        "--memory-limit",
+        default="512MB",
+        help="Bound DuckDB memory; ordered input may spill to --temp-directory.",
+    )
+    parser.add_argument("--threads", type=int, default=2)
+    parser.add_argument("--max-temp-directory-size", default="20GB")
+    parser.add_argument(
+        "--temp-directory",
+        type=Path,
+        default=Path("data/duckdb_temp/us_r2_candidate_robustness"),
+    )
+    parser.add_argument(
+        "--row-batch-size",
+        type=int,
+        default=4096,
+        help="Number of DuckDB result rows converted to Python at once.",
+    )
     return parser
+
+
+def _evaluation_progress(
+    year: int,
+    event: str,
+    details: Mapping[str, object],
+) -> None:
+    _progress(event, year=year, **details)
 
 
 def main() -> int:
     args = build_parser().parse_args()
+    _progress("candidate_robustness_started")
+    resource_policy = DuckDBExecutionPolicy(
+        memory_limit=args.memory_limit,
+        threads=args.threads,
+        allow_temp_spill=True,
+        max_temp_directory_size=args.max_temp_directory_size,
+        preserve_insertion_order=False,
+    )
     validate_us_r2_frozen_protocol(_read_mapping(args.frozen_protocol))
     denominator = validate_us_r2_candidate_denominator_document(
         _read_mapping(args.candidate_denominator)
@@ -279,6 +327,13 @@ def main() -> int:
     output_data_root = args.output_data_root.expanduser().resolve()
     output_report_root = args.output_report_root.expanduser().resolve()
     _write_or_verify_json(output_report_root / ROBUSTNESS_PLAN_FILENAME, plan.to_dict())
+    _progress(
+        "candidate_robustness_plan_ready",
+        plan_id=plan.plan_id,
+        candidate_count=len(plan.candidate_ids),
+        memory_limit=resource_policy.memory_limit,
+        row_batch_size=args.row_batch_size,
+    )
 
     expected_base_evidence = dict(
         zip(base_batch.requested_years, base_batch.annual_evidence_ids, strict=True)
@@ -304,6 +359,7 @@ def main() -> int:
         if completed.materialization_id != expected_base_materialization[year]:
             raise SystemExit(f"US-R2 robustness-base materialization differs from batch: {year}")
         completed_base[year] = completed
+    _progress("robustness_base_batch_verified", year_count=len(completed_base))
 
     preexisting_years: list[int] = []
     materialized_years: list[int] = []
@@ -312,6 +368,7 @@ def main() -> int:
     feature_interval_evaluation_count = 0
     node_series_evaluation_count = 0
     for year in canonical_us_r2_robustness_years():
+        _progress("annual_metric_check_started", year=year)
         data_path = output_data_root / f"year={year:04d}" / ROBUSTNESS_METRIC_FILENAME
         evidence_path = (
             output_report_root / f"year_{year:04d}" / ROBUSTNESS_METRIC_EVIDENCE_FILENAME
@@ -328,44 +385,64 @@ def main() -> int:
         if completed_metric is not None:
             preexisting_years.append(year)
             annual_metric_evidence[year] = completed_metric
+            _progress(
+                "annual_metric_resumed",
+                year=year,
+                evidence_id=completed_metric.evidence_id,
+                row_count=completed_metric.row_count,
+            )
             continue
 
         base_path = robustness_base_data_root / f"year={year:04d}" / ROBUSTNESS_BASE_FILENAME
-        raw_rows_by_slice, scan_count = _load_annual_robustness_rows(base_path)
-        rows_by_slice = {
-            slice_id: cast(tuple, rows) for slice_id, rows in raw_rows_by_slice.items()
-        }
-        annual_robustness_base_parquet_scan_count += scan_count
-        arrays, stats = evaluate_us_r2_annual_candidate_robustness(
-            rows_by_slice,
-            year=year,
-            plan=plan,
-            regime_sessions=regime_map,
-            policy=policy,
+        _progress("annual_metric_evaluation_started", year=year, input=str(base_path))
+        annual_slices = _iter_annual_robustness_slices(
+            base_path,
+            batch_size=args.row_batch_size,
+            execution_policy=resource_policy,
+            temp_directory=args.temp_directory / f"year_{year:04d}",
         )
+        with closing(annual_slices):
+            robustness_year_arrays, stats = evaluate_us_r2_annual_candidate_robustness_streaming(
+                annual_slices,
+                year=year,
+                plan=plan,
+                regime_sessions=regime_map,
+                policy=policy,
+                progress=partial(_evaluation_progress, year),
+            )
+        annual_robustness_base_parquet_scan_count += 1
         feature_interval_evaluation_count += stats.feature_interval_evaluation_count
         node_series_evaluation_count += stats.node_series_evaluation_count
         content_sha256, output_size_bytes = write_deterministic_us_r2_robustness_metric_npz(
             data_path,
-            arrays,
+            robustness_year_arrays,
         )
-        evidence = build_us_r2_annual_candidate_robustness_evidence(
+        metric_evidence = build_us_r2_annual_candidate_robustness_evidence(
             plan=plan,
             year=year,
             robustness_base_evidence_id=base.evidence_id,
             robustness_base_materialization_id=base.materialization_id,
-            arrays=arrays,
+            arrays=robustness_year_arrays,
             stats=stats,
             output_filename=data_path.name,
             output_size_bytes=output_size_bytes,
             content_sha256=content_sha256,
         )
-        if not evidence.passed:
+        if not metric_evidence.passed:
             raise SystemExit(f"US-R2 annual candidate robustness evidence failed: {year}")
-        _write_or_verify_json(evidence_path, evidence.to_dict())
-        annual_metric_evidence[year] = evidence
+        _write_or_verify_json(evidence_path, metric_evidence.to_dict())
+        annual_metric_evidence[year] = metric_evidence
         materialized_years.append(year)
+        _progress(
+            "annual_metric_materialized",
+            year=year,
+            evidence_id=metric_evidence.evidence_id,
+            row_count=metric_evidence.row_count,
+            output=str(data_path),
+        )
+        del robustness_year_arrays
 
+    _progress("annual_metric_denominator_complete", year_count=len(annual_metric_evidence))
     robustness_arrays = []
     robustness_metric_npz_scan_count = 0
     robustness_evidence_ids: list[str] = []
@@ -391,16 +468,16 @@ def main() -> int:
         evidence_path = (
             primary_report_root / f"year_{year:04d}" / PRIMARY_METRIC_EVIDENCE_FILENAME
         )
-        arrays, evidence = validate_and_load_us_r2_primary_metric_year(
+        primary_year_arrays, primary_evidence = validate_and_load_us_r2_primary_metric_year(
             year=year,
             data_path=primary_data_root / f"year={year:04d}" / PRIMARY_METRIC_FILENAME,
             evidence_document=_read_mapping(evidence_path),
             expected_evidence_id=expected_primary_ids[year],
             plan=primary_plan,
         )
-        primary_arrays.append(arrays)
+        primary_arrays.append(primary_year_arrays)
         primary_metric_npz_scan_count += 1
-        primary_evidence_ids.append(evidence.evidence_id)
+        primary_evidence_ids.append(primary_evidence.evidence_id)
 
     report = build_us_r2_candidate_robustness_report(
         robustness_arrays,
@@ -413,6 +490,11 @@ def main() -> int:
     )
     report_path = output_report_root / ROBUSTNESS_REPORT_FILENAME
     _write_or_verify_json(report_path, report.to_dict())
+    _progress(
+        "candidate_robustness_report_materialized",
+        report_id=report.report_id,
+        output=str(report_path),
+    )
 
     console = {
         "plan_id": plan.plan_id,
@@ -455,4 +537,27 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except SystemExit as exc:
+        if exc.code not in (None, 0):
+            _progress("candidate_robustness_failed", error=str(exc.code))
+        raise
+    except MemoryError as exc:
+        _progress(
+            "candidate_robustness_failed",
+            error_type=type(exc).__name__,
+            error=(
+                "Python memory allocation failed. Existing annual metric/evidence pairs remain "
+                "immutable and will be resumed on the next run. Lower --memory-limit or "
+                "--row-batch-size and ensure --temp-directory has free space."
+            ),
+        )
+        raise
+    except Exception as exc:
+        _progress(
+            "candidate_robustness_failed",
+            error_type=type(exc).__name__,
+            error=str(exc),
+        )
+        raise

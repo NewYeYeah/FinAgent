@@ -5,11 +5,11 @@ import io
 import json
 import math
 import zipfile
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 import numpy as np
 
@@ -152,7 +152,7 @@ def _aware_datetime(value: object, field_name: str) -> datetime:
 def _optional_float(value: object) -> float | None:
     if value is None:
         return None
-    rendered = float(value)
+    rendered = float(cast(Any, value))
     if not math.isfinite(rendered):
         raise ValueError("numeric robustness-base value must be finite")
     return rendered
@@ -522,11 +522,11 @@ def parse_us_r2_robustness_base_row(document: Mapping[str, object]) -> USR2Robus
         event_time=_aware_datetime(document.get("event_time"), "event_time"),
         available_at=_aware_datetime(document.get("available_at"), "available_at"),
         bar_index=_integer(document.get("bar_index"), "bar_index"),
-        open=float(document.get("open")),
-        high=float(document.get("high")),
-        low=float(document.get("low")),
-        close=float(document.get("close")),
-        volume=float(document.get("volume")),
+        open=float(cast(Any, document.get("open"))),
+        high=float(cast(Any, document.get("high"))),
+        low=float(cast(Any, document.get("low"))),
+        close=float(cast(Any, document.get("close"))),
+        volume=float(cast(Any, document.get("volume"))),
         is_complete=is_complete,
         label_value=_optional_float(document.get("label_value")),
         label_available=_optional_bool(document.get("label_available"), "label_available"),
@@ -562,9 +562,38 @@ def _validate_same_bar_rows(
             raise ValueError("US-R2 15m decay slices differ in bar content/order")
 
 
+def _bar_rows_digest(rows: Sequence[USR2RobustnessBaseRow]) -> str:
+    """Compactly bind an ordered bar denominator without retaining another slice."""
+
+    digest = hashlib.sha256()
+    for row in rows:
+        payload = (
+            row.research_asset_id,
+            row.session_date.isoformat(),
+            row.session_id,
+            row.event_time.isoformat(),
+            row.available_at.isoformat(),
+            row.bar_index,
+            float(row.open).hex(),
+            float(row.high).hex(),
+            float(row.low).hex(),
+            float(row.close).hex(),
+            float(row.volume).hex(),
+            row.is_complete,
+        )
+        digest.update(
+            json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        )
+        digest.update(b"\n")
+    return digest.hexdigest()
+
+
 def _materialize_candidate_matrix(
     rows: tuple[USR2RobustnessBaseRow, ...],
     execution: USR2RobustnessCandidateExecution,
+    *,
+    progress: Callable[[str, Mapping[str, object]], None] | None = None,
+    slice_id: str | None = None,
 ) -> tuple[np.ndarray, int]:
     values = np.full((len(rows), FROZEN_CANDIDATE_COUNT), np.nan, dtype=np.float64)
     indices_by_asset: dict[str, list[int]] = {}
@@ -608,6 +637,15 @@ def _materialize_candidate_matrix(
                 for local_index, value in enumerate(series.values):
                     if value is not None:
                         values[indices[local_index], binding.slot] = value
+        if progress is not None:
+            progress(
+                "slice_asset_features_materialized",
+                {
+                    "slice_id": slice_id or rows[indices[0]].slice_id,
+                    "research_asset_id": asset,
+                    "asset_row_count": len(indices),
+                },
+            )
     return values, node_evaluations
 
 
@@ -797,54 +835,109 @@ def evaluate_us_r2_annual_candidate_robustness(
     regime_sessions: USR2RegimeSessionMap,
     policy: USR2StatisticalEvaluationPolicy | None = None,
 ) -> tuple[USR2AnnualRobustnessMetricArrays, USR2AnnualRobustnessEvaluationStats]:
-    active = policy or canonical_us_r2_statistical_evaluation_policy()
     expected_slice_ids = tuple(item.slice_id for item in canonical_us_r2_robustness_slices())
     if tuple(rows_by_slice) != expected_slice_ids:
         raise ValueError("US-R2 robustness annual slice input order/denominator changed")
-    for slice_id in expected_slice_ids:
-        _validate_slice_rows(rows_by_slice[slice_id], slice_id)
     _validate_same_bar_rows(
         rows_by_slice["decay_15m_30m"],
         rows_by_slice["decay_15m_120m"],
     )
+    return evaluate_us_r2_annual_candidate_robustness_streaming(
+        ((slice_id, rows_by_slice[slice_id]) for slice_id in expected_slice_ids),
+        year=year,
+        plan=plan,
+        regime_sessions=regime_sessions,
+        policy=policy,
+    )
+
+
+def evaluate_us_r2_annual_candidate_robustness_streaming(
+    annual_slices: Iterable[tuple[str, tuple[USR2RobustnessBaseRow, ...]]],
+    *,
+    year: int,
+    plan: USR2CandidateRobustnessPlan,
+    regime_sessions: USR2RegimeSessionMap,
+    policy: USR2StatisticalEvaluationPolicy | None = None,
+    progress: Callable[[str, Mapping[str, object]], None] | None = None,
+) -> tuple[USR2AnnualRobustnessMetricArrays, USR2AnnualRobustnessEvaluationStats]:
+    """Evaluate ordered slices while retaining at most one candidate feature matrix."""
+
+    active = policy or canonical_us_r2_statistical_evaluation_policy()
+    expected_slices = canonical_us_r2_robustness_slices()
+    expected_slice_ids = tuple(item.slice_id for item in expected_slices)
+    slice_iterator = iter(annual_slices)
     execution_by_interval = {item.signal_interval: item for item in plan.interval_executions}
-    source_slice_by_interval = {
-        BarInterval.MINUTE_5: "frequency_5m_60m",
-        BarInterval.MINUTE_15: "decay_15m_30m",
-        BarInterval.MINUTE_30: "frequency_30m_60m",
-    }
-    candidate_matrix_by_interval: dict[BarInterval, np.ndarray] = {}
+    shared_15m_matrix: np.ndarray | None = None
+    shared_15m_bar_digest: str | None = None
     node_series_evaluation_count = 0
-    for interval in (BarInterval.MINUTE_5, BarInterval.MINUTE_15, BarInterval.MINUTE_30):
-        execution = execution_by_interval.get(interval)
+
+    session_day_chunks: list[np.ndarray] = []
+    formation_us_chunks: list[np.ndarray] = []
+    regime_code_chunks: list[np.ndarray] = []
+    slice_code_chunks: list[np.ndarray] = []
+    rank_chunks: list[np.ndarray] = []
+    status_chunks: list[np.ndarray] = []
+    source_slice_counts: list[tuple[str, int]] = []
+    metric_slice_counts: list[tuple[str, int]] = []
+
+    for expected_spec in expected_slices:
+        try:
+            slice_id, rows = next(slice_iterator)
+        except StopIteration as exc:
+            raise ValueError(
+                f"US-R2 robustness annual slice input is missing: {expected_spec.slice_id}"
+            ) from exc
+        if slice_id != expected_spec.slice_id:
+            raise ValueError("US-R2 robustness annual slice input order/denominator changed")
+        _validate_slice_rows(rows, slice_id)
+        source_slice_counts.append((slice_id, len(rows)))
+        if progress is not None:
+            progress("slice_loaded", {"slice_id": slice_id, "row_count": len(rows)})
+
+        execution = execution_by_interval.get(expected_spec.signal_interval)
         if execution is None:
             raise ValueError("US-R2 robustness plan lost an interval execution")
-        matrix, node_count = _materialize_candidate_matrix(
-            rows_by_slice[source_slice_by_interval[interval]],
-            execution,
-        )
-        candidate_matrix_by_interval[interval] = matrix
-        node_series_evaluation_count += node_count
+        if expected_spec.signal_interval is BarInterval.MINUTE_15:
+            current_digest = _bar_rows_digest(rows)
+            if shared_15m_matrix is None:
+                shared_15m_matrix, node_count = _materialize_candidate_matrix(
+                    rows,
+                    execution,
+                    progress=progress,
+                    slice_id=slice_id,
+                )
+                shared_15m_bar_digest = current_digest
+                node_series_evaluation_count += node_count
+            else:
+                if shared_15m_bar_digest != current_digest:
+                    raise ValueError("US-R2 15m decay slices differ in bar content/order")
+                if shared_15m_matrix.shape[0] != len(rows):
+                    raise RuntimeError(
+                        "reused 15m candidate matrix does not align with 120m decay slice"
+                    )
+            if shared_15m_matrix is None:
+                raise RuntimeError("US-R2 shared 15m candidate matrix was not materialized")
+            matrix = shared_15m_matrix
+        else:
+            matrix, node_count = _materialize_candidate_matrix(
+                rows,
+                execution,
+                progress=progress,
+                slice_id=slice_id,
+            )
+            node_series_evaluation_count += node_count
+        if progress is not None:
+            progress(
+                "slice_features_materialized",
+                {
+                    "slice_id": slice_id,
+                    "signal_interval": expected_spec.signal_interval.value,
+                    "candidate_count": FROZEN_CANDIDATE_COUNT,
+                },
+            )
 
-    session_days: list[int] = []
-    formation_us: list[int] = []
-    regime_codes: list[int] = []
-    slice_codes: list[int] = []
-    rank_rows: list[list[float]] = []
-    status_rows: list[list[int]] = []
-    metric_slice_counts: list[tuple[str, int]] = []
-    for slice_id in expected_slice_ids:
-        spec = _SLICE_BY_ID[slice_id]
-        matrix = candidate_matrix_by_interval[spec.signal_interval]
-        current_rows = rows_by_slice[slice_id]
-        if (
-            spec.signal_interval is BarInterval.MINUTE_15
-            and slice_id == "decay_15m_120m"
-            and matrix.shape[0] != len(current_rows)
-        ):
-            raise RuntimeError("reused 15m candidate matrix does not align with 120m decay slice")
         evaluated = _evaluate_slice_metrics(
-            current_rows,
+            rows,
             matrix,
             year=year,
             regime_sessions=regime_sessions,
@@ -852,31 +945,52 @@ def evaluate_us_r2_annual_candidate_robustness(
         )
         days, times, regimes, ranks, statuses = evaluated
         metric_slice_counts.append((slice_id, len(ranks)))
-        session_days.extend(days)
-        formation_us.extend(times)
-        regime_codes.extend(regimes)
-        slice_codes.extend([_SLICE_CODE_BY_ID[slice_id]] * len(ranks))
-        rank_rows.extend(ranks)
-        status_rows.extend(statuses)
+        session_day_chunks.append(np.asarray(days, dtype=np.int32))
+        formation_us_chunks.append(np.asarray(times, dtype=np.int64))
+        regime_code_chunks.append(np.asarray(regimes, dtype=np.uint8))
+        slice_code_chunks.append(
+            np.full(len(ranks), _SLICE_CODE_BY_ID[slice_id], dtype=np.uint8)
+        )
+        rank_chunks.append(np.asarray(ranks, dtype=np.float64))
+        status_chunks.append(np.asarray(statuses, dtype=np.uint8))
+        if progress is not None:
+            progress(
+                "slice_metrics_reduced",
+                {"slice_id": slice_id, "formation_count": len(ranks)},
+            )
 
-    if not rank_rows:
-        raise ValueError(f"US-R2 robustness annual metrics contain no regime-available formations: {year}")
+        if slice_id == "decay_15m_120m":
+            shared_15m_matrix = None
+            shared_15m_bar_digest = None
+        del matrix, rows, evaluated, days, times, regimes, ranks, statuses
+
+    try:
+        next(slice_iterator)
+    except StopIteration:
+        pass
+    else:
+        raise ValueError("US-R2 robustness annual slice input contains extra slices")
+
+    if not rank_chunks or not any(chunk.shape[0] for chunk in rank_chunks):
+        raise ValueError(
+            f"US-R2 robustness annual metrics contain no regime-available formations: {year}"
+        )
     arrays = USR2AnnualRobustnessMetricArrays(
-        session_date_days=np.asarray(session_days, dtype=np.int32),
-        formation_at_us=np.asarray(formation_us, dtype=np.int64),
-        regime_codes=np.asarray(regime_codes, dtype=np.uint8),
-        slice_codes=np.asarray(slice_codes, dtype=np.uint8),
-        rank_ic=np.asarray(rank_rows, dtype=np.float64),
-        status_codes=np.asarray(status_rows, dtype=np.uint8),
+        session_date_days=np.concatenate(session_day_chunks),
+        formation_at_us=np.concatenate(formation_us_chunks),
+        regime_codes=np.concatenate(regime_code_chunks),
+        slice_codes=np.concatenate(slice_code_chunks),
+        rank_ic=np.concatenate(rank_chunks, axis=0),
+        status_codes=np.concatenate(status_chunks, axis=0),
     )
     stats = USR2AnnualRobustnessEvaluationStats(
         feature_interval_evaluation_count=3,
         node_series_evaluation_count=node_series_evaluation_count,
-        source_slice_row_counts=tuple(
-            (slice_id, len(rows_by_slice[slice_id])) for slice_id in expected_slice_ids
-        ),
+        source_slice_row_counts=tuple(source_slice_counts),
         metric_slice_formation_counts=tuple(metric_slice_counts),
     )
+    if tuple(slice_id for slice_id, _count in stats.source_slice_row_counts) != expected_slice_ids:
+        raise RuntimeError("US-R2 robustness streaming slice order changed after evaluation")
     return arrays, stats
 
 
@@ -891,7 +1005,11 @@ def write_deterministic_us_r2_robustness_metric_npz(
     with zipfile.ZipFile(target, mode="x", compression=zipfile.ZIP_STORED, allowZip64=True) as archive:
         for name, array in sorted(arrays.as_npz_arrays().items()):
             buffer = io.BytesIO()
-            np.lib.format.write_array(buffer, np.ascontiguousarray(array), allow_pickle=False)
+            write_array = cast(
+                Callable[..., None],
+                np.lib.format.write_array,
+            )
+            write_array(buffer, np.ascontiguousarray(array), allow_pickle=False)
             info = zipfile.ZipInfo(filename=f"{name}.npy", date_time=_NPZ_TIMESTAMP)
             info.compress_type = zipfile.ZIP_STORED
             info.external_attr = 0o600 << 16

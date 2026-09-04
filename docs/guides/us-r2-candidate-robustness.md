@@ -39,17 +39,19 @@ A1-0's original graph complexity budget was sized for the 15m grammar. The alrea
 
 The 30m ceil conversion can make two distinct R1 hypotheses numerically identical at that frequency—for example different original window lengths may collapse to the same effective 30m window. This must never shrink the frozen denominator. The implementation therefore compiles each unique numeric root once but keeps all 37 external R1 slots; colliding slots share the same computed root series. Evidence records both the 37-candidate denominator and the smaller unique numeric-graph count when such a collision occurs.
 
-Per annual robustness-base partition:
+Per annual robustness-base partition, the operator performs one ordered Parquet scan with a
+bounded DuckDB memory policy and temporary-disk spill. Rows cross the Python boundary in small
+batches and only one complete slice is retained at a time:
 
 ```text
-one Parquet scan -> temp annual relation
-                   |-> 5m unique numeric DAG -----> 37 frozen R1 slots
-                   |-> 15m unique numeric DAG ----> 30m label
-                   |                           \---> 120m label
-                   \-> 30m unique numeric DAG ----> 37 frozen R1 slots
+one bounded Parquet scan -> 5m slice  -> 5m matrix  -> compact metrics -> release
+                         -> 30m slice -> 30m matrix -> compact metrics -> release
+                         -> 15m/30m slice  -> one shared 15m matrix -> compact metrics
+                         -> 15m/120m slice -> reuse shared matrix  -> compact metrics -> release
 ```
 
 Thus four robustness slices require three feature-interval evaluations. The 15m candidate feature matrix is reused for both decay horizons.
+The operator never retains the 5m, 15m and 30m matrices simultaneously.
 
 ## Label and cross-section semantics
 
@@ -71,6 +73,12 @@ reports/us_r2/robustness/candidate/year_YYYY/us_r2_candidate_robustness_metrics_
 ```
 
 Each annual evidence document binds the source robustness-base evidence/materialization IDs, content SHA-256, three feature-interval evaluations, status counts and row counts. Completed pairs are immutable and are content-validated before resumable reuse.
+
+Every progress record is emitted immediately to stderr. A resumed run reports each verified
+`annual_metric_resumed` year before beginning the first missing year, so an interrupted run keeps
+all complete annual NPZ/evidence pairs. Python allocation failures and ordinary exceptions emit a
+final structured error record before the traceback; an operating-system hard kill cannot run an
+exception handler, but the last flushed progress record identifies the active year and slice.
 
 ## Regime pooling and sign consistency
 
@@ -119,8 +127,16 @@ python scripts/evaluate_us_r2_candidate_robustness.py `
   --primary-data-root data/us_r2/primary `
   --primary-report-root reports/us_r2/primary `
   --output-data-root data/us_r2/robustness/candidate `
-  --output-report-root reports/us_r2/robustness/candidate
+  --output-report-root reports/us_r2/robustness/candidate `
+  --memory-limit 512MB `
+  --threads 2 `
+  --max-temp-directory-size 20GB `
+  --temp-directory data/duckdb_temp/us_r2_candidate_robustness `
+  --row-batch-size 4096
 ```
+
+The resource arguments affect only local execution. They are excluded from the frozen candidate,
+threshold, statistic and evidence identities.
 
 The final local report is:
 
