@@ -27,11 +27,13 @@ from finagent.research.us_r2_candidate_cache import (
     build_us_r2_candidate_cache_plan,
     combine_us_r2_asset_candidate_caches,
     inspect_completed_us_r2_candidate_cache,
-    materialize_us_r2_asset_candidate_cache,
     validate_us_r2_base_panel_batch_gate,
     validate_us_r2_candidate_denominator,
     validate_us_r2_regime_gate,
     write_deterministic_us_r2_candidate_npz,
+)
+from finagent.research.us_r2_candidate_runtime import (
+    materialize_us_r2_asset_candidate_cache_r1_compatible,
 )
 from finagent.research.us_r2_frozen_protocol import FROZEN_ASSETS
 
@@ -149,7 +151,7 @@ def _materialize_year(
                     if asset in seen_assets:
                         raise ValueError("US-R2 annual base panel asset order is not contiguous")
                     caches.append(
-                        materialize_us_r2_asset_candidate_cache(
+                        materialize_us_r2_asset_candidate_cache_r1_compatible(
                             current_rows,
                             execution,
                             expected_asset=current_asset,
@@ -162,7 +164,7 @@ def _materialize_year(
 
         if current_asset is not None:
             caches.append(
-                materialize_us_r2_asset_candidate_cache(
+                materialize_us_r2_asset_candidate_cache_r1_compatible(
                     current_rows,
                     execution,
                     expected_asset=current_asset,
