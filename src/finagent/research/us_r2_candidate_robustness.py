@@ -14,12 +14,12 @@ from typing import cast
 import numpy as np
 
 from finagent.domain.market_bars import BarInterval
-from finagent.research.us_a1_factor_graph import validate_factor_graph
 from finagent.research.us_a1_factor_materialization import (
     CompiledFactorBatch,
     compile_factor_graph_batch,
     materialize_compiled_factor_batch,
 )
+from finagent.research.us_a1_factor_validation import validate_factor_graph
 from finagent.research.us_a1_legacy_graphs import legacy_a0_factor_graph_with_window
 from finagent.research.us_baselines import USBaselineBar
 from finagent.research.us_r1_gate import canonical_us_r1_alpha_gate_policy
@@ -47,11 +47,7 @@ from finagent.research.us_r2_primary_statistics import (
     FROZEN_CANDIDATE_CACHE_BATCH_EVIDENCE_ID,
     FROZEN_CANDIDATE_CACHE_PLAN_ID,
     METRIC_AVAILABLE,
-    METRIC_BOUNDARY_UNREALIZED,
-    METRIC_INSUFFICIENT_CROSS_SECTION,
     METRIC_PARTIAL_LABEL_OMITTED,
-    METRIC_RANK_IC_UNDEFINED,
-    METRIC_UNCLASSIFIED_MISSING_LABEL,
     USR2AnnualPrimaryMetricArrays,
     USR2PrimaryDirectionEvidenceSet,
     USR2PrimaryStatisticsPlan,
