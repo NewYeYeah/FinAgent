@@ -26,9 +26,7 @@ from finagent.research.us_r1_protocol import canonical_us_r1_research_protocol
 from finagent.research.us_r2_frozen_protocol import FROZEN_ASSETS, FROZEN_CALENDAR_ID
 from finagent.research.us_r2_robustness_base import (
     FROZEN_POOLED_INFERENCE_REPORT_ID,
-    ROBUSTNESS_BASE_EVIDENCE_FILENAME,
     ROBUSTNESS_BASE_FILENAME,
-    ROBUSTNESS_BASE_PLAN_FILENAME,
     build_us_r2_annual_robustness_base_evidence,
     build_us_r2_annual_robustness_base_plan,
     build_us_r2_robustness_summary_plan,
