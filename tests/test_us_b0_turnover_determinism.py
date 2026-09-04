@@ -4,7 +4,6 @@ import os
 import subprocess
 import sys
 
-
 _TURNOVER_PROBE = r"""
 from finagent.research.us_baseline_evaluation import _turnover
 
