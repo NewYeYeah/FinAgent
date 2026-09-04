@@ -33,16 +33,20 @@ Candidate identities and denominator slots remain the original R1 candidates. On
 1 + ceil((base_window_bars - 1) * 15 / target_interval_minutes)
 ```
 
-Therefore the 5m/15m/30m feature planes are different numeric graphs but do not become new candidate hypotheses or new denominator members.
+The A1 v1 `FactorGraphSpec` contract itself remains frozen to the accepted 15m signal clock. US-R2-2c2 therefore does **not** widen that DSL to claim new 5m/30m A1 semantic candidate identities. Instead, the A1 graph is used as a time-grid-agnostic numeric/shared-DAG kernel: the outer `USR2RobustnessCandidateExecution.signal_interval` binds the actual 5m, 15m or 30m data plane, and each original R1 slot separately records its accepted effective window. The numeric output is regression-tested against the existing R1 interval-aware feature evaluator.
 
-The implementation builds one shared A1 DAG for each of 5m, 15m and 30m. Per annual robustness-base partition:
+A1-0's original graph complexity budget was sized for the 15m grammar. The already accepted R1 elapsed-time conversion can require up to 37 bars at 5m, so only the graph-local `max_window_bars` / `max_lookback_bars` execution budget expands to the frozen effective window. Node, edge, depth, regime, candidate and statistical thresholds are unchanged.
+
+The 30m ceil conversion can make two distinct R1 hypotheses numerically identical at that frequency—for example different original window lengths may collapse to the same effective 30m window. This must never shrink the frozen denominator. The implementation therefore compiles each unique numeric root once but keeps all 37 external R1 slots; colliding slots share the same computed root series. Evidence records both the 37-candidate denominator and the smaller unique numeric-graph count when such a collision occurs.
+
+Per annual robustness-base partition:
 
 ```text
 one Parquet scan -> temp annual relation
-                   |-> 5m shared 37-candidate DAG
-                   |-> 15m shared 37-candidate DAG ----> 30m label
-                   |                                \---> 120m label
-                   \-> 30m shared 37-candidate DAG
+                   |-> 5m unique numeric DAG -----> 37 frozen R1 slots
+                   |-> 15m unique numeric DAG ----> 30m label
+                   |                           \---> 120m label
+                   \-> 30m unique numeric DAG ----> 37 frozen R1 slots
 ```
 
 Thus four robustness slices require three feature-interval evaluations. The 15m candidate feature matrix is reused for both decay horizons.
@@ -130,6 +134,7 @@ US-R2-2c2 does not:
 
 - filter or select candidates;
 - admit new A1 candidates;
+- broaden the A1 v1 DSL signal clock beyond 15m;
 - recompute the reviewed primary direction;
 - repeat pooled HAC/bootstrap/Holm/BH inference;
 - execute the final US-R2 Alpha Gate;
