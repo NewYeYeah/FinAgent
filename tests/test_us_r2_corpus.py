@@ -10,7 +10,7 @@ from finagent.data.minute_store.execution import DuckDBExecutionPolicy
 from finagent.data.minute_store.manifest import MinuteStoreManifest, MinuteStorePartition
 from finagent.domain.trading_calendar import TradingCalendarEvidence, TradingSession
 from finagent.research.us_r1_protocol import canonical_us_r1_research_protocol
-from finagent.research.us_r2_corpus import (
+from finagent.research.us_r2_inventory import (
     build_us_r2_corpus_inventory_plan,
     execute_us_r2_corpus_inventory,
 )
