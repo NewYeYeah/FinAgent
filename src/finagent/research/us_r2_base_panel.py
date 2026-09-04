@@ -111,7 +111,7 @@ def validate_us_r2_regime_projection_v2_gate(document: Mapping[str, object]) -> 
     for index, raw in enumerate(summaries):
         summary = _mapping(raw, f"fold_summaries[{index}]")
         label_counts = _mapping(summary.get("label_counts"), f"fold_summaries[{index}].label_counts")
-        if set(str(item) for item in label_counts) != labels:
+        if {str(item) for item in label_counts} != labels:
             raise ValueError("R2-1b regime summary label set differs from the frozen classifier")
         for label in labels:
             if _integer(label_counts.get(label), f"fold_summaries[{index}].label_counts.{label}") < minimum:
