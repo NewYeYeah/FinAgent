@@ -34,10 +34,12 @@ from finagent.research.us_r2_candidate_cache import (
     combine_us_r2_asset_candidate_caches,
     compile_us_r2_candidate_execution,
     load_us_r2_candidate_npz,
-    materialize_us_r2_asset_candidate_cache,
     validate_us_r2_base_panel_batch_gate,
     validate_us_r2_candidate_denominator,
     write_deterministic_us_r2_candidate_npz,
+)
+from finagent.research.us_r2_candidate_runtime import (
+    materialize_us_r2_asset_candidate_cache_r1_compatible,
 )
 
 
@@ -135,12 +137,20 @@ def _rows() -> tuple[dict[str, object], ...]:
     return tuple(rows)
 
 
+def _materialize(rows: tuple[dict[str, object], ...]):
+    return materialize_us_r2_asset_candidate_cache_r1_compatible(
+        rows,
+        compile_us_r2_candidate_execution(_denominator()),
+        expected_asset="AAPL",
+    )
+
+
 def test_37_candidate_mapping_preserves_r1_bitwise_semantics() -> None:
     denominator = _denominator()
     execution = compile_us_r2_candidate_execution(denominator)
     rows = _rows()
     bars = _bars()
-    cache = materialize_us_r2_asset_candidate_cache(
+    cache = materialize_us_r2_asset_candidate_cache_r1_compatible(
         rows,
         execution,
         expected_asset="AAPL",
@@ -181,7 +191,6 @@ def test_37_candidate_mapping_preserves_r1_bitwise_semantics() -> None:
 
 
 def test_incomplete_current_bar_is_skipped_before_label_validation_like_r1() -> None:
-    execution = compile_us_r2_candidate_execution(_denominator())
     rows = [dict(item) for item in _rows()]
     incomplete_index = next(index for index, bar in enumerate(_bars()) if not bar.is_complete)
     rows[incomplete_index].update(
@@ -195,21 +204,12 @@ def test_incomplete_current_bar_is_skipped_before_label_validation_like_r1() -> 
             "source_price": None,
         }
     )
-    cache = materialize_us_r2_asset_candidate_cache(
-        tuple(rows),
-        execution,
-        expected_asset="AAPL",
-    )
+    cache = _materialize(tuple(rows))
     assert cache.row_count == sum(bar.is_complete for bar in _bars())
 
 
 def test_candidate_cache_keeps_label_unavailability_without_dropping_formation() -> None:
-    execution = compile_us_r2_candidate_execution(_denominator())
-    cache = materialize_us_r2_asset_candidate_cache(
-        _rows(),
-        execution,
-        expected_asset="AAPL",
-    )
+    cache = _materialize(_rows())
     assert cache.row_count > int(cache.label_available.sum())
     unavailable = ~cache.label_available
     assert np.all(np.isnan(cache.label_values[unavailable]))
@@ -218,12 +218,7 @@ def test_candidate_cache_keeps_label_unavailability_without_dropping_formation()
 
 
 def test_deterministic_wide_npz_is_byte_stable_and_round_trips(tmp_path: Path) -> None:
-    execution = compile_us_r2_candidate_execution(_denominator())
-    asset_cache = materialize_us_r2_asset_candidate_cache(
-        _rows(),
-        execution,
-        expected_asset="AAPL",
-    )
+    asset_cache = _materialize(_rows())
     arrays = combine_us_r2_asset_candidate_caches(
         (asset_cache,),
         candidate_count=FROZEN_CANDIDATE_COUNT,
