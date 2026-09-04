@@ -46,13 +46,14 @@ def _text(value: object, field_name: str) -> str:
 
 
 def _integer(value: object, field_name: str) -> int:
-    if isinstance(value, bool):
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
         raise TypeError(f"{field_name} must be integer-like")
+    if isinstance(value, float) and not value.is_integer():
+        raise ValueError(f"{field_name} must be integer-like")
     try:
-        rendered = int(value)  # type: ignore[arg-type]
-    except (TypeError, ValueError) as exc:
-        raise TypeError(f"{field_name} must be integer-like") from exc
-    return rendered
+        return int(value)
+    except ValueError as exc:
+        raise ValueError(f"{field_name} must be integer-like") from exc
 
 
 def _string_sequence(value: object, field_name: str) -> tuple[str, ...]:
@@ -88,19 +89,16 @@ def _calendar_rows_sql(
     calendar: TradingCalendarEvidence,
     partition_months: frozenset[str],
 ) -> str:
-    rows: list[str] = []
-    for session in calendar.sessions:
-        month = session.session_date.strftime("%Y-%m")
-        if month not in partition_months:
-            continue
-        rows.append(
-            "("
-            f"DATE {_sql_string(session.session_date.isoformat())}, "
-            f"TIMESTAMPTZ {_sql_string(session.open_at.isoformat())}, "
-            f"TIMESTAMPTZ {_sql_string(session.close_at.isoformat())}, "
-            f"{session.regular_minutes}"
-            ")"
-        )
+    rows = [
+        "("
+        f"DATE {_sql_string(session.session_date.isoformat())}, "
+        f"TIMESTAMPTZ {_sql_string(session.open_at.isoformat())}, "
+        f"TIMESTAMPTZ {_sql_string(session.close_at.isoformat())}, "
+        f"{session.regular_minutes}"
+        ")"
+        for session in calendar.sessions
+        if session.session_date.strftime("%Y-%m") in partition_months
+    ]
     if not rows:
         raise ValueError("calendar does not intersect the minute-store partitions")
     return ",\n                ".join(rows)
@@ -122,9 +120,11 @@ class USRegimeCorpusInventoryPlan:
         for field_name in ("manifest_id", "data_version", "calendar_id", "sql"):
             object.__setattr__(self, field_name, _text(getattr(self, field_name), field_name))
         assets = tuple(sorted(dict.fromkeys(_text(item, "assets[]") for item in self.assets)))
+        months = tuple(
+            sorted(dict.fromkeys(_text(item, "partition_months[]") for item in self.partition_months))
+        )
         if not assets:
             raise ValueError("US-R2 corpus inventory requires at least one asset")
-        months = tuple(sorted(dict.fromkeys(_text(item, "partition_months[]") for item in self.partition_months)))
         if not months:
             raise ValueError("US-R2 corpus inventory requires at least one partition")
         if self.selected_size_bytes < 0:
@@ -191,7 +191,6 @@ def build_us_r2_corpus_inventory_plan(
     path_list = ", ".join(_sql_string(item.path.as_posix()) for item in manifest.partitions)
     asset_list = ", ".join(_sql_string(item) for item in normalized_assets)
     calendar_values = _calendar_rows_sql(calendar, partition_month_set)
-
     output_columns = (
         "research_asset_id",
         "partition_month",
@@ -209,11 +208,10 @@ def build_us_r2_corpus_inventory_plan(
         "last_event_time",
     )
 
-    # This query is deliberately not built from MinuteQueryPlan. R2-0 needs coverage
-    # evidence, not source rows. The target symbols are pushed into one read_parquet
-    # relation, XNYS regular-session filtering happens before duplicate aggregation,
-    # and Python receives only asset-month aggregates. The scan therefore does not
-    # multiply by the R1 37-candidate denominator.
+    # R2-0 asks a coverage question, not a factor question. One relation scans the
+    # admitted files, projects only needed columns, filters assets/regular sessions,
+    # and aggregates before Python sees anything. The scan is independent of the
+    # 37-candidate R1 denominator.
     sql = f"""
         WITH calendar(session_date, open_at, close_at, expected_regular_minutes) AS (
             VALUES
@@ -404,10 +402,7 @@ class USRegimeMonthCoverage:
 
     @property
     def coverage_id(self) -> str:
-        return _canonical_hash(
-            self.to_dict(include_id=False),
-            prefix="us-r2-month-coverage",
-        )
+        return _canonical_hash(self.to_dict(include_id=False), prefix="us-r2-month-coverage")
 
     def to_dict(self, *, include_id: bool = True) -> dict[str, object]:
         payload: dict[str, object] = {
@@ -493,10 +488,7 @@ class USRegimeAssetCoverage:
 
     @property
     def coverage_id(self) -> str:
-        return _canonical_hash(
-            self.to_dict(include_id=False),
-            prefix="us-r2-asset-coverage",
-        )
+        return _canonical_hash(self.to_dict(include_id=False), prefix="us-r2-asset-coverage")
 
     def to_dict(self, *, include_id: bool = True) -> dict[str, object]:
         payload: dict[str, object] = {
@@ -513,15 +505,9 @@ class USRegimeAssetCoverage:
             "active_span_observed_session_count": self.active_span_observed_session_count,
             "active_span_complete_session_count": self.active_span_complete_session_count,
             "active_span_missing_session_count": self.active_span_missing_session_count,
-            "active_span_expected_regular_minute_count": (
-                self.active_span_expected_regular_minute_count
-            ),
-            "active_span_observed_regular_minute_count": (
-                self.active_span_observed_regular_minute_count
-            ),
-            "active_span_regular_minute_coverage_ratio": (
-                self.active_span_regular_minute_coverage_ratio
-            ),
+            "active_span_expected_regular_minute_count": self.active_span_expected_regular_minute_count,
+            "active_span_observed_regular_minute_count": self.active_span_observed_regular_minute_count,
+            "active_span_regular_minute_coverage_ratio": self.active_span_regular_minute_coverage_ratio,
             "month_coverage_ids": list(self.month_coverage_ids),
             "history_boundary_semantics": (
                 "first_last_observed_regular_session_not_listing_or_delisting_authority"
@@ -639,10 +625,7 @@ class USRegimeResearchCorpus:
 
     @property
     def corpus_id(self) -> str:
-        return _canonical_hash(
-            self.to_dict(include_id=False),
-            prefix="us-r2-regime-corpus",
-        )
+        return _canonical_hash(self.to_dict(include_id=False), prefix="us-r2-regime-corpus")
 
     def to_dict(self, *, include_id: bool = True) -> dict[str, object]:
         payload: dict[str, object] = {
@@ -694,7 +677,9 @@ def _calendar_sessions_by_month(
     return {month: tuple(values) for month, values in grouped.items()}
 
 
-def _row_mapping(rows: Sequence[Mapping[str, object]]) -> dict[tuple[str, str], Mapping[str, object]]:
+def _row_mapping(
+    rows: Sequence[Mapping[str, object]],
+) -> dict[tuple[str, str], Mapping[str, object]]:
     result: dict[tuple[str, str], Mapping[str, object]] = {}
     for row in rows:
         key = (
@@ -764,15 +749,13 @@ def execute_us_r2_corpus_inventory(
                 observed_dates = tuple(
                     date.fromisoformat(item)
                     for item in _string_sequence(
-                        row.get("observed_session_dates"),
-                        "observed_session_dates",
+                        row.get("observed_session_dates"), "observed_session_dates"
                     )
                 )
                 complete_dates = tuple(
                     date.fromisoformat(item)
                     for item in _string_sequence(
-                        row.get("complete_session_dates"),
-                        "complete_session_dates",
+                        row.get("complete_session_dates"), "complete_session_dates"
                     )
                 )
                 if not set(observed_dates).issubset(expected_date_set):
@@ -788,14 +771,14 @@ def execute_us_r2_corpus_inventory(
                 ):
                     raise ValueError("US-R2 complete-session aggregate/list mismatch")
                 observed_minutes = _integer(
-                    row.get("observed_regular_minute_count"),
-                    "observed_regular_minute_count",
+                    row.get("observed_regular_minute_count"), "observed_regular_minute_count"
                 )
-                conflicting_keys = _integer(row.get("conflicting_key_count"), "conflicting_key_count")
+                conflicting_keys = _integer(
+                    row.get("conflicting_key_count"), "conflicting_key_count"
+                )
                 invalid_keys = _integer(row.get("invalid_key_count"), "invalid_key_count")
                 exact_duplicate_extra_rows = _integer(
-                    row.get("exact_duplicate_extra_row_count"),
-                    "exact_duplicate_extra_row_count",
+                    row.get("exact_duplicate_extra_row_count"), "exact_duplicate_extra_row_count"
                 )
                 first_session = _optional_date(row.get("first_session_date"), "first_session_date")
                 last_session = _optional_date(row.get("last_session_date"), "last_session_date")
@@ -839,17 +822,19 @@ def execute_us_r2_corpus_inventory(
 
     asset_coverages: list[USRegimeAssetCoverage] = []
     for asset in plan.assets:
-        observed_dates = observed_dates_by_asset[asset]
-        complete_dates = complete_dates_by_asset[asset]
+        asset_observed_dates = observed_dates_by_asset[asset]
+        asset_complete_dates = complete_dates_by_asset[asset]
         month_rows = tuple(sorted(coverage_by_asset_month[asset], key=lambda item: item.month))
-        if not observed_dates:
+        first_observed: date | None
+        last_observed: date | None
+        if not asset_observed_dates:
             blockers.append(f"asset_without_regular_session_history:{asset}")
             first_observed = None
             last_observed = None
             active_expected: tuple[TradingSession, ...] = ()
         else:
-            first_observed = min(observed_dates)
-            last_observed = max(observed_dates)
+            first_observed = min(asset_observed_dates)
+            last_observed = max(asset_observed_dates)
             active_expected = tuple(
                 session
                 for session in expected_sessions
@@ -864,40 +849,25 @@ def execute_us_r2_corpus_inventory(
                 last_observed_session=last_observed,
                 observed_month_count=sum(item.observed_session_count > 0 for item in month_rows),
                 active_span_expected_session_count=len(active_expected),
-                active_span_observed_session_count=len(observed_dates),
-                active_span_complete_session_count=len(complete_dates),
+                active_span_observed_session_count=len(asset_observed_dates),
+                active_span_complete_session_count=len(asset_complete_dates),
                 active_span_expected_regular_minute_count=active_expected_minutes,
                 active_span_observed_regular_minute_count=observed_minutes,
                 month_coverage_ids=tuple(item.coverage_id for item in month_rows),
             )
         )
 
-    non_empty_asset_coverages = [
-        item for item in asset_coverages if item.first_observed_session is not None
-    ]
-    if len(non_empty_asset_coverages) == len(plan.assets):
-        common_start = max(
-            item.first_observed_session
-            for item in non_empty_asset_coverages
-            if item.first_observed_session is not None
+    common_start: date | None = None
+    common_end: date | None = None
+    common_session_count = 0
+    if all(observed_dates_by_asset[asset] for asset in plan.assets):
+        common_dates = set.intersection(
+            *(observed_dates_by_asset[asset] for asset in plan.assets)
         )
-        common_end = min(
-            item.last_observed_session
-            for item in non_empty_asset_coverages
-            if item.last_observed_session is not None
-        )
-        if common_end < common_start:
-            common_start = None
-            common_end = None
-            common_session_count = 0
-        else:
-            common_session_count = sum(
-                common_start <= item.session_date <= common_end for item in expected_sessions
-            )
-    else:
-        common_start = None
-        common_end = None
-        common_session_count = 0
+        if common_dates:
+            common_start = min(common_dates)
+            common_end = max(common_dates)
+            common_session_count = len(common_dates)
 
     sessions_by_year: dict[int, list[TradingSession]] = defaultdict(list)
     for session in expected_sessions:
