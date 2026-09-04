@@ -4,7 +4,6 @@ import argparse
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import date
 from pathlib import Path
 from typing import cast
 
@@ -76,13 +75,6 @@ def _write_json(path: Path, document: Mapping[str, object] | dict[str, object]) 
         json.dumps(dict(document), sort_keys=True, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
-
-
-def _year_sessions(calendar: TradingCalendarEvidence, year: int) -> tuple[object, ...]:
-    sessions = tuple(item for item in calendar.sessions if item.session_date.year == year)
-    if not sessions:
-        raise SystemExit(f"US-R2 calendar has no XNYS sessions for {year}")
-    return sessions
 
 
 def _source_query(calendar: TradingCalendarEvidence, year: int) -> MarketDataQuery:
@@ -167,7 +159,6 @@ def main() -> int:
         args.calendar,
         expected_calendar_id=FROZEN_CALENDAR_ID,
     )
-    _year_sessions(calendar, year)
     manifest = manifest_from_huggingface_snapshot(
         args.root,
         expected_revision=FROZEN_SOURCE_REVISION,
