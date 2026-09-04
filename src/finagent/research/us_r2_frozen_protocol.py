@@ -548,18 +548,18 @@ def _validate_inventory_document(document: Mapping[str, object]) -> None:
     raw_years = _sequence(document.get("year_breadth"), "year_breadth")
     years: dict[int, Mapping[str, object]] = {}
     for index, raw in enumerate(raw_years):
-        year_item = _mapping(raw, f"year_breadth[{index}]")
-        year = _integer(year_item.get("year"), f"year_breadth[{index}].year")
+        breadth_item = _mapping(raw, f"year_breadth[{index}]")
+        year = _integer(breadth_item.get("year"), f"year_breadth[{index}].year")
         if year in years:
             raise ValueError(f"US-R2 inventory repeats year breadth for {year}")
-        years[year] = year_item
+        years[year] = breadth_item
     r1_minimum = canonical_us_r1_statistical_evaluation_policy().minimum_cross_section
     for year in range(FROZEN_FIRST_RESEARCH_YEAR, FROZEN_LAST_RESEARCH_YEAR + 1):
-        year_item = years.get(year)
-        if year_item is None:
+        selected_year = years.get(year)
+        if selected_year is None:
             raise ValueError(f"US-R2 inventory lacks year-breadth evidence for {year}")
         minimum_observed = _integer(
-            year_item.get("minimum_observed_asset_count"),
+            selected_year.get("minimum_observed_asset_count"),
             f"year_breadth[{year}].minimum_observed_asset_count",
         )
         if minimum_observed < r1_minimum:
