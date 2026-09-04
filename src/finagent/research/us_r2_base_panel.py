@@ -13,7 +13,7 @@ from finagent.data.minute_transform import (
 )
 from finagent.domain.labels import AvailabilityPolicy, ResearchPriceBasis
 from finagent.domain.market_bars import BarInterval
-from finagent.research.us_r1_feature_formation_policy import (
+from finagent.research.us_r1_materialization import (
     canonical_us_r1_feature_formation_policy,
 )
 from finagent.research.us_r2_frozen_protocol import (
@@ -70,12 +70,6 @@ def _integer(value: object, field_name: str) -> int:
     if isinstance(value, float) and value.is_integer():
         return int(value)
     raise TypeError(f"{field_name} must be an integer")
-
-
-def _boolean(value: object, field_name: str) -> bool:
-    if not isinstance(value, bool):
-        raise TypeError(f"{field_name} must be boolean")
-    return value
 
 
 def validate_us_r2_regime_projection_v2_gate(document: Mapping[str, object]) -> str:
@@ -494,8 +488,8 @@ def build_us_r2_annual_base_panel_plan(
             l.source_price,
             l.target_available_at,
             l.label_value,
-            COALESCE(l.label_available, false) AS label_available,
-            CASE WHEN l.source_available_at IS NULL THEN 'source_minute_missing' ELSE l.unavailable_reason END AS unavailable_reason,
+            l.label_available,
+            l.unavailable_reason,
             l.source_available_at IS NOT NULL AS label_row_present,
             CASE WHEN l.source_price IS NULL THEN NULL ELSE abs(b.close - l.source_price) END AS close_anchor_difference,
             b.source_id,
