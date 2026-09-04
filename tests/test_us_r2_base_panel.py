@@ -96,7 +96,7 @@ def _source_plan() -> tuple[MinuteQueryPlan, SessionizationEvidence]:
                     f"'XNYS:{session.session_date.isoformat()}', "
                     f"TIMESTAMPTZ '{session.open_at.isoformat()}', "
                     f"TIMESTAMPTZ '{session.close_at.isoformat()}', "
-                    f"{minute_offset}::BIGINT, true, 'synthetic', 'test-revision'"
+                    f"{minute_offset}::BIGINT, true, false, 'synthetic', 'test-revision'"
                     ")"
                 )
     sql = (
@@ -104,7 +104,8 @@ def _source_plan() -> tuple[MinuteQueryPlan, SessionizationEvidence]:
         + ",\n".join(rows)
         + ") AS synthetic_source_scan("
         "research_asset_id, session_date, event_time, available_at, open, high, low, close, volume, "
-        "session_id, session_open, session_close, minute_offset, is_regular_session, source_id, source_revision)"
+        "session_id, session_open, session_close, minute_offset, is_regular_session, is_half_day, "
+        "source_id, source_revision)"
     )
     query = MarketDataQuery(
         market_id="XNYS",
@@ -139,6 +140,7 @@ def _source_plan() -> tuple[MinuteQueryPlan, SessionizationEvidence]:
             "session_close",
             "minute_offset",
             "is_regular_session",
+            "is_half_day",
             "source_id",
             "source_revision",
         ),
