@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from pathlib import Path
 from typing import cast
 
@@ -11,6 +11,8 @@ import duckdb
 from finagent.research.us_r2_candidate_cache import (
     CANDIDATE_CACHE_EVIDENCE_FILENAME,
     CANDIDATE_CACHE_FILENAME,
+    USR2AnnualCandidateCacheArrays,
+    USR2AnnualCandidateCacheEvidence,
     parse_us_r2_annual_candidate_cache_evidence,
 )
 from finagent.research.us_r2_evaluation_policy import (
@@ -32,6 +34,7 @@ from finagent.research.us_r2_primary_statistics import (
     PRIMARY_PLAN_FILENAME,
     PRIMARY_POLICY_FILENAME,
     PRIMARY_STATISTICS_REPORT_FILENAME,
+    USR2AnnualPrimaryMetricArrays,
     USR2AnnualPrimaryMetricEvidence,
     build_us_r2_primary_statistics_plan,
     build_us_r2_primary_statistics_report,
@@ -175,19 +178,25 @@ def main() -> int:
     expected_source_id = dict(
         zip(cache_batch.requested_years, cache_batch.annual_evidence_ids, strict=True)
     )
-    source_evidence = {}
+    source_evidence: dict[int, USR2AnnualCandidateCacheEvidence] = {}
     candidate_report_root = args.candidate_report_root.expanduser().resolve()
     candidate_data_root = args.candidate_data_root.expanduser().resolve()
     for year in cache_batch.requested_years:
         evidence_path = (
             candidate_report_root / f"year_{year:04d}" / CANDIDATE_CACHE_EVIDENCE_FILENAME
         )
-        evidence = parse_us_r2_annual_candidate_cache_evidence(_read_mapping(evidence_path))
-        if evidence.evidence_id != expected_source_id[year]:
+        candidate_evidence = parse_us_r2_annual_candidate_cache_evidence(
+            _read_mapping(evidence_path)
+        )
+        if candidate_evidence.evidence_id != expected_source_id[year]:
             raise SystemExit(f"US-R2 candidate-cache annual evidence differs from batch: {year}")
-        if evidence.plan_id != candidate_plan.plan_id or evidence.year != year or not evidence.passed:
+        if (
+            candidate_evidence.plan_id != candidate_plan.plan_id
+            or candidate_evidence.year != year
+            or not candidate_evidence.passed
+        ):
             raise SystemExit(f"US-R2 candidate-cache annual evidence is not admitted: {year}")
-        source_evidence[year] = evidence
+        source_evidence[year] = candidate_evidence
 
     candidate_npz_scan_count = 0
     direction_path = output_report_root / PRIMARY_DIRECTION_FILENAME
@@ -197,17 +206,19 @@ def main() -> int:
             _read_mapping(direction_path),
             plan=plan,
         )
-        expected_direction_ids = tuple(source_evidence[year].evidence_id for year in range(2001, 2006))
+        expected_direction_ids = tuple(
+            source_evidence[year].evidence_id for year in range(2001, 2006)
+        )
         if direction.source_annual_evidence_ids != expected_direction_ids:
             raise SystemExit("US-R2 primary direction source annual evidence changed")
     else:
         direction_materialized = True
 
-        def direction_inputs():
+        def direction_inputs() -> Iterator[tuple[int, USR2AnnualCandidateCacheArrays]]:
             nonlocal candidate_npz_scan_count
             for year in range(2001, 2006):
                 data_path = candidate_data_root / f"year={year:04d}" / CANDIDATE_CACHE_FILENAME
-                arrays, _evidence = validate_and_load_us_r2_candidate_year(
+                arrays, _candidate_evidence = validate_and_load_us_r2_candidate_year(
                     year=year,
                     data_path=data_path,
                     evidence_document=source_evidence[year].to_dict(),
@@ -263,7 +274,7 @@ def main() -> int:
             continue
 
         source_data_path = candidate_data_root / f"year={year:04d}" / CANDIDATE_CACHE_FILENAME
-        candidate_arrays, _source = validate_and_load_us_r2_candidate_year(
+        candidate_arrays, _candidate_evidence = validate_and_load_us_r2_candidate_year(
             year=year,
             data_path=source_data_path,
             evidence_document=source.to_dict(),
@@ -284,7 +295,7 @@ def main() -> int:
             data_path,
             metric_arrays,
         )
-        evidence = build_us_r2_primary_metric_materialization_evidence(
+        metric_evidence = build_us_r2_primary_metric_materialization_evidence(
             plan=plan,
             year=year,
             fold_id=fold_id,
@@ -296,24 +307,31 @@ def main() -> int:
             content_sha256=content_sha256,
             output_size_bytes=output_size_bytes,
         )
-        if not evidence.passed:
+        if not metric_evidence.passed:
             raise SystemExit(f"US-R2 primary metric materialization evidence failed: {year}")
-        _write_or_verify_json(evidence_path, evidence.to_dict())
-        annual_metric_evidence[year] = evidence
+        _write_or_verify_json(evidence_path, metric_evidence.to_dict())
+        annual_metric_evidence[year] = metric_evidence
         materialized_years.append(year)
 
     # Primary report reads only the compact period-metric caches. Candidate feature caches are not reopened.
-    fold_ids = tuple(item.fold_id for item in validate_us_r2_frozen_protocol(_read_mapping(args.frozen_protocol)).walk_forward_protocol.folds)
-    metrics_by_fold = {fold_id: [] for fold_id in fold_ids}
+    fold_ids = tuple(
+        item.fold_id
+        for item in validate_us_r2_frozen_protocol(
+            _read_mapping(args.frozen_protocol)
+        ).walk_forward_protocol.folds
+    )
+    metrics_by_fold: dict[str, list[USR2AnnualPrimaryMetricArrays]] = {
+        fold_id: [] for fold_id in fold_ids
+    }
     primary_metric_npz_scan_count = 0
     annual_metric_ids: list[str] = []
     for year in range(2006, 2027):
-        evidence = annual_metric_evidence[year]
+        metric_evidence = annual_metric_evidence[year]
         data_path = output_data_root / f"year={year:04d}" / PRIMARY_METRIC_FILENAME
         arrays = load_us_r2_primary_metric_npz(data_path)
         primary_metric_npz_scan_count += 1
-        metrics_by_fold[evidence.fold_id].append(arrays)
-        annual_metric_ids.append(evidence.evidence_id)
+        metrics_by_fold[metric_evidence.fold_id].append(arrays)
+        annual_metric_ids.append(metric_evidence.evidence_id)
 
     report = build_us_r2_primary_statistics_report(
         metrics_by_fold,
