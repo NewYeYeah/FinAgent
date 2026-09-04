@@ -9,7 +9,7 @@ from pathlib import Path
 
 from finagent.data.minute_store import DuckDBExecutionPolicy, manifest_from_huggingface_snapshot
 from finagent.domain.trading_calendar import TradingCalendarEvidence, TradingSession
-from finagent.research.us_r2_corpus import (
+from finagent.research.us_r2_inventory import (
     build_us_r2_corpus_inventory_plan,
     execute_us_r2_corpus_inventory,
 )
