@@ -28,10 +28,23 @@ jobs:
           version: "0.12.1"
       - name: Reproduce locked development environment
         run: uv sync --frozen --extra dev
-      - name: Numeric parity and compiler regression
+      - name: All-62 A0 bitwise parity
         run: |
           uv run --frozen pytest -q \
-            tests/test_us_a1_factor_materialization.py \
+            tests/test_us_a1_factor_materialization.py::test_all_62_legacy_candidates_are_bitwise_equal_to_a0_per_formation
+      - name: Shared-DAG reuse and order independence
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_us_a1_factor_materialization.py::test_batch_compiler_reuses_canonical_subexpressions_and_is_order_independent
+      - name: Materializer fail-closed bounds
+        run: |
+          uv run --frozen pytest -q \
+            tests/test_us_a1_factor_materialization.py::test_materializer_rejects_cross_sectional_or_regime_operators_until_explicit_extension \
+            tests/test_us_a1_factor_materialization.py::test_materialization_batch_size_is_bounded \
+            tests/test_us_a1_factor_materialization.py::test_materializer_rejects_non_increasing_bar_order
+      - name: A1-0 and A0 predecessor regression
+        run: |
+          uv run --frozen pytest -q \
             tests/test_us_a1_factor_graph.py \
             tests/test_us_a0_protocol.py
       - name: Strict static checks
