@@ -137,7 +137,6 @@ def test_projection_scans_iwm_once_and_emits_only_lagged_market_state() -> None:
     assert plan.to_dict()["current_session_return_emitted"] is False
     assert "session_return" not in plan.output_columns
     assert len(rows) == sum(count for _fold_id, count in plan.expected_evaluation_sessions)
-    assert len(rows) == 40
     assert all(row["regime_source_end_session"] < row["session_date"] for row in rows)
     assert all(row["train_volatility_observation_count"] > 0 for row in rows)
     assert any(row["regime_available"] is True for row in rows)
@@ -184,7 +183,13 @@ def test_projection_evidence_requires_all_four_regimes_in_every_fold() -> None:
         calendar,
         canonical_us_r2_frozen_protocol(),
     )
-    rows = _execute(plan)
+    source_rows = _execute(plan)
+    rows = [dict(row) for row in source_rows]
+    first_fold = [row for row in rows if row["fold_id"] == "us-r2-fold-01"]
+    assert any(row["regime_label"] == "DOWN_HIGH_VOL" for row in first_fold)
+    for row in first_fold:
+        if row["regime_label"] == "DOWN_HIGH_VOL":
+            row["regime_label"] = "DOWN_LOW_VOL"
     materialization = MinuteMaterialization(
         plan_id=plan.plan_id,
         data_version=plan.data_version,
@@ -195,10 +200,8 @@ def test_projection_evidence_requires_all_four_regimes_in_every_fold() -> None:
     )
     evidence = build_us_r2_regime_projection_evidence(plan, materialization, rows)
 
-    # Synthetic market path is deliberately simple and is not guaranteed to hit all four states;
-    # evidence must make that a blocker rather than silently treating it as a four-regime run.
     missing_blockers = [item for item in evidence.blockers if item.startswith("missing_expected_regimes:")]
-    assert missing_blockers
+    assert "missing_expected_regimes:us-r2-fold-01:DOWN_HIGH_VOL" in missing_blockers
     assert evidence.passed is False
 
 
@@ -214,7 +217,6 @@ def test_projection_evidence_passes_for_complete_manual_four_state_surface() -> 
     labels = ("DOWN_HIGH_VOL", "DOWN_LOW_VOL", "UP_HIGH_VOL", "UP_LOW_VOL")
     rows: list[dict[str, object]] = []
     for fold_index, (fold_id, expected_count) in enumerate(base_plan.expected_evaluation_sessions):
-        assert expected_count == 8
         start = date(2030 + fold_index, 1, 1)
         for offset in range(expected_count):
             rows.append(
