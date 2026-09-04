@@ -13,9 +13,9 @@ from finagent.domain.market_bars import BarInterval
 from finagent.domain.trading_calendar import TradingCalendarEvidence, TradingSession
 from finagent.research.us_r2_frozen_protocol import canonical_us_r2_frozen_protocol
 from finagent.research.us_r2_regime_projection_v2 import (
-    canonical_us_r2_regime_endpoint_policy,
     build_us_r2_regime_projection_evidence_v2,
     build_us_r2_regime_projection_plan_v2,
+    canonical_us_r2_regime_endpoint_policy,
 )
 
 
