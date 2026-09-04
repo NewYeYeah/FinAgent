@@ -180,6 +180,29 @@ def test_37_candidate_mapping_preserves_r1_bitwise_semantics() -> None:
                 assert float(actual).hex() == expected.value.hex()
 
 
+def test_incomplete_current_bar_is_skipped_before_label_validation_like_r1() -> None:
+    execution = compile_us_r2_candidate_execution(_denominator())
+    rows = [dict(item) for item in _rows()]
+    incomplete_index = next(index for index, bar in enumerate(_bars()) if not bar.is_complete)
+    rows[incomplete_index].update(
+        {
+            "label_available": None,
+            "label_value": None,
+            "target_available_at": None,
+            "unavailable_reason": None,
+            "label_row_present": False,
+            "source_available_at": None,
+            "source_price": None,
+        }
+    )
+    cache = materialize_us_r2_asset_candidate_cache(
+        tuple(rows),
+        execution,
+        expected_asset="AAPL",
+    )
+    assert cache.row_count == sum(bar.is_complete for bar in _bars())
+
+
 def test_candidate_cache_keeps_label_unavailability_without_dropping_formation() -> None:
     execution = compile_us_r2_candidate_execution(_denominator())
     cache = materialize_us_r2_asset_candidate_cache(
@@ -217,7 +240,10 @@ def test_deterministic_wide_npz_is_byte_stable_and_round_trips(tmp_path: Path) -
     for name, expected in arrays.as_npz_arrays().items():
         actual = loaded.as_npz_arrays()[name]
         assert actual.dtype == expected.dtype
-        assert np.array_equal(actual, expected, equal_nan=True)
+        if np.issubdtype(expected.dtype, np.floating):
+            assert np.array_equal(actual, expected, equal_nan=True)
+        else:
+            assert np.array_equal(actual, expected)
 
 
 def test_base_panel_batch_gate_reconstructs_full_content_addressed_evidence() -> None:
