@@ -5,6 +5,7 @@ import json
 from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum
+from itertools import pairwise
 
 from finagent.research.us_r1_protocol import canonical_us_r1_research_protocol
 
@@ -202,7 +203,7 @@ class USMultiRegimeWalkForwardProtocol:
         if len(fold_ids) != len(set(fold_ids)):
             raise ValueError("US-R2 fold IDs must be unique")
         ordered = tuple(sorted(self.folds, key=lambda item: item.evaluation_start))
-        for left, right in zip(ordered, ordered[1:], strict=False):
+        for left, right in pairwise(ordered):
             if right.evaluation_start < left.evaluation_end:
                 raise ValueError("US-R2 evaluation windows cannot overlap")
         observed_regimes = {regime for fold in self.folds for regime in fold.expected_regimes}
