@@ -50,11 +50,22 @@ def _unavailable_division() -> FactorDenominatorPolicy:
     )
 
 
-def legacy_a0_candidate_factor_graph(
+def legacy_a0_factor_graph_with_window(
     candidate: USAgentValueCandidateSpec,
-) -> LegacyA0FactorGraphBinding:
+    *,
+    window_bars: int,
+) -> FactorGraphSpec:
+    """Build the legacy A0 numeric graph with an explicit effective window.
+
+    The external R1/A0 candidate identity is deliberately not changed here.  This helper exists
+    for preregistered frequency robustness, where the accepted R1 elapsed-time conversion changes
+    the bar count at 5m/30m while preserving the same structural candidate and hypothesis.
+    """
+
+    if window_bars < 1:
+        raise ValueError("legacy factor graph window_bars must be >= 1")
     kind = candidate.kind
-    window = candidate.window_bars
+    window = window_bars
 
     if kind in {USBaselineFeatureKind.REVERSAL, USBaselineFeatureKind.MOMENTUM}:
         nodes_list = [
@@ -99,6 +110,8 @@ def legacy_a0_candidate_factor_graph(
         )
         output = "output"
     elif kind is USBaselineFeatureKind.RETURN_VOLATILITY:
+        if window < 2:
+            raise ValueError("return-volatility legacy graph requires window_bars >= 2")
         nodes = (
             _input("close", FactorInputField.CLOSE),
             FactorNode(
@@ -116,6 +129,8 @@ def legacy_a0_candidate_factor_graph(
         )
         output = "output"
     elif kind is USBaselineFeatureKind.VOLUME_SURPRISE:
+        if window < 2:
+            raise ValueError("volume-surprise legacy graph requires window_bars >= 2")
         nodes = (
             _input("volume", FactorInputField.VOLUME),
             FactorNode(
@@ -181,8 +196,15 @@ def legacy_a0_candidate_factor_graph(
     else:
         raise ValueError(f"unsupported legacy US-A0 candidate kind: {kind.value}")
 
+    return FactorGraphSpec(nodes=nodes, output_node_id=output)
+
+
+def legacy_a0_candidate_factor_graph(
+    candidate: USAgentValueCandidateSpec,
+) -> LegacyA0FactorGraphBinding:
+    graph = legacy_a0_factor_graph_with_window(candidate, window_bars=candidate.window_bars)
     return LegacyA0FactorGraphBinding(
         a0_candidate_id=candidate.candidate_id,
         a0_structural_key=candidate.structural_key,
-        graph=FactorGraphSpec(nodes=nodes, output_node_id=output),
+        graph=graph,
     )
