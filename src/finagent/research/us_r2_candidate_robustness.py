@@ -44,9 +44,9 @@ from finagent.research.us_r2_frozen_protocol import (
     canonical_us_r2_frozen_protocol,
 )
 from finagent.research.us_r2_primary_statistics import (
-    FROZEN_COMPILED_CANDIDATE_BATCH_ID,
     FROZEN_CANDIDATE_CACHE_BATCH_EVIDENCE_ID,
     FROZEN_CANDIDATE_CACHE_PLAN_ID,
+    FROZEN_COMPILED_CANDIDATE_BATCH_ID,
     METRIC_AVAILABLE,
     METRIC_PARTIAL_LABEL_OMITTED,
     USR2AnnualPrimaryMetricArrays,
@@ -55,6 +55,7 @@ from finagent.research.us_r2_primary_statistics import (
     USR2RegimeSessionMap,
     _candidate_status_and_rank_ic,
 )
+from finagent.research.us_r2_protocol import USMultiRegimeFold
 from finagent.research.us_r2_robustness_base import (
     FROZEN_POOLED_INFERENCE_REPORT_ID,
     USR2RobustnessSlice,
@@ -638,7 +639,7 @@ def _label_reason_code(row: USR2RobustnessBaseRow) -> int:
     return 3
 
 
-def _fold_for_year(year: int) -> object:
+def _fold_for_year(year: int) -> USMultiRegimeFold:
     frozen = canonical_us_r2_frozen_protocol()
     matches = tuple(
         fold
@@ -724,9 +725,9 @@ def _evaluate_slice_metrics(
     policy: USR2StatisticalEvaluationPolicy,
 ) -> tuple[list[int], list[int], list[int], list[list[float]], list[list[int]]]:
     fold = _fold_for_year(year)
-    fold_id = str(getattr(fold, "fold_id"))
-    evaluation_start = cast(date, getattr(fold, "evaluation_start"))
-    evaluation_end = cast(date, getattr(fold, "evaluation_end"))
+    fold_id = fold.fold_id
+    evaluation_start = fold.evaluation_start
+    evaluation_end = fold.evaluation_end
     regime_by_key = regime_sessions.by_key()
     session_days_out: list[int] = []
     formation_us_out: list[int] = []
@@ -836,9 +837,12 @@ def evaluate_us_r2_annual_candidate_robustness(
         spec = _SLICE_BY_ID[slice_id]
         matrix = candidate_matrix_by_interval[spec.signal_interval]
         current_rows = rows_by_slice[slice_id]
-        if spec.signal_interval is BarInterval.MINUTE_15 and slice_id == "decay_15m_120m":
-            if matrix.shape[0] != len(current_rows):
-                raise RuntimeError("reused 15m candidate matrix does not align with 120m decay slice")
+        if (
+            spec.signal_interval is BarInterval.MINUTE_15
+            and slice_id == "decay_15m_120m"
+            and matrix.shape[0] != len(current_rows)
+        ):
+            raise RuntimeError("reused 15m candidate matrix does not align with 120m decay slice")
         evaluated = _evaluate_slice_metrics(
             current_rows,
             matrix,
