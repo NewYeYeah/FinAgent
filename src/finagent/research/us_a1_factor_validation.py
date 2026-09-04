@@ -218,6 +218,7 @@ def _infer_node(
 ) -> tuple[_NodeState | None, bool]:
     operator = node.operator
     reordered = False
+    semantic: FactorSemanticType | None = None
     if operator is FactorOperator.INPUT:
         if node.input_field is None:
             return None, reordered
@@ -329,6 +330,8 @@ def _infer_node(
         else:
             return None, reordered
 
+    if semantic is None:
+        return None, reordered
     child_digests = [item.digest for item in child_states]
     if operator in _COMMUTATIVE_OPERATORS:
         sorted_digests = sorted(child_digests)
