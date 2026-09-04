@@ -39,12 +39,14 @@ def _text(value: object, field_name: str) -> str:
 
 
 def _integer(value: object, field_name: str) -> int:
-    if isinstance(value, bool):
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
         raise TypeError(f"{field_name} must be integer-like")
+    if isinstance(value, float) and not value.is_integer():
+        raise ValueError(f"{field_name} must be integer-like")
     try:
-        return int(value)  # type: ignore[arg-type]
-    except (TypeError, ValueError) as exc:
-        raise TypeError(f"{field_name} must be integer-like") from exc
+        return int(value)
+    except ValueError as exc:
+        raise ValueError(f"{field_name} must be integer-like") from exc
 
 
 def _load_json(path: Path) -> Mapping[str, object]:
@@ -70,9 +72,18 @@ def _status_bindings(status: Mapping[str, object]) -> tuple[str, str, int, str]:
     us_i0 = _mapping(stages.get("us_i0"), "status.stage.us_i0")
     us_c0 = _mapping(stages.get("us_c0"), "status.stage.us_c0")
     return (
-        _text(us_i0.get("final_engineering_universe_id"), "status.stage.us_i0.final_engineering_universe_id"),
-        _text(us_r1.get("candidate_denominator_id"), "status.stage.us_r1.candidate_denominator_id"),
-        _integer(us_r1.get("candidate_denominator_count"), "status.stage.us_r1.candidate_denominator_count"),
+        _text(
+            us_i0.get("final_engineering_universe_id"),
+            "status.stage.us_i0.final_engineering_universe_id",
+        ),
+        _text(
+            us_r1.get("candidate_denominator_id"),
+            "status.stage.us_r1.candidate_denominator_id",
+        ),
+        _integer(
+            us_r1.get("candidate_denominator_count"),
+            "status.stage.us_r1.candidate_denominator_count",
+        ),
         _text(us_c0.get("calendar_id"), "status.stage.us_c0.calendar_id"),
     )
 
@@ -88,7 +99,9 @@ def _load_engineering_universe(path: Path) -> tuple[str, tuple[str, ...]]:
     assets: list[str] = []
     for index, raw in enumerate(raw_mappings):
         mapping = _mapping(raw, f"engineering_universe.mappings[{index}]")
-        research = _mapping(mapping.get("research"), f"engineering_universe.mappings[{index}].research")
+        research = _mapping(
+            mapping.get("research"), f"engineering_universe.mappings[{index}].research"
+        )
         assets.append(
             _text(
                 research.get("source_symbol"),
@@ -139,18 +152,17 @@ def _load_calendar(path: Path) -> TradingCalendarEvidence:
                 session_date=date.fromisoformat(
                     _text(item.get("session_date"), f"calendar.sessions[{index}].session_date")
                 ),
-                open_at=_parse_datetime(item.get("open_at"), f"calendar.sessions[{index}].open_at"),
+                open_at=_parse_datetime(
+                    item.get("open_at"), f"calendar.sessions[{index}].open_at"
+                ),
                 close_at=_parse_datetime(
-                    item.get("close_at"),
-                    f"calendar.sessions[{index}].close_at",
+                    item.get("close_at"), f"calendar.sessions[{index}].close_at"
                 ),
                 pre_open_at=_parse_optional_datetime(
-                    item.get("pre_open_at"),
-                    f"calendar.sessions[{index}].pre_open_at",
+                    item.get("pre_open_at"), f"calendar.sessions[{index}].pre_open_at"
                 ),
                 post_close_at=_parse_optional_datetime(
-                    item.get("post_close_at"),
-                    f"calendar.sessions[{index}].post_close_at",
+                    item.get("post_close_at"), f"calendar.sessions[{index}].post_close_at"
                 ),
                 is_half_day=bool(item.get("is_half_day")),
             )
@@ -159,14 +171,10 @@ def _load_calendar(path: Path) -> TradingCalendarEvidence:
         market_id=_text(evidence.get("market_id"), "calendar.evidence.market_id"),
         timezone=_text(evidence.get("timezone"), "calendar.evidence.timezone"),
         source=_text(evidence.get("source"), "calendar.evidence.source"),
-        source_revision=_text(
-            evidence.get("source_revision"),
-            "calendar.evidence.source_revision",
-        ),
+        source_revision=_text(evidence.get("source_revision"), "calendar.evidence.source_revision"),
         sessions=tuple(sessions),
         regular_session_minutes=_integer(
-            evidence.get("regular_session_minutes"),
-            "calendar.evidence.regular_session_minutes",
+            evidence.get("regular_session_minutes"), "calendar.evidence.regular_session_minutes"
         ),
     )
 
@@ -198,15 +206,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--memory-limit", default="512MB")
     parser.add_argument("--threads", type=int, default=2)
     parser.add_argument(
-        "--allow-temp-spill",
-        action=argparse.BooleanOptionalAction,
-        default=True,
+        "--allow-temp-spill", action=argparse.BooleanOptionalAction, default=True
     )
     parser.add_argument("--max-temp-directory-size", default="4GB")
     parser.add_argument(
-        "--temp-directory",
-        type=Path,
-        default=Path("data/duckdb_temp/us_r2_0"),
+        "--temp-directory", type=Path, default=Path("data/duckdb_temp/us_r2_0")
     )
     parser.add_argument(
         "--output",
@@ -283,8 +287,12 @@ def main() -> int:
         "asset_history": [
             {
                 "asset": item.asset,
-                "first": item.first_observed_session.isoformat() if item.first_observed_session else None,
-                "last": item.last_observed_session.isoformat() if item.last_observed_session else None,
+                "first": item.first_observed_session.isoformat()
+                if item.first_observed_session
+                else None,
+                "last": item.last_observed_session.isoformat()
+                if item.last_observed_session
+                else None,
                 "active_span_session_coverage": (
                     None
                     if item.active_span_expected_session_count == 0
