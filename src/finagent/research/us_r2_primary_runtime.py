@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 
 import numpy as np
 
 from finagent.research.us_r2_candidate_cache import USR2AnnualCandidateCacheEvidence
 from finagent.research.us_r2_primary_statistics import (
+    _METRIC_STATUS_NAMES,
     FROZEN_CANDIDATE_COUNT,
     METRIC_AVAILABLE,
     USR2AnnualPrimaryMetricArrays,
@@ -13,7 +14,6 @@ from finagent.research.us_r2_primary_statistics import (
     USR2CandidateDirectionEvidence,
     USR2PrimaryDirectionEvidenceSet,
     USR2PrimaryStatisticsPlan,
-    _METRIC_STATUS_NAMES,
     _integer,
     _mapping,
     _sequence,
