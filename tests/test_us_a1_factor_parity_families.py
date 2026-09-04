@@ -49,18 +49,14 @@ def _bars() -> tuple[USBaselineBar, ...]:
             is_complete = not (session_number == 2 and bar_index == 12)
             rows.append(
                 USBaselineBar(
-                    asset="SYNTH",
                     event_time=event_time,
                     available_at=event_time + timedelta(minutes=15),
                     session_id=session_id,
-                    bar_index=bar_index,
                     open=open_value,
                     high=high,
                     low=low,
                     close=close,
                     volume=volume,
-                    observed_minute_count=15 if is_complete else 14,
-                    expected_minute_count=15,
                     is_complete=is_complete,
                 )
             )
