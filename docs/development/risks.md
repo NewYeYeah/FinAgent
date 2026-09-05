@@ -39,6 +39,9 @@ Internal order/position/account state must reconcile to broker order/deal histor
 
 ## P1 — record explicit limitation and continue only when the stage permits
 
+### Broad local regression baseline and timezone portability
+The local full-suite run accompanying R3 numeric usability recorded 13 failures outside the changed R3 surface: nine historical A-share compliance/freeze tests still reference removed versioned planning documents in `configs/acceptance/ashare_initial_requirement_compliance_ac4.toml`; four U.S. D2 tests assert UTC text against DuckDB timestamps displayed in the workstation's `+08` timezone. The old compliance references already exist at `629df86`, and the affected D2 implementation/tests were not changed by this increment. Do not describe the full local suite as green or silently recreate obsolete active plans. Repair historical reference ownership and make timestamp assertions timezone-explicit in a separate compatibility increment; do not reinterpret accepted financial evidence. The 156 focused A1/R2/R3 regressions and dedicated Linux/Windows usability CI passed.
+
 ### U.S. minute source publication / redistribution rights
 The Hugging Face dataset README does not declare a license and the upstream Finnhub acquisition/redistribution chain is not independently verified. For FinAgent's current **local, non-redistributed research** scope this is recorded as a limitation rather than a blocker after an exact local snapshot passes certification. Any redistribution, hosted dataset publication or stronger public provenance claim requires a separate rights review.
 
