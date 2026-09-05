@@ -5,8 +5,8 @@ planning_document = "docs/development/current-plan.md"
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
 current_stage = "US-R3"
-current_stage_status = "correctness_and_protocol_review_required"
-next_stage = "US-R3-0a numeric correctness and US-R3-0b evidence/economic protocol"
+current_stage_status = "numeric_core_and_feature_usability_verified"
+next_stage = "US-R3-0b evidence/economic protocol and US-R3-1 enforced research runtime"
 
 [release.ashare_historical_v1]
 status = "accepted"
@@ -706,7 +706,7 @@ stage_exit_gate_passed = true
 next_action = "preregister a new research iteration; do not progress to US-X0 without a later reviewed ROBUST_FACTOR_FAMILY terminal"
 
 [stage.us_r3]
-status = "correctness_and_protocol_review_required"
+status = "numeric_core_and_feature_usability_verified"
 started_at = "2026-09-05"
 predecessor_stage = "US-R2"
 predecessor_review_id = "us-r2-alpha-gate-review-36d4d07f8dd0b3dbf70656de"
@@ -747,8 +747,21 @@ supports_us_x0_progression = false
 stage_exit_gate_passed = false
 reviewed_implementation_commit = "d171615b2ad033be404139671566ef0f0535149f"
 planning_audit_revision = "4.3"
-numeric_correctness_blockers = ["incomplete_asset_values_influence_panel_peers_and_breadth"]
-numeric_correctness_gate_passed = false
+numeric_correctness_blockers = []
+numeric_correctness_gate_passed = true
+numeric_correctness_scope = "typed input panel; source evidence authentication remains caller admission"
+panel_materialization_schema = "finagent.us-a1-factor-panel-materialization.v2"
+regime_source_lineage_admitted = false
+feature_usability_passed = true
+feature_usability_evidence_id = "us-r3-usability-batch-f5b662f79b520f5ff6b85f0a8dcf292c7556e65e7146db174230317ccee8f5d1"
+feature_usability_source_count = 21
+feature_usability_session_count = 5092
+feature_usability_input_row_count = 2846317
+feature_usability_missing_bar_padding_count = 13013
+feature_usability_peak_session_rows = 650
+feature_usability_reference_parity_passed = true
+feature_usability_resumed_source_count = 21
+feature_usability_resume_feature_evaluation_count = 0
 complete_candidate_denominator_frozen = false
 generation_ledger_implemented = false
 scoped_feedback_runtime_implemented = false
@@ -756,7 +769,7 @@ development_feedback_policy_v2_frozen = false
 independent_confirmation_evidence_admitted = false
 large_api_generation_admitted = false
 v1_bundle_scope = "data_blind_contract_prototype_preserved_not_full_experiment_denominator"
-next_action = "repair panel availability; freeze evidence/cost design and enforce run budgets before any new Agent generation or financial evaluation"
+next_action = "freeze independent evidence/cost design and enforce research run budgets; feature usability alone does not admit financial evaluation or complete US-R3"
 
 [documentation]
 governance_version = "1.1"

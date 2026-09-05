@@ -82,7 +82,9 @@ REGIME_GATE           exact reviewed policy ID plus one aligned label per panel 
 
 Every asset must have the same event, availability and session clocks. Asset count and bars per asset are bounded before allocation. The original compiler defaults and serialized identities are unchanged, so A0/R1/R2 evidence does not acquire a new numeric meaning.
 
-Review of `d171615` found that incomplete values are masked at candidate roots after panel transforms. They can therefore contaminate other assets and the breadth count. Typed unavailable reasons exist, but valid-input cross-sectional semantics are not yet accepted. The [US-R3 review](us-r3-agent-alpha-expansion.md#review-findings-and-limits) records the reproduction and required corrective gate.
+The v2 panel kernel applies complete-case availability at every node before its consumers. Incomplete assets cannot affect peer ranks, quantiles or valid breadth. Warm-up is session-local, so joined-session and separate-session outputs/reasons agree. Graphs retain their frozen 15m clock; off-grid/missing clocks at the kernel boundary and non-close availability are rejected. The input adapter may insert explicitly incomplete structural padding for absent rows; those internal sentinel numbers are never usable prices or signals.
+
+Regime masks require a source evidence ID and one aware availability timestamp per label; a future-available label fails closed. Authenticating the underlying classification/evidence lineage remains the caller's admission responsibility. The new output is `finagent.us-a1-factor-panel-materialization.v2`; legacy single-asset evaluation and graph IDs are unchanged.
 
 ## 4. Availability semantics
 
@@ -117,7 +119,7 @@ Because the research clock is 15m and the accepted strategy is same-session, nor
 
 ## 7. Capability increment and next boundary
 
-The panel formulas and policy-string matching have focused tests. The next increment must repair node availability propagation, validate causal regime lineage and prove composed/partition parity before financial use.
+The repaired panel formulas have synthetic perturbation/composition/partition tests and a label-blind real-data usability operator with independent direct-formula parity. See [the operator guide](us-r3-agent-alpha-expansion.md#offline-feature-usability). These checks do not authenticate a regime source or prove statistical/economic Alpha.
 
 The v1 Agent remains a data-blind proposal control. The active plan additionally specifies a future development-feedback policy and an enforced run/tool boundary. This requires separate identities and acceptance; the realized MANUAL / PROGRAMMATIC / AGENT denominator and selection rule must be frozen before outer/final evaluation.
 

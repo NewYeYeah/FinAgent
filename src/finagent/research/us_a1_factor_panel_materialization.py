@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from enum import StrEnum
 
 from finagent.research.us_a1_factor_graph import FactorOperator
@@ -38,13 +39,19 @@ class FactorPanelAsset:
 class FactorPanelRegimeMask:
     policy_id: str
     labels: tuple[str, ...]
-    schema_version: str = "finagent.us-a1-factor-panel-regime-mask.v1"
+    source_evidence_id: str | None = None
+    label_available_at: tuple[datetime, ...] = ()
+    schema_version: str = "finagent.us-a1-factor-panel-regime-mask.v2"
 
     def __post_init__(self) -> None:
         if not self.policy_id.strip():
             raise ValueError("regime mask policy_id must be non-empty")
         if not self.labels or any(not item.strip() for item in self.labels):
             raise ValueError("regime mask labels must be non-empty")
+        if self.label_available_at and len(self.label_available_at) != len(self.labels):
+            raise ValueError("regime availability timestamps must align with labels")
+        if any(item.tzinfo is None or item.utcoffset() is None for item in self.label_available_at):
+            raise ValueError("regime availability timestamps must be timezone-aware")
 
 
 @dataclass(frozen=True, slots=True)
@@ -76,7 +83,7 @@ class FactorPanelMaterialization:
     minimum_cross_section: int
     node_series_evaluation_count: int
     candidates: tuple[PanelFactorCandidateSeries, ...]
-    schema_version: str = "finagent.us-a1-factor-panel-materialization.v1"
+    schema_version: str = "finagent.us-a1-factor-panel-materialization.v2"
 
     def __post_init__(self) -> None:
         if min(self.asset_count, self.bar_count_per_asset, self.minimum_cross_section) < 1:
@@ -211,11 +218,23 @@ def _validate_panel(
     if bar_count < 1 or bar_count > maximum_bars_per_asset:
         raise ValueError(f"panel bar bound exceeded: {bar_count}>{maximum_bars_per_asset}")
     reference = assets[0].bars
+    seen_sessions: set[str] = set()
+    previous: USBaselineBar | None = None
+    for bar in reference:
+        if previous is None or bar.session_id != previous.session_id:
+            if bar.session_id in seen_sessions:
+                raise ValueError("panel session IDs must not recur")
+            seen_sessions.add(bar.session_id)
+        elif bar.event_time - previous.event_time != timedelta(minutes=15):
+            raise ValueError("panel requires continuous 15m clocks within each session")
+        previous = bar
     for asset in assets:
         _validate_bars(asset.bars)
         if len(asset.bars) != bar_count:
             raise ValueError("panel assets must have equal bar counts")
         for expected, observed in zip(reference, asset.bars, strict=True):
+            if observed.available_at != observed.event_time + timedelta(minutes=15):
+                raise ValueError("panel requires 15m bar-close availability")
             if (
                 observed.event_time != expected.event_time
                 or observed.available_at != expected.available_at
@@ -223,6 +242,48 @@ def _validate_panel(
             ):
                 raise ValueError("panel assets must share aligned clocks and sessions")
     return bar_count
+
+
+def _node_lookback(node: CompiledFactorNode, lookbacks: dict[str, int]) -> int:
+    lookback = max((lookbacks[item] for item in node.inputs), default=1)
+    if node.operator is FactorOperator.LAG:
+        if node.lag_bars is None:
+            raise RuntimeError("compiled LAG lost lag_bars")
+        lookback += node.lag_bars
+    elif node.window_bars is not None:
+        lookback += node.window_bars - 1
+    return lookback
+
+
+def _mask_node(
+    values: list[float | None],
+    reasons: list[PanelFactorUnavailableReason | None],
+    bars: tuple[USBaselineBar, ...],
+    lookback: int,
+) -> None:
+    """Apply the complete-case contract BEFORE any downstream node consumes values.
+
+    Warm-up is session-local, including when sessions are evaluated together.
+    Endpoint-return/lag operators still require complete intervening bars, as in
+    the frozen A1 root contract. This does not change the legacy evaluator.
+    """
+    session_start = 0
+    for index, bar in enumerate(bars):
+        if index == 0 or bar.session_id != bars[index - 1].session_id:
+            session_start = index
+        reason = reasons[index]
+        value = values[index]
+        if index - session_start + 1 < lookback:
+            reason = PanelFactorUnavailableReason.INSUFFICIENT_HISTORY
+        elif any(not item.is_complete for item in bars[index - lookback + 1 : index + 1]):
+            reason = PanelFactorUnavailableReason.INCOMPLETE_BAR
+        elif value is None or not math.isfinite(value):
+            reason = reason or PanelFactorUnavailableReason.NUMERIC_UNAVAILABLE
+        else:
+            reason = None
+        reasons[index] = reason
+        if reason is not None:
+            values[index] = None
 
 
 def materialize_compiled_factor_panel(
@@ -258,18 +319,28 @@ def materialize_compiled_factor_panel(
             raise ValueError("regime mask policy does not match compiled graph policy")
     if regime_mask is not None and len(regime_mask.labels) != bar_count:
         raise ValueError("regime mask must align one label to every panel bar")
+    if regime_mask is not None:
+        if not regime_mask.source_evidence_id or not regime_mask.source_evidence_id.strip():
+            raise ValueError("regime mask requires source evidence identity")
+        if not regime_mask.label_available_at:
+            raise ValueError("regime mask requires causal availability timestamps")
+        if any(
+            stamp > bar.available_at
+            for stamp, bar in zip(regime_mask.label_available_at, assets[0].bars, strict=True)
+        ):
+            raise ValueError("regime label not available at formation time")
 
     series: dict[str, dict[str, list[float | None]]] = {asset.asset_id: {} for asset in assets}
     detailed_reasons: dict[tuple[str, str], list[PanelFactorUnavailableReason | None]] = {}
     evaluation_count = 0
     bars_by_asset = {asset.asset_id: asset.bars for asset in assets}
+    lookbacks: dict[str, int] = {}
     for node in compiled.nodes:
+        lookbacks[node.execution_id] = _node_lookback(node, lookbacks)
         if node.operator in _PANEL_OPERATORS:
             if len(node.inputs) != 1:
                 raise RuntimeError("compiled panel operator is malformed")
-            source_by_asset = {
-                asset_id: series[asset_id][node.inputs[0]] for asset_id in series
-            }
+            source_by_asset = {asset_id: series[asset_id][node.inputs[0]] for asset_id in series}
             transformed, panel_reasons_by_asset = _panel_transform(
                 node,
                 source_by_asset,
@@ -278,12 +349,9 @@ def materialize_compiled_factor_panel(
             )
             for asset_id, asset_series in series.items():
                 asset_series[node.execution_id] = transformed[asset_id]
-                detailed_reasons[(asset_id, node.execution_id)] = panel_reasons_by_asset[
-                    asset_id
-                ]
+                detailed_reasons[(asset_id, node.execution_id)] = panel_reasons_by_asset[asset_id]
             evaluation_count += 1
-            continue
-        if node.operator is FactorOperator.REGIME_GATE:
+        elif node.operator is FactorOperator.REGIME_GATE:
             if regime_mask is None or len(node.inputs) != 1:
                 raise RuntimeError("compiled REGIME_GATE node is malformed")
             admitted = set(node.regime_labels)
@@ -299,52 +367,39 @@ def materialize_compiled_factor_panel(
                 asset_series[node.execution_id] = output
                 detailed_reasons[(asset_id, node.execution_id)] = regime_reasons
             evaluation_count += 1
-            continue
+        else:
+            for asset_id, asset_series in series.items():
+                dependencies = tuple(asset_series[item] for item in node.inputs)
+                # The legacy LAG helper can return more than bar_count warm-up
+                # cells when the partition is shorter than lag. Bound it here.
+                asset_series[node.execution_id] = _evaluate_node_series(
+                    node,
+                    dependencies,
+                    bars_by_asset[asset_id],
+                )[:bar_count]
+                evaluation_count += 1
         for asset_id, asset_series in series.items():
-            dependencies = tuple(asset_series[item] for item in node.inputs)
-            asset_series[node.execution_id] = _evaluate_node_series(
-                node,
-                dependencies,
+            reasons = detailed_reasons.setdefault((asset_id, node.execution_id), [None] * bar_count)
+            _mask_node(
+                asset_series[node.execution_id],
+                reasons,
                 bars_by_asset[asset_id],
+                lookbacks[node.execution_id],
             )
-            evaluation_count += 1
 
     candidates: list[PanelFactorCandidateSeries] = []
     for asset in sorted(assets, key=lambda item: item.asset_id):
         for root in compiled.roots:
-            raw_values = series[asset.asset_id][root.root_execution_id]
-            root_reasons = detailed_reasons.get((asset.asset_id, root.root_execution_id))
-            values: list[float | None] = []
-            candidate_reasons: list[PanelFactorUnavailableReason | None] = []
-            for index, raw_value in enumerate(raw_values):
-                if index + 1 < root.lookback_bars:
-                    values.append(None)
-                    candidate_reasons.append(PanelFactorUnavailableReason.INSUFFICIENT_HISTORY)
-                    continue
-                window = asset.bars[index - root.lookback_bars + 1 : index + 1]
-                if any(item.session_id != asset.bars[index].session_id for item in window):
-                    values.append(None)
-                    candidate_reasons.append(PanelFactorUnavailableReason.CROSS_SESSION_WINDOW)
-                    continue
-                if any(not item.is_complete for item in window):
-                    values.append(None)
-                    candidate_reasons.append(PanelFactorUnavailableReason.INCOMPLETE_BAR)
-                    continue
-                if raw_value is None:
-                    values.append(None)
-                    detailed = root_reasons[index] if root_reasons is not None else None
-                    candidate_reasons.append(
-                        detailed or PanelFactorUnavailableReason.NUMERIC_UNAVAILABLE
-                    )
-                    continue
-                values.append(raw_value)
-                candidate_reasons.append(None)
+            if lookbacks[root.root_execution_id] != root.lookback_bars:
+                raise RuntimeError("panel node/root lookback mismatch")
             candidates.append(
                 PanelFactorCandidateSeries(
                     asset_id=asset.asset_id,
                     candidate_id=root.candidate_id,
-                    values=tuple(values),
-                    unavailable_reasons=tuple(candidate_reasons),
+                    values=tuple(series[asset.asset_id][root.root_execution_id]),
+                    unavailable_reasons=tuple(
+                        detailed_reasons[(asset.asset_id, root.root_execution_id)]
+                    ),
                     lookback_bars=root.lookback_bars,
                 )
             )

@@ -18,12 +18,12 @@ The preserved v1 bundle is `us-r3-research-bundle-dbfa49573ce477e71ca8d85b`, pol
 
 The architecture's deterministic core, content identities, independent evaluation and valid no-alpha terminals are sound. The first three proposed formulas are conventional price/volume interactions worth testing as baselines. Their citations motivate mechanisms but do not validate these exact windows, market, horizon or costs. R2 found zero complete-gate passes; the old A0 pilot did not demonstrate enough Agent value to proceed. Neither result proves all future mechanisms or richer Agents must fail.
 
-Two implementation facts constrain readiness:
+The review at `d171615` identified two implementation gaps. The first has since been repaired and tested as described under [offline feature usability](#offline-feature-usability); the second remains a separate runtime milestone:
 
 1. `_panel_transform()` receives intermediate values before the final per-asset completeness mask. In a synthetic aligned panel, A=100 and B=200 are complete, C is incomplete, and minimum breadth is three. With C=1 the output ranks for A/B are 0.5/1.0; with C=300 they are 0.0/0.5. Both are wrong under a valid-input breadth rule: only two inputs are complete, so the formation should be unavailable. Masking only C's final output cannot undo contamination of A/B. The node-level availability and downstream lag/rolling propagation need corrective tests and implementation.
 2. Calling `validate_agent_factor_proposal()` repeatedly for the same run/slot returns valid each time. That is normal for a stateless validator, but it proves no persistent slot admission or cumulative budget enforcement. Model-tool isolation, strict external decoding and a run ledger remain separate work. A policy ID supplied as a string also does not independently authenticate regime classifications or their availability timestamps.
 
-These observations came from synthetic/read-only checks, not a new financial backtest. Passing the existing CI remains useful evidence for covered cases; it does not resolve the missing cases above. The finding is specific to the new panel path and does not invalidate the accepted legacy R2 statistics by inference.
+The original observations came from synthetic/read-only checks, not a financial backtest. Corrective tests now cover node availability, composition, clocks, future perturbation and session parity. Source regime-lineage authentication remains separate from checking supplied evidence IDs/timestamps. The original finding was specific to the new panel path and does not invalidate accepted legacy R2 statistics by inference.
 
 ## Implemented v1 Agent proposal boundary
 
@@ -71,9 +71,9 @@ The first catalog separates graph-representable hypotheses from ideas whose requ
 
 | Strategy | Readiness | First implementation |
 |---|---|---|
-| Volatility-scaled cross-sectional momentum | graph prototype; correctness gate pending | recent return / local volatility, winsorized and cross-sectionally standardized |
-| Volume-conditioned liquidity reversal | graph prototype; correctness gate pending | negative short return × relative volume, winsorized and ranked |
-| Volume-confirmed range-location continuation | graph prototype; correctness gate pending | recent range location × relative volume, winsorized and standardized |
+| Volatility-scaled cross-sectional momentum | feature usability verified; financial admission pending | recent return / local volatility, winsorized and cross-sectionally standardized |
+| Volume-conditioned liquidity reversal | feature usability verified; financial admission pending | negative short return × relative volume, winsorized and ranked |
+| Volume-confirmed range-location continuation | feature usability verified; financial admission pending | recent range location × relative volume, winsorized and standardized |
 | Opening-window to closing-window market momentum | deferred | requires typed session anchors and market aggregation |
 | Day/night decomposed momentum | deferred | requires admitted cross-session prices and overnight semantics |
 | Order-flow/private-information conditioned reversal | deferred | requires trades, quotes and order-imbalance contracts |
@@ -101,15 +101,48 @@ Further design references checked for this review:
 
 ## Deterministic panel semantics
 
-`multi_asset_panel_v1` requires aligned event time, availability time and session IDs across assets. It evaluates shared graph nodes once per asset or panel node and enforces asset, bar and estimated node-value-cell bounds before allocation. The default 64-bar limit bounds input length; it does not itself enforce session-sized chunks, continuous 15m spacing or a complete process RSS bound. Corpus execution needs an explicit partition contract and memory/profile acceptance.
+The `multi_asset_panel_v1` compiled scope now produces v2 materializations with aligned event time, close availability and session IDs across assets. It evaluates shared graph nodes once per asset or panel node, enforces continuous 15m spacing within sessions, and enforces asset, bar and estimated node-value-cell bounds before allocation. The 64-bar kernel limit is not a complete process RSS bound. The usability operator explicitly streams session partitions and bounds DuckDB separately.
 
 - rank: average percentile rank on available assets, with stable asset-ID traversal and averaged ties;
 - z-score: population variance with `math.fsum`; zero dispersion is explicitly unavailable;
 - winsorization: Type-7 quantiles and explicit lower/upper bounds;
-- regime gate: the compiled policy ID must exactly match an aligned supplied mask;
-- availability: typed reasons exist, but the reviewed root-only completeness masking does not yet protect intermediate cross-sectional values; this is the reproduced P0 above.
+- regime gate: the compiled policy ID must exactly match an aligned mask carrying explicit source identity and causal availability timestamps; source authenticity is not inferred from those strings;
+- availability: every node is masked before consumption, including the complete intervening raw window for lag/endpoint-return nodes; warm-up is session-local and incomplete inputs cannot affect valid peers.
 
 The original `single_asset_time_series_v1` path remains the default and preserves prior compiled/evidence identities.
+
+## Offline feature usability
+
+`scripts/check_us_r3_alpha_usability.py` verifies all three frozen prototypes against an independent direct-formula implementation. It selects only OHLCV, identity, completeness and input clocks from the existing `decay_15m_30m` slice. The slice is an input view, not a response-horizon or profitability evaluation. Byte-level source hashing binds the whole file, but forward-label values are never queried, interpreted or used by feature computation.
+
+The operator streams 512-row fetches into one session, with a 256MiB DuckDB memory setting, one database thread, a task-owned spill directory capped at 1GiB, and pre-allocation session/asset bounds. Absent records become explicitly incomplete internal padding, not imputed observations; assets are not silently dropped to obtain rectangular data. Duplicate asset/clocks and off-grid clocks fail closed. Reports distinguish observed rows from padding.
+
+Run the complete intended source set into a new output directory:
+
+```powershell
+conda activate finagent
+cd D:\PythonWorkspace\FinAgent
+$env:PYTHONPATH = (Resolve-Path src).Path
+$r3Arguments = @(
+    'scripts/check_us_r3_alpha_usability.py',
+    '--output-root', 'reports/us_r3/usability/operator_run'
+)
+foreach ($r3Year in 2006..2026) {
+    $r3Arguments += @(
+        '--source', "data/us_r2/robustness/base/year=$r3Year/us_r2_robustness_base.parquet"
+    )
+}
+python @r3Arguments
+Remove-Item Env:PYTHONPATH
+```
+
+Progress and full error tracebacks go to flushed stderr; final JSON goes to stdout. Exit 0 means all three formulas produced usable inputs and matched the numerical reference; exit 1 means failure/non-usability; interruption returns 130. An OS hard kill cannot print a Python traceback, but previously published annual artifacts survive.
+
+Repeat exactly the same command to resume. A frozen usability plan binds source hashes, implementation sources, candidates and minimum breadth before evaluation. Annual JSON is atomically published and verified, never replaced. Changed implementation, source set or breadth requires a new directory; old evidence is not silently reused. The final manifest is `us_r3_feature_usability.json`. Source hashing still occurs on resume; Parquet queries and feature evaluations do not.
+
+The local 21-source run covered 5,092 sessions and 2,846,317 observed rows, with 13,013 padded missing positions and at most 650 aligned rows per session. All three candidates matched the reference at absolute/relative tolerance `1e-10`; the repeat reused all 21 annual artifacts with zero feature evaluations. This tolerance and default breadth three are engineering checks, not changes to R1/R2 statistical thresholds. The 2026 source is partial-year (61 sessions).
+
+**This is not a backtest or Alpha acceptance.** It computes no forward-return metrics, makes no selections, calls no model/provider/MT5 interface and grants no execution authority. Full R3 completion still requires the evidence/cost protocol, enforced runtime, context mechanisms, controlled pilot and appropriate frozen financial/independent evaluation in the active plan.
 
 ## Evidence and development decisions
 
@@ -120,6 +153,8 @@ An alternate source for the same asset/dates is reconciliation, not fresh statis
 R2's gross return and return-per-turnover hurdles are not an explicit spread/slippage/borrow/impact model. Add broker-neutral cost scenarios and delay/participation stress during research; report net evidence and break-even costs alongside the unmodified old diagnostics. Costs based only on OHLCV remain assumptions. Conditional activity, market/sector exposure, overlapping holdings, cash periods and all tried variants belong in the new experiment protocol.
 
 ## Review scores
+
+The following scores are the historical planning-review snapshot at `d171615`, not an automatically updated assessment after each implementation increment.
 
 Scores below are reviewer judgments on a 0–10 scale, not calibrated probabilities of profitability. Research priority uses five equally weighted axes: plausible mechanism, relevant independent support, data/semantic fit, economic plausibility and falsifiability. The evidence/readiness scores are separate; a plausible idea can still have zero validated Alpha evidence. Uncertainty is at least about one point for priority and design scores.
 

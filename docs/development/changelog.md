@@ -2,6 +2,15 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-05 — US-R3 numeric core and offline feature usability
+
+- fixed incomplete-input contamination before every panel consumer, with session-local warm-up and bounded short-partition lags; added clock, valid-breadth, future-mutation and composed/partition parity regressions without modifying legacy A0/R2 execution or identities;
+- versioned panel output as v2 and required explicit regime evidence identity plus causal label timestamps; metadata checks do not authenticate a caller's underlying regime evidence;
+- added a label-blind, session-streamed usability operator with an independent direct-formula oracle, 256MiB DuckDB memory setting, bounded fetches, flushed progress/errors and atomic immutable annual evidence;
+- handled absent source bars with explicitly incomplete structural padding, never forward-filled prices; duplicates/off-grid clocks fail closed;
+- verified all three frozen prototypes over 21 local annual sources, 5,092 sessions and 2,846,317 observed rows; 13,013 missing positions stayed unavailable, peak aligned session size was 650 rows; a repeat resumed all 21 artifacts without querying Parquet or recomputing features;
+- extended dedicated CI to Linux and Windows with CLI, tampering, interrupted/resumed execution and sparse-source regressions. This is feature engineering acceptance only: no returns, Alpha Gate, Agent generation, MT5 or stage closure.
+
 ## 2026-09-05 — US-R3 planning review, revision 4.3
 
 - reproduced incomplete-asset contamination and incorrect valid-input breadth in the new panel executor; recorded an unresolved P0 and moved numeric correctness before Agent generation;

@@ -137,6 +137,8 @@ Valid no-alpha terminals are accepted research outcomes.
 
 US-R3 panel acceptance must include perturbation tests proving invalid asset values cannot influence valid peers, valid-input breadth enforcement, causal regime-mask lineage, no future mutation effect, missing-clock/session handling and partition/batch parity. These tests precede new financial evaluation.
 
+The R3 feature-usability lane also exercises an independent direct-formula oracle on synthetic and local historical inputs. Its SQL projection excludes labels and future prices. Test missing-row padding, duplicate/off-grid rejection, bounded sessions, immutable publication, source/implementation drift, corruption, interruption and zero-evaluation resume. Dedicated CI runs on Windows and Linux. A passing usability artifact proves feature computation only, not signal profitability or independent source admission.
+
 For adaptive research, freeze search rules and trial budgets before development feedback; freeze realized candidates and the training/selection/portfolio rule before outer or final evaluation. Preserve the whole trial ledger and preregister the appropriate multiple-testing procedure; a count of final survivors alone does not correct adaptive search bias. Session/block resampling must preserve the relevant cross-asset dependence. Power and endpoint choices precede final outcomes, and broker-neutral costs include overlapping positions, delayed execution and stress assumptions.
 
 ## 7. MT5 / broker acceptance

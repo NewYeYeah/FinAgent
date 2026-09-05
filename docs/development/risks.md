@@ -4,8 +4,8 @@ Only active/unresolved risks belong here. Resolved implementation history belong
 
 ## P0 — blocks research correctness or downstream authority
 
-### US-R3 cross-sectional availability contamination
-At reviewed commit `d171615b2ad033be404139671566ef0f0535149f`, the panel executor computes cross-sectional transforms on unmasked intermediate values and applies completeness rules only at candidate roots. A synthetic three-asset reproduction with only two complete assets still emits ranks at minimum breadth three; changing the incomplete asset changes both complete peers. Repair availability propagation before any panel-based financial evaluation and add invariance/breadth regressions. Existing CI did not cover this failure. This finding is in the new R3 panel path, not evidence that the accepted legacy R2 evaluator has the same defect.
+### US-R3 regime evidence admission
+The repaired panel kernel checks an explicit regime source identity and requires each label's timezone-aware availability to precede or equal formation availability. These are caller-supplied metadata, not independent authentication of the source classifier, training window or evidence graph. Financial regime evaluation still requires source-lineage admission; a fabricated past timestamp or arbitrary policy/evidence string must not become research authority. The label-blind usability operator does not enable regime gates or financial evaluation.
 
 ### US-R3 declared versus enforced research boundary
 The v1 proposal validator checks a submitted slot/round in isolation, not cumulative use across calls. It has no persistent run ledger or model tool-dispatch boundary. Static `*_authority=false` payloads and a no-MT5-import test do not establish information isolation or runtime quota enforcement. Generation/evaluation must wait for durable slot reservation, strict decoding, scoped data/tools/memory, idempotent resume and quota failure tests.
