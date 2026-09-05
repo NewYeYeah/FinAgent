@@ -123,6 +123,8 @@ Agent tests cover bounded tool/prompt/code behavior, repair/checkpoint/audit and
 
 US-R3 expansion additionally requires stateful slot/attempt accounting, concurrent reservation and crash/resume tests, strict payload rejection, split-scoped tool dispatch and memory isolation, plus provider quota exhaustion without replacing candidate slots. Test enforcement using a fake provider and instrumented denied data/tool access, not only static flags or import scans. A data-blind LLM arm isolates the benefit of development feedback from the benefit of formula generation. Compare matched per-run evaluation budgets and report uncertainty; three runs are pilot evidence.
 
+The v2 offline runtime suite exercises an actual retrieval/validation/development-feedback/submission loop, invalid-to-repair transitions, duplicate retention, cross-process SQLite reservation, policy/scope drift, quota/unknown-usage failures, late provider/evaluator replies, clock rollback and crash recovery without automatic resend. The CLI runs twice against one immutable evidence directory: nine synthetic provider calls and one synthetic evaluation on the first run, zero on resume. Contexts contain a bounded action guide, never arbitrary tool access; rejected raw responses and callback exception text must not enter memory or the ledger. Fixture acceptance is separate from single-call real-provider transport verification, source authentication and financial/Agent-value experiments.
+
 ## 6. Statistical research acceptance
 
 Formal intraday research must include overlap-aware chronology and inference. At minimum:

@@ -9,6 +9,9 @@ on:
       - "src/finagent/research/us_r3_agent_boundary.py"
       - "src/finagent/research/us_r3_alpha_catalog.py"
       - "src/finagent/research/us_r3_usability.py"
+      - "src/finagent/agents/r3_*.py"
+      - "scripts/check_us_r3_agent_runtime.py"
+      - "tests/test_us_r3_agent_runtime.py"
       - "scripts/check_us_r3_alpha_usability.py"
       - "tests/test_us_r3_usability.py"
       - "scripts/freeze_us_r3_research_iteration.py"
@@ -27,7 +30,7 @@ permissions:
 
 jobs:
   agent-alpha-expansion:
-    name: US-R3 numeric and usability acceptance (${{ matrix.os }})
+    name: US-R3 numeric and scoped runtime acceptance (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
@@ -50,6 +53,7 @@ jobs:
       - name: Panel semantics and Agent boundary
         run: |
           uv run --frozen pytest -q \
+            tests/test_us_r3_agent_runtime.py \
             tests/test_us_a1_factor_panel_materialization.py \
             tests/test_us_r3_usability.py \
             tests/test_us_r3_agent_alpha_expansion.py
@@ -64,9 +68,18 @@ jobs:
           PYTHONPATH=src uv run --frozen python scripts/freeze_us_r3_research_iteration.py --output us-r3-a.json
           PYTHONPATH=src uv run --frozen python scripts/freeze_us_r3_research_iteration.py --output us-r3-b.json
           cmp us-r3-a.json us-r3-b.json
+      - name: Offline capability loop and zero-call resume
+        run: |
+          PYTHONPATH=src uv run --frozen python scripts/check_us_r3_agent_runtime.py --output-root us-r3-runtime-smoke
+          PYTHONPATH=src uv run --frozen python scripts/check_us_r3_agent_runtime.py --output-root us-r3-runtime-smoke
       - name: Strict static checks
         run: |
           uv run --frozen ruff check \
+            src/finagent/agents/r3_contracts.py \
+            src/finagent/agents/r3_ledger.py \
+            src/finagent/agents/r3_runtime.py \
+            scripts/check_us_r3_agent_runtime.py \
+            tests/test_us_r3_agent_runtime.py \
             src/finagent/research/us_r3_usability.py \
             scripts/check_us_r3_alpha_usability.py \
             tests/test_us_r3_usability.py \
@@ -78,6 +91,10 @@ jobs:
             tests/test_us_a1_factor_panel_materialization.py \
             tests/test_us_r3_agent_alpha_expansion.py
           uv run --frozen mypy --strict --follow-imports=skip \
+            src/finagent/agents/r3_contracts.py \
+            src/finagent/agents/r3_ledger.py \
+            src/finagent/agents/r3_runtime.py \
+            scripts/check_us_r3_agent_runtime.py \
             src/finagent/research/us_r3_usability.py \
             scripts/check_us_r3_alpha_usability.py \
             src/finagent/research/us_a1_factor_materialization.py \
@@ -86,6 +103,10 @@ jobs:
             src/finagent/research/us_r3_alpha_catalog.py \
             scripts/freeze_us_r3_research_iteration.py
           uv run --frozen python -m py_compile \
+            src/finagent/agents/r3_contracts.py \
+            src/finagent/agents/r3_ledger.py \
+            src/finagent/agents/r3_runtime.py \
+            scripts/check_us_r3_agent_runtime.py \
             src/finagent/research/us_r3_usability.py \
             scripts/check_us_r3_alpha_usability.py \
             src/finagent/research/us_a1_factor_materialization.py \
@@ -96,6 +117,10 @@ jobs:
       - name: Explicit no-MT5 research boundary
         run: |
           ! grep -R "^import MetaTrader5\|^from MetaTrader5" \
+            src/finagent/agents/r3_contracts.py \
+            src/finagent/agents/r3_ledger.py \
+            src/finagent/agents/r3_runtime.py \
+            scripts/check_us_r3_agent_runtime.py \
             src/finagent/research/us_r3_usability.py \
             scripts/check_us_r3_alpha_usability.py \
             src/finagent/research/us_a1_factor_panel_materialization.py \

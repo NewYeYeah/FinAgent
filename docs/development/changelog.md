@@ -2,6 +2,14 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-05 — US-R3 scoped Agent runtime, offline acceptance
+
+- added a separately versioned v2 JSON capability boundary for curated literature/development summaries, factor validation/submission, trusted development evaluation and bounded run-local feedback; preserved all v1 and R1/R2 identities;
+- implemented durable SQLite run/slot/attempt reservation, cumulative token/cost/time/evaluation quotas, cross-process admission, immutable scope/provider/code bindings and idempotent restart without automatic resend of uncertain requests;
+- retained invalid, repaired and duplicate attempts; rejected paths, arbitrary code, unadmitted tools, nondevelopment evidence and hidden-reasoning fields; sanitized callback/provider failures;
+- added an offline operator with flushed progress and immutable evidence; the nine-step synthetic loop resumes with zero provider/evaluator calls and identical evidence;
+- covered runtime controls with adversarial, timeout, quota, crash and process-race tests and added Linux/Windows CI. Real-provider transport/accounting, authentic financial-source admission and independent economic evidence remain separate gates; no external model, MT5 or Alpha Gate was called.
+
 ## 2026-09-05 — US-R3 numeric core and offline feature usability
 
 - fixed incomplete-input contamination before every panel consumer, with session-local warm-up and bounded short-partition lags; added clock, valid-breadth, future-mutation and composed/partition parity regressions without modifying legacy A0/R2 execution or identities;

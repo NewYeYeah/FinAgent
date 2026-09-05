@@ -18,7 +18,7 @@ The preserved v1 bundle is `us-r3-research-bundle-dbfa49573ce477e71ca8d85b`, pol
 
 The architecture's deterministic core, content identities, independent evaluation and valid no-alpha terminals are sound. The first three proposed formulas are conventional price/volume interactions worth testing as baselines. Their citations motivate mechanisms but do not validate these exact windows, market, horizon or costs. R2 found zero complete-gate passes; the old A0 pilot did not demonstrate enough Agent value to proceed. Neither result proves all future mechanisms or richer Agents must fail.
 
-The review at `d171615` identified two implementation gaps. The first has since been repaired and tested as described under [offline feature usability](#offline-feature-usability); the second remains a separate runtime milestone:
+The review at `d171615` identified two implementation gaps. The panel correction is described under [offline feature usability](#offline-feature-usability); the separate v2 runtime addresses cumulative admission as described below. These are the original observations, not claims that the repaired paths still have these defects:
 
 1. `_panel_transform()` receives intermediate values before the final per-asset completeness mask. In a synthetic aligned panel, A=100 and B=200 are complete, C is incomplete, and minimum breadth is three. With C=1 the output ranks for A/B are 0.5/1.0; with C=300 they are 0.0/0.5. Both are wrong under a valid-input breadth rule: only two inputs are complete, so the formation should be unavailable. Masking only C's final output cannot undo contamination of A/B. The node-level availability and downstream lag/rolling propagation need corrective tests and implementation.
 2. Calling `validate_agent_factor_proposal()` repeatedly for the same run/slot returns valid each time. That is normal for a stateless validator, but it proves no persistent slot admission or cumulative budget enforcement. Model-tool isolation, strict external decoding and a run ledger remain separate work. A policy ID supplied as a string also does not independently authenticate regime classifications or their availability timestamps.
@@ -38,9 +38,43 @@ The Agent may not submit arbitrary executable code or access labels, candidate p
 
 Each proposal is checked against graph complexity, submitted slot/round ranges, requested capabilities, data classes, tool names, canonical candidate identity and required inputs. These are envelope checks, not proof of process isolation or cumulative quota enforcement. Valid proposals still require the run-level and numerical admission gates before financial evaluation.
 
-## Proposed capability expansion
+## Implemented v2 capability runtime
 
-The next useful Agent is a research assistant with scoped feedback, not merely a formula writer. These capabilities are design targets and remain disabled in the v1 runtime:
+`finagent.agents.r3_runtime.ResearchCapabilityRuntime` adds enforced capabilities without changing the v1 validator or bundle identity. The trusted host constructs a `DevelopmentScope`, `ResearchRuntimePolicy`, provider and optional evaluator; the model returns one bounded JSON action. The provider receives the complete compact action guide and bounded run-local feedback through `ResearchRequest.context_json`.
+
+| Tool | Implemented boundary |
+| --- | --- |
+| `read_literature` | Reads an exact host-curated record ID; does not browse or fetch arbitrary URLs. |
+| `read_development` | Reads admitted, bounded coverage/evaluation summaries within the frozen development scope; no raw data/path resolution. |
+| `validate_factor` / `submit_factor` | Strictly decodes typed graphs and structured hypotheses using existing canonical numeric validation; no arbitrary Python. |
+| `evaluate_development` | Evaluates a previously validated same-run graph through a trusted callback; checks returned scope/source/evaluator/candidate identity. |
+| `recall` | Acknowledges bounded current-run feedback already included in the next context; no arbitrary memory writes or cross-run lookup. |
+
+The SQLite ledger reserves before calling a provider and stores every admitted attempt, including invalid proposals, repairs and duplicates. Submitted/duplicate slots close; a replayed request returns its recorded result without another call. Invalid wire content is retained only as a digest and fixed diagnostic, not raw responses or hidden reasoning. Validated structured proposals are persisted for reproducible evaluation. Scoped v2 validation has its own identity and never labels feedback-informed proposals as v1 data-blind evidence. All admitted tool actions consume attempt and provider budgets, including reads; a slot count alone is not the complete adaptive search denominator.
+
+Default v2 bounds are 24 slots, 72 total attempts, six attempts per slot, 24 development evaluations, 65,536 cumulative tokens and 250,000 micro-USD cumulative modeled cost; per-call ceilings are 16,384 tokens and 50,000 micro-USD. The run deadline is 900 seconds and the call timeout is 30 seconds. Every new call needs the full worst-case reservation available; exact known usage releases only its unused reservation. These are policy ceilings, not a direction to spend the quota. `feedback_enabled=False` provides a separate policy-bound no-development-feedback ablation, while retaining literature and validation.
+
+One database binds one run's policy, scope manifest, implementation hash, provider and model. Restarts cannot reset budgets or change the binding. Concurrent callers are serialized; a pending crashed request returns `PENDING_RECONCILIATION`, and another request returns `RUN_BUSY`. Do not delete the database, rename a run to bypass quotas, or automatically resend an uncertain paid request. After the original workers have stopped, a trusted operator may use `ledger.abandon_pending()` to stop the run without refunding uncertain usage. Starting a new run requires a separately admitted budget; account-wide budget governance remains outside this per-run ledger.
+
+### Offline operator
+
+From the activated `finagent` Conda environment at the repository root:
+
+```powershell
+python scripts/check_us_r3_agent_runtime.py --output-root reports/us_r3/agent_runtime/offline_v2_scoped
+```
+
+This is a synthetic harness, not an API-generation command. It writes `us_r3_agent_runtime_policy_v2.json`, `us_r3_agent_runtime.sqlite` and immutable `us_r3_agent_runtime_smoke.json`. It exercises curated retrieval, coverage, graph validation, synthetic evaluation, submission, repair, duplicate retention and denied file access. The first run makes nine **simulated** provider calls and one synthetic evaluation; repeating the same command makes zero of both and preserves the report identity. Progress is flushed to stderr; the final summary is flushed to stdout. No API key or MT5 connection is used, and the fixture metric is not financial evidence. A changed implementation must use a new explicitly chosen output directory; old evidence must remain unchanged.
+
+### Trusted-adapter limits before real generation
+
+The runtime is an application-level JSON boundary, not an OS sandbox. Providers and evaluators are trusted Python adapters, never model-submitted code. The host must establish authentic development-only source lineage independently of the record's claimed partition. Arbitrary Python, final/outer/reserve paths, broker tools and regime gates are unavailable; regime source authentication remains a separate gate.
+
+The provider must enforce a single transport attempt, actual total-token/output and spending ceilings, a transport timeout and exact usage. Do not plug in the generic provider unchanged: hidden retries or default zero-usage metadata can violate the run accounting contract. Quota exhaustion, unknown usage or transport uncertainty stops the run and retains the full reservation. A Python thread timeout cannot kill remote work or the adapter thread; late replies never execute tools, but the trusted transport must cancel/limit its own work. Real-provider contract tests and authentic data/evaluator admission remain prerequisites to a bounded real-model pilot. No production-provider readiness is claimed by the offline harness.
+
+## Further capability targets
+
+The v2 runtime supplies the narrow controlled interfaces above; the following richer research capabilities still need data, adapters or experimental evidence. They remain disabled in the preserved v1 path:
 
 | Capability | Controlled interface | Required evidence |
 | --- | --- | --- |

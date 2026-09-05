@@ -5,8 +5,8 @@ planning_document = "docs/development/current-plan.md"
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
 current_stage = "US-R3"
-current_stage_status = "numeric_core_and_feature_usability_verified"
-next_stage = "US-R3-0b evidence/economic protocol and US-R3-1 enforced research runtime"
+current_stage_status = "numeric_core_and_offline_agent_runtime_verified"
+next_stage = "US-R3-0b evidence/economic protocol and trusted provider/source admission"
 
 [release.ashare_historical_v1]
 status = "accepted"
@@ -706,7 +706,7 @@ stage_exit_gate_passed = true
 next_action = "preregister a new research iteration; do not progress to US-X0 without a later reviewed ROBUST_FACTOR_FAMILY terminal"
 
 [stage.us_r3]
-status = "numeric_core_and_feature_usability_verified"
+status = "numeric_core_and_offline_agent_runtime_verified"
 started_at = "2026-09-05"
 predecessor_stage = "US-R2"
 predecessor_review_id = "us-r2-alpha-gate-review-36d4d07f8dd0b3dbf70656de"
@@ -763,13 +763,22 @@ feature_usability_reference_parity_passed = true
 feature_usability_resumed_source_count = 21
 feature_usability_resume_feature_evaluation_count = 0
 complete_candidate_denominator_frozen = false
-generation_ledger_implemented = false
-scoped_feedback_runtime_implemented = false
-development_feedback_policy_v2_frozen = false
+generation_ledger_implemented = true
+scoped_feedback_runtime_implemented = true
+development_feedback_policy_v2_frozen = true
+development_feedback_policy_v2_id = "us-r3-agent-runtime-policy-66c6f33af99ddf35f731be0b"
+offline_agent_runtime_passed = true
+offline_agent_runtime_evidence_id = "us-r3-agent-runtime-smoke-b4ab1e684e9abf687f218ab7"
+offline_agent_runtime_attempt_count = 9
+offline_agent_runtime_synthetic_evaluation_count = 1
+offline_agent_runtime_resume_provider_calls = 0
+offline_agent_runtime_resume_evaluator_calls = 0
+real_provider_adapter_admitted = false
+runtime_is_os_sandbox = false
 independent_confirmation_evidence_admitted = false
 large_api_generation_admitted = false
 v1_bundle_scope = "data_blind_contract_prototype_preserved_not_full_experiment_denominator"
-next_action = "freeze independent evidence/cost design and enforce research run budgets; feature usability alone does not admit financial evaluation or complete US-R3"
+next_action = "freeze independent evidence/cost design and validate single-call provider accounting plus authentic development-source admission before a bounded real-model pilot; offline runtime acceptance does not complete US-R3"
 
 [documentation]
 governance_version = "1.1"
