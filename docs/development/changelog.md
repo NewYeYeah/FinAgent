@@ -2,6 +2,13 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-05 — US-R3 planning review, revision 4.3
+
+- reproduced incomplete-asset contamination and incorrect valid-input breadth in the new panel executor; recorded an unresolved P0 and moved numeric correctness before Agent generation;
+- distinguished the preserved v1 data-blind prototype from a complete experiment denominator and from enforced run quotas or information access controls;
+- reordered research around evidence independence, statistical power, early offline cost screening, session/context mechanisms and an empirically controlled development-feedback Agent;
+- retained v1 content identities and all R1/R2 accepted evidence; this planning correction does not implement the runtime fixes, admit feedback permissions or grant Alpha.
+
 ## 2026-09-05 — US-R3 data-blind Agent/Alpha preregistration contracts
 
 - opened a new research iteration after the reviewed US-R2 negative terminal without changing the frozen 37-candidate denominator, thresholds, statistics or historical conclusion;

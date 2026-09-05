@@ -20,6 +20,8 @@ Agent code/hypotheses are proposals. Deterministic application/core services own
 ## D6 — Independent evaluation remains independent
 Development feedback is separate from outer/holdout/reserve or operational evidence. Evaluation data is not recycled into the same adaptive search program.
 
+Development feedback can be useful and may be admitted by a versioned policy with enforced split/tool/memory scope. Freeze the search protocol and budget before adaptive development, then freeze realized candidates and the training/selection rule before outer/final evaluation. An already-inspected historical period cannot become independent by renaming its split or obtaining the same observations from another provider.
+
 ## D7 — Model validation is model-level
 Multi-factor selections are frozen and validated through actual `AlphaModel`/risk/portfolio/execution paths, not by post-hoc weighted return narratives.
 
@@ -52,6 +54,8 @@ A present-day MT5 CFD intersection is valid for integration engineering but does
 
 ## D17 — Agent value is empirical
 Manual, programmatic and Agent candidate-generation arms are compared under fixed data, budgets, gates and costs. If Agent adds no measurable value, its role is reduced rather than expanded by default.
+
+Compare per-run performance and matched evaluation resources, including a data-blind LLM ablation against any feedback-enabled Agent. Record total attempts, duplicates, repairs, API use and evaluator calls in a durable ledger. Declarative limits and three pilot seeds do not establish enforced quotas or statistical superiority.
 
 ## D18 — Alpha gates downstream deployment
 Broker execution/live product work beyond contract/replay infrastructure is gated by robust historical Alpha evidence; `NO_ROBUST_FACTOR_FAMILY` does not justify building a strategy deployment stack.

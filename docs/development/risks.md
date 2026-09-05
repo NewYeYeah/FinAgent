@@ -4,6 +4,15 @@ Only active/unresolved risks belong here. Resolved implementation history belong
 
 ## P0 — blocks research correctness or downstream authority
 
+### US-R3 cross-sectional availability contamination
+At reviewed commit `d171615b2ad033be404139671566ef0f0535149f`, the panel executor computes cross-sectional transforms on unmasked intermediate values and applies completeness rules only at candidate roots. A synthetic three-asset reproduction with only two complete assets still emits ranks at minimum breadth three; changing the incomplete asset changes both complete peers. Repair availability propagation before any panel-based financial evaluation and add invariance/breadth regressions. Existing CI did not cover this failure. This finding is in the new R3 panel path, not evidence that the accepted legacy R2 evaluator has the same defect.
+
+### US-R3 declared versus enforced research boundary
+The v1 proposal validator checks a submitted slot/round in isolation, not cumulative use across calls. It has no persistent run ledger or model tool-dispatch boundary. Static `*_authority=false` payloads and a no-MT5-import test do not establish information isolation or runtime quota enforcement. Generation/evaluation must wait for durable slot reservation, strict decoding, scoped data/tools/memory, idempotent resume and quota failure tests.
+
+### Independent evidence depletion and test power
+New hypotheses designed after R2 are exposed to the R2 corpus at the research-program level. Renaming old folds or changing provider does not restore independence. Later calendar dates alone also do not prove non-exposure. Record data/model/publication exposure and reserve a prospective or demonstrably sealed evaluation; freeze sample/power and stop rules before final outcomes, and distinguish insufficient evidence from a negative or positive strategy result.
+
 ### Intraday clock and calendar correctness
 DST, holidays, half-days, session boundaries, extended hours and bar timestamp convention can create leakage or incorrect resampling/labels. US-C0/US-D3 are blocking gates.
 

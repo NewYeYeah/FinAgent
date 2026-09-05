@@ -52,6 +52,8 @@ Live Workbench projections
 
 The Agent may propose hypotheses, generate bounded feature code and consume development-only evidence. It may not mutate positions/fills, change final risk or acceptance thresholds after observing evidence, repeatedly consume sealed evaluation data, self-promote a strategy or directly submit broker/live-capital orders.
 
+Each subsystem must enforce its own admitted representation and evidence scope. The US-R3 v1 implementation accepts typed graphs and is data-blind. The revision 4.3 expansion to development summaries, literature retrieval and bounded experiment tools is a planned capability requiring a new policy and runtime access controls; architecture-level permission is not proof that an adapter, sandbox or quota ledger exists.
+
 Browser code is presentation-only for authoritative financial facts. It can filter, select and visualize verified evidence; it does not recreate missing research, portfolio, execution or statistical truth.
 
 ## 3. Historical data boundary

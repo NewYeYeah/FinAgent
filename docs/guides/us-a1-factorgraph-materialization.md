@@ -2,7 +2,7 @@
 
 Issue: #159  
 Predecessor: merged A1-0 typed FactorGraph/canonical validation.  
-Project authority remains `US-R1 / research iteration`.
+Project stage authority is recorded only in [docs/status.toml](../status.toml).
 
 A1-1 turns the validated declarative graph into deterministic numeric time-series execution while preserving the accepted A0 semantics. It is still pre-Agent infrastructure: no LLM proposal is evaluated financially in this increment.
 
@@ -80,7 +80,9 @@ WINSORIZE             deterministic Type-7 lower/upper quantiles
 REGIME_GATE           exact reviewed policy ID plus one aligned label per panel bar
 ```
 
-Every asset must have the same event, availability and session clocks. Asset count and bars per asset are bounded before allocation, incomplete/cross-session windows remain unavailable, and panel operators require a frozen minimum breadth. The original compiler defaults and serialized identities are unchanged, so A0/R1/R2 evidence does not acquire a new numeric meaning.
+Every asset must have the same event, availability and session clocks. Asset count and bars per asset are bounded before allocation. The original compiler defaults and serialized identities are unchanged, so A0/R1/R2 evidence does not acquire a new numeric meaning.
+
+Review of `d171615` found that incomplete values are masked at candidate roots after panel transforms. They can therefore contaminate other assets and the breadth count. Typed unavailable reasons exist, but valid-input cross-sectional semantics are not yet accepted. The [US-R3 review](us-r3-agent-alpha-expansion.md#review-findings-and-limits) records the reproduction and required corrective gate.
 
 ## 4. Availability semantics
 
@@ -115,8 +117,8 @@ Because the research clock is 15m and the accepted strategy is same-session, nor
 
 ## 7. Capability increment and next boundary
 
-The deterministic multi-asset semantics for cross-sectional rank/z-score/winsorization and explicit regime-policy binding are now implemented and tested in A1-2.
+The panel formulas and policy-string matching have focused tests. The next increment must repair node availability propagation, validate causal regime lineage and prove composed/partition parity before financial use.
 
-The next boundary is a data-blind Agent proposal adapter. It may submit only typed graphs plus structured hypothesis/falsification envelopes to deterministic validation. It may not read labels, candidate performance, holdout evidence, broker/MT5 state, or receive result-dependent repair feedback. The MANUAL / PROGRAMMATIC / AGENT denominator must be frozen before financial evaluation.
+The v1 Agent remains a data-blind proposal control. The active plan additionally specifies a future development-feedback policy and an enforced run/tool boundary. This requires separate identities and acceptance; the realized MANUAL / PROGRAMMATIC / AGENT denominator and selection rule must be frozen before outer/final evaluation.
 
 A1-2 does not change the R2 37-candidate denominator and grants no Alpha, execution, order, PAPER or live-capital authority.

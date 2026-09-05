@@ -1,12 +1,12 @@
 schema_version = "finagent.project-status.v1"
-planning_revision = "4.2"
+planning_revision = "4.3"
 planning_document = "docs/development/current-plan.md"
 
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
 current_stage = "US-R3"
-current_stage_status = "preregistration_contracts_implemented"
-next_stage = "US-R3 data-blind candidate generation pilot"
+current_stage_status = "correctness_and_protocol_review_required"
+next_stage = "US-R3-0a numeric correctness and US-R3-0b evidence/economic protocol"
 
 [release.ashare_historical_v1]
 status = "accepted"
@@ -706,7 +706,7 @@ stage_exit_gate_passed = true
 next_action = "preregister a new research iteration; do not progress to US-X0 without a later reviewed ROBUST_FACTOR_FAMILY terminal"
 
 [stage.us_r3]
-status = "preregistration_contracts_implemented"
+status = "correctness_and_protocol_review_required"
 started_at = "2026-09-05"
 predecessor_stage = "US-R2"
 predecessor_review_id = "us-r2-alpha-gate-review-36d4d07f8dd0b3dbf70656de"
@@ -745,7 +745,18 @@ paper_authority = false
 live_capital_authority = false
 supports_us_x0_progression = false
 stage_exit_gate_passed = false
-next_action = "review and run the data-blind generation pilot; do not evaluate new candidates until its denominator is frozen"
+reviewed_implementation_commit = "d171615b2ad033be404139671566ef0f0535149f"
+planning_audit_revision = "4.3"
+numeric_correctness_blockers = ["incomplete_asset_values_influence_panel_peers_and_breadth"]
+numeric_correctness_gate_passed = false
+complete_candidate_denominator_frozen = false
+generation_ledger_implemented = false
+scoped_feedback_runtime_implemented = false
+development_feedback_policy_v2_frozen = false
+independent_confirmation_evidence_admitted = false
+large_api_generation_admitted = false
+v1_bundle_scope = "data_blind_contract_prototype_preserved_not_full_experiment_denominator"
+next_action = "repair panel availability; freeze evidence/cost design and enforce run budgets before any new Agent generation or financial evaluation"
 
 [documentation]
 governance_version = "1.1"

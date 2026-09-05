@@ -1,6 +1,6 @@
 # FinAgent Current Development Plan
 
-Planning revision: **4.2**
+Planning revision: **4.3**
 Stable path: `docs/development/current-plan.md`  
 Stage authority: `docs/status.toml`  
 Scope: **Historical v1.0 closure → U.S. minute research → Agent incremental-value validation → CFD historical execution → provider-neutral realtime → MT5 demo/PAPER → separately governed live-capital acceptance**
@@ -42,7 +42,7 @@ US-R1 robust intraday research + Alpha Gate
   ↓
 US-R2 denominator-preserving multi-regime replication
   ↓
-US-R3 preregistered Agent/Alpha research iteration
+US-R3 correctness + evidence design + controlled Agent/Alpha research
   ↓
        robust Alpha?
       /             \
@@ -724,22 +724,49 @@ After the short-window US-R1 negative terminal, US-R2 preserved the exact 37-can
 
 US-R2 completed all 20 fold-regime cells per candidate, pooled HAC/bootstrap/Holm/BH inference and per-regime frequency/decay robustness. Its reviewed terminal is `NO_ROBUST_FACTOR_FAMILY`: 16 candidates passed the robustness sub-gate, but zero passed the complete Alpha Gate. This is a valid terminal with no technical blocker and does not reopen US-X0 or grant Alpha, execution, order, PAPER or live-capital authority. Any further Alpha work requires another preregistered research iteration.
 
-## US-R3 preregistered Agent/Alpha research iteration
+## US-R3 — correctness, evidence design and controlled research
 
-US-R3 is that new research iteration. It expands the research language and proposal boundary without reopening the R2 denominator or changing any R1/R2 threshold, statistic or reviewed terminal.
+The objective is to discover economically testable mechanisms and measure Agent research value. Revision 4.3 moves numeric correctness, data independence and cost assumptions ahead of a large model-generation run. The R1/R2 denominator, numeric thresholds and reviewed negative terminals remain frozen.
 
-The first increment freezes four constraints before any financial evaluation:
+The existing v1 bundle is a data-blind contract prototype: it contains three graph candidates and per-run budget declarations, not the complete MANUAL / PROGRAMMATIC / AGENT experiment denominator. Its hashes and reproduction script remain historical inputs. Changes to feedback access, search allocation or gate semantics require a separate v2 bundle before the affected research runs. This plan does not enable new runtime permissions.
 
-- Agent output is a typed `FactorGraphSpec` plus structured hypothesis and falsification criteria; arbitrary code, labels, candidate performance, holdout evidence, broker state and provider tools are unavailable to the Agent;
-- MANUAL, PROGRAMMATIC and AGENT arms receive the same 24 candidate slots per run, with at least three programmatic seeds and three independent Agent runs;
-- cross-sectional rank, population z-score, Type-7 winsorization and reviewed regime masks have one deterministic, bounded multi-asset materialization implementation;
-- the current 2006–2026 R2 corpus is development/exploratory evidence only for new candidates. A new Alpha Gate requires post-R2 observations or another independently sealed evidence source.
+### Required work, dependencies and exit gates
 
-The first data-blind catalog contains three executable same-session OHLCV hypotheses—volatility-scaled momentum, volume-conditioned liquidity reversal and volume-confirmed range-location continuation—and three deferred hypotheses whose required semantics are absent: session-anchor market momentum, day/night decomposition and order-flow-conditioned reversal. A deferred hypothesis must gain its own typed data/operator contract before evaluation; OHLCV proxies may not silently impersonate order flow or cross-session information.
+| Increment | Work and dependency | Exit evidence |
+| --- | --- | --- |
+| US-R3-0a — numeric correctness, P0 | Repair the reproduced incomplete-asset contamination of panel transforms. Propagate node availability before cross-sectional consumers; define causal masks, breadth, session gaps, interval checks and composed lag/rolling behavior. | An incomplete asset cannot influence valid peers; breadth counts valid inputs; future mutations cannot alter earlier outputs; session-partition and batch parity; legacy A0/R2 identities preserved. API generation and financial evaluation wait for this gate. |
+| US-R3-0b — evidence and economic protocol, P0 | In parallel with 0a, inventory already-inspected data, propose independent evidence, define strategy clocks/positions and cost scenarios, and perform prospective power/design analysis without final outcomes. | Source and exposure ledger; usable sample and regime coverage; preregistered effect size, significance, cost hurdle, minimum effective sessions, endpoint family and stopping rule; missing independent evidence explicitly blocks confirmation. |
+| US-R3-1 — enforced research runtime, P0 | After 0a, add strict proposal decoding, capability-controlled tool dispatch, a persistent run/slot/attempt ledger, idempotent resume, resource quotas and segregated evidence access. | Repeated slots are idempotent or rejected; concurrent reservations cannot overspend; invalid/duplicate/repair attempts are retained; model cannot read evaluator data through tools, paths, logs or memory; provider quota exhaustion stops and checkpoints. |
+| US-R3-2 — mechanism and data uplift, P1 | After 0a and the exploratory part of 0b, add session-anchor returns, market-relative returns and trailing same-time-of-day activity baselines. Reuse existing local Data Plane and portfolio/replay services. | Pure synthetic then bounded historical reference parity; no future session total/VWAP; historical reference state has explicit price/action/availability semantics; benchmark and ablation suite is fixed. No MT5 needed. |
+| US-R3-3 — controlled Agent pilot, P1 | After 1 and 2, preregister v2 and compare manual, deterministic search, data-blind LLM and development-feedback Agent using matched candidate/evaluation budgets and the same evaluator. | Validity, redundancy, mechanism fidelity, development-validation quality, cost and failure/resume evidence per run; no best-of-three versus single-run comparison; at least three programmatic/Agent runs are a pilot, not proof of population-level superiority. |
+| US-R3-4 — frozen model/portfolio exploratory evaluation | Freeze candidate membership, signal direction or training rule, selection/combination algorithm, holding/execution clock and costs before diagnostic outer replay. Any feedback affects a later version only. | Full trial ledger, purged/embargoed folds, dependence-aware inference, multiplicity, exposure and ablation results, actual overlapping-position accounting, cost/stress/turnover and concentration diagnostics. Reused R2 data supports exploratory conclusions only. |
+| US-R3-5 — independent confirmation | Requires 0b evidence admission and a frozen 4 output. Prefer prospective data arriving after model/protocol freeze; alternate historical evidence requires independently demonstrated non-exposure and relevant universe semantics. | Blind final evaluation under the preregistered sample/power/stopping policy and independent review; positive, negative or insufficient-evidence terminal. Statistical and economic acceptance remain separate from broker acceptance. |
 
-US-R3-0 exits when the contracts, deterministic panel materializer, data-blind bundle, focused tests and CI are accepted. US-R3-1 may then connect a model adapter that receives only the policy-approved proposal context and returns the same envelope. No MT5 connection is required or admitted. The Agent receives no evaluation feedback within a generation run, and all denominator/gate changes require a new preregistration before results are inspected.
+Implement the two P0 workstreams before spending model quota on 24-slot campaigns. Remaining token balance is a ceiling, not a target. Resource limits must include provider-reported quota, dollar/token/time limits, attempts and deterministic-evaluation calls; Codex account usage is not an external model API balance.
 
-US-R3 does not itself grant Alpha, execution, order, PAPER, US-X0 progression or live-capital authority. The detailed implementation and evidence boundary is recorded in `docs/guides/us-r3-agent-alpha-expansion.md`.
+### Agent capability expansion
+
+Keep v1 as the data-blind control. A new, separately identified development-feedback policy may allow a curated literature index, schema/coverage diagnostics, bounded feature diagnostics, development-only evaluation summaries, experiment proposals, deterministic validation and syntax/type repair. A controlled development memory records source, split, candidate, attempt and feedback identities. An LLM critique of a mechanism is advisory evidence, not an independent gate review.
+
+The deterministic core computes labels and metrics. Development labels may train a declared model inside the core; they never become formation-time features. The Agent initially receives bounded summaries rather than arbitrary dataset or filesystem access. Prompt/schema checks must be backed by tool routing and data access enforcement. Shell execution, unrestricted code, outer/final/reserve feedback, threshold mutation, self-promotion and broker/order tools remain unavailable.
+
+Freeze search grammar, permitted feedback, total trials, per-run evaluation calls, comparison metrics and stop rules before adaptive development begins. Freeze the realized candidate denominator and selection/combination rule after permitted development and before any outer/final read. This two-step protocol permits learning on development data while retaining a sealed evaluation boundary. It does not reclassify an already-exposed R2 period as untouched.
+
+### Alpha priorities and economic interpretation
+
+Prioritize opening-to-closing-window market momentum, time-of-day-normalized activity/price interactions, and market-relative intraday signals. These are falsifiable mechanisms with a relatively small extension to OHLCV semantics. The three v1 formulas remain low-cost baselines; rank/z-score wrappers alone add no new ordering information, and winsorization must be analyzed for introduced ties. Relative volume is not order imbalance.
+
+New session/market/context operators should precede a wider grammar search. Day/night features and order-flow hypotheses stay conditional on admitted corporate-action/lifecycle or trade/quote data. Cross-session information can support an intraday-flat strategy, but requires its own data semantics; overnight information and overnight holdings are different scopes. News/earnings strategies require point-in-time publication and revision timestamps before admission.
+
+Move broker-neutral economic screening into research: freeze spread, slippage, fees, borrow availability, participation, one-bar decision delay and stress scenarios; report gross/net returns, break-even costs, uncertainty and market/sector exposures. Sparse OHLCV cannot establish a measured executable spread or short availability. This screening reuses offline services and does not advance US-X0 or substitute for a later broker-specific cost gate.
+
+For a new conditional strategy, preregister ex-ante activity rules and assess its active-period evidence plus the whole strategy including cash periods, transitions and costs. Do not select favorable regimes after results. An unconditional factor and a conditional strategy need explicitly different hypotheses; do not mechanically require a session-anchor market-timing strategy to satisfy every old cross-sectional RankIC cell. New endpoints/gates require a new policy, power checks and independent review before results; old failures are never relabeled passes.
+
+### Stop rules
+
+Preserve the negative US-A0 pilot as evidence against expanding the old Agent grammar. Expand Agent scope only if a preregistered new pilot shows useful, repeatable gains over strong deterministic search at comparable resources. If gains are absent, retain literature/diagnostic assistance and prioritize data/mechanisms. If no independent sample is admissible, end at exploratory acceptance without an Alpha claim. If new mechanisms fail the frozen economic hurdle, stop that family instead of enlarging the search or relaxing thresholds after results.
+
+The audit rationale and capability/readiness definitions are in [the US-R3 guide](../guides/us-r3-agent-alpha-expansion.md). `docs/status.toml` records which of these exits have actually passed.
 
 ---
 
