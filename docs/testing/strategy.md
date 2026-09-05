@@ -121,6 +121,10 @@ A source may be technically readable and still be `REFERENCE_ONLY` or `REJECTED`
 
 Agent tests cover bounded tool/prompt/code behavior, repair/checkpoint/audit and hidden-reasoning privacy. Agent **value** is not a unit-test claim: US-A0 compares fixed manual/programmatic/Agent arms under a preregistered budget and records repeat-run evidence.
 
+US-R3 expansion additionally requires stateful slot/attempt accounting, concurrent reservation and crash/resume tests, strict payload rejection, split-scoped tool dispatch and memory isolation, plus provider quota exhaustion without replacing candidate slots. Test enforcement using a fake provider and instrumented denied data/tool access, not only static flags or import scans. A data-blind LLM arm isolates the benefit of development feedback from the benefit of formula generation. Compare matched per-run evaluation budgets and report uncertainty; three runs are pilot evidence.
+
+The v2 offline runtime suite exercises an actual retrieval/validation/development-feedback/submission loop, invalid-to-repair transitions, duplicate retention, cross-process SQLite reservation, policy/scope drift, quota/unknown-usage failures, late provider/evaluator replies, clock rollback and crash recovery without automatic resend. The CLI runs twice against one immutable evidence directory: nine synthetic provider calls and one synthetic evaluation on the first run, zero on resume. Contexts contain a bounded action guide, never arbitrary tool access; rejected raw responses and callback exception text must not enter memory or the ledger. Fixture acceptance is separate from single-call real-provider transport verification, source authentication and financial/Agent-value experiments.
+
 ## 6. Statistical research acceptance
 
 Formal intraday research must include overlap-aware chronology and inference. At minimum:
@@ -132,6 +136,12 @@ Formal intraday research must include overlap-aware chronology and inference. At
 - no evaluation feedback into the same adaptive search program.
 
 Valid no-alpha terminals are accepted research outcomes.
+
+US-R3 panel acceptance must include perturbation tests proving invalid asset values cannot influence valid peers, valid-input breadth enforcement, causal regime-mask lineage, no future mutation effect, missing-clock/session handling and partition/batch parity. These tests precede new financial evaluation.
+
+The R3 feature-usability lane also exercises an independent direct-formula oracle on synthetic and local historical inputs. Its SQL projection excludes labels and future prices. Test missing-row padding, duplicate/off-grid rejection, bounded sessions, immutable publication, source/implementation drift, corruption, interruption and zero-evaluation resume. Dedicated CI runs on Windows and Linux. A passing usability artifact proves feature computation only, not signal profitability or independent source admission.
+
+For adaptive research, freeze search rules and trial budgets before development feedback; freeze realized candidates and the training/selection/portfolio rule before outer or final evaluation. Preserve the whole trial ledger and preregister the appropriate multiple-testing procedure; a count of final survivors alone does not correct adaptive search bias. Session/block resampling must preserve the relevant cross-asset dependence. Power and endpoint choices precede final outcomes, and broker-neutral costs include overlapping positions, delayed execution and stress assumptions.
 
 ## 7. MT5 / broker acceptance
 

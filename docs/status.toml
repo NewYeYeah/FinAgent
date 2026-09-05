@@ -1,12 +1,12 @@
 schema_version = "finagent.project-status.v1"
-planning_revision = "4.1"
+planning_revision = "4.3"
 planning_document = "docs/development/current-plan.md"
 
 # This file is the only project-stage authority. README and Markdown documents
 # link here rather than maintaining independent "current milestone" values.
-current_stage = "US-R2"
-current_stage_status = "accepted_no_robust_factor_family_terminal"
-next_stage = "research iteration"
+current_stage = "US-R3"
+current_stage_status = "numeric_core_and_offline_agent_runtime_verified"
+next_stage = "US-R3-0b evidence/economic protocol and trusted provider/source admission"
 
 [release.ashare_historical_v1]
 status = "accepted"
@@ -704,6 +704,81 @@ point_in_time_security_master_available = false
 survivorship_safe_market_claim = false
 stage_exit_gate_passed = true
 next_action = "preregister a new research iteration; do not progress to US-X0 without a later reviewed ROBUST_FACTOR_FAMILY terminal"
+
+[stage.us_r3]
+status = "numeric_core_and_offline_agent_runtime_verified"
+started_at = "2026-09-05"
+predecessor_stage = "US-R2"
+predecessor_review_id = "us-r2-alpha-gate-review-36d4d07f8dd0b3dbf70656de"
+predecessor_terminal = "NO_ROBUST_FACTOR_FAMILY"
+research_iteration_bundle_id = "us-r3-research-bundle-dbfa49573ce477e71ca8d85b"
+research_iteration_plan_id = "us-r3-research-plan-b3793331cb19cb0544fa6857"
+agent_boundary_policy_id = "us-r3-agent-boundary-21cd5b601dc578df6ecd2a2a"
+frontier_strategy_count = 6
+executable_ohlcv_candidate_count = 3
+deferred_strategy_count = 3
+manual_candidate_slots = 24
+programmatic_candidate_slots_per_seed = 24
+programmatic_seed_count = 3
+agent_candidate_slots_per_run = 24
+agent_independent_run_count = 3
+panel_rank_semantics = "average_percentile_rank_asset_id_tiebreak"
+panel_zscore_semantics = "population_variance_math_fsum"
+panel_winsorization_semantics = "type7_quantiles"
+regime_mask_policy_binding_required = true
+financial_data_read_during_preregistration = false
+financial_performance_evaluated = false
+external_model_called = false
+mt5_required = false
+mt5_accessed = false
+r2_corpus_reuse_authority = "development_and_exploratory_only"
+independent_alpha_gate_requirement = "new_post_r2_or_independent_sealed_evidence"
+candidate_denominator_frozen_before_financial_evaluation = true
+performance_filtering_allowed = false
+direction_refit_allowed = false
+threshold_relaxation_allowed = false
+alpha_gate_evaluated = false
+alpha_authority = false
+execution_authority = false
+order_authority = false
+paper_authority = false
+live_capital_authority = false
+supports_us_x0_progression = false
+stage_exit_gate_passed = false
+reviewed_implementation_commit = "d171615b2ad033be404139671566ef0f0535149f"
+planning_audit_revision = "4.3"
+numeric_correctness_blockers = []
+numeric_correctness_gate_passed = true
+numeric_correctness_scope = "typed input panel; source evidence authentication remains caller admission"
+panel_materialization_schema = "finagent.us-a1-factor-panel-materialization.v2"
+regime_source_lineage_admitted = false
+feature_usability_passed = true
+feature_usability_evidence_id = "us-r3-usability-batch-f5b662f79b520f5ff6b85f0a8dcf292c7556e65e7146db174230317ccee8f5d1"
+feature_usability_source_count = 21
+feature_usability_session_count = 5092
+feature_usability_input_row_count = 2846317
+feature_usability_missing_bar_padding_count = 13013
+feature_usability_peak_session_rows = 650
+feature_usability_reference_parity_passed = true
+feature_usability_resumed_source_count = 21
+feature_usability_resume_feature_evaluation_count = 0
+complete_candidate_denominator_frozen = false
+generation_ledger_implemented = true
+scoped_feedback_runtime_implemented = true
+development_feedback_policy_v2_frozen = true
+development_feedback_policy_v2_id = "us-r3-agent-runtime-policy-66c6f33af99ddf35f731be0b"
+offline_agent_runtime_passed = true
+offline_agent_runtime_evidence_id = "us-r3-agent-runtime-smoke-b4ab1e684e9abf687f218ab7"
+offline_agent_runtime_attempt_count = 9
+offline_agent_runtime_synthetic_evaluation_count = 1
+offline_agent_runtime_resume_provider_calls = 0
+offline_agent_runtime_resume_evaluator_calls = 0
+real_provider_adapter_admitted = false
+runtime_is_os_sandbox = false
+independent_confirmation_evidence_admitted = false
+large_api_generation_admitted = false
+v1_bundle_scope = "data_blind_contract_prototype_preserved_not_full_experiment_denominator"
+next_action = "freeze independent evidence/cost design and validate single-call provider accounting plus authentic development-source admission before a bounded real-model pilot; offline runtime acceptance does not complete US-R3"
 
 [documentation]
 governance_version = "1.1"

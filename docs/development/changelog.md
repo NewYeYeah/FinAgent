@@ -2,6 +2,39 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-05 — US-R3 scoped Agent runtime, offline acceptance
+
+- added a separately versioned v2 JSON capability boundary for curated literature/development summaries, factor validation/submission, trusted development evaluation and bounded run-local feedback; preserved all v1 and R1/R2 identities;
+- implemented durable SQLite run/slot/attempt reservation, cumulative token/cost/time/evaluation quotas, cross-process admission, immutable scope/provider/code bindings and idempotent restart without automatic resend of uncertain requests;
+- retained invalid, repaired and duplicate attempts; rejected paths, arbitrary code, unadmitted tools, nondevelopment evidence and hidden-reasoning fields; sanitized callback/provider failures;
+- added an offline operator with flushed progress and immutable evidence; the nine-step synthetic loop resumes with zero provider/evaluator calls and identical evidence;
+- covered runtime controls with adversarial, timeout, quota, crash and process-race tests and added Linux/Windows CI. Real-provider transport/accounting, authentic financial-source admission and independent economic evidence remain separate gates; no external model, MT5 or Alpha Gate was called.
+
+## 2026-09-05 — US-R3 numeric core and offline feature usability
+
+- fixed incomplete-input contamination before every panel consumer, with session-local warm-up and bounded short-partition lags; added clock, valid-breadth, future-mutation and composed/partition parity regressions without modifying legacy A0/R2 execution or identities;
+- versioned panel output as v2 and required explicit regime evidence identity plus causal label timestamps; metadata checks do not authenticate a caller's underlying regime evidence;
+- added a label-blind, session-streamed usability operator with an independent direct-formula oracle, 256MiB DuckDB memory setting, bounded fetches, flushed progress/errors and atomic immutable annual evidence;
+- handled absent source bars with explicitly incomplete structural padding, never forward-filled prices; duplicates/off-grid clocks fail closed;
+- verified all three frozen prototypes over 21 local annual sources, 5,092 sessions and 2,846,317 observed rows; 13,013 missing positions stayed unavailable, peak aligned session size was 650 rows; a repeat resumed all 21 artifacts without querying Parquet or recomputing features;
+- extended dedicated CI to Linux and Windows with CLI, tampering, interrupted/resumed execution and sparse-source regressions. This is feature engineering acceptance only: no returns, Alpha Gate, Agent generation, MT5 or stage closure.
+
+## 2026-09-05 — US-R3 planning review, revision 4.3
+
+- reproduced incomplete-asset contamination and incorrect valid-input breadth in the new panel executor; recorded an unresolved P0 and moved numeric correctness before Agent generation;
+- distinguished the preserved v1 data-blind prototype from a complete experiment denominator and from enforced run quotas or information access controls;
+- reordered research around evidence independence, statistical power, early offline cost screening, session/context mechanisms and an empirically controlled development-feedback Agent;
+- retained v1 content identities and all R1/R2 accepted evidence; this planning correction does not implement the runtime fixes, admit feedback permissions or grant Alpha.
+
+## 2026-09-05 — US-R3 data-blind Agent/Alpha preregistration contracts
+
+- opened a new research iteration after the reviewed US-R2 negative terminal without changing the frozen 37-candidate denominator, thresholds, statistics or historical conclusion;
+- bounded Agent authority to typed FactorGraph, hypothesis and falsification proposals plus deterministic validation, explicitly denying arbitrary code, labels, evaluation feedback, provider/MT5 tools, candidate selection, execution, orders and live capital;
+- implemented a bounded aligned-panel materializer with deterministic average-percentile ranks, population z-scores, Type-7 winsorization and exact regime-policy binding while preserving the original single-asset compiler identities;
+- preregistered equal 24-slot MANUAL / PROGRAMMATIC / AGENT budgets and a six-strategy frontier catalog: three executable OHLCV candidates and three explicitly deferred candidates requiring missing session-anchor, cross-session or order-flow semantics;
+- froze bundle `us-r3-research-bundle-dbfa49573ce477e71ca8d85b` without reading financial data, calling an external model, accessing MT5 or evaluating performance;
+- classified all reuse of the 2006–2026 R2 corpus as development/exploratory only; an independent Alpha Gate requires new post-R2 observations or another sealed independent source and remains unevaluated.
+
 ## 2026-09-05 — US-R2 denominator-preserving multi-regime Alpha Gate closure
 
 - completed the frozen 37-candidate denominator across five non-overlapping evaluation folds, four ex-ante IWM direction/volatility regimes and 21 annual partitions from 2006 through 2026 without candidate filtering, direction refit or new Agent candidates;

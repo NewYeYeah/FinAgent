@@ -4,6 +4,15 @@ Only active/unresolved risks belong here. Resolved implementation history belong
 
 ## P0 — blocks research correctness or downstream authority
 
+### US-R3 regime evidence admission
+The repaired panel kernel checks an explicit regime source identity and requires each label's timezone-aware availability to precede or equal formation availability. These are caller-supplied metadata, not independent authentication of the source classifier, training window or evidence graph. Financial regime evaluation still requires source-lineage admission; a fabricated past timestamp or arbitrary policy/evidence string must not become research authority. The label-blind usability operator does not enable regime gates or financial evaluation.
+
+### US-R3 trusted adapter and evidence admission
+The v2 capability runtime enforces strict JSON dispatch, transactional run budgets, retained repair/duplicate attempts and scoped memory; offline adversarial and restart tests cover these controls. It is not an OS sandbox for arbitrary provider/evaluator Python. Host admission must authenticate the development split and source/evaluator lineage: a record labeled `development` cannot establish its own provenance. A provider must independently enforce a single transport attempt, timeout, total-token/cost caps and exact usage. Existing generic provider retry/default-usage behavior is not automatically compatible. Python cannot kill a timed-out adapter thread; the runtime stops, retains worst-case reservations and ignores late replies, but the transport must still stop work. One database enforces one authorized run, not an account-wide budget across newly authorized runs. Real-model generation remains blocked on adapter/source admission and the preregistered experiment; no external API was used in offline runtime acceptance.
+
+### Independent evidence depletion and test power
+New hypotheses designed after R2 are exposed to the R2 corpus at the research-program level. Renaming old folds or changing provider does not restore independence. Later calendar dates alone also do not prove non-exposure. Record data/model/publication exposure and reserve a prospective or demonstrably sealed evaluation; freeze sample/power and stop rules before final outcomes, and distinguish insufficient evidence from a negative or positive strategy result.
+
 ### Intraday clock and calendar correctness
 DST, holidays, half-days, session boundaries, extended hours and bar timestamp convention can create leakage or incorrect resampling/labels. US-C0/US-D3 are blocking gates.
 
@@ -29,6 +38,9 @@ Listed equity bars and broker CFD instruments differ in contract size, volume un
 Internal order/position/account state must reconcile to broker order/deal history. Unknown drift, stale data or restart ambiguity must fail closed before external authority grows.
 
 ## P1 — record explicit limitation and continue only when the stage permits
+
+### Broad local regression baseline and timezone portability
+The local full-suite run accompanying R3 numeric usability recorded 13 failures outside the changed R3 surface: nine historical A-share compliance/freeze tests still reference removed versioned planning documents in `configs/acceptance/ashare_initial_requirement_compliance_ac4.toml`; four U.S. D2 tests assert UTC text against DuckDB timestamps displayed in the workstation's `+08` timezone. The old compliance references already exist at `629df86`, and the affected D2 implementation/tests were not changed by this increment. Do not describe the full local suite as green or silently recreate obsolete active plans. Repair historical reference ownership and make timestamp assertions timezone-explicit in a separate compatibility increment; do not reinterpret accepted financial evidence. The 156 focused A1/R2/R3 regressions and dedicated Linux/Windows usability CI passed.
 
 ### U.S. minute source publication / redistribution rights
 The Hugging Face dataset README does not declare a license and the upstream Finnhub acquisition/redistribution chain is not independently verified. For FinAgent's current **local, non-redistributed research** scope this is recorded as a limitation rather than a blocker after an exact local snapshot passes certification. Any redistribution, hosted dataset publication or stronger public provenance claim requires a separate rights review.

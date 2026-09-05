@@ -52,6 +52,8 @@ Live Workbench projections
 
 The Agent may propose hypotheses, generate bounded feature code and consume development-only evidence. It may not mutate positions/fills, change final risk or acceptance thresholds after observing evidence, repeatedly consume sealed evaluation data, self-promote a strategy or directly submit broker/live-capital orders.
 
+Each subsystem must enforce its own admitted representation and evidence scope. The preserved US-R3 v1 validator accepts typed graphs and is data-blind. The separate v2 capability runtime admits strict JSON actions for curated literature/development summaries, graph validation and trusted development evaluation. A transactional SQLite ledger reserves cumulative run/slot/attempt, evaluation, time, token and cost budgets before dispatch and binds scope, policy, implementation, provider and model across restarts. The model receives only bounded run-local results, not files, evaluator objects or arbitrary Python tools. This application-level boundary is not an OS sandbox: trusted host adapters must authenticate development-source lineage and enforce transport timeout, retry and spending limits. Offline fixtures prove runtime behavior, not real-provider readiness or incremental Agent value.
+
 Browser code is presentation-only for authoritative financial facts. It can filter, select and visualize verified evidence; it does not recreate missing research, portfolio, execution or statistical truth.
 
 ## 3. Historical data boundary
