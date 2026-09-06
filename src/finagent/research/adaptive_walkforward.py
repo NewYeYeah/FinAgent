@@ -79,7 +79,7 @@ class WalkForwardFold:
         )
 
 
-def validate_walkforward(
+def validate_walkforward_layout(
     factors: tuple[FactorRegistration, ...],
     folds: tuple[WalkForwardFold, ...],
     economics: EconomicPolicy,
@@ -95,8 +95,6 @@ def validate_walkforward(
         )
     if not 2 <= len(factors) <= 20 or len({f.factor_id for f in factors}) != len(factors):
         raise ValueError("a fixed unique pool of 2..20 factors is required")
-    if any(f.created_at > folds[0].train.start for f in factors):
-        raise ValueError("factor definitions must be frozen before first TRAIN")
     if (
         economics.execution_profile != "strict_15m"
         or economics.holding_bars != 4
@@ -105,6 +103,17 @@ def validate_walkforward(
         raise ValueError("this slice freezes strict_15m, one-bar delay and four-bar holding")
     if economics.cost_bps != (0.0, 1.0, 5.0, 10.0):
         raise ValueError("all arms require the same frozen 0/1/5/10bp grid")
+
+
+def validate_walkforward(
+    factors: tuple[FactorRegistration, ...],
+    folds: tuple[WalkForwardFold, ...],
+    economics: EconomicPolicy,
+) -> None:
+    """Original static admission: current-time definitions never enter this path."""
+    validate_walkforward_layout(factors, folds, economics)
+    if any(f.created_at > folds[0].train.start for f in factors):
+        raise ValueError("factor definitions must be frozen before first TRAIN")
 
 
 def evaluate_walkforward_fold(

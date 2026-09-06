@@ -292,7 +292,49 @@ class FactorLibrary:
         end = datetime.fromisoformat(report["window"]["end"])
         if start >= end or at < end:
             raise ValueError("evaluation window/outcome availability mismatch")
-        factor = self.get(report["factor_id"], as_of=start)
+        decision_at = (
+            datetime.fromisoformat(report["research_decision_at"])
+            if "research_decision_at" in report
+            else start
+        )
+        if "research_decision_at" in report and (decision_at < end or at < decision_at):
+            raise ValueError("invalid adaptive development evidence clock")
+        if "research_decision_at" in report:
+            from finagent.research.adaptive_factor_admission import (
+                AdaptiveDevelopmentAdmission,
+                FactorEvidenceMode,
+                evidence_semantics,
+            )
+
+            envelope = report.get("adaptive_development_selection", {})
+            if any(
+                report.get(k) != v
+                for k, v in evidence_semantics(
+                    FactorEvidenceMode.ADAPTIVE_RETROSPECTIVE
+                ).items()
+            ):
+                raise ValueError(
+                    "retrospective evidence cannot claim historical existence or independent authority"
+                )
+            admission = AdaptiveDevelopmentAdmission(
+                datetime.fromisoformat(envelope["requested_at"]),
+                envelope["agent_run_id"],
+                envelope["research_scope_id"],
+                tuple(sorted(envelope["factor_definition_ids"].items())),
+                _json(envelope["proposal_envelopes"]),
+            )
+            admission.validate(
+                tuple(
+                    FactorRegistration.from_dict(self.get(f))
+                    for f, _ in admission.factor_definition_ids
+                ),
+                end,
+            )
+            if admission.requested_at != decision_at or report["factor_id"] not in dict(
+                admission.factor_definition_ids
+            ):
+                raise ValueError("retrospective evidence admission mismatch")
+        factor = self.get(report["factor_id"], as_of=decision_at)
         if factor["status"] not in (
             FactorStatus.TESTING,
             FactorStatus.ACTIVE,

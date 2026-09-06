@@ -6,6 +6,10 @@ Test whether an Agent adds measurable value by **choosing research directions, m
 
 R4 is a development/exploration program. It may use adaptive feedback, but its results are not independent confirmation.
 
+Implemented: causal MarketState/FactorLibrary, five deterministic allocator baselines, session walk-forward evidence, bounded Agent Research Controller and a thin Research Console. Controller acceptance uses only scripted/offline providers and real deterministic fixture calculations. A real matched-budget campaign, accepted AdaptiveStrategy and the R4 terminal remain pending; B-005 provider/evaluator admission stays open.
+
+The current Controller admits frozen quality lookback/minimum 20/5 and Ridge alpha 1. It always runs all five comparators with common execution/cost semantics. MarketState changes factor weights only; exposure timing is a later separate ablation. Default `PREDECLARED_STATIC` rejects post-TRAIN definitions; explicit `ADAPTIVE_RETROSPECTIVE` permits proposals created now and frozen before retrospective development evaluation. No proposal dates are backfilled. Agent feedback remains exposed development evidence even when the numerical evaluator uses train-only models and causal fold evaluation.
+
 ## Research question
 
 Primary question:
@@ -214,7 +218,7 @@ Natural decomposition, subject to reviewability rather than a fixed count:
 1. MarketState + FactorLibrary vertical slice.
 2. Deterministic allocators + adaptive portfolio evaluator.
 3. Agent Research Controller + thin Research Console.
-4. Controlled comparison/campaign if the experiment cannot be cleanly included in slice 3.
+4. Separately admitted and preregistered matched-budget comparison/campaign after Controller/console merge and repository-state recheck. Slice 3 does not execute a real financial campaign.
 
 Do not split each contract/cache/statistic into its own PR.
 

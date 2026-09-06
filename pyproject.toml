@@ -32,6 +32,7 @@ dev = [
   "fastapi>=0.116,<1",
   "uvicorn[standard]>=0.35,<1",
   "httpx>=0.28,<1",
+  "ag-ui-protocol>=0.1,<1",
 ]
 llm = [
   "openai>=3.2,<4",
@@ -74,6 +75,7 @@ workspace = [
   "fastapi>=0.116,<1",
   "uvicorn[standard]>=0.35,<1",
   "httpx>=0.28,<1",
+  "ag-ui-protocol>=0.1,<1",
 ]
 
 [tool.uv]

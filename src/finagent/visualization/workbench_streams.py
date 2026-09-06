@@ -101,6 +101,7 @@ class AgentActiveRunProjection:
     hidden_reasoning: str = "not_persisted_not_projected"
     read_only: bool = True
     schema_version: str = AGENT_ACTIVE_RUN_SCHEMA
+    ag_ui_events: tuple[dict[str, object], ...] = ()
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -124,6 +125,7 @@ class AgentActiveRunProjection:
             ),
             "terminal": self.terminal,
             "hidden_reasoning": self.hidden_reasoning,
+            **({"ag_ui_events": list(self.ag_ui_events)} if self.ag_ui_events else {}),
         }
 
 
@@ -242,6 +244,7 @@ class WorkbenchStreamProjection:
         return self.command_store_path is not None
 
     def agent_snapshot(self, run_id: str) -> AgentActiveRunProjection:
+        from finagent.visualization.research_ag_ui import research_ag_ui_events
         if self.agent_audit_path is None:
             raise KeyError(run_id)
         index = load_agent_index(
@@ -286,6 +289,7 @@ class WorkbenchStreamProjection:
             unresolved_artifact_count=summary.unresolved_artifact_count,
             latest_activity=activity,
             terminal=summary.finished_at is not None,
+            ag_ui_events=research_ag_ui_events(run),
         )
 
     def _latest_command_event(

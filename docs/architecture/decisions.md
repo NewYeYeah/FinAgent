@@ -81,3 +81,11 @@ The existing Agent page is primarily an audit projection. The next product gener
 ## D19 — Live capital is separately human governed
 
 No research/PAPER/Agent state self-promotes into live authority. Live acceptance binds a specific strategy, broker/server/account, capital/risk envelope, safety/recovery procedure and operator responsibility.
+
+## D20 — Market time and adaptive research time are distinct
+
+`PREDECLARED_STATIC` preserves historical factor-definition admission. `ADAPTIVE_RETROSPECTIVE` permits a factor proposed now to be frozen and tested on already-exposed historical development folds. Never falsify `FactorRegistration.created_at`. Immutable proposal/definition/visible-history identities bind what existed before that factor's own evaluation request and result. All historical signals, model fits and performance releases still obey market availability. R5 requires the complete frozen strategy to predate its independent/prospective evidence; an R4 development candidate alone is not R5 eligible.
+
+## D21 — Controller execution, calculation, budget and audit remain separate
+
+R4 extends the existing R3 capability runtime, not its provider/accounting loop. Host adapters own deterministic calculations, ResearchLedger owns resource admission and trial denominator, and AgentAuditStore owns explicit product-visible action history. Required audit failures or ledger/audit disagreement stop further actions. The browser submits objectives through the existing local Control Plane and reads audit projections. The first Controller admits only the five frozen allocator configurations and runs all mandatory comparators.

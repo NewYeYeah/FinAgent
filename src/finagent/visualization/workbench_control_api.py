@@ -13,12 +13,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
+from finagent.agents.r3_contracts import identity
 from finagent.application import (
     APPLICATION_SERVICE_BINDINGS,
     ApplicationCommandInvocation,
     default_application_service_registry,
 )
 from finagent.application.command_store import SQLiteCommandStore
+from finagent.application.research_controller import ResearchSessionService
 
 from .workbench_control_catalog import ConfigRegistry, default_command_catalog
 
@@ -64,6 +66,12 @@ class ControlRunRequest(BaseModel):
     ] | None = None
 
 
+class ResearchStartRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    request_id: Annotated[str, Field(min_length=8, max_length=80, pattern=r"^[A-Za-z0-9_-]+$")]
+    objective: Annotated[str, Field(min_length=1, max_length=1000)]
+
+
 class ControlCommandRunner:
     """Background in-process runner over exact application-service identities."""
 
@@ -102,6 +110,26 @@ class ControlCommandRunner:
 
     def close(self) -> None:
         self._executor.shutdown(wait=True, cancel_futures=False)
+
+    def submit_research(
+        self, command_run_id: str, service: ResearchSessionService, run_id: str, objective: str
+    ) -> None:
+        def execute() -> None:
+            try:
+                self._store.mark_running(command_run_id)
+                execution = service.execute(run_id, objective)
+                if execution.status == "succeeded":
+                    self._store.mark_succeeded(command_run_id, execution)
+                else:
+                    self._store.mark_failed(command_run_id, execution.message)
+            except Exception:  # noqa: BLE001 -- durable fixed diagnostic; no provider/exception payloads.
+                self._store.mark_failed(
+                    command_run_id, "research_controller_failed_or_reconciliation_required"
+                )
+
+        future = self._executor.submit(execute)
+        self._futures.add(future)
+        future.add_done_callback(self._futures.discard)
 
     def _execute(self, command_run_id: str) -> None:
         try:
@@ -332,6 +360,7 @@ def create_control_app(
     export_dir: str | Path = ".finagent/workbench/exports",
     requested_by: str = "local-workbench-user",
     max_workers: int = 2,
+    research_service: ResearchSessionService | None = None,
     cors_origins: Sequence[str] = (
         "http://127.0.0.1:8765",
         "http://localhost:8765",
@@ -467,6 +496,60 @@ def create_control_app(
         return JSONResponse(
             status_code=status_code,
             content=record.to_dict(),
+        )
+
+    @app.get("/api/v3/control/research/status")
+    def research_status() -> dict[str, object]:
+        if research_service is None:
+            return {
+                "provider_available": False,
+                "reason": "provider unavailable / not admitted",
+                "cancel_supported": False,
+                "development_only": True,
+                "alpha_authority": False,
+                "paper_authority": False,
+                "live_authority": False,
+            }
+        return research_service.status()
+
+    @app.post("/api/v3/control/research/runs")
+    def start_research(request: ResearchStartRequest):
+        if not request.objective.strip():
+            raise HTTPException(status_code=422, detail="research objective is empty")
+        accepted = research_service is not None
+        run_id = identity(
+            {"request_id": request.request_id, "objective": request.objective}, "r4-agent"
+        )
+        try:
+            record, created = store.create(
+                request_key=request.request_id,
+                command_id="agent.research.start",
+                config_snapshot_id=None,
+                context={"run_id": run_id, "project_id": "r4-research"},
+                parameters={
+                    "objective": request.objective,
+                    "admission_id": research_service.binding_id if research_service else "unavailable",
+                },
+                requested_by=actor,
+                accepted=accepted,
+                rejection_message="" if accepted else "provider unavailable / not admitted",
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail="research request identity conflict") from exc
+        if created and accepted:
+            assert research_service is not None
+            runner.submit_research(
+                record.run.command_run_id, research_service, run_id, request.objective
+            )
+        return JSONResponse(
+            status_code=202 if accepted else 503,
+            content={
+                "run_id": run_id,
+                "command_run_id": record.run.command_run_id,
+                "state": record.run.state,
+                "provider": research_status(),
+                "record": record.to_dict(),
+            },
         )
 
     return app

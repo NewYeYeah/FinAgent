@@ -64,6 +64,43 @@ class DevelopmentEvaluator(Protocol):
     def evaluate(self, graph: FactorGraphSpec) -> DevelopmentRecord: ...
 
 
+@dataclass(frozen=True)
+class PreparedResearchAction:
+    """A host-validated effect. The runtime alone admits and times evaluation."""
+
+    execute: Callable[[], dict[str, object]]
+    evaluation_key: str | None = None
+    candidate_id: str | None = None
+    proposal_json: str | None = None
+    terminal: str | None = None
+
+
+class ResearchCapabilitySet(Protocol):
+    @property
+    def binding(self) -> dict[str, object]: ...
+    def manifest(self) -> dict[str, object]: ...
+    def context(self, ledger: ResearchLedger) -> dict[str, object]: ...
+    def decode(self, raw: str) -> dict[str, Any]: ...
+    def prepare(
+        self, action: dict[str, Any], ledger: ResearchLedger, reservation: Reservation, now: float
+    ) -> PreparedResearchAction: ...
+
+
+class ResearchRuntimeObserver(Protocol):
+    """Required product audit; never a provider loop or budget authority."""
+
+    def before_step(self, ledger: ResearchLedger) -> None: ...
+    def requested(self, reservation: Reservation, action: dict[str, Any], now: float) -> None: ...
+    def decided(self, reservation: Reservation, allowed: bool, reason: str, now: float) -> None: ...
+    def finished(
+        self, reservation: Reservation, result: dict[str, Any], ledger: ResearchLedger, now: float
+    ) -> None: ...
+
+
+class RequiredAuditFailure(RuntimeError):
+    pass
+
+
 T = TypeVar("T")
 
 
@@ -123,6 +160,8 @@ class ResearchCapabilityRuntime:
         policy: ResearchRuntimePolicy | None = None,
         evaluator: DevelopmentEvaluator | None = None,
         require_evaluated_submission: bool = False,
+        capabilities: ResearchCapabilitySet | None = None,
+        observer: ResearchRuntimeObserver | None = None,
         clock: Callable[[], float] = time.time,
     ) -> None:
         self.policy = policy or ResearchRuntimePolicy()
@@ -132,6 +171,11 @@ class ResearchCapabilityRuntime:
         self._clock = clock
         self._provider_id = identifier(provider_id)
         self._model_id = identifier(model_id)
+        self._capabilities, self._observer = capabilities, observer
+        if capabilities is not None and (
+            require_evaluated_submission or not self.policy.feedback_enabled
+        ):
+            raise ContractError("capability_workflow_mismatch")
         if type(require_evaluated_submission) is not bool:
             raise ContractError("invalid_workflow_flag")
         if require_evaluated_submission and (evaluator is None or not self.policy.feedback_enabled):
@@ -150,6 +194,7 @@ class ResearchCapabilityRuntime:
                 "scope_id": scope.scope_id,
                 "scope_manifest_id": scope.manifest_id,
                 "implementation_id": implementation_id(),
+                **({"capabilities": capabilities.binding} if capabilities is not None else {}),
                 **(
                     {"submission_workflow": "validate_evaluate_identical_submit_v1"}
                     if require_evaluated_submission
@@ -157,6 +202,64 @@ class ResearchCapabilityRuntime:
                 ),
             },
         )
+
+    def _finish(
+        self, reservation: Reservation, result: dict[str, Any], **accounting: Any
+    ) -> dict[str, Any]:
+        if self._capabilities is not None:
+            row = next(
+                r for r in self.ledger.journal() if r["request_id"] == reservation.request_id
+            )
+            result = {
+                **result,
+                "completed_at": self._clock(),
+                "resource_cost": {
+                    "evaluation_slots": int(row["evaluation_reserved"]),
+                    "tokens": accounting.get("tokens", self.policy.tokens_per_call),
+                    "cost_microusd": accounting.get("cost", self.policy.cost_per_call_microusd),
+                },
+            }
+            result = json.loads(canonical_json(result))
+        payload = self.ledger.finish(reservation, result, **accounting)
+        if self._observer is not None:
+            try:
+                self._observer.finished(reservation, payload, self.ledger, self._clock())
+            except Exception:  # noqa: BLE001 -- required audit must stop on any storage failure.
+                self.ledger.stop("AUDIT_FAILED")
+                raise RequiredAuditFailure("required_audit_failed") from None
+        return payload
+
+    def _dispatch_capability(
+        self, raw: str, reservation: Reservation, timeout: float
+    ) -> tuple[dict[str, object], str | None, str | None, str | None]:
+        assert self._capabilities is not None
+        action = self._capabilities.decode(raw)
+        self.ledger.bind_action(reservation, action, now=self._clock())
+        if self._observer is not None:
+            self._observer.requested(reservation, action, self._clock())
+        try:
+            prepared = self._capabilities.prepare(action, self.ledger, reservation, self._clock())
+            if prepared.evaluation_key is not None:
+                self.ledger.bind_evaluation(reservation, prepared.evaluation_key)
+                if not self.ledger.active(reservation, now=self._clock(), evaluation=True):
+                    raise ContractError("evaluation_budget_or_admission_denied")
+        except ContractError as error:
+            if self._observer is not None:
+                self._observer.decided(reservation, False, str(error), self._clock())
+            raise
+        if self._observer is not None:
+            self._observer.decided(
+                reservation,
+                True,
+                "admitted_development_capability_frozen_host_policy",
+                self._clock(),
+            )
+        result = (
+            _bounded_call(prepared.execute, timeout)
+            if prepared.evaluation_key is not None
+            else prepared.execute()
+        )
+        return result, prepared.candidate_id, prepared.proposal_json, prepared.terminal
 
     def _workflow(self, slot: int) -> dict[str, Any]:
         candidate = None
@@ -226,8 +329,20 @@ class ResearchCapabilityRuntime:
             feedback = [
                 {k: v for k, v in item.items() if k != "proposal_action"} for item in feedback
             ]
+        if self._capabilities is not None:
+            base = {
+                "schema_version": "finagent.research-capability-context.v1",
+                "scope_id": self.scope.scope_id,
+                "attempt": reservation.ordinal,
+                "instructions": base["instructions"],
+                "capability_set": self._capabilities.manifest(),
+                "state": self._capabilities.context(self.ledger),
+                "resources": resources,
+            }
         # A conservative byte budget reserves room for provider framing/output.
-        limit = min(8192, self.policy.tokens_per_call // 2)
+        limit = min(
+            16384 if self._capabilities is not None else 8192, self.policy.tokens_per_call // 2
+        )
         while True:
             encoded = canonical_json({**base, "feedback": feedback})
             if len(encoded.encode()) <= limit:
@@ -349,21 +464,48 @@ class ResearchCapabilityRuntime:
         )
 
     def step(self, request_id: str, slot: int) -> dict[str, Any]:
+        if self._observer is not None:
+            try:
+                self._observer.before_step(self.ledger)
+            except Exception:  # noqa: BLE001 -- required audit must stop on any storage failure.
+                self.ledger.stop("AUDIT_FAILED")
+                raise RequiredAuditFailure("audit_ledger_reconciliation_required") from None
+        already_terminal = (
+            self._capabilities is not None and self.ledger.snapshot()["status"] != "ACTIVE"
+        )
         reservation = self.ledger.reserve(request_id, slot, now=self._clock())
         if reservation.result is not None:
+            if (
+                self._capabilities is not None
+                and not already_terminal
+                and not any(r["request_id"] == request_id for r in self.ledger.journal())
+            ):
+                self.ledger.record_denial(reservation)
+                if reservation.result["outcome"] == "SLOT_ATTEMPTS_EXHAUSTED":
+                    self.ledger.stop("SLOT_ATTEMPTS_EXHAUSTED")
+                if self._observer is not None:
+                    try:
+                        self._observer.finished(
+                            reservation, reservation.result, self.ledger, self._clock()
+                        )
+                    except Exception:  # noqa: BLE001 -- denial audit is required too.
+                        self.ledger.stop("AUDIT_FAILED")
+                        raise RequiredAuditFailure("required_audit_failed") from None
             return reservation.result
         deadline = number(self.ledger.snapshot()["deadline"])
         timeout = min(self.policy.call_timeout_seconds, deadline - self._clock())
         try:
             context = self._context(reservation)
         except ContractError:
-            return self.ledger.finish(
+            return self._finish(
                 reservation,
                 {"outcome": "CONTEXT_BUDGET_EXCEEDED"},
                 tokens=0,
                 cost=0,
                 halt="CONTEXT_BUDGET_EXCEEDED",
             )
+        if self._capabilities is not None:
+            self.ledger.bind_context(reservation, context)
         request = ResearchRequest(
             identity(
                 {"run_id": self.ledger.run_id, "request_id": request_id}, "us-r3-provider-call"
@@ -378,13 +520,13 @@ class ResearchCapabilityRuntime:
                 raise TimeoutError("run_deadline")
             reply = _bounded_call(lambda: self._provider.respond(request), timeout)
         except ProviderQuotaExhausted:
-            return self.ledger.finish(
+            return self._finish(
                 reservation,
                 {"outcome": "PROVIDER_QUOTA_EXHAUSTED"},
                 halt="PROVIDER_QUOTA_EXHAUSTED",
             )
         except Exception:  # noqa: BLE001 -- provider exceptions are untrusted; no raw text in memory/logs.
-            return self.ledger.finish(
+            return self._finish(
                 reservation,
                 {"outcome": "PROVIDER_FAILED_UNCERTAIN"},
                 halt="PROVIDER_FAILED_UNCERTAIN",
@@ -397,14 +539,12 @@ class ResearchCapabilityRuntime:
             integer(reply.used_tokens, 1)
             integer(reply.cost_microusd)
         except ContractError:
-            return self.ledger.finish(
-                reservation, {"outcome": "USAGE_UNKNOWN"}, halt="USAGE_UNKNOWN"
-            )
+            return self._finish(reservation, {"outcome": "USAGE_UNKNOWN"}, halt="USAGE_UNKNOWN")
         if (
             reply.used_tokens > self.policy.tokens_per_call
             or reply.cost_microusd > self.policy.cost_per_call_microusd
         ):
-            return self.ledger.finish(
+            return self._finish(
                 reservation,
                 {"outcome": "PROVIDER_ACCOUNTING_BREACH"},
                 tokens=reply.used_tokens,
@@ -418,20 +558,28 @@ class ResearchCapabilityRuntime:
             wire_digest = hashlib.sha256(reply.action_json.encode()).hexdigest()
             if not self.ledger.active(reservation, now=self._clock()):
                 raise ContractError("run_no_longer_active")
-            action = decode_action(reply.action_json)
             timeout = min(self.policy.call_timeout_seconds, deadline - self._clock())
-            result, candidate_id, stored = self._dispatch(action, reservation, max(0, timeout))
+            if self._capabilities is None:
+                action = decode_action(reply.action_json)
+                result, candidate_id, stored = self._dispatch(action, reservation, max(0, timeout))
+            else:
+                result, candidate_id, stored, halt = self._dispatch_capability(
+                    reply.action_json, reservation, max(0, timeout)
+                )
             if not self.ledger.active(reservation, now=self._clock()):
                 raise ContractError("run_no_longer_active")
         except ContractError as error:
             result = {"outcome": "REJECTED", "code": str(error)}
             candidate_id = stored = None
+        except RequiredAuditFailure:
+            result = {"outcome": "AUDIT_FAILED"}
+            halt = "AUDIT_FAILED"
         except TimeoutError:
             result = {"outcome": "EVALUATOR_TIMEOUT"}
             halt = "EVALUATOR_TIMEOUT"
         except Exception:  # noqa: BLE001 -- never propagate callback payloads or stack text to the model.
             result = {"outcome": "TOOL_FAILED", "code": "trusted_adapter_failure"}
-        return self.ledger.finish(
+        return self._finish(
             reservation,
             result,
             tokens=reply.used_tokens,

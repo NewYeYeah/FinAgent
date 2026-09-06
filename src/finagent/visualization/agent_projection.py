@@ -115,6 +115,7 @@ class AgentRunProjection:
     latency_ms: float = 0.0
     governance: Mapping[str, Any] = field(default_factory=dict)
     error: str = ""
+    research: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         for name in (
@@ -175,6 +176,7 @@ class AgentRunProjection:
             "governance": dict(self.governance),
             "error": self.error,
             "hidden_reasoning": "not_persisted_not_projected",
+            **({"research": dict(self.research)} if self.research else {}),
         }
 
 
@@ -385,6 +387,12 @@ def _project_agent_run_from_connection(
         )
         for call_id, result_json in result_rows
     }
+    tool_outputs = {str(call_id): _json_object(result_json, "agent tool result").get("output", {})
+                    for call_id, result_json in result_rows}
+    tool_requests = {str(call_id): _json_object(payload, "agent tool request") for call_id, payload in connection.execute(
+        "SELECT call_id,request_json FROM agent_tool_calls WHERE run_id=? ORDER BY sequence", (run_id,))}
+    tool_policies = {str(call_id): _json_object(payload, "agent policy") for call_id, payload in connection.execute(
+        "SELECT call_id,payload_json FROM agent_policy_decisions WHERE run_id=?", (run_id,))}
     policy_count = int(
         connection.execute(
             "SELECT COUNT(*) FROM agent_policy_decisions WHERE run_id=?",
@@ -403,6 +411,21 @@ def _project_agent_run_from_connection(
     if not isinstance(task, Mapping) or not isinstance(context, Mapping):
         raise EvidenceContractError("agent run payload lacks task/context objects")
     started_at = _parse_time(context.get("started_at"), "started_at")
+    is_research = isinstance(context.get("metadata"), Mapping) and context["metadata"].get("controller") == "r4"
+    research_state: dict[str, Any] = {}
+    if is_research:
+        for output in tool_outputs.values():
+            if isinstance(output.get("research_state"), dict):
+                research_state = dict(output["research_state"])
+    def event_payload(raw: object, call_id: str) -> Mapping[str, Any]:
+        payload = dict(_json_object(raw, "agent audit event payload"))
+        if is_research and call_id in tool_requests:
+            request = tool_requests[call_id]
+            policy = tool_policies.get(call_id, {})
+            payload["research_tool"] = {"tool": request["tool_name"], "arguments": request["arguments"],
+                                        "result": tool_outputs.get(call_id, {}).get("research_result"),
+                                        "policy": {"outcome": policy.get("outcome", "pending"), "reason": policy.get("reason", "Awaiting policy decision")}}
+        return payload
     finished_at = (
         _parse_time(decision.get("finished_at"), "finished_at")
         if decision.get("finished_at")
@@ -415,7 +438,7 @@ def _project_agent_run_from_connection(
             event_type=str(event_type),
             occurred_at=_parse_time(occurred_at, "audit event"),
             call_id=str(call_id or ""),
-            payload=_json_object(payload_json, "agent audit event payload"),
+            payload=event_payload(payload_json, str(call_id or "")),
             result_evidence_ids=result_evidence.get(str(call_id or ""), ()),
         )
         for sequence, event_id, event_type, occurred_at, call_id, payload_json in event_rows
@@ -461,7 +484,10 @@ def _project_agent_run_from_connection(
             "policy_decision_count": policy_count,
             "audit_source": str(source),
             "audit_access": "sqlite_read_only",
+            **({"controller": "r4", "development_only": True, "alpha_authority": False,
+                "paper_authority": False, "live_authority": False} if is_research else {}),
         },
+        research=research_state,
         error=error,
     )
 

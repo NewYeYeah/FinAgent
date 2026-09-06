@@ -213,6 +213,8 @@ export const workspaceApi = {
 };
 
 export const controlApi = {
+  researchStatus: () => controlGetJson<import("./workbench/researchTypes").ResearchProviderStatus>("/api/v3/control/research/status"),
+  startResearch: (request: { request_id: string; objective: string }) => controlPostJson<typeof request, import("./workbench/researchTypes").ResearchStartResponse>("/api/v3/control/research/runs", request),
   status: () => controlGetJson<ControlStatusV3>("/api/v3/control/status"),
   commands: () => controlGetJson<ControlCommandCatalogV3>("/api/v3/control/commands"),
   runs: (limit = 100) =>

@@ -149,7 +149,7 @@ The adapter retains one annual R2 artifact, an explicit universe of at most 32 a
 
 All arms share the common factor-support intersection **before** centered average-rank normalization, full top-K basket exposure, one-bar delay, four-bar holding, rolling-sleeve schedule and 0/1/5/10bp costs. A fixed positive score offset preserves ranking and prevents zero/negative combinations from becoming exposure timing. Missing common support is an explicit shared data limitation. State-conditional NAV diagnostics use probabilities known at the start of each valuation interval.
 
-R4 relationship (deterministic comparison implemented; accepted AdaptiveStrategy and Agent controller remain pending):
+R4 relationship (deterministic core and bounded Controller implemented; matched comparison and accepted AdaptiveStrategy remain pending):
 
 ```text
 FactorGraph candidates ──→ FactorLibrary
@@ -162,6 +162,12 @@ MarketState probabilities ────┤
 ```
 
 Market-state or exposure-timing logic is not required to masquerade as a cross-sectional stock-selection factor.
+
+`ResearchCapabilityRuntime` retains the single provider/timeout/accounting loop. Its optional capability set supplies an R4 manifest, strict decoder and prepared host actions; the default R3 contract still executes unchanged. `ResearchLedger` reserves attempts/tokens/cost/evaluations and retains failed, denied, duplicate and repaired attempts. The Controller chooses research actions; `application/research_controller_host.py` delegates FactorGraph evaluation and all five portfolio arms to the existing numerical services.
+
+Factor admission has two explicit meanings. Default `PREDECLARED_STATIC` keeps the #177 rule that definitions predate first historical TRAIN. `ADAPTIVE_RETROSPECTIVE` requires a frozen research request and proposal envelope, while allowing actual current-time proposals over historical development folds. `created_at` is never backdated. The envelope binds proposal/factor IDs, definition digest, actual proposal time, actor/run/scope, and the digest/cutoff of the exact explicit provider-visible context stored by ResearchLedger. Market event/availability clocks, train-only fitting and completed-session release remain unchanged. Retrospective results are exposed development evidence, never independent confirmation or Alpha/PAPER/live authority.
+
+`ResearchAuditBridge` projects every requested tool, policy decision, bounded result and final explicit decision into the existing `SQLiteAgentAuditStore`. It verifies audit/ledger consistency before every next action and fails closed on partial writes or uncertain restart. No hidden reasoning is stored. Completed requests replay without calls; uncertain pending work requires reconciliation and is never automatically evaluated twice.
 
 ## 7. Evidence model
 
@@ -186,6 +192,10 @@ Control Plane
 ```
 
 WorkbenchContext links identities/selections across analytical surfaces. Existing ECharts, React Flow and TanStack Table remain the default analytical/graph/table stack.
+
+The Agent page adds a high-level objective/start control and typed research cards plus context/budget/decision panels. Evidence APIs read the existing audit projections, never ResearchLedger. Only the local Control Plane POST may start a bounded run; no direct factor evaluation or lifecycle controls are exposed to browsers. Provider absence is explicit. An optional host-injected service binds provider, source, policy and audit; production does not fall back to the scripted acceptance provider.
+
+The official `ag-ui-protocol` SDK serializes explicit run/tool/state events as an additional field of existing Workbench SSE snapshots. Existing event IDs, replay and frontend query ownership remain intact. This is an embedded event adapter, not a native AG-UI HttpAgent endpoint or another Agent backend. CopilotKit and TanStack Query migration remain outside this slice.
 
 Workbench 2.0 will make Agent/experiment/market-state interaction the primary research workflow, but it remains a projection/control client over FinAgent core rather than a browser research engine.
 

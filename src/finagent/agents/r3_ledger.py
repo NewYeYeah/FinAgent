@@ -64,6 +64,15 @@ class ResearchLedger:
                 charged_cost INTEGER NOT NULL, evaluation_reserved INTEGER NOT NULL DEFAULT 0,
                 wire_digest TEXT, candidate_id TEXT, proposal_json TEXT, result_json TEXT,
                 UNIQUE(slot, ordinal))""")
+            columns = {row[1] for row in connection.execute("PRAGMA table_info(attempts)")}
+            for name, kind in (
+                ("action_json", "TEXT"),
+                ("action_time", "REAL"),
+                ("evaluation_key", "TEXT"),
+                ("context_json", "TEXT"),
+            ):
+                if name not in columns:
+                    connection.execute(f"ALTER TABLE attempts ADD COLUMN {name} {kind}")
             row = connection.execute("SELECT run_id,binding FROM run WHERE singleton=1").fetchone()
             frozen = canonical_json({**binding, "policy": policy.to_dict()})
             if row is None:
@@ -190,6 +199,90 @@ class ResearchLedger:
                     (reservation.request_id,),
                 )
             return True
+
+    def bind_action(
+        self,
+        reservation: Reservation,
+        action: Mapping[str, object],
+        *,
+        now: float,
+        evaluation_key: str | None = None,
+    ) -> None:
+        """Persist only decoded explicit actions, before any admitted side effect."""
+        with self._transaction() as connection:
+            cursor = connection.execute(
+                "UPDATE attempts SET action_json=?, action_time=?, evaluation_key=? "
+                "WHERE request_id=? AND lease=? AND state='PENDING' AND action_json IS NULL",
+                (
+                    canonical_json(action),
+                    number(now),
+                    evaluation_key,
+                    reservation.request_id,
+                    reservation.lease,
+                ),
+            )
+            if cursor.rowcount != 1:
+                raise ContractError("action_reservation_not_owned")
+
+    def record_denial(self, reservation: Reservation) -> None:
+        """Optional capability-run accounting of pre-provider admission denials."""
+        with self._transaction() as connection:
+            if connection.execute(
+                "SELECT 1 FROM attempts WHERE request_id=?", (reservation.request_id,)
+            ).fetchone():
+                return
+            ordinal = connection.execute(
+                "SELECT COUNT(*)+1 FROM attempts WHERE slot=?", (reservation.slot,)
+            ).fetchone()[0]
+            result = reservation.result or {"outcome": "ADMISSION_DENIED"}
+            connection.execute(
+                "INSERT INTO attempts (request_id,slot,ordinal,lease,state,charged_tokens,charged_cost,result_json) VALUES (?,?,?,?,?,0,0,?)",
+                (
+                    reservation.request_id,
+                    reservation.slot,
+                    ordinal,
+                    "denied",
+                    result["outcome"],
+                    canonical_json(result),
+                ),
+            )
+
+    def bind_evaluation(self, reservation: Reservation, key: str) -> None:
+        with self._transaction() as connection:
+            cursor = connection.execute(
+                "UPDATE attempts SET evaluation_key=? WHERE request_id=? AND lease=? AND state='PENDING' AND evaluation_key IS NULL",
+                (identifier(key), reservation.request_id, reservation.lease),
+            )
+            if cursor.rowcount != 1:
+                raise ContractError("evaluation_reservation_not_owned")
+
+    def bind_context(self, reservation: Reservation, context_json: str) -> None:
+        """The exact bounded explicit context sent to the provider, never reasoning."""
+        with self._transaction() as connection:
+            cursor = connection.execute(
+                "UPDATE attempts SET context_json=? WHERE request_id=? AND lease=? AND state='PENDING' AND context_json IS NULL",
+                (context_json, reservation.request_id, reservation.lease),
+            )
+            if cursor.rowcount != 1:
+                raise ContractError("context_reservation_not_owned")
+
+    def journal(self) -> list[dict[str, Any]]:
+        """Complete execution history, including failed and denied attempts."""
+        with self._transaction() as connection:
+            rows = connection.execute("SELECT * FROM attempts ORDER BY rowid").fetchall()
+        return [
+            {
+                **dict(row),
+                "action": json.loads(row["action_json"]) if row["action_json"] else None,
+                "result": json.loads(row["result_json"]) if row["result_json"] else None,
+            }
+            for row in rows
+        ]
+
+    def stop(self, status: str) -> None:
+        identifier(status)
+        with self._transaction() as connection:
+            connection.execute("UPDATE run SET status=?", (status,))
 
     def finish(
         self,

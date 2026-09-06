@@ -18,6 +18,7 @@ export interface StreamActivityV3 {
 }
 
 export interface AgentActiveRunProjectionV3 {
+  ag_ui_events?: import("./researchTypes").ResearchAgUiEvent[];
   schema_version: string;
   read_only: true;
   run_id: string;

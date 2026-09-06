@@ -189,6 +189,7 @@ export interface AgentProjectionItem {
 }
 
 export interface AgentRunProjection {
+  research?: import("./workbench/researchTypes").ResearchState;
   schema_version: string;
   run_id: string;
   task_id: string;

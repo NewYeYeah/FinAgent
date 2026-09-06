@@ -177,7 +177,7 @@ metrics describe NAV changes using the state known at each interval's beginning;
 they are not separate investable state strategies. Overall mean/worst fold return
 is unavailable if any fold's NAV is unresolved, and fold averages are not stitched
 NAV. These are development comparisons, without Alpha/PAPER/live authority or
-evidence yet of GMM/allocator profitability. Agent control remains a later slice.
+evidence yet of GMM/allocator profitability. The bounded R4 Controller reuses this core through explicit research-time admission.
 
 ## 7. Exploration versus confirmation
 
@@ -209,3 +209,11 @@ During R4, expose only what is needed to understand/control the loop:
 - explicit next decision.
 
 The full Workbench 2.0 productization is a later stage.
+
+The implemented Controller uses the existing `ResearchCapabilityRuntime`, provider and ResearchLedger. It can inspect admitted state/factors/literature/all trial outcomes, validate and propose FactorGraphs, select 2..20 nonterminal canonical factors, choose one of the five frozen allocator configurations, request deterministic evaluations/comparisons, record lifecycle decisions and finalize a development recommendation. It cannot change costs, holding/delay, quality lookback (20/5), Ridge alpha (1), budgets or final authority. Portfolio requests always run all five comparator arms. Proposed graphs must encode their own positive hypothesis direction; use the existing `NEGATE` operator for an inverse signal, with no allocator sign flip.
+
+Default `PREDECLARED_STATIC` admission still rejects definitions created after first TRAIN. The Controller explicitly selects `ADAPTIVE_RETROSPECTIVE` with an immutable proposal envelope/request. `proposal_id`, `factor_definition_digest`, `proposed_at`, run/actor/scope and `visible_history_id` identify the actual research decision; `proposal_context_id` names that same exact bounded explicit-context digest. `visible_experiment_ids` and the history cutoff cannot include a later result. Successful factor development evaluation admits TESTING, never automatic ACTIVE.
+
+Market clocks describe historical causal information. Research proposal clocks describe when the definition really existed. The ledger publishes a result only after evaluation completes (`completed_at`), so it can affect subsequent Agent actions only. Replay reuses committed requests and identical experiment specifications without another evaluation charge. Failed/negative/duplicate attempts remain visible. Unknown pending execution or an audit mismatch stops the run for reconciliation.
+
+Retrospective artifacts bind `evaluation_mode = adaptive_development_retrospective`, `historically_predeclared = false`, `adaptive_search_exposed = true`, `development_only = true` and false independent/Alpha/PAPER/live flags. Internal walk-forward partitions are called **fold evaluation**; the whole Agent search remains exposed development evidence. `DEVELOPMENT_CANDIDATE_PROPOSED` and `NO_CANDIDATE_RECOMMENDED` are Controller recommendations, not the R4 stage terminal. A frozen matched-budget comparison and later independent confirmation remain required.

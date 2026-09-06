@@ -16,7 +16,7 @@ Current reusable capabilities include:
 - evidence/artifact/config linking;
 - ECharts, React Flow and TanStack Table rendering.
 
-The current Agent page is primarily an audit/review surface. Workbench 2.0 will make active Agent research interaction first-class.
+The Agent page includes a thin R4 Research Console: objective/start control, typed tool cards, factor set, allocator, admitted historical MarketState, remaining budget and explicit final decision. Provider absence is shown as `Provider unavailable / not admitted`.
 
 ## 2. Start the Workbench
 
@@ -63,6 +63,21 @@ Existing linked analytical surfaces should be adapted to the future `AdaptiveStr
 ### Agent
 
 The existing Agent index/Activity/Inspector should be reused as the audit foundation for an interactive Agent Workspace.
+
+R4 activity is grouped into tool cards with policy outcome/reason, bounded results and artifact references. Raw action details are collapsed. New factor cards show **Proposed now**; retrospective experiment cards explicitly say **Tested retrospectively on historical development data** and **Not historically known / not independent evidence**. These are development trials, including negative results, without Alpha/PAPER/live authority.
+
+To run the explicit offline acceptance fixture (never a real provider campaign):
+
+```bash
+uv sync --frozen --extra dev --extra workspace --extra adaptive-research
+cd workspace
+npm ci
+npm run build
+cd ..
+uv run --frozen python -m scripts.r4_console_fixture --output .finagent/r4-console-fixture --serve
+```
+
+Use a fresh output directory for a changed fixture/code binding. Open `http://127.0.0.1:8765/agent?run=offline-proposal`. The script explicitly admits `scripted-offline` on Control port 8766, creates a real Parquet→Controller→ledger→audit fixture, and permits another bounded scripted objective through the form. Stop the fixture servers with Ctrl+C. Normal Workbench startup does not install this provider. A real provider requires a separately reviewed host admission via `ResearchSessionService`; B-005 remains open. Cancellation is not exposed because the current trusted evaluator thread cannot be safely interrupted; runtime deadlines and fail-closed resume remain authoritative.
 
 ## 5. Workbench 2.0 direction
 

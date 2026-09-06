@@ -186,6 +186,10 @@ Agent tests must verify behavior, not declarations:
 
 Agent **value** is an experiment result, never a unit-test assertion.
 
+R4 Controller acceptance runs `tests/test_r4_controller.py`, `tests/test_r4_controller_boundaries.py` and `tests/test_r4_research_control.py`. Scripted providers actually cross the existing runtime/provider/ledger boundary, run real FactorGraphs over Parquet and the shared numerical evaluator, and project every explicit action through AgentAuditStore and Workbench APIs/SSE. Regressions cover static rejection of post-TRAIN definitions, current-time retrospective proposals, frozen visible-history/definition identity, unavailable results, duplicates, failed/negative trials, budget denial, timeout, resume/audit mismatch and authority rejection. Existing R3 runtime and #176/#177 tests remain unchanged.
+
+Console component acceptance is `cd workspace && npm test`; `npm run build` includes TypeScript validation. After building, `npx playwright test --config playwright.research.config.ts` starts the opt-in real scripted fixture server and checks objective, typed action sequence, new proposal provenance, all five economic arms, factor set, allocator, remaining budget and explicit no-candidate/authority display. The browser test makes no mocked API responses. The standard production Control Plane remains provider-unavailable until a host explicitly supplies an admitted service. These fixtures are not a financial campaign or independent evidence.
+
 ## 6. Statistical rules
 
 Use methods appropriate to overlapping/serially dependent intraday outcomes. The exact R5 protocol is frozen per strategy, but normal tools include:

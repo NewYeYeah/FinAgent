@@ -2,6 +2,8 @@
 
 This is **not** a chronological changelog. It preserves only completed work and negative results that constrain or materially inform the active roadmap. Exact implementation details remain in Git and pull-request history.
 
+R4 Controller milestone: the existing bounded R3 runtime now executes offline research loops over the deterministic R4 core, including current-time FactorGraph proposals evaluated retrospectively without backdating. Complete trial/audit history and the thin Console make explicit actions, results, budgets and authority inspectable. This establishes engineering capability only: no real LLM campaign or matched Agent comparison was executed, and no AdaptiveStrategy/Alpha/PAPER/live acceptance follows.
+
 ## 1. A-share historical line
 
 The A-share historical product line was accepted as `finagent-ashare-historical-v1.0` on 2026-09-01.

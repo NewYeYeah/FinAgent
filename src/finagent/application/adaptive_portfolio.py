@@ -8,16 +8,22 @@ from pathlib import Path
 from platform import python_version
 from typing import Any
 
+from finagent.research.adaptive_factor_admission import (
+    AdaptiveDevelopmentAdmission,
+    FactorEvidenceMode,
+    evidence_semantics,
+)
 from finagent.research.adaptive_inputs import DevelopmentPanelSource
 from finagent.research.adaptive_walkforward import (
     WalkForwardFold,
     evaluate_walkforward_fold,
     summarize_folds,
     validate_walkforward,
+    validate_walkforward_layout,
 )
 from finagent.research.factor_library import FactorLibrary, FactorRegistration, FactorStatus
 from finagent.research.factor_performance import NORMALIZATION, SUPPORT_RULE, QualityConfig
-from finagent.research.market_state import MarketFeatureConfig
+from finagent.research.market_state import MarketFeatureConfig, utc_text
 from finagent.research.market_state_gmm import GMMConfig
 from finagent.research.ridge_meta_allocator import RidgeConfig
 from finagent.research.us_baselines import _canonical_hash
@@ -93,10 +99,26 @@ def run_adaptive_portfolio(
     quality_config: QualityConfig | None = None,
     ridge_config: RidgeConfig | None = None,
     library_binding: tuple[str, str] | None = None,
+    admission_mode: FactorEvidenceMode = FactorEvidenceMode.PREDECLARED_STATIC,
+    adaptive_admission: AdaptiveDevelopmentAdmission | None = None,
 ) -> dict[str, Any]:
     features, gmm = feature_config or MarketFeatureConfig(), gmm_config or GMMConfig()
     quality, ridge = quality_config or QualityConfig(), ridge_config or RidgeConfig()
-    validate_walkforward(factors, folds, economics)
+    if admission_mode is FactorEvidenceMode.PREDECLARED_STATIC:
+        if adaptive_admission is not None:
+            raise ValueError("static admission cannot carry an adaptive proposal envelope")
+        validate_walkforward(factors, folds, economics)
+    elif (
+        admission_mode is FactorEvidenceMode.ADAPTIVE_RETROSPECTIVE
+        and adaptive_admission is not None
+    ):
+        validate_walkforward_layout(factors, folds, economics)
+        adaptive_admission.validate(factors, max(f.evaluation.end for f in folds))
+    else:
+        raise ValueError("explicit retrospective admission requires a frozen proposal envelope")
+    research_decision_at = (
+        adaptive_admission.requested_at if adaptive_admission is not None else None
+    )
     if features.proxy_asset not in source.universe:
         raise ValueError("market proxy must be in the explicit universe")
     request = {
@@ -132,6 +154,10 @@ def run_adaptive_portfolio(
         "implementation": allocation_implementation_ids(),
         "scope": "local_development_only_no_search_no_exposure_timing",
     }
+    if research_decision_at is not None:
+        assert adaptive_admission is not None
+        request["adaptive_development_selection"] = adaptive_admission.to_dict()
+        request.update(evidence_semantics(FactorEvidenceMode.ADAPTIVE_RETROSPECTIVE))
     request["run_id"] = _canonical_hash(request, prefix="adaptive-walkforward-run")
     write_immutable_json(output / "request.json", request)
     completed: list[dict[str, Any]] = []
@@ -146,7 +172,7 @@ def run_adaptive_portfolio(
             library.transition(
                 factor.factor_id,
                 FactorStatus.TESTING,
-                at=folds[0].train.start,
+                at=research_decision_at or folds[0].train.start,
                 actor="deterministic_core",
                 reason="frozen walk-forward factor pool",
             )
@@ -182,6 +208,13 @@ def run_adaptive_portfolio(
                     "paper_authority": False,
                     "live_authority": False,
                 }
+                if research_decision_at is not None:
+                    evidence["adaptive_development_selection"] = request[
+                        "adaptive_development_selection"
+                    ]
+                    evidence.update(evidence_semantics(FactorEvidenceMode.ADAPTIVE_RETROSPECTIVE))
+                    evidence["research_decision_at"] = utc_text(research_decision_at)
+                    evidence["available_at"] = utc_text(research_decision_at)
                 evidence["evaluation_id"] = _canonical_hash(evidence, prefix="factor-evaluation")
                 library.record_evaluation(evidence)
         source.verify_unchanged()
@@ -198,6 +231,9 @@ def run_adaptive_portfolio(
             "paper_authority": False,
             "live_authority": False,
         }
+        if research_decision_at is not None:
+            result["adaptive_development_selection"] = request["adaptive_development_selection"]
+            result.update(evidence_semantics(FactorEvidenceMode.ADAPTIVE_RETROSPECTIVE))
         write_immutable_json(output / "result.json", result)
         return result
     except Exception as exc:
@@ -209,6 +245,14 @@ def run_adaptive_portfolio(
                 "reason": str(exc),
                 "error_type": type(exc).__name__,
                 "completed_folds": completed,
+                **(
+                    {
+                        "adaptive_development_selection": request["adaptive_development_selection"],
+                        **evidence_semantics(FactorEvidenceMode.ADAPTIVE_RETROSPECTIVE),
+                    }
+                    if research_decision_at is not None
+                    else {}
+                ),
                 "alpha_authority": False,
                 "paper_authority": False,
                 "live_authority": False,

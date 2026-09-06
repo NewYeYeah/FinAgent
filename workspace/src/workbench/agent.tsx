@@ -8,6 +8,8 @@ import { useWorkbenchContext, workbenchContextSearch } from "./context";
 import { workbenchQueryKeys, useWorkbenchQuery } from "./query";
 import { WorkbenchInspectorSlot } from "./shell";
 import { useWorkbenchSse } from "./stream";
+import { ResearchContext, ResearchObjective, ResearchToolCard } from "./research";
+import type { ResearchState, ResearchTool } from "./researchTypes";
 import type { AgentActiveRunProjectionV3 } from "./streamTypes";
 import type {
   AgentArtifactRefV3,
@@ -149,8 +151,12 @@ function ActivityPane({ runDetail }: { runDetail?: AgentRunResponseV3 }) {
         <StatusBadge value={run.status} />
       </header>
       <ol className="agent-activity-list">
-        {run.items.map((item) => (
+        {run.items.filter((item, index, items) => {
+          const tool = item.metadata.research_tool;
+          return !tool || !items.slice(index + 1).some((later) => later.call_id === item.call_id);
+        }).map((item) => (
           <li key={item.item_id}>
+            {item.metadata.research_tool ? <ResearchToolCard tool={item.metadata.research_tool as ResearchTool} status={item.status} /> : <>
             <div className="agent-activity-title">
               <strong>{item.title}</strong>
               <StatusBadge value={item.status} tone="neutral" />
@@ -178,6 +184,7 @@ function ActivityPane({ runDetail }: { runDetail?: AgentRunResponseV3 }) {
                 })}
               </div>
             ) : null}
+            </>}
           </li>
         ))}
       </ol>
@@ -198,7 +205,7 @@ function ArtifactLink({ artifact }: { artifact: AgentArtifactRefV3 }) {
   );
 }
 
-function Inspector({ runDetail }: { runDetail?: AgentRunResponseV3 }) {
+function Inspector({ runDetail, research }: { runDetail?: AgentRunResponseV3; research?: ResearchState }) {
   const { context } = useWorkbenchContext();
   if (!runDetail) {
     return (
@@ -210,6 +217,7 @@ function Inspector({ runDetail }: { runDetail?: AgentRunResponseV3 }) {
   const { run, summary } = runDetail;
   return (
     <WorkbenchInspectorSlot title="Run Inspector">
+      {research?.resources && <ResearchContext state={research} />}
       <section className="agent-inspector-block">
         <h3>Identity</h3>
         <dl className="agent-inspector-grid">
@@ -274,7 +282,7 @@ export function AgentWorkbenchPage() {
     enabled: Boolean(context.run_id),
   });
   const streamEnabled = Boolean(
-    context.run_id && !runQuery.data?.summary.finished_at,
+    context.run_id && runQuery.data && !runQuery.data.summary.finished_at,
   );
   const agentStream = useWorkbenchSse<AgentActiveRunProjectionV3>({
     path: context.run_id
@@ -290,6 +298,20 @@ export function AgentWorkbenchPage() {
 
   const effectiveProjectId = context.project_id ?? runQuery.data?.summary.project_id;
   const effectiveThreadId = context.thread_id ?? runQuery.data?.summary.thread_id;
+  const liveResearch = agentStream.lastProjection?.run_id === context.run_id
+    ? agentStream.lastProjection?.ag_ui_events?.find((event) => event.type === "STATE_SNAPSHOT")?.snapshot
+    : undefined;
+  const objectiveControl = <ResearchObjective onStarted={(runId) => {
+    void projectsQuery.refetch();
+    select({ project_id: "r4-research", thread_id: `thread-${runId}`, run_id: runId }, "run_selected");
+  }} />;
+  useEffect(() => {
+    if (!context.run_id || runQuery.data) return;
+    // The Control Plane acknowledges queueing before the audit run is created.
+    const timer = setInterval(() => { void runQuery.refetch().catch(() => undefined); void projectsQuery.refetch().catch(() => undefined); }, 1000);
+    const deadline = setTimeout(() => clearInterval(timer), 30000);
+    return () => { clearInterval(timer); clearTimeout(deadline); };
+  }, [context.run_id, runQuery.data, runQuery.refetch, projectsQuery.refetch]);
 
   const projectQuery = useWorkbenchQuery({
     key: workbenchQueryKeys.agentProject(effectiveProjectId ?? ""),
@@ -301,6 +323,12 @@ export function AgentWorkbenchPage() {
     queryFn: () => workspaceApi.agentThreadV3(effectiveThreadId ?? ""),
     enabled: Boolean(effectiveThreadId),
   });
+  useEffect(() => {
+    if (!runQuery.data) return;
+    void projectsQuery.refetch().catch(() => undefined);
+    if (effectiveProjectId) void projectQuery.refetch().catch(() => undefined);
+    if (effectiveThreadId) void threadQuery.refetch().catch(() => undefined);
+  }, [runQuery.data?.summary.run_id, runQuery.data?.summary.finished_at]);
 
   useEffect(() => {
     if (!runQuery.data) return;
@@ -322,6 +350,7 @@ export function AgentWorkbenchPage() {
   if (!projectsQuery.data?.configured) {
     return (
       <div className="agent-workbench-page">
+        {objectiveControl}
         <div className="agent-workbench-header">
           <div>
             <span className="eyebrow">Agent · V3-1 projection</span>
@@ -346,13 +375,14 @@ export function AgentWorkbenchPage() {
         <div>
           <span className="eyebrow">Agent · V3-4 live projection</span>
           <h1>Project → Thread → Run</h1>
-          <p>Canonical Agent audit navigation with deterministic WorkbenchContext, typed evidence links and normalized product SSE.</p>
+          <p>Research objectives, governed tools and development evidence.</p>
         </div>
         <div className="agent-header-contracts">
           <span className="agent-contract-pill">{streamLabel}</span>
-          <span className="agent-contract-pill">read-only · no hidden reasoning</span>
+          <span className="agent-contract-pill">development only · no hidden reasoning</span>
         </div>
       </header>
+      {objectiveControl}
       {projectError || threadError || runError ? (
         <ErrorState error={projectError ?? threadError ?? runError} />
       ) : null}
@@ -410,7 +440,7 @@ export function AgentWorkbenchPage() {
         ) : (
           <ActivityPane runDetail={runQuery.data} />
         )}
-        <Inspector runDetail={runQuery.data} />
+        <Inspector runDetail={runQuery.data} research={liveResearch?.resources ? liveResearch : runQuery.data?.run.research} />
       </div>
     </div>
   );
