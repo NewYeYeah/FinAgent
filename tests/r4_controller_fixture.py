@@ -207,6 +207,7 @@ def comparison_steps(ids):
             critique="Two controlled development experiments; no independent evidence.",
             next_action="Propose an engineering-only development candidate and stop.",
         ),
+        action("propose_allocator", allocator="rolling_net_return"),
         lambda c: action(
             "finalize_candidate",
             recommendation="candidate",

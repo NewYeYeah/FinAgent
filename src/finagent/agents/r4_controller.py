@@ -394,10 +394,15 @@ class R4ResearchCapabilities:
                     "allocator_proposal", "allocator_proposal_id", args["allocator_proposal_id"]
                 )
                 eligible(factor_set["factor_ids"])
+                # Every completed portfolio request contains all five arms. A later
+                # explicit allocator choice may cite that arm without a second run
+                # or rewriting the experiment's originally preferred allocator.
                 if not support or any(
                     r["factor_ids"] != factor_set["factor_ids"]
-                    or r["preferred_allocator"] != allocator["allocator"]
-                    or r["summary"]["arms"][allocator["allocator"]]["mean_fold_return_5bp"] is None
+                    or r["summary"]["arms"]
+                    .get(allocator["allocator"], {})
+                    .get("mean_fold_return_5bp")
+                    is None
                     for r in support
                 ):
                     raise ContractError("invalid_development_candidate_evidence")

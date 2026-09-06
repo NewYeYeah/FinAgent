@@ -315,13 +315,16 @@ def test_hw1_rejects_tampered_freeze_package(
         HistoricalWorkbenchReleaseSmoke(config).prepare()
 
 
-def test_hw1_smoke_code_does_not_change_frozen_workbench_product() -> None:
+def test_accepted_hw1_closure_preserves_frozen_workbench_product() -> None:
     # The accepted A-C5 release is the last commit before HW-1.0-RS development.
     freeze_sha = "52856ce69fb713d486c0476117528d4c86fcb9a7"
-    current = _git_sha()
-    if smoke_module._is_ancestor(ROOT, freeze_sha, current):
+    # docs/releases/ashare-historical-v1.md binds the accepted repository closure.
+    # Later R4 product development is not a replay of that frozen release smoke.
+    # Runtime drift rejection remains covered by the isolated worktree tests.
+    closure_sha = "fdea75e79122fa3d617c9862a4ee09db471b04cf"
+    if smoke_module._is_ancestor(ROOT, freeze_sha, closure_sha):
         assert smoke_module._workbench_product_drift(
             ROOT,
             freeze_sha=freeze_sha,
-            smoke_sha=current,
+            smoke_sha=closure_sha,
         ) == ()

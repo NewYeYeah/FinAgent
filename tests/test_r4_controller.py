@@ -75,6 +75,8 @@ def test_offline_provider_runtime_core_ledger_audit_loop(admitted, scenario):
     assert result["result"]["r5_eligible"] is False
     if scenario == "selection":
         assert len([r for r in journal if r["state"] == "DUPLICATE_EXPERIMENT"]) == 1
+        assert result["result"]["allocator"]["allocator"] == "rolling_net_return"
+        assert all(p["preferred_allocator"] == "regime_conditional" for p in portfolios)
     assert portfolios[0]["resource_cost"] == {
         "evaluation_slots": 1,
         "tokens": 100,

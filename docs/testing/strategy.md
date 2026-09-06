@@ -153,7 +153,7 @@ A PR runs:
 5. frontend gates when frontend code changes;
 6. broader compatibility/regression on main and on PRs that actually touch the shared boundary.
 
-Frozen historical release reproduction remains separate from active research/product CI. Do not recreate obsolete active docs simply to satisfy an old release test.
+Frozen historical release reproduction remains separate from active research/product CI. The historical Workbench product-identity regression binds the documented accepted closure commit, not the moving R4 HEAD; isolated worktree tests continue to prove that real frozen-release smoke rejects product drift. Do not recreate obsolete active docs simply to satisfy an old release test.
 
 ## 4. Reproducible environment
 
