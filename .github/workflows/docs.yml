@@ -2,10 +2,12 @@ name: docs-governance
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, us-r3-agent-alpha-expansion]
     paths:
+      - "AGENTS.md"
       - "README.md"
       - "docs/**"
+      - "skills/finagent-project/SKILL.md"
       - "scripts/check_docs.py"
       - "tests/test_docs_governance.py"
       - ".github/pull_request_template.md"
@@ -13,8 +15,10 @@ on:
   push:
     branches: [main]
     paths:
+      - "AGENTS.md"
       - "README.md"
       - "docs/**"
+      - "skills/finagent-project/SKILL.md"
       - "scripts/check_docs.py"
       - "tests/test_docs_governance.py"
       - ".github/pull_request_template.md"
