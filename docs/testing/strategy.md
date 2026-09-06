@@ -58,6 +58,23 @@ Required:
 
 R4 is adaptive development. Its performance is not independent Alpha acceptance.
 
+The first MarketState/FactorLibrary slice is exercised by
+`tests/test_market_state.py`, `tests/test_factor_library.py` and
+`tests/test_r4_research_slice.py`. These cover train-only normalization/mapping,
+future OHLCV and label-column perturbations, probability/availability checks,
+missing days, nonconvergence, JSON replay, real shared-DAG metrics, lifecycle,
+provenance, deterministic persisted results and read-only CLI inspection.
+`.github/workflows/r4-market-state-factor-library.yml` runs the slice on Linux
+and Windows with strict focused typing/lint plus FactorGraph/economics/R2-regime
+predecessors. Install with `uv sync --frozen --extra dev --extra adaptive-research`.
+
+The first slice fits one declared historical window and evaluates complete later
+sessions. Labels never train a model, and all diagnostic horizons/holdings stay
+inside evaluation sessions, so no labels cross the train boundary. Its overlapping
+intraday diagnostics have no significance claims. Future label-trained allocators
+must add fold-local fitting and the required purge/embargo before walk-forward
+results are described as out of sample.
+
 ### R5 confirmation
 
 Required:

@@ -117,6 +117,17 @@ Financial facts that shape the next roadmap:
 
 R3-CLOSE passed: 216 focused local tests, 25-file strict typing/lint, documentation governance and all 55 GitHub workflows passed before PR #174 merged. Closeout repaired obsolete status-v1 assertions/CI guards and an undeclared DuckDB timezone-conversion dependency without changing the research result. The reusable runtime/evaluator remains available to R4; `WORKFLOW_VERIFIED_NO_CONFIRMED_ALPHA` is preserved. The next research question is adaptive research/allocation, not another unconstrained formula sweep.
 
+## R4 first executable research objects
+
+The MarketState + FactorLibrary slice adds a causal, reproducible scikit-learn GMM
+and a durable registry over real FactorGraphs. Existing R2 Parquet/calendar
+fixtures now execute fit → project → materialize → global/state metrics → persisted
+query, with negative/failure outcomes and unavailable data retained. R3 runtime,
+graph engine, economic accounting and the deterministic R2 regime remain reusable.
+This is an engineering milestone validated on controlled synthetic OHLCV, not a
+new real-market research campaign, confirmed Alpha, or an R4 stage exit. GMM's
+incremental information and adaptive allocation remain unestablished.
+
 ## 7. Existing Workbench capability
 
 The current Workbench is not a blank slate. It already includes:

@@ -59,9 +59,44 @@ Do not discard poor trials because they are inconvenient for Agent-value account
 
 ## 5. MarketState
 
-The first adaptive MarketState model should be simple and causal. Use the existing R2 four-state rule as a benchmark and a scikit-learn GMM as the first probabilistic candidate unless a stronger reason is documented.
+The first adaptive MarketState is implemented with train-only StandardScaler and
+[scikit-learn GaussianMixture](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html).
+The existing R2 four-state IWM rule remains available as the deterministic comparator.
 
-Fit every scaler/model/threshold inside the allowed training/development chronology. Persist enough information to reproduce state probability at each formation time.
+Install `uv sync --frozen --extra dev --extra adaptive-research`. Run
+`python scripts/run_r4_research_slice.py run --help` for the full command. Supply
+existing local R2 base Parquet, calendar, plan and passed evidence paths, source
+ID/revision, an explicit comma-separated universe, and aware `--fit-start`,
+`--fit-end`, `--evaluation-start`, `--evaluation-end` timestamps. Each window must
+include complete calendar sessions, fit must finish before evaluation, and both
+windows must fit the single annual source artifact. Default proxy is IWM; the
+universe must contain it. Default breadth/top-count is 20/5; small synthetic
+fixtures must declare their smaller breadth/count explicitly.
+
+The CLI registers three existing R3 prototypes with their prior no-confirmed-Alpha
+terminal in provenance, performs no candidate search, and leaves them TESTING.
+`--output` receives `request.json`, `market_state_model.json`, `result.json` and
+`factor_library.sqlite`; unsuccessful fitting preserves `failure.json` and the
+original request. Use a new output directory for a changed request, input or
+implementation. Repeating identical inputs reproduces the result and does not
+duplicate registry evaluations (it currently recomputes the bounded slice).
+
+Inspect without mutation:
+
+```bash
+python scripts/run_r4_research_slice.py inspect --library <output>/factor_library.sqlite
+python scripts/run_r4_research_slice.py inspect --library <output>/factor_library.sqlite --factor <candidate-id>
+```
+
+`--factor` inspection also supports an aware `--as-of` cutoff. Result files contain
+global and soft-state-weighted coverage, signal-target turnover, 15m/60m RankIC
+decay and rank similarity. Economic diagnostics separately apply each fixed argmax
+state as an entry gate under the full 0/1/5/10 bps grid, with delayed entries and
+ungated exits. These scenarios are hypothetical costs, not measured broker fills.
+Missing entire sessions invalidate economic NAV rather than disappearing or
+becoming a successful cash day. Missing labels reduce the reported observation
+weight without changing formation coverage. These are development diagnostics,
+not evidence that MarketState adds value or that Alpha/PAPER/live is accepted.
 
 ## 6. Factor allocation
 

@@ -38,12 +38,12 @@ Historical listed-equity OHLCV and broker CFDs differ in contract/margin/session
 
 The R3 v2 runtime has bounded typed dispatch and budget accounting, but offline/runtime correctness is not a general sandbox or source-authentication mechanism. Before large real-model R4 campaigns, bind an admitted provider transport and development evaluator/source lineage. Reuse the existing runtime; do not create a third runtime generation.
 
-### B-006 — Adaptive MarketState / FactorAllocator do not yet exist
+### B-006 — Deterministic factor allocators and adaptive comparison remain open
 
 **Affects:** R4  
 **State:** OPEN
 
-The existing four-state R2 regime is a benchmark, not the target adaptive layer. R4 must implement causal probabilistic state inference, FactorLibrary conditional metrics and non-Agent allocator baselines before claiming Agent adaptive value.
+The first R4 slice implements train-only GMM MarketState and a FactorLibrary with conditional development metrics. The four-state R2 regime remains an executable benchmark. Next implement the declared non-Agent allocators and an adaptive portfolio comparison with fold-local fitting/selection before claiming adaptive value. The current single-window diagnostics do not establish that GMM adds information or that an allocator is viable.
 
 ### B-007 — PAPER is not end-to-end accepted
 
@@ -102,13 +102,6 @@ The admitted U.S. minute dataset does not declare a complete redistribution lice
 **State:** OPEN
 
 The R3 primary 5 bps model is a research scenario, not a measured universal execution cost. Preserve cost sensitivity and bind stronger broker-compatible cost evidence before R5/PAPER economic claims.
-
-### B-108 — Market-state source authentication
-
-**Affects:** R4  
-**State:** OPEN
-
-R3 regime-gate metadata can validate declared source IDs/availability but does not authenticate an arbitrary classifier. R4 MarketState artifacts must bind fitted data window, feature definition, model identity and causal inference rule.
 
 ## P2 / intentionally deferred
 
