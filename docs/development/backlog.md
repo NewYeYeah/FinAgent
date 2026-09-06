@@ -38,12 +38,12 @@ Historical listed-equity OHLCV and broker CFDs differ in contract/margin/session
 
 The R3 v2 runtime has bounded typed dispatch and budget accounting, but offline/runtime correctness is not a general sandbox or source-authentication mechanism. Before large real-model R4 campaigns, bind an admitted provider transport and development evaluator/source lineage. Reuse the existing runtime; do not create a third runtime generation.
 
-### B-006 — Deterministic factor allocators and adaptive comparison remain open
+### B-006 — Agent Research Controller and matched adaptive comparison remain open
 
 **Affects:** R4  
 **State:** OPEN
 
-The first R4 slice implements train-only GMM MarketState and a FactorLibrary with conditional development metrics. The four-state R2 regime remains an executable benchmark. Next implement the declared non-Agent allocators and an adaptive portfolio comparison with fold-local fitting/selection before claiming adaptive value. The current single-window diagnostics do not establish that GMM adds information or that an allocator is viable.
+MarketState, FactorLibrary and five deterministic factor allocators now execute a causal session walk-forward comparison with fold-local GMM/Ridge fitting and persisted weight series. The R2 regime remains available. Next connect the existing R3 capability runtime to an admitted research controller and thin console, then execute the matched-budget comparison. Controlled fixture validation does not establish GMM information, allocator profitability, Agent value or an accepted adaptive candidate. Exposure timing and multi-year input expansion remain outside the current allocator slice.
 
 ### B-007 — PAPER is not end-to-end accepted
 

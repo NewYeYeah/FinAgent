@@ -100,19 +100,84 @@ not evidence that MarketState adds value or that Alpha/PAPER/live is accepted.
 
 ## 6. Factor allocation
 
-Compare Agent behavior to strong deterministic baselines before attributing value to the LLM.
+Five deterministic baselines now share one frozen pool and execution policy:
 
-Expected baseline families:
+| Allocator | Frozen rule | Fallback |
+| --- | --- | --- |
+| EqualWeight | `1 / factor_count`; ignores performance history | none |
+| RollingICWeight | positive part of mean completed-session RankIC | equal weights |
+| RollingNetReturnWeight | positive part of mean standalone session return at 5bp | equal weights |
+| RegimeConditionalWeight | historical decision IC weighted by then-available state probabilities; normalize each state's positive qualities, then mix with current soft probabilities | equal component weights; current state unavailable means equal weights |
+| RidgeMetaAllocator | [sklearn Ridge](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Ridge.html), positive coefficients, alpha 1, train-only StandardScaler; lagged mean IC/net-bps predict next-session standalone net-bps | equal weights on missing fit/features or all nonpositive predictions |
 
-```text
-EqualWeight
-RollingICWeight
-RollingNetReturnWeight
-RegimeConditionalWeight
-regularized linear/meta allocator
+Rolling features use the last **20 completed sessions**, requiring **5 valid
+sessions** per quality; Ridge requires **8 pooled mature training examples**.
+These are fixed baseline settings, not tuned to the reported results. Ridge
+coefficients remain frozen within evaluation; its lagged quality inputs update
+after each session. Conditional IC requires five supported historical sessions
+and retains probabilities at the exact historical decision, not a retrospective
+label. No whole-window FactorLibrary aggregate metric enters an allocator.
+
+Run `python scripts/run_r4_walkforward.py --help`. Use the same source/calendar/
+base-plan/base-evidence, source ID/revision and explicit universe as the first
+slice, plus `--library <existing-factor-library.sqlite>`, `--folds <folds.json>` and
+`--output <new-directory>`. The library is read-only input; all registered factors
+are used unless `--factor-ids` freezes an explicit subset. Rejected/retired factors
+fail the request. Defaults remain IWM and breadth/top-count 20/5; controlled small
+fixtures must explicitly supply their proxy and smaller breadth/count.
+
+The fold file is a JSON array of 2–12 chronological folds, with nonoverlapping
+evaluation windows. Use aware timestamps and complete sessions in the bound year:
+
+```json
+[
+  {
+    "name": "fold-1",
+    "train": {"start": "2025-01-02T00:00:00+00:00", "end": "2025-02-03T00:00:00+00:00"},
+    "state_fit_end": "2025-01-13T00:00:00+00:00",
+    "evaluation": {"start": "2025-02-03T00:00:00+00:00", "end": "2025-02-10T00:00:00+00:00"}
+  },
+  {
+    "name": "fold-2",
+    "train": {"start": "2025-01-02T00:00:00+00:00", "end": "2025-02-10T00:00:00+00:00"},
+    "state_fit_end": "2025-01-20T00:00:00+00:00",
+    "evaluation": {"start": "2025-02-10T00:00:00+00:00", "end": "2025-02-17T00:00:00+00:00"}
+  }
+]
 ```
 
-Agent may select among admitted factors/allocators and request bounded parameter experiments. Final R5 criteria remain outside Agent control.
+Adapt dates to the admitted calendar before running. Each fold refits GMM using
+only its declared TRAIN prefix. Subsequent TRAIN sessions initialize genuinely
+causal state/performance history; prefix decisions have unavailable states. Ridge
+uses mature TRAIN labels and features formed from earlier completed sessions.
+All labels and holdings finish within their session; releases occur at close,
+and the next session's allocator input cutoff cannot exceed its open. This
+prevents label overlap across the TRAIN/evaluation boundary without dropping
+extra sessions for a nominal embargo.
+
+Normalization ranks every factor on the same current common-support intersection.
+All arms then use identical full top-K basket budgets, one-bar delay, four-bar
+holding, rolling sleeves and 0/1/5/10bp costs. A fixed score offset preserves
+ranking even when combined scores are negative or tied; state probabilities
+change factor weights only. Missing common support remains explicit and shared.
+
+Outputs remain `request.json`, `result.json`, `failure.json` on failure, and
+`factor_library.sqlite`. The request binds folds, definitions, configurations,
+source files, code and dependencies before evaluation reads. The result retains
+fold-local models, session performance releases, all five FactorWeightSeries,
+targets, history cutoff/identity, fallbacks and state probabilities, plus each
+fold/arm/cost's economic and weight metrics. A failed later fold retains already
+completed fold evidence. Identical replay is idempotent; changed requests require
+a new output directory.
+
+Session release `decision_time` identifies the first covered formation; nested
+decision records preserve each IC's actual decision/outcome clocks and then-known
+state. The standalone 5bp session return is stored once. State-conditional strategy
+metrics describe NAV changes using the state known at each interval's beginning;
+they are not separate investable state strategies. Overall mean/worst fold return
+is unavailable if any fold's NAV is unresolved, and fold averages are not stitched
+NAV. These are development comparisons, without Alpha/PAPER/live authority or
+evidence yet of GMM/allocator profitability. Agent control remains a later slice.
 
 ## 7. Exploration versus confirmation
 

@@ -128,6 +128,18 @@ This is an engineering milestone validated on controlled synthetic OHLCV, not a
 new real-market research campaign, confirmed Alpha, or an R4 stage exit. GMM's
 incremental information and adaptive allocation remain unestablished.
 
+## R4 deterministic allocation baselines
+
+The second R4 slice adds session-released factor-performance history, canonical
+same-bar normalization and five deterministic allocators with a causal multi-fold
+portfolio evaluator. Each fold fits a fresh GMM on its declared TRAIN prefix,
+accumulates subsequent causal state/performance pairs, and fits positive Ridge
+only on matured TRAIN examples. Complete FactorWeightSeries and economic evidence
+are persisted using existing R3 accounting and FactorLibrary storage. Three-fold
+controlled Parquet fixtures verify future-mutation isolation, replay and the CLI.
+This establishes executable baselines, not a real-market campaign, profitable
+adaptive allocation, incremental GMM/Agent value, or an R4 exit.
+
 ## 7. Existing Workbench capability
 
 The current Workbench is not a blank slate. It already includes:

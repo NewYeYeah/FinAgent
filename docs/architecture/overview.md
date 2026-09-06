@@ -130,7 +130,7 @@ No authoritative historical Tick/LOB source is part of the active architecture.
 
 ## 6. Factor architecture
 
-Current typed FactorGraph provides bounded declarative factor representation and shared-DAG execution. R4 now adds **research-level** MarketState and FactorLibrary around this implementation; the allocator remains planned.
+Current typed FactorGraph provides bounded declarative factor representation and shared-DAG execution. R4 adds **research-level** MarketState, FactorLibrary and deterministic allocators around this implementation.
 
 Implemented research objects:
 
@@ -140,9 +140,16 @@ Implemented research objects:
 - `research/factor_library_evaluation.py` materializes the real shared DAG, reuses baseline rank-correlation and R3 economic accounting, and produces global and probability-weighted conditional coverage/turnover/decay/similarity. Separate economic diagnostics gate entries by the fixed argmax state, retain full cash/session/exit accounting and all cost scenarios. Missing whole sessions remain in the denominator and invalidate economic NAV.
 - `research/adaptive_inputs.py` verifies locally trusted R2 Parquet/plan/evidence/calendar bindings and reads only requested full sessions through the existing no-label projection/parser. `application/adaptive_research.py` freezes the request, runs the complete slice and persists model/probabilities/metrics or an explicit failure. These are bounded panels rather than a second Data Plane or an invented ResearchDataset clock.
 
-The first adapter accepts one annual R2 artifact, an explicit universe of at most 32 assets and at most 252 sessions per window. It does not authenticate arbitrary upstream data, join multiple annual artifacts or implement walk-forward allocation. The R2 deterministic IWM regime implementation remains available separately as the comparator. Software/fixture completion does not establish incremental MarketState information or Alpha.
+The adapter retains one annual R2 artifact, an explicit universe of at most 32 assets and at most 252 sessions per window. It does not authenticate arbitrary upstream data or join annual artifacts. The R2 deterministic IWM regime implementation remains available separately as the comparator. Software/fixture completion does not establish incremental MarketState information or Alpha.
 
-R4 relationship (FactorAllocator/AdaptiveStrategy remain planned):
+- `research/factor_performance.py` owns immutable completed-session releases: one standalone 5bp return per factor/session plus exact decision-time IC/state pairs. `available(as_of)` filters by release maturity; allocator inputs are further bounded to sessions completed before the current session open. Aggregate FactorLibrary evaluation reports are never rolling inputs.
+- `research/factor_allocators.py` implements equal, rolling IC, rolling net return, soft regime-conditional and Ridge weights under one small protocol. `research/ridge_meta_allocator.py` fits sklearn positive Ridge to lagged factor-quality features and next-session net return, using only mature TRAIN examples. The coefficient model stays frozen during evaluation.
+- `research/adaptive_walkforward.py` resets models/history for every fold. A declared TRAIN prefix fits GMM; only later decisions receive that model's probabilities. It processes evaluation sessions sequentially, saves every decision's weights/targets/history cutoff, then releases session outcomes. `research/adaptive_portfolio_evaluation.py` reuses the shared DAG, rank statistics, `TradeActivity` conventions and R3 simulator; it is not another execution engine.
+- `application/adaptive_portfolio.py` freezes source/factor/fold/config/code/dependency bindings before evaluation reads, then writes request/result/failure JSON and the existing FactorLibrary evaluation table. Registry definitions restore with canonical graph/authority checks. No allocator database or ledger is added.
+
+All arms share the common factor-support intersection **before** centered average-rank normalization, full top-K basket exposure, one-bar delay, four-bar holding, rolling-sleeve schedule and 0/1/5/10bp costs. A fixed positive score offset preserves ranking and prevents zero/negative combinations from becoming exposure timing. Missing common support is an explicit shared data limitation. State-conditional NAV diagnostics use probabilities known at the start of each valuation interval.
+
+R4 relationship (deterministic comparison implemented; accepted AdaptiveStrategy and Agent controller remain pending):
 
 ```text
 FactorGraph candidates ──→ FactorLibrary

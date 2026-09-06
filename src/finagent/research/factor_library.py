@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from datetime import datetime
 from enum import StrEnum
 from pathlib import Path
@@ -12,7 +12,15 @@ from typing import Any
 
 from finagent.domain._validation import require_aware_datetime, require_non_empty
 from finagent.research.market_state import utc_text
-from finagent.research.us_a1_factor_graph import FactorGraphSpec
+from finagent.research.us_a1_factor_graph import (
+    FactorComplexityBudget,
+    FactorDenominatorPolicy,
+    FactorGraphSpec,
+    FactorInputField,
+    FactorNode,
+    FactorOperator,
+    FactorZeroDenominatorAction,
+)
 from finagent.research.us_a1_factor_validation import validate_factor_graph
 from finagent.research.us_baselines import _canonical_hash
 
@@ -96,6 +104,44 @@ class FactorRegistration:
             "created_at": utc_text(self.created_at),
             "activation_scope": "research_only_no_alpha_paper_or_live_authority",
         }
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> FactorRegistration:
+        """Restore the registry's canonical inert graph; verify the full definition."""
+        graph = payload["graph"]
+        nodes = []
+        for raw in graph["nodes"]:
+            node = dict(raw)
+            node["operator"] = FactorOperator(node["operator"])
+            node["inputs"], node["regime_labels"] = (
+                tuple(node["inputs"]),
+                tuple(node["regime_labels"]),
+            )
+            if node["input_field"] is not None:
+                node["input_field"] = FactorInputField(node["input_field"])
+            if node["denominator_policy"] is not None:
+                policy = dict(node["denominator_policy"])
+                policy["action"] = FactorZeroDenominatorAction(policy["action"])
+                node["denominator_policy"] = FactorDenominatorPolicy(**policy)
+            nodes.append(FactorNode(**node))
+        values = {field.name: graph[field.name] for field in fields(FactorGraphSpec)}
+        values["nodes"] = tuple(nodes)
+        values["budget"] = FactorComplexityBudget(
+            **{field.name: graph["budget"][field.name] for field in fields(FactorComplexityBudget)}
+        )
+        result = cls(
+            FactorGraphSpec(**values),
+            payload["family"],
+            payload["mechanism"],
+            payload["hypothesis"],
+            FactorOrigin(payload["origin"]),
+            tuple(sorted(payload["provenance"].items())),
+            datetime.fromisoformat(payload["created_at"]),
+        )
+        canonical = result.to_dict()
+        if _json({key: payload[key] for key in canonical}) != _json(canonical):
+            raise ValueError("factor registration content identity mismatch")
+        return result
 
 
 class FactorLibrary:

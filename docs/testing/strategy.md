@@ -71,9 +71,26 @@ predecessors. Install with `uv sync --frozen --extra dev --extra adaptive-resear
 The first slice fits one declared historical window and evaluates complete later
 sessions. Labels never train a model, and all diagnostic horizons/holdings stay
 inside evaluation sessions, so no labels cross the train boundary. Its overlapping
-intraday diagnostics have no significance claims. Future label-trained allocators
-must add fold-local fitting and the required purge/embargo before walk-forward
-results are described as out of sample.
+intraday diagnostics have no significance claims.
+
+The deterministic allocator slice is covered by `tests/test_factor_allocators.py`
+and `tests/test_adaptive_walkforward.py`, with the existing R2 Parquet contract
+extended to 33 controlled sessions in `tests/adaptive_allocator_fixture.py`.
+Tests perturb future returns, later folds and unused label columns; verify exact
+one-hot/soft-state mixtures, common-support normalization/rescaling invariance,
+train-only Ridge coefficients, delayed releases, complete weight series, replay,
+registry restoration and the standalone CLI. Missing sessions and failed later
+folds preserve denominators/completed evidence.
+
+Each fold fits GMM on a frozen TRAIN prefix, avoiding retrospective state labeling
+of training decisions. Ridge features use only previously completed sessions and
+its targets must mature by TRAIN end. All delayed IC labels/holdings stay within
+complete sessions, with performance released at close before the next evaluation
+session opens; explicit clock assertions prove this boundary without an extra
+purge framework. Overlapping intraday IC is descriptive, not independent evidence.
+`.github/workflows/r4-deterministic-allocators.yml` runs focused and relevant
+MarketState/FactorGraph/R3-economics/R2-regime regressions on Linux and Windows,
+plus lint, strict typing and documentation governance.
 
 ### R5 confirmation
 
