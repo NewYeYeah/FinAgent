@@ -176,7 +176,7 @@ def test_v35_two_plane_route_inventory_and_generic_authority_are_bounded(
         for route in control_routes
         if "POST" in set(route.methods or ())
     }
-    assert post_routes == {"/api/v3/control/runs"}
+    assert post_routes == {"/api/v3/control/runs", "/api/v3/control/research/runs"}
     assert all(
         not ({"PUT", "PATCH", "DELETE"} & set(route.methods or ()))
         for route in control_routes
@@ -184,7 +184,10 @@ def test_v35_two_plane_route_inventory_and_generic_authority_are_bounded(
     assert not any(
         token in route.path.lower()
         for route in control_routes
-        for token in ("reserve", "promotion", "paper", "broker", "live")
+        for token in (
+            "reserve", "promotion", "paper", "broker", "live",
+            "evaluate_factor", "evaluate_portfolio", "lifecycle",
+        )
     )
 
     catalog = default_command_catalog().to_dict()
