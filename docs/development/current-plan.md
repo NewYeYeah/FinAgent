@@ -49,31 +49,34 @@ These are implementation assets, not proof of profitable Alpha or PAPER readines
 
 ## 3. Roadmap
 
+The route is intentionally **conditional**, not a conveyor belt that forces every research cycle toward trading:
+
 ```text
 R3-CLOSE
    ↓
 R4-AGENT-ADAPTIVE
-   ↓
-R5-INDEPENDENT-CONFIRMATION
-   ├── rejected/insufficient ──→ new versioned R4 research cycle
+   ├── NO_ADAPTIVE_CANDIDATE ──→ new versioned R4 cycle
+   │                         └──→ WORKBENCH-2 productization is still allowed
    │
-   └── confirmed ──────────────→ PAPER eligibility
-             │
-             └──────────────┐
-                            ↓
-                  WORKBENCH-2
-                  (may proceed after R5 even when Alpha is rejected,
-                   because the research workstation is useful independently)
-                            │
-                            ↓ when Alpha is confirmed
-                      PAPER-TRADING
-                            │
-                            ↓
-                      PAPER-ACCEPTED
-                            │
-                            ↓
-                       LIVE-CAPITAL
+   └── frozen AdaptiveStrategy candidate
+             ↓
+R5-INDEPENDENT-CONFIRMATION
+   ├── REJECTED / INSUFFICIENT ─→ new versioned R4 cycle
+   │                         └──→ WORKBENCH-2 productization is still allowed
+   │
+   └── CONFIRMED ───────────────→ PAPER eligibility
+
+After the first complete R4 research semantics are stable:
+WORKBENCH-2
+   ↓ only when a strategy is R5 CONFIRMED
+PAPER-TRADING
+   ↓
+PAPER-ACCEPTED
+   ↓
+LIVE-CAPITAL
 ```
+
+Workbench 2.0 is therefore **not conditional on profitable Alpha**. It is the product surface for subsequent research cycles as well as confirmed strategies. PAPER and Live remain conditional on strategy evidence.
 
 Detailed stage plans are kept in [`stages/`](stages/).
 
@@ -82,10 +85,10 @@ Detailed stage plans are kept in [`stages/`](stages/).
 | Stage | Purpose | Main output | Stage plan |
 | --- | --- | --- | --- |
 | R3-CLOSE | stop expanding the current R3 experiment and preserve reusable capability without claiming Alpha | clean R3 terminal + reusable runtime/evaluator | [`stages/r3-close.md`](stages/r3-close.md) |
-| R4-AGENT-ADAPTIVE | make Agent responsible for research decisions and adaptive factor allocation under development-only evidence | MarketState + FactorLibrary + Allocator + Research Controller | [`stages/r4-agent-adaptive.md`](stages/r4-agent-adaptive.md) |
-| R5-INDEPENDENT-CONFIRMATION | freeze the complete adaptive algorithm and test it on genuinely independent evidence | `AdaptiveStrategySpec` + CONFIRMED/REJECTED/INSUFFICIENT result | [`stages/r5-independent-confirmation.md`](stages/r5-independent-confirmation.md) |
-| WORKBENCH-2 | turn the existing evidence-heavy Workbench into an Agent/research-first product | interactive Research Workbench 2.0 | [`stages/workbench-2.md`](stages/workbench-2.md) |
-| PAPER-TRADING | integrate confirmed strategy with existing realtime/MT5/PAPER/safety modules and build the live-like UI from canonical state | end-to-end demo/PAPER system | [`stages/paper-trading.md`](stages/paper-trading.md) |
+| R4-AGENT-ADAPTIVE | make Agent responsible for research decisions and adaptive factor allocation under development-only evidence | MarketState + FactorLibrary + Allocator + Research Controller, plus candidate or no-candidate terminal | [`stages/r4-agent-adaptive.md`](stages/r4-agent-adaptive.md) |
+| R5-INDEPENDENT-CONFIRMATION | when R4 produces a candidate, freeze the complete adaptive algorithm and test it on genuinely independent evidence | `AdaptiveStrategySpec` + CONFIRMED/REJECTED/INSUFFICIENT result | [`stages/r5-independent-confirmation.md`](stages/r5-independent-confirmation.md) |
+| WORKBENCH-2 | turn the existing evidence-heavy Workbench into an Agent/research-first product after R4 interaction semantics stabilize | interactive Research Workbench 2.0 | [`stages/workbench-2.md`](stages/workbench-2.md) |
+| PAPER-TRADING | only for an R5-confirmed strategy, integrate existing realtime/MT5/PAPER/safety modules and build live-like UI from canonical state | end-to-end demo/PAPER system | [`stages/paper-trading.md`](stages/paper-trading.md) |
 | LIVE-CAPITAL | separately admit a specific broker/account/capital/risk operating envelope | human-governed live-capital acceptance | [`stages/live-capital.md`](stages/live-capital.md) |
 
 ## 5. Research strategy
@@ -129,11 +132,12 @@ It should not be forced through a cross-sectional RankIC gate when the mechanism
 
 ## 6. Evidence intensity by stage
 
-FinAgent previously applied production-grade evidence machinery too early in exploration. Revision 5.0 deliberately separates three levels:
+FinAgent previously applied production-grade evidence machinery too early in exploration. Revision 5.0 deliberately separates three levels.
 
 ### Explore — R4
 
 Required:
+
 - causal data boundaries;
 - reproducible trial/config identity;
 - complete trial ledger including failed/duplicate attempts;
@@ -141,13 +145,15 @@ Required:
 - focused numerical and leakage tests.
 
 Not required for every exploratory increment:
+
 - content-addressing every intermediate cache;
 - independent reviewer receipt;
 - separate PR/stage for every materialization/statistical substep.
 
 ### Confirm — R5
 
-Required:
+Required when an R4 candidate exists:
+
 - frozen complete algorithm;
 - independent/prospective evidence;
 - preregistered endpoints/costs/stopping rule;
@@ -157,6 +163,7 @@ Required:
 ### Operate — PAPER/LIVE
 
 Required:
+
 - broker/account identity;
 - durable state/recovery;
 - reconciliation;
@@ -205,10 +212,10 @@ Stage files contain suggested PR slices, but quality and reviewability take prec
 
 ## 9. Visualization timing
 
-Visualization is a first-class product goal, but it follows two rules:
+Visualization is a first-class product goal and has two development levels:
 
-1. R4 gets a **thin Research Console** early so the Agent research loop can be observed and interacted with while semantics are being validated.
-2. Full Workbench 2.0 follows the R5 research freeze so product work does not repeatedly chase unstable model semantics.
+1. **R4 thin Research Console:** implemented early so Agent objective → tool → experiment → decision behavior can be observed and corrected while research semantics are still being built.
+2. **Workbench 2.0:** begins after the first complete R4 interaction/FactorLibrary/MarketState semantics are stable. If an R4 candidate exists, R5's frozen identities/results feed the product; if no candidate exists, Workbench 2.0 still proceeds as the interface for the next research cycle.
 
 Realtime trading panels are developed together with PAPER vertical slices. No standalone fake Live dashboard is built first.
 
@@ -229,10 +236,10 @@ A mature FinAgent should be able to:
 1. receive a research objective;
 2. let the Agent inspect literature, market state, factor history and prior experiments;
 3. let the Agent propose/test/retire factors and choose factor-allocation experiments within a bounded budget;
-4. produce a frozen adaptive strategy only through deterministic evaluation;
-5. confirm or reject that complete algorithm on independent evidence;
-6. expose the full research path through an interactive Workbench;
-7. run a confirmed strategy through replay and MT5 demo/PAPER with reconciled, recoverable and safety-bounded state;
+4. produce a frozen adaptive strategy only through deterministic evaluation, or explicitly terminate with no candidate;
+5. confirm or reject any candidate complete algorithm on independent evidence;
+6. expose the full research path through an interactive Workbench even when the current research cycle has no confirmed Alpha;
+7. run only an R5-confirmed strategy through replay and MT5 demo/PAPER with reconciled, recoverable and safety-bounded state;
 8. keep live capital behind a separate explicit human-governed gate.
 
 A valid terminal may still be `NO_CONFIRMED_ALPHA`. Product quality does not require fabricating a deployable strategy.
