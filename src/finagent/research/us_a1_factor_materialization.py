@@ -56,6 +56,13 @@ def _node_parameters(node: FactorNode) -> dict[str, object]:
         }
     if operator is FactorOperator.CLIP:
         return {"lower_bound": node.lower_bound, "upper_bound": node.upper_bound}
+    if operator is FactorOperator.WINSORIZE:
+        return {
+            "lower_quantile": node.lower_quantile,
+            "upper_quantile": node.upper_quantile,
+        }
+    if operator is FactorOperator.REGIME_GATE:
+        return {"regime_labels": list(node.regime_labels)}
     return {}
 
 
@@ -118,6 +125,9 @@ class CompiledFactorNode:
     denominator_policy: FactorDenominatorPolicy | None = None
     lower_bound: float | None = None
     upper_bound: float | None = None
+    lower_quantile: float | None = None
+    upper_quantile: float | None = None
+    regime_labels: tuple[str, ...] = ()
     schema_version: str = "finagent.us-a1-compiled-factor-node.v1"
 
     @classmethod
@@ -140,10 +150,13 @@ class CompiledFactorNode:
             denominator_policy=node.denominator_policy,
             lower_bound=node.lower_bound,
             upper_bound=node.upper_bound,
+            lower_quantile=node.lower_quantile,
+            upper_quantile=node.upper_quantile,
+            regime_labels=node.regime_labels,
         )
 
     def to_dict(self) -> dict[str, object]:
-        return {
+        payload: dict[str, object] = {
             "schema_version": self.schema_version,
             "execution_id": self.execution_id,
             "operator": self.operator.value,
@@ -158,6 +171,16 @@ class CompiledFactorNode:
             "lower_bound": self.lower_bound,
             "upper_bound": self.upper_bound,
         }
+        # These parameters were not admitted by the original single-asset
+        # compiler. Keep absent values out of the payload so every accepted
+        # A0/R2 compiled-batch identity remains bitwise stable.
+        if self.lower_quantile is not None:
+            payload["lower_quantile"] = self.lower_quantile
+        if self.upper_quantile is not None:
+            payload["upper_quantile"] = self.upper_quantile
+        if self.regime_labels:
+            payload["regime_labels"] = list(self.regime_labels)
+        return payload
 
 
 @dataclass(frozen=True, slots=True)
@@ -189,6 +212,8 @@ class CompiledFactorBatch:
     nodes: tuple[CompiledFactorNode, ...]
     roots: tuple[CompiledFactorRoot, ...]
     naive_node_count: int
+    numeric_scope: str = "single_asset_time_series_v1"
+    regime_policy_id: str | None = None
     schema_version: str = "finagent.us-a1-compiled-factor-batch.v1"
 
     def __post_init__(self) -> None:
@@ -202,6 +227,11 @@ class CompiledFactorBatch:
             raise ValueError("compiled factor batch roots must have unique candidate IDs")
         if self.naive_node_count < len(self.nodes):
             raise ValueError("naive_node_count cannot be smaller than unique compiled nodes")
+        if self.numeric_scope not in {
+            "single_asset_time_series_v1",
+            "multi_asset_panel_v1",
+        }:
+            raise ValueError("unsupported compiled factor numeric scope")
 
     @property
     def unique_node_count(self) -> int:
@@ -230,8 +260,10 @@ class CompiledFactorBatch:
             "reused_node_count": self.reused_node_count,
             "reuse_ratio": self.reuse_ratio,
             "execution_model": "canonical_shared_subexpression_dag",
-            "numeric_scope": "single_asset_time_series_v1",
+            "numeric_scope": self.numeric_scope,
         }
+        if self.regime_policy_id is not None:
+            payload["regime_policy_id"] = self.regime_policy_id
         if include_id:
             payload["batch_id"] = self.batch_id
         return payload
@@ -282,7 +314,11 @@ _UNSUPPORTED_V1 = frozenset(
 )
 
 
-def compile_factor_graph_batch(graphs: tuple[FactorGraphSpec, ...]) -> CompiledFactorBatch:
+def compile_factor_graph_batch(
+    graphs: tuple[FactorGraphSpec, ...],
+    *,
+    admit_panel_operators: bool = False,
+) -> CompiledFactorBatch:
     if not graphs:
         raise ValueError("factor graph compilation requires at least one graph")
     validated: list[tuple[str, FactorGraphSpec, int, tuple[str, ...], str]] = []
@@ -293,7 +329,11 @@ def compile_factor_graph_batch(graphs: tuple[FactorGraphSpec, ...]) -> CompiledF
                 f"cannot compile invalid factor graph {graph.proposal_graph_id}: {evidence.blockers}"
             )
         unsupported = sorted(
-            {node.operator.value for node in graph.nodes if node.operator in _UNSUPPORTED_V1}
+            {
+                node.operator.value
+                for node in graph.nodes
+                if node.operator in _UNSUPPORTED_V1 and not admit_panel_operators
+            }
         )
         if unsupported:
             raise ValueError(
@@ -360,10 +400,22 @@ def compile_factor_graph_batch(graphs: tuple[FactorGraphSpec, ...]) -> CompiledF
                 heapq.heappush(ready, child)
     if len(ordered) != len(node_by_execution_id):
         raise RuntimeError("compiled shared execution DAG unexpectedly contains a cycle")
+    regime_policy_ids = {
+        graph.regime_policy_id
+        for _, graph, _, _, _ in validated
+        if any(node.operator is FactorOperator.REGIME_GATE for node in graph.nodes)
+    }
+    if len(regime_policy_ids) > 1:
+        raise ValueError("panel compilation requires one shared regime_policy_id")
+    regime_policy_id = next(iter(regime_policy_ids), None)
     return CompiledFactorBatch(
         nodes=tuple(ordered),
         roots=tuple(sorted(roots, key=lambda item: item.candidate_id)),
         naive_node_count=naive_node_count,
+        numeric_scope=(
+            "multi_asset_panel_v1" if admit_panel_operators else "single_asset_time_series_v1"
+        ),
+        regime_policy_id=regime_policy_id,
     )
 
 
@@ -500,7 +552,9 @@ def _evaluate_node_series(
             None if value is None else min(node.upper_bound, max(node.lower_bound, value))
             for value in dependencies[0]
         ]
-    raise ValueError(f"operator is not admitted by the A1-1 time-series materializer: {operator.value}")
+    raise ValueError(
+        f"operator is not admitted by the A1-1 time-series materializer: {operator.value}"
+    )
 
 
 def _validate_bars(bars: tuple[USBaselineBar, ...]) -> None:

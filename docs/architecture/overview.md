@@ -1,138 +1,207 @@
-# Architecture overview
+# FinAgent architecture overview
 
-FinAgent separates **adaptive research** from **deterministic financial state and authority**.
+This document describes the architecture **implemented in the repository now**. Planned changes remain in stage plans until code lands.
 
-## 1. Layered model
-
-```text
-Data / broker sources
-        ↓
-Provider adapters
-  provider semantics, entitlement/capability declarations, source identity
-        ↓
-Historical Data Plane
-  immutable source evidence, Parquet/DuckDB bounded scans, calendars/actions
-        ↓
-Bounded materialization
-  ResearchDataset / ResearchSplit
-        ↓
-Research
-  manual/programmatic/Agent candidate generation, Factor Quant, robust gates
-        ↓
-Models
-  AlphaModel / RiskModel
-        ↓
-Portfolio and historical execution
-  constraints, optimizer, market-specific execution semantics, cost accounting
-        ↓
-Immutable evidence
-  reports, manifests, Parquet/SQLite/JSONL, exact identity and replay
-        ↓
-Workbench
-  read-only Evidence projections + separately governed local Control
-```
-
-The future realtime/broker path is additive rather than a rewrite:
+## 1. System model
 
 ```text
-Provider-neutral realtime events
-        ↓
-ReplayGateway / canonical state projections
-        ↓
-Broker gateway and queries
-        ↓
-Demo/PAPER order lifecycle
-        ↓
-Reconciliation / recovery / risk controls
-        ↓
-Live Workbench projections
+Historical / broker data sources
+          ↓
+Data adapters + source identity
+          ↓
+Data Plane
+  Parquet / DuckDB / calendars / actions / bounded queries
+          ↓
+Research materialization
+  ResearchDataset / ResearchSplit / minute panels
+          ↓
+Research Core
+  factors / FactorGraph / statistical and economic evaluation
+          ↕
+Agent Runtime
+  typed research actions / budget ledger / development feedback
+          ↓
+Models / Portfolio / Historical Execution
+          ↓
+Evidence / application services
+          ↓
+Workbench projections + React UI
+
+parallel operational path already present:
+
+Replay / MT5 source
+          ↓
+Canonical realtime events
+          ↓
+Streaming features / algorithm path
+          ↓
+Realtime projections
+          ↓
+PAPER controller / broker adapter
+          ↓
+Reconciliation / safety / durable stores
+          ↓
+future accepted PAPER Workbench
 ```
 
-## 2. Authority boundaries
+## 2. Ownership by package
 
-The Agent may propose hypotheses, generate bounded feature code and consume development-only evidence. It may not mutate positions/fills, change final risk or acceptance thresholds after observing evidence, repeatedly consume sealed evaluation data, self-promote a strategy or directly submit broker/live-capital orders.
+### `src/finagent/data` and `src/finagent/domain`
 
-Browser code is presentation-only for authoritative financial facts. It can filter, select and visualize verified evidence; it does not recreate missing research, portfolio, execution or statistical truth.
+Own data/provider contracts, causal clock semantics, bounded datasets and source adapters. Large historical corpora remain out-of-core; `ResearchDataset` is a compute contract, not the physical storage layer for the whole minute archive.
 
-## 3. Historical data boundary
+### `src/finagent/research`
 
-`ResearchDataset` remains the bounded numerical compute contract. It is **not** the storage abstraction for a multi-billion-row minute corpus.
+Owns factor/research calculations, FactorGraph execution, U.S. research programs and statistical/economic evaluation. Research results must remain reproducible from admitted data/config/code identities.
 
-The U.S. minute architecture therefore inserts an out-of-core query layer below it:
+### `src/finagent/agents`
+
+Owns LLM/provider interaction and bounded Agent research capabilities. The current R3 runtime uses typed actions and a durable SQLite budget/trial ledger. It is an application boundary, not an operating-system sandbox.
+
+### `src/finagent/models`, `portfolio`, `backtest`
+
+Own Alpha/Risk abstractions, portfolio construction/constraints and deterministic historical execution/evidence. Historical execution is not the broker state machine.
+
+### `src/finagent/application`
+
+Owns typed application/control-service boundaries used by CLI/Agent/Workbench rather than allowing UI code to call arbitrary Python/shell operations.
+
+### `src/finagent/realtime`
+
+Already owns canonical realtime events, database replay, MT5 streaming source, streaming transforms and idempotent projections. It must be reused for PAPER rather than replaced by another event framework.
+
+### `src/finagent/operations`
+
+Already owns approval, PAPER strategy/controller pieces, reconciliation, safety and durable stores. These modules are not yet accepted end to end for the target MT5 PAPER strategy.
+
+### `src/finagent/brokers`
+
+Owns broker-specific adapter semantics. Research instruments and broker instruments remain separate identities.
+
+### `src/finagent/visualization` + `workspace/`
+
+The Python visualization layer exposes projections/APIs; the React/Vite Workbench renders them. Browser code is not financial/statistical authority.
+
+## 3. Agent versus deterministic authority
+
+FinAgent deliberately gives the Agent substantial **research agency** while keeping final truth deterministic.
+
+Agent may, inside a development policy:
+
+- inspect admitted literature, market-state summaries, factor history and prior experiments;
+- propose FactorGraphs/hypotheses;
+- choose factor sets and allocator experiments;
+- request deterministic evaluation;
+- compare results;
+- allocate remaining development experiment budget;
+- retire or continue hypotheses.
+
+Deterministic/human-owned boundaries:
+
+- data chronology and source identity;
+- factor/statistical/economic calculations;
+- fixed experiment budgets and final gates;
+- sealed/independent R5 evidence access;
+- portfolio/account/broker truth;
+- reconciliation and safety;
+- PAPER/live authority and capital/risk ceilings.
+
+The Agent's explicit decisions are product artifacts. Hidden chain-of-thought is not stored.
+
+## 4. Time and information semantics
+
+`event_time` and `available_at` remain distinct where applicable. Realtime events additionally preserve `received_at` and provider sequence/source identity.
+
+Rules:
+
+- forward labels are outcomes, never input features;
+- bar interval/timestamp convention/session calendar are part of identity;
+- market-state fitting/transforms are causal;
+- replay may change delivery pacing but not market chronology;
+- stale/delayed/frozen/disconnected sources are distinct conditions.
+
+## 5. U.S. research data boundary
+
+The active historical source is a local admitted snapshot of `mito0o852/OHLCV-1m` at revision `776328445b7ac6e7815ef3a483e9c8ded1eb6d56`.
+
+The current 25-name EngineeringUniverse is suitable for the stated bounded research/integration program but is survivorship conditioned. It is not a PIT security-master universe and therefore does not support unrestricted market-wide historical claims.
+
+No authoritative historical Tick/LOB source is part of the active architecture.
+
+## 6. Factor architecture
+
+Current typed FactorGraph provides bounded declarative factor representation and shared-DAG execution. R4 adds **research-level** MarketState, FactorLibrary and allocator concepts around this implementation; it does not replace the graph engine.
+
+Intended R4 relationship:
 
 ```text
-partitioned Parquet
-        ↓
-MarketDataQuery / DuckDB bounded scan
-        ↓
-MarketDataView
-        ↓
-bounded feature/label materialization
-        ↓
-ResearchDataset
+FactorGraph candidates ──→ FactorLibrary
+                              │
+MarketState probabilities ────┤
+                              ↓
+                         FactorAllocator
+                              ↓
+                        AdaptiveStrategy
 ```
 
-Provider capability and FinAgent adapter capability are different concepts. An external provider may expose M1/realtime data while the installed FinAgent adapter implements only daily ingestion; the adapter must not advertise provider-level capability as implemented functionality.
+Market-state or exposure-timing logic is not required to masquerade as a cross-sectional stock-selection factor.
 
-## 4. Time and market semantics
+## 7. Evidence model
 
-Information and market clocks remain separate:
+Different stages need different evidence intensity:
 
-- `event_time`: market event represented by an observation;
-- `available_at`: earliest time FinAgent may consume the observation;
-- bar interval and timestamp convention are part of data identity;
-- trading calendars are materialized/versioned evidence, not inferred from wall-clock rules in UI code;
-- intraday labels use typed horizon semantics rather than ambiguous names such as `forward_return_4`.
+- R4 development: causal/reproducible trials and complete adaptive search ledger;
+- R5 confirmation: frozen spec + independent/prospective evidence + preregistered terminal;
+- PAPER/LIVE: broker/account state, reconciliation, recovery, safety and incident evidence.
 
-For U.S. minute research, DST, holidays, half-days, extended hours, corporate actions and symbol lifecycle must be explicit before robust research can become authoritative.
+A successful software test or workflow run is not automatically financial Alpha evidence.
 
-## 5. Research identity and multiplicity
+## 8. Workbench architecture
 
-Evidence identity binds the exact dataset/source, universe policy, feature/code artifact, candidate denominator, program parameters, validation windows and strategy/execution protocol.
-
-Every searched candidate remains in the effective multiplicity denominator, including Agent-generated candidates, failed candidates and alternative search arms where the experiment contract defines them as one family.
-
-## 6. Historical versus broker execution
-
-The existing synchronous `ExecutionVenue` abstraction remains a deterministic historical simulator. Broker execution is asynchronous and uses separate ports/events:
-
-```text
-OrderIntent
-  → submit command
-  → broker acknowledgement
-  → accepted / rejected
-  → partial fills
-  → filled / cancelled / expired
-  → deal/history reconciliation
-```
-
-Research instruments and broker instruments are separate identities. A listed U.S. equity and a broker stock CFD are not the same asset merely because their ticker text matches.
-
-## 7. Workbench architecture
-
-The Workbench keeps two independent authority planes:
+The existing Workbench has two conceptual planes:
 
 ```text
 Evidence Plane
-  GET-only verified projections
+  read-only verified projections
 
 Control Plane
-  explicit local opt-in
-  allowlisted L0/L1 application services only
+  explicitly enabled typed application services
 ```
 
-Realtime panels will consume canonical state projections, never MT5/QMT/vendor SDK calls directly from React.
+WorkbenchContext links identities/selections across analytical surfaces. Existing ECharts, React Flow and TanStack Table remain the default analytical/graph/table stack.
 
-## 8. Release meaning
+Workbench 2.0 will make Agent/experiment/market-state interaction the primary research workflow, but it remains a projection/control client over FinAgent core rather than a browser research engine.
 
-FinAgent distinguishes:
+## 9. Realtime/PAPER architecture
+
+The canonical path is:
 
 ```text
-Research Platform Acceptance
-≠ Alpha Acceptance
-≠ Historical Portfolio Acceptance
-≠ Demo/PAPER Acceptance
-≠ Live-capital Acceptance
+source/replay
+→ canonical event
+→ projection/state
+→ frozen strategy decision
+→ safety/approval
+→ broker command/event
+→ reconciliation
+→ canonical portfolio/account/health state
+→ Workbench
 ```
 
-A valid no-alpha terminal is a successful research-platform outcome, not a profitable strategy claim.
+React never calls MetaTrader5 directly. Unknown reconciliation or stale data must remain explicit and block mutation where policy requires.
+
+## 10. Authority ladder
+
+```text
+Research platform capability
+        ≠
+Confirmed Alpha
+        ≠
+Historical economic acceptance
+        ≠
+MT5 demo/PAPER acceptance
+        ≠
+Live-capital authority
+```
+
+`NO_CONFIRMED_ALPHA` is a valid research terminal.
