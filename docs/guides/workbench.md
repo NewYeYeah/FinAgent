@@ -1,35 +1,84 @@
 # Workbench guide
 
-FinAgent Workbench is a research/evidence workstation, not a chat clone and not a general shell executor.
+## 1. What exists now
 
-## Two authority planes
+FinAgent already has a React/Vite Workbench backed by Python projection APIs.
 
-```text
-Evidence Plane  (default)
-  GET-only verified evidence/projections
+Current reusable capabilities include:
 
-Control Plane   (explicit local process)
-  allowlisted L0/L1 application services
+- Agent Project → Thread → Run browsing;
+- URL-backed WorkbenchContext;
+- Evidence and typed local Control separation;
+- normalized SSE for active Agent/command state;
+- Strategy historical analytics;
+- Factor Tear Sheet;
+- Portfolio/Execution analytics;
+- evidence/artifact/config linking;
+- ECharts, React Flow and TanStack Table rendering.
+
+The current Agent page is primarily an audit/review surface. Workbench 2.0 will make active Agent research interaction first-class.
+
+## 2. Start the Workbench
+
+```bash
+uv sync --frozen --extra dev --extra workspace --extra local-parquet
+python scripts/run_workspace.py --reports reports --configs configs --open-browser
 ```
 
-Evidence never gains a mutation route. Control never becomes arbitrary Python/shell/broker authority.
+Optional typed local Control Plane:
 
-## Current analytical surfaces
+```bash
+python scripts/run_workbench_control.py --configs configs --reports reports
+```
 
-Historical Strategy, Factors, Portfolio and Execution views consume immutable V4/A4 evidence and URL-backed `WorkbenchContext`. Missing benchmark/risk/capacity evidence remains explicitly unavailable.
+Do not expose arbitrary shell/Python or broker/live mutation through this interface.
 
-## Context
+## 3. Presentation authority
 
-Common linked identities include project/thread/run/program/factor/portfolio/strategy/reserve/asset/order/date/session/fold/environment. Context is presentation/navigation state, not a new financial authority.
+Workbench may:
 
-## Browser calculation boundary
+- query bounded admitted rows;
+- select/filter/date-range existing evidence;
+- compute clearly presentation-only layout/order/downsampling;
+- navigate related identities;
+- submit allowlisted typed control intents where the backend permits them.
 
-React can align/filter/render verified values. Authoritative NAV, return, factor statistics, execution quantities/costs, broker/account state and future realtime projections are calculated/persisted outside the browser.
+Workbench may not:
 
-## Future live surface
+- recompute missing financial/statistical evidence and call it authoritative;
+- infer broker/account truth;
+- bypass research/PAPER/live gates;
+- persist hidden model chain-of-thought.
 
-Live panels are activated only after provider-neutral event contracts, ReplayGateway, canonical state projections, MT5 read-only data, demo/PAPER execution, reconciliation and recovery are accepted. React never calls MT5 directly.
+## 4. Existing analytical assets
 
-## API inventory
+### Factors
 
-Endpoint truth is owned by application routes/OpenAPI and tests rather than manually maintained version-specific API-contract Markdown files.
+The Factor Tear Sheet already exposes IC/rolling IC, decay, fold/year heatmaps, bootstrap/inference summaries, multiplicity views, correlation and provenance. Workbench 2.0 should extend this into Factor Intelligence rather than create a parallel factor application.
+
+### Strategy / Portfolio / Execution
+
+Existing linked analytical surfaces should be adapted to the future `AdaptiveStrategySpec`. Missing factor contribution or market-state evidence should remain unavailable until core evidence exists.
+
+### Agent
+
+The existing Agent index/Activity/Inspector should be reused as the audit foundation for an interactive Agent Workspace.
+
+## 5. Workbench 2.0 direction
+
+See [`../development/stages/workbench-2.md`](../development/stages/workbench-2.md).
+
+Major changes:
+
+- research-first navigation;
+- objective→tool→experiment→decision workflow;
+- Research Graph;
+- MarketState and FactorLibrary integration;
+- experiment comparison;
+- Agent streaming protocol evaluation (AG-UI first);
+- gradual TanStack Query adoption on touched pages;
+- task-based human usability acceptance.
+
+## 6. Realtime UI boundary
+
+Do not add a mock Live terminal before PAPER. Market/Strategy/Portfolio/Execution/System Health live-like panels are developed with the actual canonical PAPER projections. See [`mt5-paper.md`](mt5-paper.md).

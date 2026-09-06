@@ -1,96 +1,83 @@
-# Active architecture decisions
+# Active architecture and product decisions
 
-Only decisions that remain active are kept here. Superseded rationale is available in Git history and release records.
+Only decisions that still constrain future work belong here. Superseded rationale is available in Git/PR history.
 
-## D1 — Bounded numerical research contract
-`ResearchDataset` / `ResearchSplit` remain the canonical bounded compute representation. Large historical storage uses a separate out-of-core Data Plane.
+## D1 — One current status and one current plan
 
-## D2 — Separate information and execution clocks
-`event_time` and `available_at` are distinct; future labels never become features and execution may use only information available at the configured `asof`.
+`docs/status.toml` owns current stage/authority. `docs/development/current-plan.md` owns the end-to-end active roadmap. Detailed stage work lives in `docs/development/stages/`; history/backlog are separate. Do not create parallel roadmaps/versioned plans.
 
-## D3 — Immutable evidence identity
-Changing dataset/source identity, candidate family, code artifact, universe, validation protocol or execution assumptions creates different evidence.
+## D2 — Agent has research agency, not truth authority
 
-## D4 — Fixed search denominator
-Every searched candidate remains in the effective denominator. Agent generation receives no multiplicity exemption.
+Agent may choose development research direction, factor sets, allocators and experiment budget within typed policy. Deterministic code owns calculations, frozen statistical gates, final evidence, portfolio/account truth, reconciliation and safety.
 
-## D5 — Bounded Agent authority
-Agent code/hypotheses are proposals. Deterministic application/core services own validation, portfolio, execution and lifecycle authority.
+## D3 — Adaptive search and independent confirmation are separate programs
 
-## D6 — Independent evaluation remains independent
-Development feedback is separate from outer/holdout/reserve or operational evidence. Evaluation data is not recycled into the same adaptive search program.
+R4 is allowed to adapt to development feedback and must retain every relevant trial. R5 freezes the complete adaptive algorithm and evaluates genuinely independent/prospective evidence. R5 outcomes cannot be fed back into the same frozen spec and remain independent.
 
-Development feedback can be useful and may be admitted by a versioned policy with enforced split/tool/memory scope. Freeze the search protocol and budget before adaptive development, then freeze realized candidates and the training/selection rule before outer/final evaluation. An already-inspected historical period cannot become independent by renaming its split or obtaining the same observations from another provider.
+## D4 — Causal chronology is non-negotiable
 
-## D7 — Model validation is model-level
-Multi-factor selections are frozen and validated through actual `AlphaModel`/risk/portfolio/execution paths, not by post-hoc weighted return narratives.
+Market observations, model fitting, normalizers, market-state inference, labels and execution obey explicit clocks/session semantics. Future information never enters a live/development feature through preprocessing or smoothing.
 
-## D8 — Human-governed operational handoff
-Research/Alpha acceptance does not self-authorize PAPER or live capital. Irreversible/external authority requires separately governed milestones.
+## D5 — Factor discovery and factor allocation are separate layers
 
-## D9 — Provider capability is not adapter capability
-External API capability, account entitlement and FinAgent implementation status are recorded separately and fail closed on gaps.
+FinAgent does not require one globally permanent factor. R4 uses a FactorLibrary plus MarketState/allocator layer. Market-timing/exposure control is evaluated at strategy/allocation level rather than forced through a cross-sectional RankIC-only gate.
 
-## D10 — No silent provider fallback
-Cross-provider differences are reconciliation evidence. One provider does not silently overwrite another provider's authority.
+## D6 — Bounded FactorGraph remains the Agent factor language
 
-## D11 — Source authority precedes large-scale U.S. ingestion
-A U.S. minute source must have exact revision/provenance, schema, timestamp, adjustment/corporate-action and usage-rights decisions before becoming authoritative research data.
+Reuse the existing typed FactorGraph/shared-DAG engine. Do not grant unrestricted model-generated Python/SQL/shell execution for ordinary factor research. Extend the DSL only when a concrete admitted mechanism cannot be expressed otherwise.
 
-## D12 — Trading calendars are evidence
-DST, holidays, half-days and sessions are materialized/versioned schedules. Static session clock strings are not sufficient for authoritative U.S. minute research.
+## D7 — Trial accounting survives failure
 
-## D13 — Typed labels
-Intraday label identity includes metric, horizon, horizon unit, session-crossing policy and price basis.
+Failed, invalid, repaired and duplicate Agent/programmatic attempts remain part of the development research record where they consumed search budget. Agent generation receives no multiplicity/accounting exemption.
 
-## D14 — First U.S. research clock
-The initial line uses 1-minute source/execution data and a canonical 15-minute signal clock, with 5/30-minute robustness checks. It is not an HFT project.
+## D8 — Evidence intensity follows stage purpose
 
-## D15 — Initial strategy is intraday-flat
-The first execution-aware study closes before the session end, isolating overnight CFD financing/swap/accounting until intraday Alpha survives costs.
+Exploration needs causal reproducibility and complete trial accounting; independent confirmation needs sealed/preregistered evidence; operations need broker-state/recovery/safety evidence. Do not reproduce production-grade content-addressing for every exploratory intermediate unless it protects a real correctness boundary.
 
-## D16 — Engineering universe and research universe are different
-A present-day MT5 CFD intersection is valid for integration engineering but does not by itself support survivorship-unbiased market-wide Alpha claims.
+## D9 — Reuse before new infrastructure
 
-## D17 — Agent value is empirical
-Manual, programmatic and Agent candidate-generation arms are compared under fixed data, budgets, gates and costs. If Agent adds no measurable value, its role is reduced rather than expanded by default.
+Evaluate existing FinAgent implementation first, then mature open source, then a thin adapter. Write a bespoke subsystem only when project-specific authority/semantics cannot be delegated. A framework migration requires demonstrated value.
 
-Compare per-run performance and matched evaluation resources, including a data-blind LLM ablation against any feedback-enabled Agent. Record total attempts, duplicates, repairs, API use and evaluator calls in a durable ledger. Declarative limits and three pilot seeds do not establish enforced quotas or statistical superiority.
+## D10 — No Tick/LOB research without authoritative data
 
-## D18 — Alpha gates downstream deployment
-Broker execution/live product work beyond contract/replay infrastructure is gated by robust historical Alpha evidence; `NO_ROBUST_FACTOR_FAMILY` does not justify building a strategy deployment stack.
+The active roadmap is minute-OHLCV based. Do not synthesize order-flow/queue/LOB evidence from bars. Microstructure research is deferred until an authoritative finer-grained dataset exists.
 
-## D19 — Historical and broker execution remain separate
-Synchronous deterministic `ExecutionVenue` remains historical. MT5 uses asynchronous command/event/query ports and broker/deal identities.
+## D11 — Historical and broker instruments remain separate identities
 
-## D20 — Windows is authoritative for official MT5 integration
-Core/research/replay remain cross-platform; the official `MetaTrader5` Python integration is treated as a Windows-native adapter and real broker acceptance runs locally against a demo terminal/account.
+Listed equity history and an MT5 CFD may share ticker text while differing in contract size, margin, spread, financing, sessions and volume semantics. Mapping/reconciliation is explicit.
 
-## D21 — Workbench remains source-neutral
-React consumes evidence/state projections and does not contain provider-, MT5-, QMT- or broker-specific financial logic.
+## D12 — Existing realtime substrate is reused
 
-## D22 — Live Workbench is downstream
-Realtime UI is built after event contracts, replay, state projection, read-only broker data, demo order lifecycle, reconciliation and recovery semantics are accepted.
+`src/finagent/realtime` already provides canonical event/replay/source/projection infrastructure. PAPER work integrates and validates it rather than creating another RT-R0/R1/R2 architecture.
 
-## D23 — Documentation uses single authority
-`docs/status.toml` owns current stage; `docs/development/current-plan.md` is the only active plan. Historical implementation detail belongs to Git/PR history and release snapshots.
+## D13 — Realtime UI is developed with PAPER state
 
-## D24 — MT5 feed regimes are separate evidence authorities
-MT5 transport capability, asset class and market-data entitlement are different facts. A roughly 15-minute quote delay is treated as a server/feed/subscription property observed for a bound symbol regime, not as an intrinsic `MetaTrader5` Python API delay and not as a universal property of stocks or CFDs.
+No standalone mock Live terminal. Market/Strategy/Portfolio/Execution/System Health panels are added as vertical slices that consume canonical PAPER projections. React never calls the broker SDK directly.
 
-FinAgent permanently separates three lanes:
+## D14 — Existing Workbench analytical stack is retained
 
-```text
-FX continuous/near-continuous fixture
-    -> transport / broker-clock / current bid-ask engineering smoke only
+Use ECharts for analytical/statistical charts, React Flow for research/evidence graphs and TanStack Table for structured data. Workbench 2.0 migrates touched server-state code toward TanStack Query instead of expanding the custom query client.
 
-MetaQuotes-Demo delayed U.S. equity reference
-    -> simulation EngineeringUniverse / delayed-reference evidence only
+AG-UI is the preferred first protocol candidate for Agent↔Workbench event/tool/state streaming. CopilotKit is optional and only adopted if it embeds without replacing FinAgent's Agent runtime/authority model.
 
-future target-broker current U.S. equity/CFD feed
-    -> separately re-admitted broker-specific PAPER/live-current evidence
-```
+TradingView Lightweight Charts is reserved for financial price/order/fill interaction when real PAPER state exists.
 
-Evidence never auto-promotes between lanes. EURUSD/GBPUSD/USDJPY smoke cannot satisfy US-I0, U.S. MT5-D0, US-D3, PAPER or live-broker evidence. Delayed U.S. equity evidence cannot claim current executable spread, current liquidity, target-broker account readiness, order authority or live-capital authority. A future broker/server/account must repeat broker-specific admission.
+## D15 — Browser is presentation/control intent, not financial calculation authority
 
-Where MT5 exposes them, feed/symbol capability evidence should preserve fields such as subscription delay, chart price mode, trade execution mode and market-book depth together with server/symbol identity. These fields enrich the evidence fingerprint; they do not weaken existing timing, universe, spread, reconciliation or stage gates.
+The browser may select/filter and perform clearly labeled presentation aggregation. It does not reconstruct missing Alpha, statistical inference, broker/account truth or safety state.
+
+## D16 — Research value includes negative results
+
+`NO_ROBUST_FACTOR_FAMILY`, `NO_ADAPTIVE_CANDIDATE`, `REJECTED` and `INSUFFICIENT_INDEPENDENT_EVIDENCE` are valid terminals. Thresholds and data boundaries are not weakened to manufacture progression.
+
+## D17 — PR boundaries follow coherent capability
+
+Prefer vertical slices. Avoid long chains of infrastructure-only PRs and unrelated mega-PRs. PR count is not a project KPI; reviewability, rollback boundaries and functional quality decide the split.
+
+## D18 — Workbench 2.0 is research-first
+
+The existing Agent page is primarily an audit projection. The next product generation makes Agent objective→tool→experiment→decision interaction first-class while keeping evidence links available as the underlying audit trail.
+
+## D19 — Live capital is separately human governed
+
+No research/PAPER/Agent state self-promotes into live authority. Live acceptance binds a specific strategy, broker/server/account, capital/risk envelope, safety/recovery procedure and operator responsibility.

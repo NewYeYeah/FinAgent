@@ -1,39 +1,66 @@
 # FinAgent documentation
 
-FinAgent documentation follows a **single-authority** model. The same project fact must not be maintained independently in README, a roadmap, a versioned current plan, and a changelog.
+The active documentation tree is intentionally small. Its purpose is to let a new developer or Agent recover the project state without reconstructing it from dozens of historical stage documents.
 
-New readers should begin with the [project onboarding guide](guides/project-onboarding.md). Agents and automation tools should additionally load the repository [`finagent-project` skill](../skills/finagent-project/SKILL.md).
+Start with [`../AGENTS.md`](../AGENTS.md).
 
-## Authoritative documents
+## Canonical information model
 
-| Question | Authority |
+| Need | Read |
 | --- | --- |
-| How should a new person/Agent learn and inspect the project? | [`guides/project-onboarding.md`](guides/project-onboarding.md) / [`finagent-project` skill](../skills/finagent-project/SKILL.md) |
-| What stage is active now? | [`status.toml`](status.toml) |
-| What are the next stages, dependencies, scope and exit gates? | [`development/current-plan.md`](development/current-plan.md) |
-| What is the system architecture now? | [`architecture/overview.md`](architecture/overview.md) |
-| Which design decisions are still active? | [`architecture/decisions.md`](architecture/decisions.md) |
-| What meaningful milestones have been completed? | [`development/changelog.md`](development/changelog.md) |
-| What unresolved risks remain? | [`development/risks.md`](development/risks.md) |
-| How are tests and acceptance gates structured? | [`testing/strategy.md`](testing/strategy.md) |
-| How do I use the system? | [`guides/`](guides/) |
-| How should I prepare for a U.S. active-session evidence run, and which realtime work can be done offline? | [`guides/realtime-development-validation.md`](guides/realtime-development-validation.md) |
-| Which source should realtime/algorithm development use, and how are delayed feeds handled? | [`guides/realtime-source-development-model.md`](guides/realtime-source-development-model.md) |
-| How do I run the reactivated real live-data workflow with FX connected smoke before final U.S. CFD freeze? | [`guides/real-live-data-workflow-reactivation.md`](guides/real-live-data-workflow-reactivation.md) |
-| What exactly did a frozen release prove? | [`releases/`](releases/) |
-| What exactly changed in one implementation? | Git commit / pull-request history |
+| Current stage and authority | [`status.toml`](status.toml) |
+| End-to-end roadmap | [`development/current-plan.md`](development/current-plan.md) |
+| Detailed current/future stage scope | [`development/stages/`](development/stages/) |
+| Durable prior progress and negative findings | [`development/history.md`](development/history.md) |
+| Open risks, debt and deferred work | [`development/backlog.md`](development/backlog.md) |
+| Current architecture | [`architecture/overview.md`](architecture/overview.md) |
+| Active architecture/product decisions | [`architecture/decisions.md`](architecture/decisions.md) |
+| Test and acceptance policy | [`testing/strategy.md`](testing/strategy.md) |
+| Environment and operator workflows | [`guides/`](guides/) |
+| Frozen release interpretation | [`releases/`](releases/) |
+| Exact implementation history | Git commits and pull requests |
 
-## Lifecycle rules
+## Active tree
 
-1. `docs/status.toml` is the only current-stage authority.
-2. There is exactly one active plan at the stable path `docs/development/current-plan.md`.
-3. Planning revisions update that file in place; Git preserves previous revisions.
-4. Stage implementation does **not** create `changelog-<stage>.md`, `roadmap-vX.md` or `current-development-plan-vX.md` files.
-5. A completed stage normally updates only `status.toml` and the aggregate changelog.
-6. A changed architecture invariant updates `architecture/overview.md` or `architecture/decisions.md`.
-7. A changed user workflow updates a guide.
-8. A product release creates or finalizes one release snapshot.
-9. Detailed implementation history belongs to Git and PRs, not duplicated stage documents.
-10. The onboarding skill/guide explain how to consume these authorities; they do not create another project-status authority.
+```text
+docs/
+├── README.md
+├── status.toml
+├── architecture/
+│   ├── overview.md
+│   └── decisions.md
+├── development/
+│   ├── current-plan.md
+│   ├── history.md
+│   ├── backlog.md
+│   └── stages/
+│       ├── r3-close.md
+│       ├── r4-agent-adaptive.md
+│       ├── r5-independent-confirmation.md
+│       ├── workbench-2.md
+│       ├── paper-trading.md
+│       └── live-capital.md
+├── guides/
+│   ├── getting-started.md
+│   ├── data.md
+│   ├── research-workflow.md
+│   ├── workbench.md
+│   └── mt5-paper.md
+├── releases/
+│   └── ashare-historical-v1.md
+└── testing/
+    └── strategy.md
+```
 
-`python scripts/check_docs.py` enforces the active-tree rules in CI.
+## Documentation rules
+
+1. `status.toml` contains compact **current facts**, not every historical artifact ID.
+2. `current-plan.md` contains the full route and stage relationships, not detailed implementation recipes.
+3. Each stage file contains the detailed goal, deliverables, reuse plan, non-goals and exit gate for one stage.
+4. `history.md` preserves only completed facts that constrain or inform future work. Exact old protocol details remain in Git/PR history and frozen release records.
+5. `backlog.md` is the only active list of unresolved limitations and technical debt.
+6. Operator guides describe workflows that can still be run or will directly feed a planned stage. One-off historical stage guides are not retained in the active tree.
+7. Architecture documents describe the system **as it exists now**. Future changes belong in stage plans until implemented.
+8. A project fact is maintained in one canonical place and linked elsewhere.
+9. Documentation is updated in place. Do not create versioned roadmaps, versioned current plans or per-stage changelog files.
+10. `python scripts/check_docs.py` enforces structure, required links and compactness.

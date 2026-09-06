@@ -1,185 +1,183 @@
 # Testing and acceptance strategy
 
-Tests establish software/data/contract correctness. They do **not** prove persistent Alpha or grant operational/live authority.
+Testing must prove the boundary that is actually changing. FinAgent distinguishes software correctness, research evidence, PAPER operations and live authority; a lower-level pass never implies a higher one.
 
 ## 1. Test layers
 
-### L0 — unit / property contracts
-Pure domain/calculation behavior, identity, chronology, serialization, fail-closed validation and deterministic replay fixtures.
+### T0 — unit / deterministic contract
 
-### L1 — component / adapter contracts
-Provider adapters, Parquet/DuckDB query bounds, calendar/action semantics, application services, projections and optional-dependency behavior. External SDK/network behavior is mocked or fixture-driven in CI unless the stage explicitly defines a real local acceptance.
+Pure calculations, serialization, identity, chronology, FactorGraph validation, market-state transforms, allocator logic and fail-closed behavior.
 
-### L2 — subsystem acceptance
-Historical research/program/portfolio pipelines, Workbench Evidence/Control boundaries, realtime replay/state transitions, broker-gateway contract behavior.
+### T1 — component / adapter
 
-### L3 — real local evidence acceptance
-Large/private/local datasets, real LLM providers, official MT5 terminal/broker data and other account/environment-specific evidence. These tests may not be reproducible in public CI; their reports/identities are persisted separately.
+Data adapters, DuckDB/Parquet queries, LLM/provider adapters, application services, Workbench projections, realtime source/projection behavior and optional dependencies. External systems are fixture/mocked unless the stage requires a real local acceptance.
 
-### L4 — release / operational gate
-A release or authority transition binds the exact accepted Git/data/config/environment/evidence identities. Passing a lower layer never implies a higher authority.
+### T2 — vertical subsystem
 
-## 2. Standard merge gate and CI routing
-
-FinAgent uses two CI lanes rather than making every pull request wait for every historical/compatibility surface.
-
-### Pull-request fast lane
-
-A PR must run checks that can directly invalidate the changed surface:
+A coherent research/product slice from its admitted input through the real internal interface:
 
 ```text
-Python 3.11 cross-layer core integration smoke
-project-wide critical Ruff checks
-stage/subsystem focused pytest
-focused Ruff + strict mypy for new modules
-compile/import smoke where relevant
-docs/release/source gates only when their paths change
+MarketState → Agent tool → evaluation → projection
+FactorLibrary → allocator → historical economics
+Agent runtime → tool/evaluator ledger → Research Console
+replay → strategy → projection
 ```
 
-The generic PR smoke deliberately does **not** execute the entire repository. Changed subsystems own deeper validation through path-scoped focused workflows. For example, U.S. minute changes run the U.S. minute/source gates; A2.6 and historical Research UI changes run their own gates.
+### T3 — financial research acceptance
 
-Historical focused workflows use PR path filters. A2.6 and the historical Research UI therefore do not block a U.S. minute/calendar PR unless their own code/test/dependency/workflow paths changed.
+Development or independent statistical/economic evaluation over real admitted data. The protocol owns chronology, costs, multiplicity/search accounting and terminal meaning.
 
-Pure documentation PRs may skip the generic Python package workflow when documentation governance owns the changed surface.
+### T4 — product/browser acceptance
 
-### Main integration / compatibility lane
+TypeScript/unit/build plus browser task flows against real or authoritative fixture projections. Workbench 2.0 additionally requires task-based human usability on real available artifacts.
 
-After merge, every push to `main` retains the broader active-code safety net:
+### T5 — broker/PAPER acceptance
+
+Real target demo/PAPER environment: broker/source identity, orders/deals/positions/account reconciliation, restart/recovery, stale data, safety and multi-session soak.
+
+### T6 — live-capital acceptance
+
+Separate human-governed checks for the exact account/capital/risk/operational envelope.
+
+## 2. Stage-specific evidence policy
+
+### R3-CLOSE
+
+Run focused FactorGraph/evaluator/Agent runtime tests needed to prove reusable R3 capability. Do not keep R3 open merely to create another evidence artifact.
+
+### R4 exploration
+
+Required:
+
+- causal feature/model tests;
+- no-future-mutation tests for MarketState/allocators;
+- development split/tool-scope enforcement;
+- complete trial/budget ledger tests;
+- matched deterministic/Agent experiment accounting;
+- focused historical economics regression.
+
+R4 is adaptive development. Its performance is not independent Alpha acceptance.
+
+### R5 confirmation
+
+Required:
+
+- exact frozen `AdaptiveStrategySpec` identity;
+- proof that confirmation inputs were not exposed to R4 under the accepted definition;
+- preregistered primary endpoint/cost/stopping rule;
+- chronology-aware HAC/block/session inference as required;
+- correct multiplicity accounting for the frozen strategy family/endpoints;
+- immutable terminal result.
+
+### Workbench 2.0
+
+Required:
 
 ```text
-Python 3.11 / 3.12 / 3.13 active-suite pytest matrix
-Windows Python 3.11 active-suite pytest
-historical A2.6 regression
-historical Research UI regression
-coverage floor over the active suite
-historical targeted lint/mypy surfaces
-package build + dependency consistency
+npm typecheck
+Vitest
+production build
+Playwright for changed critical flows
+Python projection/API focused tests
+no browser financial recomputation tests
+WorkbenchContext/deep-link tests
+Agent stream reconnect/resume behavior
+human task-based usability on real artifacts before final stage acceptance
 ```
 
-This separation reduces PR queue/merge latency without deleting compatibility or currently relevant historical-surface regression coverage. A focused PR gate must not be removed merely because the main lane exists; the main regression is a backstop, not a substitute for changed-surface validation.
+Automated browser smoke alone is not sufficient for the new interaction goal.
 
-### Frozen Historical release reproduction is not the active suite
+### PAPER
 
-A-share Historical v1.0 has its own immutable release/tag/evidence boundary. The following tests reproduce historical A-C4/A-C5 assumptions and are intentionally excluded from the generic active-suite pytest/coverage lane:
+Use deterministic replay for failure-mode coverage and real MT5 demo/PAPER for broker behaviors that require broker mutation.
+
+Acceptance must exercise:
+
+- normal signal/order/fill;
+- no-signal/cash;
+- stale/delayed source;
+- disconnect/reconnect;
+- restart/recovery;
+- reject/cancel/expire where supported;
+- duplicate/out-of-order events;
+- partial-fill path via real environment or deterministic broker fixture;
+- reconciliation drift;
+- kill switch;
+- end-of-session policy;
+- multi-session soak.
+
+## 3. CI philosophy
+
+Do not make every PR run every historical workflow.
+
+A PR runs:
+
+1. documentation governance if docs/status/planning paths changed;
+2. focused unit/component tests for changed modules;
+3. the vertical subsystem test for the capability being changed;
+4. strict typing/lint for new/touched code where practical;
+5. frontend gates when frontend code changes;
+6. broader compatibility/regression on main and on PRs that actually touch the shared boundary.
+
+Frozen historical release reproduction remains separate from active research/product CI. Do not recreate obsolete active docs simply to satisfy an old release test.
+
+## 4. Reproducible environment
+
+Canonical developer baseline remains:
 
 ```text
-tests/test_initial_requirement_compliance_ac4.py
-tests/test_ashare_historical_v1_freeze_ac5.py
-tests/test_ashare_historical_v1_freeze_lineage.py
+Python 3.11
+uv 0.12.1
+uv.lock
+Node 22
+workspace/package-lock.json
 ```
 
-They depend on historical plan references and/or historical Git lineage that are no longer part of the active DOC-0 tree. They remain release-reproduction material and are exercised only by the dedicated Historical workflows/release procedure with the history depth and artifacts that those contracts require. Their failure under a shallow generic checkout is not treated as a current U.S./MT5 product regression.
+Compatibility CI may exercise additional Python/platform combinations, but it does not create another dependency authority.
 
-Do not silently delete or rewrite frozen release evidence merely to make the active suite green. If the Historical release itself must be re-verified, use its dedicated release procedure and exact historical identities.
+## 5. Agent tests
 
-Frontend changes normally include:
+Agent tests must verify behavior, not declarations:
 
-```text
-npm ci
-npm run typecheck
-npm run test
-npm run build
-npm run e2e  # when the changed surface has browser acceptance
-```
+- strict typed action parsing;
+- denied tool/data access;
+- source/split/evaluator binding;
+- trial and budget reservation;
+- duplicate/repair retention;
+- restart/idempotence;
+- provider timeout/usage accounting appropriate to the admitted adapter;
+- run-local memory scope;
+- no hidden-reasoning persistence;
+- no access to sealed R5 evidence.
 
-The frontend developer/CI baseline is Node 22 unless a later explicit environment gate changes it.
+Agent **value** is an experiment result, never a unit-test assertion.
 
-## 3. Reproducibility gate
+## 6. Statistical rules
 
-`.github/workflows/reproducibility.yml` is the canonical environment-reproduction gate. It is intentionally separate from broad compatibility CI.
+Use methods appropriate to overlapping/serially dependent intraday outcomes. The exact R5 protocol is frozen per strategy, but normal tools include:
 
-**Ubuntu locked Python baseline**
-- Python 3.11 from `.python-version`;
-- uv 0.12.1, matching `[tool.uv].required-version`;
-- `uv lock --check` against `pyproject.toml` + `uv.lock`;
-- `uv sync --frozen --extra dev` from a fresh runner;
-- installed dependency-graph check and core import smoke.
+- purged/embargoed walk-forward where holdings/labels overlap boundaries;
+- HAC/Newey-West where relevant;
+- session/block bootstrap;
+- multiplicity correction over the actual searched/frozen family;
+- training-only direction/model/state fitting;
+- cost/delay sensitivity.
 
-**Windows frontend / broker-prep baseline**
-- the same locked Python 3.11 environment reproduced from `uv.lock`;
-- Node 22 from `.nvmrc`;
-- `npm ci` from `workspace/package-lock.json`;
-- frontend typecheck, unit tests and production build.
+Multiple-testing correction does not repair actual leakage.
 
-The Python 3.11/3.12/3.13 matrix remains compatibility coverage over declared `pyproject.toml` ranges, but it runs in the main integration lane rather than blocking every PR. It does not create a second resolution authority and does not replace the locked Python 3.11 baseline. Package/dependency consistency is likewise retained on main integration; the reproducibility gate additionally checks the frozen uv environment.
+## 7. Realtime rules
 
-ENG-0 does not install the official `MetaTrader5` SDK. SDK optional-dependency/import-safety and real terminal evidence are governed by `MT5-P0`.
+Replay should reproduce semantic state deterministically from the same canonical event sequence. Tests cover duplicate provider IDs, different-content conflicts, sequence regressions, stale/future timestamps and restart reconstruction.
 
-## 4. Data-stage acceptance
+A connected FX or delayed feed may test transport/runtime behavior only when the tested behavior is genuinely market-invariant. It does not substitute for target U.S. CFD broker/PAPER evidence.
 
-US-S0/US-D3 tests must separate:
-- source provenance/usage-rights decision;
-- schema/identity verification;
-- time/calendar/session certification;
-- OHLC/gap/volume checks;
-- corporate-action and symbol-lifecycle limitations;
-- independent/broker reconciliation.
+## 8. Documentation governance
 
-A source may be technically readable and still be `REFERENCE_ONLY` or `REJECTED`. A locally admitted `REFERENCE_ONLY` source remains limited to the explicitly accepted scope and cleaning policy.
-
-## 5. Agent experiment acceptance
-
-Agent tests cover bounded tool/prompt/code behavior, repair/checkpoint/audit and hidden-reasoning privacy. Agent **value** is not a unit-test claim: US-A0 compares fixed manual/programmatic/Agent arms under a preregistered budget and records repeat-run evidence.
-
-US-R3 expansion additionally requires stateful slot/attempt accounting, concurrent reservation and crash/resume tests, strict payload rejection, split-scoped tool dispatch and memory isolation, plus provider quota exhaustion without replacing candidate slots. Test enforcement using a fake provider and instrumented denied data/tool access, not only static flags or import scans. A data-blind LLM arm isolates the benefit of development feedback from the benefit of formula generation. Compare matched per-run evaluation budgets and report uncertainty; three runs are pilot evidence.
-
-The v2 offline runtime suite exercises an actual retrieval/validation/development-feedback/submission loop, invalid-to-repair transitions, duplicate retention, cross-process SQLite reservation, policy/scope drift, quota/unknown-usage failures, late provider/evaluator replies, clock rollback and crash recovery without automatic resend. The CLI runs twice against one immutable evidence directory: nine synthetic provider calls and one synthetic evaluation on the first run, zero on resume. Contexts contain a bounded action guide, never arbitrary tool access; rejected raw responses and callback exception text must not enter memory or the ledger. Fixture acceptance is separate from single-call real-provider transport verification, source authentication and financial/Agent-value experiments.
-
-## 6. Statistical research acceptance
-
-Formal intraday research must include overlap-aware chronology and inference. At minimum:
-- purged/embargoed walk-forward where needed;
-- HAC appropriate to horizon dependence;
-- block/session bootstrap;
-- frozen candidate denominator and multiplicity correction;
-- training-frozen direction/selection;
-- no evaluation feedback into the same adaptive search program.
-
-Valid no-alpha terminals are accepted research outcomes.
-
-US-R3 panel acceptance must include perturbation tests proving invalid asset values cannot influence valid peers, valid-input breadth enforcement, causal regime-mask lineage, no future mutation effect, missing-clock/session handling and partition/batch parity. These tests precede new financial evaluation.
-
-The R3 feature-usability lane also exercises an independent direct-formula oracle on synthetic and local historical inputs. Its SQL projection excludes labels and future prices. Test missing-row padding, duplicate/off-grid rejection, bounded sessions, immutable publication, source/implementation drift, corruption, interruption and zero-evaluation resume. Dedicated CI runs on Windows and Linux. A passing usability artifact proves feature computation only, not signal profitability or independent source admission.
-
-For adaptive research, freeze search rules and trial budgets before development feedback; freeze realized candidates and the training/selection/portfolio rule before outer or final evaluation. Preserve the whole trial ledger and preregister the appropriate multiple-testing procedure; a count of final survivors alone does not correct adaptive search bias. Session/block resampling must preserve the relevant cross-asset dependence. Power and endpoint choices precede final outcomes, and broker-neutral costs include overlapping positions, delayed execution and stress assumptions.
-
-## 7. MT5 / broker acceptance
-
-CI tests the MT5 adapter contract and optional-platform behavior without credentials or live order authority. Real MT5 stages run locally on Windows against the exact terminal/server/account class defined by the stage.
-
-Authority ladder:
-
-```text
-MT5-P0 read-only capability
-MT5-D0 read-only market reference
-MT5-M1 read-only/realtime gateway
-MT5-E1 demo/PAPER mutation
-MT5-O1 reconciliation/recovery/safety
-MT5-L0 separate live-capital acceptance
-```
-
-A successful earlier stage cannot call a later mutation API as part of its acceptance.
-
-## 8. Workbench acceptance
-
-Browser code consumes verified evidence/state projections. Tests explicitly guard:
-- Evidence Plane GET-only behavior;
-- Control authority ceiling;
-- no browser financial recomputation;
-- unavailable evidence remains unavailable;
-- URL-backed WorkbenchContext stability;
-- bounded row reads and complete server-side aggregates;
-- source/broker-specific logic stays out of React.
-
-## 9. Historical A-share release reproduction
-
-The historical A-C4/A-C5/HW-1.0-RS procedure is consolidated in [`../releases/ashare-historical-v1.md`](../releases/ashare-historical-v1.md). It is release history, not the global current test strategy.
-
-## 10. Documentation gate
+Run:
 
 ```bash
 python scripts/check_docs.py
-python tests/test_docs_governance.py
+python -m pytest -q tests/test_docs_governance.py
 ```
 
-The active docs tree must contain one stage authority and one current plan, with no versioned roadmap/current-plan/stage-changelog sprawl.
+The checker enforces one current plan, one compact status authority, required stage plans, a small active guide set, valid internal links and the canonical Agent onboarding entry.
