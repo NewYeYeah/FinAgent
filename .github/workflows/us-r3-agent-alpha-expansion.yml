@@ -9,6 +9,28 @@ on:
       - "src/finagent/research/us_r3_agent_boundary.py"
       - "src/finagent/research/us_r3_alpha_catalog.py"
       - "src/finagent/research/us_r3_usability.py"
+      - "src/finagent/research/us_r3_minute_liquidity.py"
+      - "scripts/audit_us_r3_minute_liquidity.py"
+      - "tests/test_us_r3_minute_liquidity.py"
+      - "src/finagent/research/us_r3_followup_review.py"
+      - "src/finagent/research/us_r3_workflow_pilot.py"
+      - "scripts/run_us_r3_followup.py"
+      - "tests/test_us_r3_workflow.py"
+      - "src/finagent/research/us_r3_completion.py"
+      - "src/finagent/research/us_r3_confirmation.py"
+      - "src/finagent/research/us_r3_inference.py"
+      - "scripts/run_us_r3_completion.py"
+      - "tests/test_us_r3_completion.py"
+      - "tests/test_us_r3_confirmation.py"
+      - "tests/test_us_r3_inference.py"
+      - "tests/test_us_r3_provider.py"
+      - "src/finagent/research/us_r3_activity.py"
+      - "src/finagent/research/us_r3_economics.py"
+      - "src/finagent/research/us_r3_economic_campaign.py"
+      - "scripts/run_us_r3_economic_screen.py"
+      - "tests/test_us_r3_activity.py"
+      - "tests/test_us_r3_economics.py"
+      - "tests/test_us_r3_economic_campaign.py"
       - "src/finagent/agents/r3_*.py"
       - "scripts/check_us_r3_agent_runtime.py"
       - "tests/test_us_r3_agent_runtime.py"
@@ -53,6 +75,15 @@ jobs:
       - name: Panel semantics and Agent boundary
         run: |
           uv run --frozen pytest -q \
+            tests/test_us_r3_minute_liquidity.py \
+            tests/test_us_r3_workflow.py \
+            tests/test_us_r3_completion.py \
+            tests/test_us_r3_confirmation.py \
+            tests/test_us_r3_inference.py \
+            tests/test_us_r3_provider.py \
+            tests/test_us_r3_activity.py \
+            tests/test_us_r3_economics.py \
+            tests/test_us_r3_economic_campaign.py \
             tests/test_us_r3_agent_runtime.py \
             tests/test_us_a1_factor_panel_materialization.py \
             tests/test_us_r3_usability.py \
@@ -79,7 +110,30 @@ jobs:
             src/finagent/agents/r3_ledger.py \
             src/finagent/agents/r3_runtime.py \
             scripts/check_us_r3_agent_runtime.py \
+            tests/test_us_r3_minute_liquidity.py \
+            tests/test_us_r3_workflow.py \
+            tests/test_us_r3_completion.py \
+            tests/test_us_r3_confirmation.py \
+            tests/test_us_r3_inference.py \
+            tests/test_us_r3_provider.py \
+            tests/test_us_r3_activity.py \
+            tests/test_us_r3_economics.py \
+            tests/test_us_r3_economic_campaign.py \
             tests/test_us_r3_agent_runtime.py \
+            src/finagent/research/us_r3_minute_liquidity.py \
+            scripts/audit_us_r3_minute_liquidity.py \
+            src/finagent/research/us_r3_followup_review.py \
+            src/finagent/research/us_r3_workflow_pilot.py \
+            scripts/run_us_r3_followup.py \
+            src/finagent/research/us_r3_completion.py \
+            src/finagent/research/us_r3_confirmation.py \
+            src/finagent/research/us_r3_inference.py \
+            src/finagent/agents/r3_provider.py \
+            scripts/run_us_r3_completion.py \
+            src/finagent/research/us_r3_activity.py \
+            src/finagent/research/us_r3_economics.py \
+            src/finagent/research/us_r3_economic_campaign.py \
+            scripts/run_us_r3_economic_screen.py \
             src/finagent/research/us_r3_usability.py \
             scripts/check_us_r3_alpha_usability.py \
             tests/test_us_r3_usability.py \
@@ -95,6 +149,20 @@ jobs:
             src/finagent/agents/r3_ledger.py \
             src/finagent/agents/r3_runtime.py \
             scripts/check_us_r3_agent_runtime.py \
+            src/finagent/research/us_r3_minute_liquidity.py \
+            scripts/audit_us_r3_minute_liquidity.py \
+            src/finagent/research/us_r3_followup_review.py \
+            src/finagent/research/us_r3_workflow_pilot.py \
+            scripts/run_us_r3_followup.py \
+            src/finagent/research/us_r3_completion.py \
+            src/finagent/research/us_r3_confirmation.py \
+            src/finagent/research/us_r3_inference.py \
+            src/finagent/agents/r3_provider.py \
+            scripts/run_us_r3_completion.py \
+            src/finagent/research/us_r3_activity.py \
+            src/finagent/research/us_r3_economics.py \
+            src/finagent/research/us_r3_economic_campaign.py \
+            scripts/run_us_r3_economic_screen.py \
             src/finagent/research/us_r3_usability.py \
             scripts/check_us_r3_alpha_usability.py \
             src/finagent/research/us_a1_factor_materialization.py \
@@ -107,6 +175,20 @@ jobs:
             src/finagent/agents/r3_ledger.py \
             src/finagent/agents/r3_runtime.py \
             scripts/check_us_r3_agent_runtime.py \
+            src/finagent/research/us_r3_minute_liquidity.py \
+            scripts/audit_us_r3_minute_liquidity.py \
+            src/finagent/research/us_r3_followup_review.py \
+            src/finagent/research/us_r3_workflow_pilot.py \
+            scripts/run_us_r3_followup.py \
+            src/finagent/research/us_r3_completion.py \
+            src/finagent/research/us_r3_confirmation.py \
+            src/finagent/research/us_r3_inference.py \
+            src/finagent/agents/r3_provider.py \
+            scripts/run_us_r3_completion.py \
+            src/finagent/research/us_r3_activity.py \
+            src/finagent/research/us_r3_economics.py \
+            src/finagent/research/us_r3_economic_campaign.py \
+            scripts/run_us_r3_economic_screen.py \
             src/finagent/research/us_r3_usability.py \
             scripts/check_us_r3_alpha_usability.py \
             src/finagent/research/us_a1_factor_materialization.py \
@@ -121,6 +203,20 @@ jobs:
             src/finagent/agents/r3_ledger.py \
             src/finagent/agents/r3_runtime.py \
             scripts/check_us_r3_agent_runtime.py \
+            src/finagent/research/us_r3_minute_liquidity.py \
+            scripts/audit_us_r3_minute_liquidity.py \
+            src/finagent/research/us_r3_followup_review.py \
+            src/finagent/research/us_r3_workflow_pilot.py \
+            scripts/run_us_r3_followup.py \
+            src/finagent/research/us_r3_completion.py \
+            src/finagent/research/us_r3_confirmation.py \
+            src/finagent/research/us_r3_inference.py \
+            src/finagent/agents/r3_provider.py \
+            scripts/run_us_r3_completion.py \
+            src/finagent/research/us_r3_activity.py \
+            src/finagent/research/us_r3_economics.py \
+            src/finagent/research/us_r3_economic_campaign.py \
+            scripts/run_us_r3_economic_screen.py \
             src/finagent/research/us_r3_usability.py \
             scripts/check_us_r3_alpha_usability.py \
             src/finagent/research/us_a1_factor_panel_materialization.py \

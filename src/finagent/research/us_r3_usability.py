@@ -12,7 +12,7 @@ import math
 import os
 import tempfile
 from collections import Counter
-from collections.abc import Callable, Iterator, Mapping
+from collections.abc import Callable, Generator, Mapping
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
@@ -187,7 +187,9 @@ def _session_assets(rows: list[tuple[Any, ...]]) -> tuple[FactorPanelAsset, ...]
     return tuple(assets)
 
 
-def iter_feature_sessions(source: Path) -> Iterator[tuple[str, tuple[FactorPanelAsset, ...], int]]:
+def iter_feature_sessions(
+    source: Path,
+) -> Generator[tuple[str, tuple[FactorPanelAsset, ...], int], None, None]:
     import duckdb
 
     # Close database handles before removing the task-owned spill directory,

@@ -166,7 +166,23 @@ def test_status_authority_is_bound_to_the_frozen_data_blind_bundle() -> None:
     assert stage["research_iteration_bundle_id"] == bundle["bundle_id"]
     assert stage["agent_boundary_policy_id"] == bundle["agent_boundary_policy"]["policy_id"]
     assert stage["research_iteration_plan_id"] == bundle["research_iteration_plan"]["plan_id"]
-    assert stage["financial_performance_evaluated"] is False
+    # The preserved v1 contract remains data-blind even after a separately
+    # frozen deterministic economic screen consumes exposed development data.
+    assert bundle["financial_performance_evaluated"] is False
+    assert stage["financial_performance_evaluated"] is True
+    assert stage["economic_exploratory_protocol_frozen"] is True
+    assert stage["economic_terminal"] == "EXPLORATORY_COMPLETE"
+    assert stage["economic_trading_arm_full_period_evaluable"] is True
+    assert stage["economic_loop_exit_gate_passed"] is True
+    assert stage["economic_all_trading_arms_negative_at_5bps"] is True
+    assert stage["opening_experiment_terminal"] == "EXPLORATORY_COMPLETE"
+    assert stage["opening_experiment_research_decision"] == "STOP_TESTED_OPENING_60M_ONCE_VARIANTS"
+    assert stage["opening_experiment_both_negative_gross_compounded"] is True
+    assert stage["opening_experiment_preserved_seven_arm_metrics_identical"] is True
+    assert stage["activity_context_implemented"] is True
+    assert stage["activity_experiment_terminal"] == "EXPLORATORY_COMPLETE"
+    assert stage["activity_experiment_followup_rule_passed"] is False
+    assert stage["activity_experiment_research_decision"] == "STOP_TESTED_ACTIVITY_RELATIVE_REVERSAL"
     assert stage["mt5_accessed"] is False
     assert stage["alpha_authority"] is False
 

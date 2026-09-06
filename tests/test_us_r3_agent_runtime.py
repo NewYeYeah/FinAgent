@@ -62,6 +62,15 @@ class FakeProvider:
         return ResearchReply(response, 100, 10)
 
 
+def test_validated_proposal_is_visible_for_identical_submission(tmp_path):
+    provider = FakeProvider(_proposal(validate=True), _proposal())
+    runtime = _runtime(tmp_path / "memory.sqlite", provider)
+    assert runtime.step("validate", 0)["outcome"] == "VALIDATED"
+    assert runtime.step("submit", 0)["outcome"] == "SUBMITTED"
+    feedback = json.loads(provider.requests[1].context_json)["feedback"]
+    assert feedback[-1]["proposal_action"]["arguments"] == json.loads(_proposal())["arguments"]
+
+
 def _scope() -> DevelopmentScope:
     records = (
         DevelopmentRecord(
@@ -518,7 +527,9 @@ def test_v2_policy_identity_and_stage_authority_remain_separate() -> None:
     assert stage["development_feedback_policy_v2_id"] == ResearchRuntimePolicy().policy_id
     assert stage["generation_ledger_implemented"] is True
     assert stage["scoped_feedback_runtime_implemented"] is True
-    assert stage["real_provider_adapter_admitted"] is False
+    assert stage["real_provider_adapter_admitted"] is True
+    assert stage["completion_real_adaptive_loop_accepted"] is False
+    assert stage["independent_confirmation_evidence_admitted"] is False
     assert stage["large_api_generation_admitted"] is False
     assert stage["stage_exit_gate_passed"] is False
     assert stage["alpha_gate_evaluated"] is False

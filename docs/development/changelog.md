@@ -2,6 +2,75 @@
 
 This file records **meaningful completed milestones**, not per-PR implementation detail. Git commits and pull requests are the detailed audit trail; frozen product interpretation belongs in `docs/releases/`.
 
+## 2026-09-06 — existing 1min data connected to economic execution diagnostics
+
+- located the admitted 411-month local raw corpus under `D:/Data/datasets--mito0o852--OHLCV-1m`; project `/data` also contains local samples and derived research panels;
+- added a bounded monthly CLI that reuses the cleaned minute Data Plane and accepted calendar to check all frozen strategy arms at the original 5bp cost, without changing signals, orders or historical returns;
+- added exact availability-clock joins, net-share capital scaling, missing/zero-volume counts, reconstructed-notional parity and explicit hypothetical participation thresholds. Same-minute volume is an ex-post diagnostic and never a causal order-sizing input or measured impact estimate;
+- completed January 2025: 20 sessions, 13 arms, 25,110 nonzero net trade legs, zero missing trade-minute references and zero frame-notional mismatches. At USD 100,000 daily-opening capital and a hypothetical 1% minute-volume limit, 218 legs exceed the limit;
+- passed 45 targeted regressions, CI-configured Ruff and strict mypy/compilation over 25 source files. Planning revision 4.10 permits useful OHLCV economic research under declared cost scenarios while retaining separate measured-cost, independent-review and confirmation requirements. Existing negative research outcomes remain unchanged.
+
+## 2026-09-06 — US-R3 evidence audit and real guided workflow acceptance
+
+- independently recomputed the preserved pilot's daily cost/PnL, compounded returns/drawdowns, full split/slot denominator, SQLite attempts and frozen selection/cost/delay results; technical audit passed and verified 365 snapshot files. This is same-author technical evidence, not external independent attestation;
+- produced a bounded data/cost inventory and future sample-feasibility plan without changing the completed protocol or reclassifying exposed R2 data as independent;
+- added opt-in persistent `validate → evaluate → identical submit` enforcement with slot-specific proposal memory, candidate/direction checks, restart recovery and no terminal sealing while a worker is pending. Existing unguarded policy remains separately identifiable;
+- preregistered and completed three real DeepSeek one-slot workflows under a USD 0.45 ceiling: ten calls, one rejected attempt, three successful development evaluations and three identical submissions. Charged USD 0.029027 at the conservative peak tariff. Evidence `us-r3-workflow-pilot-c1297cd8bf1dc256114cf790b1287129c11c1f814b3071c17ad00485b9098d77` is `GUIDED_WORKFLOW_ACCEPTED`;
+- the model reused the three known prototypes and all their development returns remained negative. This fixes practical tool adherence without establishing factor discovery, adaptive research value, Alpha or broker acceptance. Preserved the original failed pilot, new source snapshot and zero-call resume evidence;
+- extended Linux/Windows CI and adversarial tests for premature submission, changed proposals, wrong candidate IDs, short-memory eviction, slot-local hypotheses, full real-evaluator composition, audit tampering and pending-worker behavior. Planning revision 4.9 prioritizes external review and relevant data/cost admission before another mechanism experiment.
+- passed 209 scoped regressions, CI-configured Ruff over 35 files, strict mypy and compilation over 23 source files, documentation governance and whitespace checks. Both the real run and exact source-snapshot resume preserve the original evidence identity with zero additional model/evaluator calls.
+
+## 2026-09-06 — US-R3 remaining engineering and negative bounded real pilot
+
+- implemented source/exposure/cost inventory and a preregistered effect/power/multiplicity/stop design; missing historical equity spread/slippage, independent data and PIT sector/capacity evidence remain explicitly unavailable;
+- added a single-attempt official DeepSeek transport with verified token/cache usage, conservative tariff accounting, a killable deadline and no credential/reasoning persistence. Admitted the local development evaluator through hash/calendar lineage and date-restricted feature/execution queries;
+- completed four methods × three runs × three slots. The real provider made 27 calls (8 submitted, 9 rejected, 10 duplicate), with USD 0.103786 upper-bound charges against the USD 1.50 ceiling. Retained all 36 slots, 26 valid slots and 16 unique structures/behaviors;
+- all valid development candidates were negative at the fixed 5bp cost. Froze all twelve runs to cash before validation/outer cost and delay replay; evidence `us-r3-completion-3f774b86e4a529951354d2c75493e1e213d5ae10c8e223e8be2f402877de240f`. Feedback Agent never successfully invoked development evaluation; this is a negative tool-adherence/value pilot, not successful adaptive research;
+- implemented chronological splits with purged boundary sessions, whole-denominator accounting, HAC/block uncertainty, multiplicity and all-run comparisons. Independent confirmation supports authenticated receipt binding, prospective chronology, exact membership/calendar/cost, fixed sample endpoint and positive/negative/insufficient terminals without automatic Alpha/broker authority;
+- retained an executable source snapshot and verified the identical completed report on zero-call resume, including snapshot-based reproduction. Subsequent type-check and confirmation-admission tightening change current code identity without rewriting the historical pilot;
+- passed 203 scoped regressions, the CI-configured Ruff checks, strict mypy/compilation across 20 source files and documentation governance. Expanded Linux/Windows CI for complete synthetic pilot/real evaluator composition, deadline termination, single-call transport, sanitized reasoning/secret boundaries, cache/receipt tampering, causal date access and final states. Planning revision 4.8 marks implementation available while keeping independent review, real adaptive-loop acceptance and Alpha progression open.
+
+## 2026-09-06 — US-R3 causal activity context and bounded reversal test
+
+- implemented a bounded 20-calendar-session same-slot volume median with current-session exclusion, complete-history admission, explicit gap/half-day handling and local-open slot identity; bound prior-year source/plan/evidence and rebuilt causal state on interrupted resume;
+- froze one activity-conditioned relative reversal plus a no-activity ablation and a trigger-matched broad equal-weight control, retaining all ten prior arms. Limited new strategies to one attempted full-cash basket/day, a 15m delay and 60m holding with the existing exit and cost rules;
+- completed all thirteen arms/four cost scenarios/250 scheduled 2025 sessions after a 20-session feature-only 2024 warm-up. Evidence `us-r3-economic-screen-a6675e78e7ba65bb4c2bc3abf0eaefeee9d6b6264b0e538b9aad917bcfcae502` is `EXPLORATORY_COMPLETE`; all previous ten arm summary metrics are identical;
+- activity reversal returns -2.57% gross and -23.28% at assumed 5 bps, versus -20.97% at 5 bps for its ablation. The frozen follow-up condition fails; stopped the tested rule and retained its 239 active/11 cash days without selecting a new threshold;
+- passed 214 scoped regressions plus focused/full-critical Ruff, strict mypy and compile checks; extended existing Linux/Windows CI to the context module and tests. Tests cover median arithmetic, current/future-slot exclusion, missing history, half-days, one-attempt cancellation, cross-year binding and partial/full resume;
+- independently recomputed 2,650 real source ratios across five year-start/DST/half-day cases with a direct sorted-median calculation; verified all prior ten arms' full 250-day ledgers unchanged and an identical zero-evaluation restart. Retained 45,226 unavailable context positions rather than filling missing history;
+- revised planning to 4.7: retain the causal feature capability, pause further ad-hoc trials on exposed 2025 data, and complete cost/evidence/power and finite research-budget design before expanding search. Independent Alpha, Agent value and broker gates remain open.
+
+## 2026-09-06 — US-R3 bounded low-turnover opening experiment
+
+- added a separately selected experiment retaining all seven original arms plus two opening-momentum variants and a matched equal-weight control; froze open-plus-60m decisions, a 15m delay, one cash-limited full-NAV basket and close-minus-15m exits before evaluation;
+- implemented fixed-share daily holding with entry fees inside the budget, whole-day cancellation on missing entry references, no replenishment, and reuse of the bounded pending-exit policy. Added active/cash-day counts and full-denominator paired descriptive comparisons;
+- completed all ten arms/four cost scenarios/250 scheduled 2025 sessions, with evidence `us-r3-economic-screen-8327aaa21cadc530335c97c473c7634e0cc9259461c163dff9e0ac1055c944b5`. The original seven arms' summary metrics are unchanged;
+- raw/relative daily opening variants compound to -2.30%/-1.26% before assumed costs and -23.68%/-23.02% at the preregistered 5 bps; matched equal-weight is +5.20%/-17.41%. Retained the negative result and stopped the tested daily opening rules rather than expanding the parameter search;
+- verified zero-evaluation restart and retained the protocol, complete session ledgers, implementation snapshot and human-readable local report. Passed 207 scoped regressions, focused/full-critical Ruff, strict mypy and compile checks;
+- revised planning to 4.6: prioritize causal trailing time-of-day context and a separately frozen, materially distinct mechanism; measured costs, independent evidence and trusted Agent admission remain open. No financial success, overall US-R3 completion or broker authority is claimed.
+
+## 2026-09-06 — US-R3 complete exploratory accounts and cost-driven follow-up
+
+- froze a separately identified `pending_exit_5m` policy before its financial run, using existing authentic source-side 1m anchors from the 5m slice without reading forward labels or changing feature signals;
+- retained pending shares and cash constraints, sold available exit legs at their actual observation clocks, suppressed new baskets during unresolved exits, and enforced a close-minus-5m cutoff without closing-auction fills; kept the strict 15m protocol and incomplete evidence intact;
+- completed every arm/cost/session account in the fixed 2025 experiment: seven strategies, four assumed cost scenarios, 250 sessions. Coverage remains explicitly incomplete (478,310 observed prices of 484,800 scheduled asset/reference positions); complete accounting reflects the frozen cancellation/retry rules, not invented observations;
+- evidence `us-r3-economic-screen-60489051f2c0153754340872f6956977f3e02b632e52dda542df0dc70721adcd` has terminal `EXPLORATORY_COMPLETE`. Opening momentum compounds to +8.83% at assumed 1 bp and -26.19% at 5 bps; all six trading arms are negative at 5 bps. These are exposed development results, not independent Alpha or measured executable returns;
+- verified identical evidence after reusing all 250 session artifacts with zero new evaluations; retained implementation snapshots and a human-readable review beside the immutable local outputs;
+- passed 200 scoped local regressions plus focused/full-critical Ruff, strict mypy and compile checks. Added delayed-price causality, retained capital, partial exits/fees, cutoff failure, unchanged normal economics, execution-slice admission and dense-reference campaign coverage cases;
+- revised planning to 4.5: prioritize a bounded low-turnover opening-momentum experiment and cost calibration before wider Agent/optimizer work. The minimum exploratory economic exit is satisfied; independent evidence, trusted provider/evaluator admission and the overall US-R3 stage remain open.
+
+## 2026-09-06 — US-R3 minimum economic loop and exposed-data screen
+
+- revised the active plan to 4.4: moved a minimal net-economics experiment ahead of the Agent pilot and allowed manual mechanism research to progress independently of proving Agent superiority;
+- implemented long-only fixed-share overlapping sleeves, one-bar decision delay, calendar-bound intraday exits, cash-limited allocation, same-asset trade netting and 0/1/5/10-bp assumed costs, with explicit unavailable-entry/mark/exit handling;
+- reused the accepted panel and session reader for three unchanged graph prototypes, added operator-local same-day opening momentum with/without the eligible-universe mean, and retained eligible equal-weight and cash controls; no new FactorGraph permission was granted;
+- froze and executed all seven arms/four cost scenarios over all 250 scheduled 2025 sessions, preserving the fixed current-symbol universe and already-exposed R2 interpretation;
+- separated complete feature windows from time-bound raw 1m execution anchors after a retained initial screen exposed the conflation. Kept the initial report/protocol and implementation snapshot in its original local output directory; the corrected v2 projection never reads future labels or target availability;
+- corrected screen `us-r3-economic-screen-aef5b1a1a0d31cd4ccc86acad21a94f90fed2a8554e8fa06287ade2c1919d154` terminates at `EXPLORATORY_INCOMPLETE_EVIDENCE`: 1,237 source anchors are absent and all six trading arms have unresolved exit sessions. No full-year trading return or Alpha conclusion is accepted;
+- repeated the corrected run with all 250 session artifacts reused, zero session evaluations and an unchanged summary identity. Added hand-accounting, netting, causality, missing-price/calendar, source-tampering, CLI and interruption/resume regressions and integrated them into the existing Linux/Windows R3 workflow;
+- passed 194 local R3, A1/R2 predecessor, cross-layer core and documentation regressions in the activated Conda environment; focused Ruff, strict mypy, compile checks and project-wide critical Ruff passed. This was the scoped merge gate, not a claim that the full historical suite or hosted CI was run;
+- retained independent confirmation, provider/evaluator admission, Agent value, US-X0, PAPER and live-capital gates. The loop is implemented; its economic exit and the overall US-R3 stage remain open.
+
 ## 2026-09-05 — US-R3 scoped Agent runtime, offline acceptance
 
 - added a separately versioned v2 JSON capability boundary for curated literature/development summaries, factor validation/submission, trusted development evaluation and bounded run-local feedback; preserved all v1 and R1/R2 identities;

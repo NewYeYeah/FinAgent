@@ -253,13 +253,25 @@ class ResearchLedger:
             ).fetchall()
         return [json.loads(row[0]) for row in reversed(rows)]
 
-    def proposal(self, candidate_id: str) -> str | None:
+    def proposal(self, candidate_id: str, *, slot: int | None = None) -> str | None:
+        if slot is not None:
+            integer(slot, 0, self.policy.maximum_slots - 1)
         with self._transaction() as connection:
             row = connection.execute(
-                "SELECT proposal_json FROM attempts WHERE candidate_id=? AND proposal_json IS NOT NULL ORDER BY rowid LIMIT 1",
-                (candidate_id,),
+                "SELECT proposal_json FROM attempts WHERE candidate_id=? AND proposal_json IS NOT NULL AND (? IS NULL OR slot=?) ORDER BY rowid LIMIT 1",
+                (candidate_id, slot, slot),
             ).fetchone()
         return str(row[0]) if row else None
+
+    def slot_results(self, slot: int) -> list[dict[str, Any]]:
+        """Complete committed slot history; independent of the short prompt memory."""
+        integer(slot, 0, self.policy.maximum_slots - 1)
+        with self._transaction() as connection:
+            rows = connection.execute(
+                "SELECT result_json FROM attempts WHERE slot=? AND result_json IS NOT NULL ORDER BY ordinal",
+                (slot,),
+            ).fetchall()
+        return [json.loads(row[0]) for row in rows]
 
     def abandon_pending(self) -> int:
         """Trusted operator only, after workers stop. Never refund unknown usage."""

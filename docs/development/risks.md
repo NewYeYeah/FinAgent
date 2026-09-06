@@ -4,6 +4,15 @@ Only active/unresolved risks belong here. Resolved implementation history belong
 
 ## P0 — blocks research correctness or downstream authority
 
+### US-R3 economic cost sensitivity and reference assumptions
+The complete exposed-2025 screen is negative for all six trading arms at assumed 5 bps per gross net-traded notional. Positive outcomes at lower assumed costs are not independent evidence or measured executable performance. The frozen 5m pending-exit policy resolves all scheduled sessions using later authentic observations, with observed exit delays up to 20 minutes; it does not repair the underlying missing data. Of 484,800 scheduled asset/reference positions, 478,310 have prices, 3,787 have explicit missing source anchors and 2,703 have no source row. Preserve those gaps, canceled entries and delayed liquidations; do not claim full data coverage. Sparse raw OHLCV, a fixed current-symbol universe and idealized reference-price sizing still limit execution and survivorship interpretation. New windows can remain unresolved at the hard cutoff. The retained strict 15m run is incomplete and its available-day means must not be treated as comparable annual returns. Trusted Agent evaluator admission and independent confirmation remain separate requirements.
+
+### Low-turnover opening mechanism failure
+The two fixed-60m daily-entry momentum variants are negative on zero-cost compounded return and underperform matched equal-weight in the full exposed 2025 window; both also fail at the preregistered 5-bp comparison. Lower turnover alone did not preserve the sleeve strategy's gross returns. Stop these tested rules; do not replace them with a sweep over opening clocks, holding periods or tickers under the same protocol. A materially new hypothesis requires a new frozen research budget and remains exposed-data exploration. Arithmetic daily mean and its linear break-even diagnostic are not compounded growth, and comparisons with different holding schedules are not automatically risk-adjusted Alpha.
+
+### Activity context and repeated exposed-data search
+The causal 20-session same-slot volume reference is implemented, but its tested high-activity relative reversal loses -2.57% gross and -23.28% at 5 bps on exposed 2025 data. Its 5-bp mean daily excess versus the no-activity ablation is negative; the frozen follow-up rule fails. Preserve the feature capability without promoting its tested trading rule. Raw share-volume ratios can be affected by splits, source changes and sparse observations; a volume spike is not authenticated order flow or a causal liquidity shock. The strict 20-calendar-session completeness rule changes feature availability after gaps/half-days and must remain explicit. Repeatedly choosing new formulas on the same year increases adaptive exposure even if each run is locally frozen; pause ad-hoc trials until the research budget and independent evidence design are specified.
+
 ### US-R3 regime evidence admission
 The repaired panel kernel checks an explicit regime source identity and requires each label's timezone-aware availability to precede or equal formation availability. These are caller-supplied metadata, not independent authentication of the source classifier, training window or evidence graph. Financial regime evaluation still requires source-lineage admission; a fabricated past timestamp or arbitrary policy/evidence string must not become research authority. The label-blind usability operator does not enable regime gates or financial evaluation.
 
@@ -65,6 +74,12 @@ Current spread/slippage samples may not represent historical or stressed executi
 
 ### Agent cost / instability
 LLM provider/model changes can alter candidate output, latency and cost. Agent experiments bind model/provider/prompt identity and use repeated runs rather than one anecdotal result.
+
+The bounded R3 completion pilot uses a single-attempt killable transport, verified token/cache accounting and USD 1.50 maximum reservation. Its actual 27 calls reserve/charge USD 0.103786 at the frozen peak tariff; this is not an invoice reconciliation. Nine rejected and ten duplicate attempts remain visible. No Agent run successfully invoked development evaluation, so the pilot does not validate adaptive Agent research despite a working real provider.
+
+A separately frozen repair subsequently completed three real guided workflows using ten calls and three evaluations. Persistent ordering and exact submission now work, but this treatment supplies the next action explicitly and the model reused existing prototypes. Guided task completion must not be advertised as autonomous research or improved profitability. The same-author arithmetic audit also cannot replace an external independent reviewer.
+
+The frozen normal design needs 1,632 effective observations under its effect/variance/multiplicity assumptions; 250 exposed 2025 sessions cannot supply independent significance. Prospective final admission requires an external trusted receipt before opening returns, chronology after model freeze, exact membership/calendar/cost and a fixed endpoint. A receipt hash authenticates the independently supplied artifact only; the CLI cannot authenticate a reviewer from a model-supplied name. Measured historical equity spread/slippage, PIT sectors and capacity remain absent. These conditions prevent full Alpha acceptance even when implementation tests pass.
 
 ## P2 — deployment hardening
 

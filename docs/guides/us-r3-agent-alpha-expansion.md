@@ -1,8 +1,33 @@
 # US-R3 Agent Boundary and Frontier Alpha Expansion
 
+## Existing 1min data and execution feasibility
+
+The admitted raw snapshot is local at `D:/Data/datasets--mito0o852--OHLCV-1m`; it contains 411 monthly partitions from January 1992 through March 2026 (87,719,544,647 bytes). Partition coverage does not imply every symbol has complete history. Project `/data` contains samples and derived panels; `data/market/us_etf_alpaca*` are separate daily ETF datasets.
+
+Use the existing economic ledger to inspect minute-volume feasibility without regenerating candidates:
+
+```powershell
+python scripts/audit_us_r3_minute_liquidity.py `
+  --root D:/Data/datasets--mito0o852--OHLCV-1m `
+  --campaign reports/us_r3/economics/development_2025_activity_v5 `
+  --output reports/us_r3/minute_liquidity/january_2025_v2 `
+  --start 2025-01-01 --end 2025-01-31 `
+  --opening-capital 100000 --participation-limit 0.01
+```
+
+Activate the `finagent` environment first. Each run is bounded to one month and at most 32 assets. It reads all frozen strategy arms at 5bp, binds source/ledger hashes before querying, uses the existing whole-conflict-group quarantine and keeps missing minutes explicit. The output request and summary are immutable; identical reruns reproduce the evidence, while changed inputs require another output directory. This is a historical ledger audit, so it consumes preserved ledger contents without requiring the current simulator to equal the old simulator snapshot.
+
+At reference time 10:45, matching uses the raw minute starting 10:44 and available at 10:45. Participation is `abs(net shares per dollar of daily-opening NAV) * declared capital / observed minute volume`; opposite sleeve trades are already netted in the ledger. Capital is held constant at each session's opening for this diagnostic, not compounded across days. The reported capital ceiling is the most restrictive observed leg under the hypothetical participation limit, not estimated executable capacity. Zero volume gives a zero ceiling; missing references, unresolved sessions or aggregate notional mismatches invalidate the whole-period ceiling. Cash-only arms have no capacity estimate.
+
+The January run matched 25,110 trade legs across 20 sessions/13 arms, with no missing trade-minute reference or frame-notional mismatch. At USD 100,000 and a 1% threshold, 218 legs exceeded the limit. There were 186,628 observed regular-session asset-minutes out of the fixed 195,000-slot grid. Neither missing bars nor source volume certifies PIT universe membership or total-market liquidity. Actual bid/ask, fees and market impact remain unmeasured. The diagnostic does not alter old PnL or allow the just-finished execution minute's volume to influence earlier orders.
+
+Further exploratory research may use these OHLCV inputs with declared/stressed costs. Measured costs and independently admitted evidence remain requirements for their respective confirmation claims, rather than universal prerequisites for developing a testable mechanism.
+
 ## Purpose
 
-US-R3 develops a new research iteration after US-R2 ended with reviewed terminal `NO_ROBUST_FACTOR_FAMILY`. This guide distinguishes the v1 implementation reviewed at `d171615b2ad033be404139671566ef0f0535149f` from the revision 4.3 design. Read [stage authority](../status.toml) for acceptance and [the active plan](../development/current-plan.md#us-r3--correctness-evidence-design-and-controlled-research) for development order and exit gates.
+The remaining R3 engineering is exposed through `scripts/run_us_r3_completion.py`: bounded real-provider research, frozen exploratory replay, and separately admitted independent confirmation. The operational protocol and limits are described under [bounded completion workflow](#bounded-completion-workflow). Consult `docs/status.toml` for the actual pilot outcome and outstanding acceptance conditions.
+
+US-R3 develops a new research iteration after US-R2 ended with reviewed terminal `NO_ROBUST_FACTOR_FAMILY`. This guide distinguishes the v1 implementation reviewed at `d171615b2ad033be404139671566ef0f0535149f`, the revision 4.3 correctness/runtime design, the revision 4.4 minimum economic loop, revision 4.5 pending exits and revision 4.6 low-turnover experiment. Read [stage authority](../status.toml) for acceptance and [the active plan](../development/current-plan.md#us-r3--correctness-evidence-design-and-controlled-research) for development order and exit gates.
 
 The data-blind bundle is reproducible with:
 
@@ -180,6 +205,76 @@ The local 21-source run covered 5,092 sessions and 2,846,317 observed rows, with
 
 ## Evidence and development decisions
 
+### Minimum economic screen operator
+
+`scripts/run_us_r3_economic_screen.py` provides two explicit steps: freeze the local source/calendar/exposure/strategy/cost binding, then evaluate that exact protocol. It uses the active Conda environment and has no model or MT5 dependency:
+
+```powershell
+conda activate finagent
+python scripts/run_us_r3_economic_screen.py freeze `
+    --source "data/us_r2/robustness/base/year=2025/us_r2_robustness_base.parquet" `
+    --calendar reports/us_calendar/xnys_1992_2026.json `
+    --base-plan reports/us_r2/robustness/base/year_2025/us_r2_robustness_base_plan.json `
+    --base-evidence reports/us_r2/robustness/base/year_2025/us_r2_robustness_base_evidence.json `
+    --start 2025-01-02 --end 2025-12-31 `
+    --execution-profile pending_exit_5m `
+    --output reports/us_r3/economics/development_2025_pending_v3/protocol.json
+
+python scripts/run_us_r3_economic_screen.py run `
+    --protocol reports/us_r3/economics/development_2025_pending_v3/protocol.json `
+    --output-root reports/us_r3/economics/development_2025_pending_v3
+```
+
+An existing protocol/output is immutable. Exact repeats reuse session artifacts and reconstruct the identical summary without querying Parquet when all sessions are complete. Code or input changes require a new explicitly chosen protocol/output path. An interrupted run keeps completed days; source hashes and report identities are checked before reuse. The operator prints flushed session progress to stderr and a JSON result to stdout. A zero exit code means the report was produced, including a valid `EXPLORATORY_INCOMPLETE_EVIDENCE` terminal; it does not mean economic acceptance.
+
+The seven arms are the three preserved graph prototypes, same-session opening momentum with/without the contemporaneous eligible-universe mean, eligible equal-weight and cash. The opening mechanisms are operator-local experimental features, not newly admitted Agent/FactorGraph operators. They do not incorporate overnight return, a market index, a fitted beta, trailing time-of-day volume or performance-based candidate selection. Selection uses positive top-five scores with at least 20 valid inputs; rank reversal scores are centered at 0.5. All candidate/cost combinations remain in the report.
+
+The ledger uses initial daily NAV of one, at most one-quarter daily-opening NAV per 60m sleeve, 15m decisions, one full bar of delay, long-only cash-limited baskets and net share trading. Simultaneous exits/entries in the same asset incur costs only on net external notional. The final exit is scheduled 15m before the accepted calendar close, including half-days. Notional-to-share conversion at the execution reference is an idealized research sizing assumption. Costs are 0/1/5/10 bps per gross traded notional, not per half-L1 turnover, and are scenario assumptions rather than measured CFD spreads. No leverage, borrow, taxes, intraday cash interest, tick-size/lot rounding or measured capacity is modeled.
+
+Feature inputs and execution references have separate bounded projections. Features retain full-window completeness. The v2 execution reader uses only `source_price` and its exactly matching `source_available_at` from the raw 1m source side of the R2 join; it does not read `target_available_at`, `label_value` or `label_available`. The two DuckDB readers each use a 256MiB setting, 512-row fetches and a bounded session; they are not a measured total-process RSS limit. Full ledgers are persisted per session and removed from memory before aggregate reduction.
+
+Missing entry prices cancel the whole proposed basket without reallocating to observed winners. Missing held marks produce an unavailable intraday equity point; they do not forward-fill a price. The default `strict_15m` profile invalidates a session immediately on a missing scheduled exit. The explicitly selected `pending_exit_5m` profile instead reads authentic source-side anchors from `frequency_5m_60m`, sells observable due legs and retains the remaining shares until their next observed reference. It pauses new baskets while any due exit is pending. It keeps the original 15m signal, entry delay, sleeve size and scheduled exits; it does not generate 5m signals. Retry stops five minutes before calendar close, including half-days. A remaining position invalidates the session even if a closing price subsequently exists. Ledgers retain pending shares, actual delayed fill clocks, costs and missing equity marks; summaries include coverage, delays and suppressed baskets.
+
+Every calendar session remains in the denominator, including wholly missing sessions. Any unresolved day makes full-period compounded return and daily-close drawdown unavailable. Available-session means are explicitly diagnostic and can be selection-biased; different arms may have different evaluable subsets. Break-even cost is a zero-cost-path linear diagnostic only; the separate fee scenarios rerun cash accounting, so that diagnostic is not a promised executable cost limit. `EXPLORATORY_COMPLETE` means the frozen experiment produced complete session accounts; it is compatible with negative returns and does not admit Alpha or establish Agent value. The 5m profile is a separately frozen execution-policy experiment, not a silent replacement of the retained strict 15m evidence.
+
+### Bounded daily opening experiment
+
+For the separately frozen low-turnover comparison, add `--experiment low_turnover_opening` and retain `--execution-profile pending_exit_5m` in the freeze command; use a new output path such as `reports/us_r3/economics/development_2025_opening_v4/protocol.json`. Run with that protocol and the corresponding output root. The default experiment remains the seven-arm sleeve baseline. Changes to implementation require a fresh protocol, even when rerunning a prior experiment; local implementation snapshots preserve the code used for earlier artifacts.
+
+The new experiment retains all seven original arms and adds `opening_60m_momentum`, `opening_60m_relative_momentum` and the matched `opening_60m_equal_weight` control. Only two new mechanism variants are searched. All three new arms decide at open-plus-60m, attempt one cash-limited full-NAV basket at open-plus-75m, retain fixed shares and exit at close-minus-15m. A missing entry cancels the whole basket for the day; later prices/signals never replenish or retry it. The existing pending-exit rules apply. Missing early feature history disables momentum; the matched equal-weight control follows the existing current-bar eligibility rule, so its active/canceled days may differ and are reported explicitly.
+
+The protocol binds the schedules, capital rule, controls, full 0/1/5/10-bp grid and primary 5-bp diagnostic. Summaries retain active/cash-only days, basket counts and paired daily return differences against matched equal-weight, cash and the corresponding sleeve strategy. Compounded-return differences are comparisons of two accounts, not a return on a tradable spread; the schedules also differ in exposure and risk. Zero-cost arithmetic mean or a small positive linear break-even diagnostic can coexist with negative compounded return, and must not override the primary endpoint. No automatic ranking, selection or Alpha acceptance is performed.
+
+### Causal activity context and bounded reversal experiment
+
+`--experiment activity_reversal` retains the previous ten arms and adds one activity-conditioned relative reversal, its no-activity ablation and a trigger-matched broad equal-weight control. It requires the pending-exit profile and three explicitly bound prior-year history artifacts:
+
+```powershell
+conda activate finagent
+python scripts/run_us_r3_economic_screen.py freeze `
+    --source data/us_r2/robustness/base/year=2025/us_r2_robustness_base.parquet `
+    --calendar reports/us_calendar/xnys_1992_2026.json `
+    --base-plan reports/us_r2/robustness/base/year_2025/us_r2_robustness_base_plan.json `
+    --base-evidence reports/us_r2/robustness/base/year_2025/us_r2_robustness_base_evidence.json `
+    --history-source data/us_r2/robustness/base/year=2024/us_r2_robustness_base.parquet `
+    --history-base-plan reports/us_r2/robustness/base/year_2024/us_r2_robustness_base_plan.json `
+    --history-base-evidence reports/us_r2/robustness/base/year_2024/us_r2_robustness_base_evidence.json `
+    --start 2025-01-02 --end 2025-12-31 `
+    --execution-profile pending_exit_5m --experiment activity_reversal `
+    --output reports/us_r3/economics/development_2025_activity_v5/protocol.json
+python scripts/run_us_r3_economic_screen.py run `
+    --protocol reports/us_r3/economics/development_2025_activity_v5/protocol.json `
+    --output-root reports/us_r3/economics/development_2025_activity_v5
+```
+
+This bounded operator starts at the year's first session and takes exactly the preceding 20 calendar sessions from the prior-year source. History is feature-only warm-up, not 20 additional financial trials. Every session advances the history, including missing days. Same-slot volume uses a median of all 20 complete observations and a positive denominator; current-session data is added only after the day's ratios are computed. Slots are relative to calendar open, preserving DST alignment; missing afternoon slots after half-days remain unavailable rather than being borrowed from earlier full days. Partial resume reconstructs this state including already evaluated days; complete resume reads no Parquet. Input hashes are checked for history as well as the evaluation source.
+
+The hypothesis selects positive current-bar mean-minus-asset returns when same-slot relative volume is at least 2, with at least 20 valid-history assets before the mask and at most five selected names. It is not an opening-anchor momentum rule and not order-flow data. From open-plus-60m, the first eligible signal gets one cash-limited basket after a 15m delay, held for 60m. Missing entry references cancel the day; there is no second attempt. Exit cutoffs and costs reuse the accepted exploratory ledger. The ablation removes only the volume mask while retaining history eligibility, so its first trigger time may differ. The broad equal-weight control shares the conditional signal trigger, although execution-price availability may cancel different baskets.
+
+Full per-asset/day `activity_ratios` remain in session evidence. The existing paired-comparison report also contains the activity strategy against both controls and cash. The frozen follow-up rule requires positive full-period 5-bp compounded return and positive paired mean excess against both controls; failing any condition stops this rule. This is an exploratory triage rule, not independent statistical acceptance. History metadata binding does not authenticate upstream data or admit Agent access.
+
+The corrected 2025 screen completed on 2026-09-06 with all 250 sessions recorded and a zero-evaluation resume. It retained an incomplete-evidence terminal: source anchors are genuinely missing and no trading arm has a complete annual account path. See the stage authority and risk register for the remaining work. The original feature-completeness pricing screen remains under `reports/us_r3/economics/development_2025_v1`, with its implementation snapshot; its available-session numbers are superseded by the explicit raw-anchor profile, not relabeled accepted results. Neither screen authenticates an independent sample or enables Agent feedback access.
+
 The single development sequence and its exit gates are maintained in [current-plan.md](../development/current-plan.md#us-r3--correctness-evidence-design-and-controlled-research). Correctness and evidence/cost design lead, followed by enforced research tools, context features, the controlled pilot, exploratory model evaluation and independent confirmation. All research increments can run without MT5.
 
 An alternate source for the same asset/dates is reconciliation, not fresh statistical evidence. A new ticker subset exposed to the same research process can share market shocks and selection bias. A later date range must also be uninspected by the research team/model workflow. Prospective observations after the complete model/protocol freeze provide the clearest practical separation, subject to adequate effective sessions and market regimes. No fixed short calendar period guarantees enough test power.
@@ -219,3 +314,80 @@ The practical research recommendation is to improve information/context and fals
 Focused tests cover graph validity, deterministic rank/tie/z-score/winsor behavior, explicit regime masks, clock and resource failures, all three executable graphs, Agent proposal admission/rejection, equal search budgets, data-blind bundle identity and a static no-`MetaTrader5` import guard.
 
 This work grants no Alpha, US-X0 progression, execution, order, PAPER or live-capital authority.
+
+## Bounded completion workflow
+
+Use the activated `finagent` environment. Freeze first, then run against the same immutable protocol:
+
+```powershell
+python scripts/run_us_r3_completion.py freeze --economic-protocol reports/us_r3/economics/completion_source_v6/protocol.json --output NEW_PREREGISTERED_RUN/protocol.json
+python scripts/run_us_r3_completion.py run --protocol NEW_PREREGISTERED_RUN/protocol.json --output-root NEW_PREREGISTERED_RUN
+```
+
+The second command uses the configured DeepSeek account and consumes paid API quota on an unfinished run. A completed run verifies the protocol, source hashes, frozen membership and all twelve run identities and returns with zero model/evaluator calls. Do not replace the output directory to bypass an exhausted or uncertain ledger. Partial restart reuses deterministic request IDs and completed evidence; an uncertain in-flight request is never silently resent. Protocol changes require a new identity and must retain earlier attempts in the research history.
+
+The completed `pilot_v1` is stopped, not an instruction to start another search. Its exact implementation is retained under `reports/us_r3/completion/pilot_v1/implementation`. Later changes (precise generator/ledger types, a variable rename and stronger prospective receipt endpoint checks) intentionally change the current code identity. `completion_source_v6` only refreshes the local source contract against current code; it has no new performance run. Reproduce the historical zero-call result with its snapshot:
+
+```powershell
+$env:PYTHONPATH = (Resolve-Path reports/us_r3/completion/pilot_v1/implementation).Path
+python reports/us_r3/completion/pilot_v1/implementation/run_us_r3_completion.py run --protocol reports/us_r3/completion/pilot_v1/protocol.json --output-root reports/us_r3/completion/pilot_v1
+Remove-Item Env:PYTHONPATH
+```
+
+The pilot has four methods, three runs per method, three candidate slots per run and at most three development evaluations per run. All 36 slots remain in the denominator. The manual controls repeat the three preserved deterministic prototypes; this is not three independent human researchers. Programmatic windows use fixed seeds. Blind LLM sees contracts and validation feedback, while feedback Agent also receives authorized development economics. The two LLM methods have identical slot/attempt/token/cost ceilings; feedback is the treatment. Neither sees validation/outer prices. This pilot uses the existing graph grammar; local activity/session-context capabilities are not implicitly added to Agent permissions.
+
+Only `deepseek-v4-pro` at the official endpoint is admitted by this transport. It makes one completion request, disables reasoning output and retries, validates cache-hit/cache-miss/input/output usage, and executes inside a killable process with a 45-second total call budget. Unknown usage retains the full reservation and stops the run. Keys remain in the host worker and neither credentials nor hidden reasoning enter model context or evidence. Quota availability is checked before each completion. Runtime accounting is an upper-bound reservation, not a promise of provider invoice reconciliation.
+
+The total external cost ceiling is USD 1.50. The tariff frozen on 2026-09-06 uses the [official peak DeepSeek prices](https://api-docs.deepseek.com/quick_start/pricing/): USD 0.044/1.32 per million cached/uncached input tokens and USD 3.96 per million output tokens. Off-peak billing can be lower. Reverify pricing before a later protocol; do not change the tariff of a started experiment.
+
+Source/plan/evidence/calendar hashes admit the already-exposed local R2 snapshot for exploration. There is no claim of upstream reauthentication. The 2025 window is split into 82 development, 82 validation and 84 outer exploratory sessions, with one whole purged session at each boundary. The evaluator's SQL projection is restricted to the authorized dates; forward labels are absent from the feature/execution projections. All folds remain globally exposed. Missing prices stay missing and can invalidate complete returns.
+
+After development, each run selects the complete candidate with the highest strictly positive development net return at the frozen 5bp cost, using candidate identity to break ties; otherwise it selects cash. All twelve memberships, directions, selection logic, execution clocks and costs are frozen before validation/outer replay. Reports preserve all run returns, 0/1/5/10bp costs, two-bar-delay stress, cash/trading diagnostics, invested-weight concentration, structural/behavioral duplication, and paired equal-weight comparisons. Mechanism prose is validated as a falsification contract; that does not verify its causal explanation. Existing fixed mechanism ablations remain in the economic campaign, while the pilot adds feedback removal and matched allocation controls. Sector and capacity evidence remain explicitly unavailable.
+
+Daily uncertainty uses fixed five-lag Bartlett HAC and five-session circular bootstrap blocks. Bonferroni accounts for 36 slots times two primary endpoints (cash and eligible equal-weight). Three runs are descriptive, not a population-level Agent superiority test. The 999 bootstrap draws cannot resolve the extreme adjusted tail reliably, so the report explicitly flags this limitation. The normal power design assumes a 5bp daily effect, 50bp daily standard deviation, AR(1)=0.2, family alpha 0.05 and power 0.8: 1,632 effective sessions, approximately 2,448 calendar sessions. These are preregistered planning assumptions, not estimated certainty or a reason to relax a failed threshold.
+
+## Independently admitted final returns
+
+`us_r3_confirmation.py` implements the final-return gate. It deliberately requires an externally trusted receipt hash before opening any final return file. A receipt must bind the exact frozen model/protocol IDs, return-file SHA-256, independent reviewer identity, non-exposure attestation, point-in-time universe and cost/execution admission, the exact scheduled-session list, primary 5bp policy and observation start/end timestamps. `preregistered_at_utc` must lie between model freeze and the start of observations; the calendar must contain exactly the frozen `planning_calendar_sessions`, preventing outcome-dependent shortening/extension. This implementation admits prospective observations strictly after `frozen_at_utc`; alternate historical confirmation is not supported by this command.
+
+The receipt's hash is supplied by the trusted host/operator following independent review. Merely putting a reviewer name or a self-computed digest inside a model action does not authenticate evidence. The receipt and its trust-root delivery remain an external responsibility; this CLI is not a signing authority or an independent reviewer.
+
+The return artifact is JSON with `model_id`, `sessions`, `equal_weight_net_returns` and `series`. The series keys must be exactly every `method-run` member in the frozen model (for example `manual-0`); each array must contain one finite net return or explicit `null` per scheduled session. Missing observations are retained and yield insufficient evidence, never silently dropped. To evaluate an independently admitted artifact:
+
+```powershell
+python scripts/run_us_r3_completion.py confirm --model reports/us_r3/completion/pilot_v1/frozen_model.json --protocol reports/us_r3/completion/pilot_v1/protocol.json --receipt PATH_TO_ADMITTED_RECEIPT --trusted-receipt-sha256 INDEPENDENTLY_SUPPLIED_SHA256 --returns PATH_TO_FINAL_RETURNS --output PATH_TO_IMMUTABLE_CONFIRMATION_REPORT
+```
+
+The gate checks chronology, membership, calendar, cost and hashes before inference. Each member ends `CONFIRMED_POSITIVE`, `CONFIRMED_NEGATIVE` or `INSUFFICIENT_INDEPENDENT_EVIDENCE`. Positive requires sufficient effective observations, positive adjusted lower means against both controls, positive compounded net return and the preregistered economic effect versus equal-weight. Independent statistical review remains required. No terminal automatically grants Alpha or broker authority. When no source is admitted, the exploratory run records the insufficient-evidence terminal without opening or inventing a final dataset.
+
+## Follow-up audit and guided workflow
+
+The follow-up CLI keeps the original pilot immutable:
+
+```powershell
+python scripts/run_us_r3_followup.py review --previous-root reports/us_r3/completion/pilot_v1 --output reports/us_r3/followup/review_v1.json
+python scripts/run_us_r3_followup.py evidence-plan --previous-root reports/us_r3/completion/pilot_v1 --output reports/us_r3/followup/evidence_plan_v1.json
+```
+
+The review recomputes daily cost/PnL, compounding and drawdown without the production summarizer, reads SQLite in read-only mode, and verifies all slot/calendar/selection/cost/delay identities. It also checks the source snapshot manifest. This is a reproducible technical audit by the implementer; `reviewer_independent_of_author=false` and `AWAITING_EXTERNAL_ATTESTATION` remain explicit. No command fabricates a reviewer signature. The evidence plan lists unavailable quote/trade, cost, PIT-universe and independent-sample requirements; its feasibility scenarios do not change the old endpoints or permit further search.
+
+For a newly preregistered adherence experiment, freeze before any model call:
+
+```powershell
+python scripts/run_us_r3_followup.py freeze-workflow --previous-root reports/us_r3/completion/pilot_v1 --output NEW_WORKFLOW_RUN/protocol.json
+python scripts/run_us_r3_followup.py run-workflow --protocol NEW_WORKFLOW_RUN/protocol.json --output-root NEW_WORKFLOW_RUN
+```
+
+The policy permits three runs, one candidate and one evaluation per run, six attempts per run and at most USD 0.45 total API cost. Returns are diagnostic and cannot select, replace or extend runs. Only the old development dates are queried; no validation/outer/final results are read by the runner. Every run must complete validation, real development evaluation and identical submission to pass. All failed attempts remain charged and visible.
+
+`ResearchCapabilityRuntime(..., require_evaluated_submission=True)` binds the new workflow in the SQLite run identity. Its required tool/action is visible in model context and enforced at dispatch. Direction must be positive, the evaluated candidate must be the slot's validated candidate, and submission must preserve the exact graph and hypothesis. State is reconstructed from committed slot history, not only the last six feedback messages. Existing policies are not silently upgraded. A pending or busy worker now raises a reconciliation requirement without writing a final report; stop/reconcile the original worker before attempting recovery, and never create a replacement directory to bypass uncertain usage.
+
+The completed `workflow_v1` passed three runs in ten calls with USD 0.029027 conservative charges. One invalid attempt was retained; all three proposals reused existing baselines and remained negative at 5bp. This accepts a guided tool workflow, not novel factor discovery or autonomous Agent superiority. The exact run source is preserved; a later pending-worker guard changes the current code identity. Reproduce the completed zero-call result with:
+
+```powershell
+$env:PYTHONPATH = (Resolve-Path reports/us_r3/followup/workflow_v1/implementation).Path
+python reports/us_r3/followup/workflow_v1/implementation/run_us_r3_followup.py run-workflow --protocol reports/us_r3/followup/workflow_v1/protocol.json --output-root reports/us_r3/followup/workflow_v1
+Remove-Item Env:PYTHONPATH
+```
+
+The historical snapshot reproduces an already-completed run; use current source for new runs and pending-worker handling. External review, authentic historical execution costs and independently admitted data remain separate prerequisites for stronger research claims.
