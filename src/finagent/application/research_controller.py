@@ -50,6 +50,7 @@ def open_research_session(
     audit: SQLiteAgentAuditStore,
     policy: ResearchRuntimePolicy | None = None,
     clock: Callable[[], float] = time.time,
+    campaign_arm: dict[str, Any] | None = None,
 ) -> ResearchCapabilityRuntime:
     if not objective.strip() or len(objective) > 1000:
         raise ContractError("invalid_research_objective")
@@ -80,10 +81,15 @@ def open_research_session(
         "audit_required": True,
         "audit_path": str(audit.path.resolve()),
         "evidence_scope": "exposed_development_only",
+        **({"campaign_arm": campaign_arm} if campaign_arm is not None else {}),
     }
     write_immutable_json(request_path, request)
     host = R4ResearchHost(admission, output, run_id)
     capabilities = R4ResearchCapabilities(host, objective)
+    if campaign_arm is not None:
+        from finagent.agents.r4_campaign_capabilities import CampaignCapabilities
+
+        capabilities = CampaignCapabilities(host, objective, campaign_arm)
     stamp = datetime.fromisoformat(started_at)
     task = AgentTask("task-" + run_id, objective, stamp)
     context = AgentRunContext(

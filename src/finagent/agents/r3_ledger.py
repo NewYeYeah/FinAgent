@@ -115,9 +115,15 @@ class ResearchLedger:
             )
         return status
 
-    def reserve(self, request_id: str, slot: int, *, now: float) -> Reservation:
+    def reserve(
+        self, request_id: str, slot: int, *, now: float, provider_call: bool = True
+    ) -> Reservation:
         identifier(request_id)
         integer(slot, 0, self.policy.maximum_slots - 1)
+        if type(provider_call) is not bool:
+            raise ContractError("invalid_provider_call_flag")
+        token_reservation = self.policy.tokens_per_call if provider_call else 0
+        cost_reservation = self.policy.cost_per_call_microusd if provider_call else 0
         with self._transaction() as connection:
             existing = connection.execute(
                 "SELECT * FROM attempts WHERE request_id=?", (request_id,)
@@ -156,8 +162,8 @@ class ResearchLedger:
             ).fetchone()
             if (
                 count >= self.policy.maximum_attempts
-                or tokens + self.policy.tokens_per_call > self.policy.maximum_tokens
-                or cost + self.policy.cost_per_call_microusd > self.policy.maximum_cost_microusd
+                or tokens + token_reservation > self.policy.maximum_tokens
+                or cost + cost_reservation > self.policy.maximum_cost_microusd
             ):
                 connection.execute("UPDATE run SET status='RUN_BUDGET_EXHAUSTED'")
                 return Reservation(
@@ -173,8 +179,8 @@ class ResearchLedger:
                     slot,
                     ordinal,
                     lease,
-                    self.policy.tokens_per_call,
-                    self.policy.cost_per_call_microusd,
+                    token_reservation,
+                    cost_reservation,
                 ),
             )
             return Reservation(request_id, slot, ordinal, lease)

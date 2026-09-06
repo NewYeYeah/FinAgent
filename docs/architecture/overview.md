@@ -199,6 +199,8 @@ The official `ag-ui-protocol` SDK serializes explicit run/tool/state events as a
 
 Workbench 2.0 will make Agent/experiment/market-state interaction the primary research workflow, but it remains a projection/control client over FinAgent core rather than a browser research engine.
 
+The R4 campaign operator lives in `application/r4_campaign.py`: immutable provider/source admission, matched protocol verification, and scheduling over existing services. `agents/r4_campaign_capabilities.py` restricts the existing Controller tools by frozen arm and reads all counters from ResearchLedger. Deterministic scheduled evaluations reserve the same ledger's evaluation slots with no provider/token reservation. No new runtime, ledger database type, backtester or browser campaign-config authority is introduced. `research/r4_campaign_protocol.py` owns host-only Agent-value/candidate assessment and the development AdaptiveStrategySpec builder. A failed provider probe can produce a blocked design record; it cannot produce an accepted execution freeze.
+
 ## 9. Realtime/PAPER architecture
 
 The canonical path is:

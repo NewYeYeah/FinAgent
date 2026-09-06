@@ -190,6 +190,8 @@ R4 Controller acceptance runs `tests/test_r4_controller.py`, `tests/test_r4_cont
 
 Console component acceptance is `cd workspace && npm test`; `npm run build` includes TypeScript validation. After building, `npx playwright test --config playwright.research.config.ts` starts the opt-in real scripted fixture server and checks objective, typed action sequence, new proposal provenance, all five economic arms, factor set, allocator, remaining budget and explicit no-candidate/authority display. The browser test makes no mocked API responses. The standard production Control Plane remains provider-unavailable until a host explicitly supplies an admitted service. These fixtures are not a financial campaign or independent evidence.
 
+R4 campaign admission acceptance is `python -m pytest tests/test_r4_campaign_freeze.py`. It exercises synthetic Parquet through freeze, drift verification, four scheduled deterministic factor sets and six independent scripted Controller runs. It also tests provider identity/usage/secret boundaries, pre-freeze output rejection, blocked admission, per-arm permissions/budgets, retained evaluator/provider failures, idempotent replay and deterministic host gates. A fixture admission cannot start a real campaign. Provider probes in these tests are offline transports; no market objective reaches a real LLM. The separately authorized 2026-09-06 non-research probe failed admission and is retained as a blocker. Continue running the existing R3 runtime, static/adaptive walk-forward and Controller regression alongside these tests.
+
 ## 6. Statistical rules
 
 Use methods appropriate to overlapping/serially dependent intraday outcomes. The exact R5 protocol is frozen per strategy, but normal tools include:

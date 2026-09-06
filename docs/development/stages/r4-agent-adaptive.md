@@ -222,7 +222,23 @@ Natural decomposition, subject to reviewability rather than a fixed count:
 
 Do not split each contract/cache/statistic into its own PR.
 
-## Exit gate
+## Campaign admission and frozen design
+
+The engineering boundary is implemented; real execution remains blocked by provider admission. The [retained freeze](../../../configs/research/r4_matched_v1_blocked/campaign_freeze.json) has status `BLOCKED_PROVIDER_ADMISSION`, protocol ID `r4-matched-protocol-aae0a7e037f2e2bd8597397c` and freeze ID `r4-campaign-freeze-bd542e68beda6461aa58c8ae`. It is never accepted by the runner. One non-research DeepSeek probe failed verification; no second real probe was made. B-005 remains OPEN. Real 2025 source admission contains no factor/portfolio evaluation results.
+
+Primary comparison fixes the three R3 executable frontier definitions. Deterministic selection evaluates the full pool and its three leave-one-out subsets; every request runs all five allocator arms. Each Agent selection run has the same four factor-set proposal slots and four portfolio evaluation slots, with factor discovery forbidden. Three independent Agent runs share the objective, starting evidence, provider configuration and budgets. Agent-value assessment uses each run's explicit final factor-set/allocator choice; the candidate gate separately ranks completed primary pairs. “Static equal weight” describes allocation, not historical factor existence: all campaign evidence is retrospective exposed development, and seed registrations retain the actual 2026 research clock.
+
+Per Agent run: 48 tool calls, 1,048,576 total tokens, 2,400,000 microusd peak-tariff ceiling and 7,200 seconds. Proposal/evaluation ceilings deny that category while allowing remaining bounded inspection/finalization; hard resource ceilings or finalize stop the run. Deterministic execution uses zero LLM calls/tokens/cost. Exploratory discovery has three proposal slots, three factor-evaluation slots, four set proposals and four portfolio evaluations per independent run. It has no separately identified discovery-value claim and cannot supply the primary candidate.
+
+Factor feedback is frozen to the first fold's evaluation window; portfolio feedback covers all three calendar-defined folds. Each fold uses its first 20 TRAIN sessions for scaler/GMM fit, its first 40 sessions for TRAIN, and the remaining sessions for fold evaluation. Historical performance release, train-only Ridge, normalization, exposure, 15m clock, one-bar delay, four-bar holding and 0/1/5/10bp costs are unchanged. No feedback-window adjustment is allowed after results.
+
+Failures and duplicates remain accounted. Infrastructure retries and repairs are zero. Transport uncertainty, timeout, quota, evaluator infrastructure failure or audit inconsistency cause system failure; negative economics never justify retry. Duplicate economic requests replay the existing result and do not spend a second evaluation slot. Untyped rejection consumes a tool attempt and conservatively debits proposal categories.
+
+Host Agent-value rule: all three primary runs must complete; at least two selected strategies must beat the best frozen deterministic result by 0.002 in mean fold return at 5bp with no worse worst fold; median mean improvement and median worst-fold noninferiority must also pass. A deliberate no-candidate is negative; incomplete numerical evidence is inconclusive. This is development descriptive evidence, not a significance or Alpha gate.
+
+Candidate viability requires all three folds evaluable, zero unresolved sessions, mean fold return at 5bp strictly positive, worst fold at least -0.01, and mean fold return at 10bp nonnegative. Ranking is lexicographic: higher mean/worst 5bp economics, lower drawdown/turnover/concentration, fewer factors, less runtime Agent dependence, then canonical ID. A deterministic baseline can win when Agent value is unsupported. The builder defaults Agent role to research/development only and grants no Alpha/PAPER/live or independent-confirmation authority.
+
+## Exit gate (unchanged)
 
 R4 exits when:
 

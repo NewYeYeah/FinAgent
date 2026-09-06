@@ -54,6 +54,8 @@ class ResearchReply:
     action_json: str
     used_tokens: int
     cost_microusd: int
+    input_tokens: int | None = None
+    output_tokens: int | None = None
 
 
 class ResearchProvider(Protocol):
@@ -538,6 +540,15 @@ class ResearchCapabilityRuntime:
             # Generic adapters with a default all-zero usage object are not admitted.
             integer(reply.used_tokens, 1)
             integer(reply.cost_microusd)
+            if reply.input_tokens is not None or reply.output_tokens is not None:
+                integer(reply.input_tokens)
+                integer(reply.output_tokens)
+                if (
+                    reply.input_tokens is None
+                    or reply.output_tokens is None
+                    or reply.input_tokens + reply.output_tokens != reply.used_tokens
+                ):
+                    raise ContractError("usage_breakdown_mismatch")
         except ContractError:
             return self._finish(reservation, {"outcome": "USAGE_UNKNOWN"}, halt="USAGE_UNKNOWN")
         if (
@@ -579,6 +590,18 @@ class ResearchCapabilityRuntime:
             halt = "EVALUATOR_TIMEOUT"
         except Exception:  # noqa: BLE001 -- never propagate callback payloads or stack text to the model.
             result = {"outcome": "TOOL_FAILED", "code": "trusted_adapter_failure"}
+            if getattr(self._capabilities, "halt_on_tool_failure", False):
+                halt = "CAMPAIGN_SYSTEM_FAILURE"
+        if reply.input_tokens is not None:
+            result = {
+                **result,
+                "provider_usage": {
+                    "input_tokens": reply.input_tokens,
+                    "output_tokens": reply.output_tokens,
+                    "total_tokens": reply.used_tokens,
+                    "cost_microusd": reply.cost_microusd,
+                },
+            }
         return self._finish(
             reservation,
             result,

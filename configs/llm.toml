@@ -43,3 +43,14 @@ timeout_seconds = 900.0
 provider = "openai"
 model = "REPLACE_WITH_OPENAI_MODEL_ID"
 secret_id = "openai"
+
+# Explicit R4 single-attempt ResearchProvider transport. No shared-default change.
+[llm.profiles.r4_deepseek_v4_pro]
+provider = "deepseek"
+base_url = "https://api.deepseek.com"
+model = "deepseek-v4-pro"
+secret_id = "deepseek_official"
+thinking = false
+max_attempts = 1
+retry_backoff_seconds = 0.0
+timeout_seconds = 120.0

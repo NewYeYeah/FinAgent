@@ -63,7 +63,9 @@ def _worker(
     instruction: str,
     output_cap: int,
     timeout: float,
+    profile_name: str | None = None,
 ) -> None:
+    stage = "profile"
     try:
         import httpx
 
@@ -74,19 +76,28 @@ def _worker(
             load_llm_profile,
         )
 
-        profile = load_llm_profile(config_path)
+        profile = load_llm_profile(config_path, profile_name=profile_name)
         if (
             profile.provider != "deepseek"
             or profile.model != "deepseek-v4-pro"
             or profile.base_url.rstrip("/") != "https://api.deepseek.com"
         ):
             raise ValueError("provider_not_admitted")
+        if profile_name is not None and (
+            profile.thinking is not False
+            or profile.max_attempts != 1
+            or profile.reasoning_effort is not None
+            or profile.timeout_seconds != 120.0
+        ):
+            raise ValueError("provider_profile_mismatch")
         table = _llm_table(Path(config_path))
+        stage = "credential"
         secret = _read_api_key(
             secret_path=_configured_secrets_path(llm=table, explicit_path=None),
             secret_id=profile.secret_id,
             enforce_private_permissions=True,
         )
+        stage = "transport"
         with httpx.Client(timeout=timeout, follow_redirects=False, trust_env=False) as client:
             headers = {"Authorization": "Bearer " + secret}
             quota = client.get("https://api.deepseek.com/user/balance", headers=headers)
@@ -122,6 +133,9 @@ def _worker(
             # Strip all fields that could contain hidden reasoning before IPC.
             connection.send(
                 {
+                    "model": payload.get("model"),
+                    "id": payload.get("id"),
+                    "system_fingerprint": payload.get("system_fingerprint"),
                     "usage": payload.get("usage"),
                     "choices": [
                         {
@@ -133,17 +147,29 @@ def _worker(
                 }
             )
     except Exception:  # noqa: BLE001 -- sanitize the worker boundary.
-        connection.send({"error": "transport_uncertain"})
+        connection.send(
+            {
+                "error": {
+                    "profile": "provider_profile_mismatch",
+                    "credential": "credential_unavailable",
+                }.get(stage, "transport_uncertain")
+            }
+        )
     finally:
         connection.close()
 
 
 class StrictDeepSeekProvider:
-    def __init__(self, config_path: Path, instruction: str) -> None:
+    def __init__(
+        self, config_path: Path, instruction: str, *, profile_name: str | None = None
+    ) -> None:
         self.config_path = config_path
         self.instruction = instruction
+        self.profile_name = profile_name
+        self.last_receipt: dict[str, Any] | None = None
 
     def respond(self, request: ResearchRequest) -> ResearchReply:
+        self.last_receipt = None
         input_cap = len((request.context_json + self.instruction).encode()) + 1024
         output_cap = min(3000, request.maximum_total_tokens - input_cap)
         if (
@@ -162,6 +188,7 @@ class StrictDeepSeekProvider:
                 self.instruction,
                 output_cap,
                 max(0.1, request.timeout_seconds - 2),
+                self.profile_name,
             ),
         )
         process.daemon = True
@@ -177,13 +204,47 @@ class StrictDeepSeekProvider:
             if payload.get("error") == "quota_unavailable":
                 raise ProviderQuotaExhausted("provider_quota")
             if "error" in payload:
-                raise ValueError("transport_uncertain")
-            return parse_reply(
+                raise ValueError(
+                    payload["error"]
+                    if payload["error"] in {"provider_profile_mismatch", "credential_unavailable"}
+                    else "transport_uncertain"
+                )
+            reply = parse_reply(
                 payload,
                 token_cap=request.maximum_total_tokens,
                 input_cap=input_cap,
                 output_cap=output_cap,
             )
+            if self.profile_name is not None:
+                if payload.get("model") != "deepseek-v4-pro" or not isinstance(
+                    payload.get("id"), str
+                ):
+                    raise ValueError("provider_response_identity_mismatch")
+                self.last_receipt = {
+                    "model_id": payload["model"],
+                    "response_id": payload["id"],
+                    "system_fingerprint": payload.get("system_fingerprint"),
+                    "usage": {
+                        k: payload["usage"][k]
+                        for k in (
+                            "prompt_tokens",
+                            "completion_tokens",
+                            "total_tokens",
+                            "prompt_cache_hit_tokens",
+                            "prompt_cache_miss_tokens",
+                        )
+                    },
+                    "cost_microusd": reply.cost_microusd,
+                    "quota_available": True,
+                }
+                reply = ResearchReply(
+                    reply.action_json,
+                    reply.used_tokens,
+                    reply.cost_microusd,
+                    payload["usage"]["prompt_tokens"],
+                    payload["usage"]["completion_tokens"],
+                )
+            return reply
         finally:
             if process.is_alive():
                 process.terminate()

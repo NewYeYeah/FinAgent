@@ -217,3 +217,26 @@ Default `PREDECLARED_STATIC` admission still rejects definitions created after f
 Market clocks describe historical causal information. Research proposal clocks describe when the definition really existed. The ledger publishes a result only after evaluation completes (`completed_at`), so it can affect subsequent Agent actions only. Replay reuses committed requests and identical experiment specifications without another evaluation charge. Failed/negative/duplicate attempts remain visible. Unknown pending execution or an audit mismatch stops the run for reconciliation.
 
 Retrospective artifacts bind `evaluation_mode = adaptive_development_retrospective`, `historically_predeclared = false`, `adaptive_search_exposed = true`, `development_only = true` and false independent/Alpha/PAPER/live flags. Internal walk-forward partitions are called **fold evaluation**; the whole Agent search remains exposed development evidence. `DEVELOPMENT_CANDIDATE_PROPOSED` and `NO_CANDIDATE_RECOMMENDED` are Controller recommendations, not the R4 stage terminal. A frozen matched-budget comparison and later independent confirmation remain required.
+
+## Campaign admission and operator freeze
+
+`scripts/r4_campaign.py` provides explicit `probe`, `admit-source`, `freeze`, `verify` and `record-blocker` commands. There is intentionally no real campaign `run` CLI in this engineering slice. Normal Workbench startup does not discover keys, select another provider or acquire campaign authority. The explicit profile is `r4_deepseek_v4_pro`; its existing StrictDeepSeek transport uses thinking disabled, temperature 0.7, strict JSON and one attempt. This does not change the shared generic-provider default.
+
+The non-research probe has already been attempted once and failed verification. Do not repeat it as part of this PR. Its immutable failure lacks an accepted identity/usage receipt. B-005 remains OPEN; obtaining a new probe requires a separate operator decision. No credential/quota/model/cost success is inferred. Public tariff accounting uses a conservative peak upper bound, not an invoice claim; see [DeepSeek pricing](https://api-docs.deepseek.com/quick_start/pricing/).
+
+The real source admission was created with:
+
+```powershell
+.venv/Scripts/python.exe scripts/r4_campaign.py admit-source --source-config configs/research/r4_development_2025.json --output reports/r4_campaign_admission/development_2025_v1
+```
+
+This binds the existing annual R2 artifact, calendar, plan/evidence, explicit universe and actual-time seed registrations. It fits only the TRAIN-prefix state model; it does not run factor/portfolio economics. Do not overwrite that directory. Its immutable manifest is also embedded in the [blocked design](../../configs/research/r4_matched_v1_blocked/campaign_freeze.json).
+
+After a separately authorized successful admission, use a fresh output directory and explicit admission files:
+
+```powershell
+python scripts/r4_campaign.py freeze --research-admission RESEARCH_ADMISSION_DIRECTORY --provider-admission ACCEPTED_PROVIDER_JSON --output NEW_CAMPAIGN_DIRECTORY
+python scripts/r4_campaign.py verify --research-admission RESEARCH_ADMISSION_DIRECTORY --provider-admission ACCEPTED_PROVIDER_JSON --output NEW_CAMPAIGN_DIRECTORY --accepted-freeze-id EXACT_ACCEPTED_ID
+```
+
+The current blocked ID cannot satisfy `verify` or `run_campaign`. Execution must use a new accepted ID and unchanged design. Any code, input, provider, pool, fold, budget, tool, cost or terminal-rule change requires another versioned freeze; retain the prior record. No local OHLCV or secrets belong in Git.

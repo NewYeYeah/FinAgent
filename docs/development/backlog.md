@@ -36,14 +36,14 @@ Historical listed-equity OHLCV and broker CFDs differ in contract/margin/session
 **Affects:** R4  
 **State:** OPEN
 
-The R3 v2 runtime has bounded typed dispatch and budget accounting, but offline/runtime correctness is not a general sandbox or source-authentication mechanism. Before large real-model R4 campaigns, bind an admitted provider transport and development evaluator/source lineage. Reuse the existing runtime; do not create a third runtime generation.
+Real 2025 development source/evaluator admission is bound through `R4ResearchAdmission`. The existing `StrictDeepSeekProvider` has an explicit `r4_deepseek_v4_pro` profile and secret-free identity/usage/tariff admission. One non-research probe on 2026-09-06 failed verification. Its original sanitized record has no accepted identity/usage receipt or failure phase; credential, quota, model response and billed usage therefore remain unverified. No replacement probe or provider fallback was executed. Later probes retain a sanitized phase and available verified transport receipt. B-005 remains OPEN: a separately authorized successful probe and a new accepted freeze are required before real execution. The [blocked freeze](../../configs/research/r4_matched_v1_blocked/campaign_freeze.json) is not execution authority.
 
-### B-006 — Controller/console implemented; matched-budget comparison pending
+### B-006 — Campaign protocol implemented; admission blocked, comparison pending
 
 **Affects:** R4  
 **State:** OPEN
 
-MarketState, FactorLibrary, five deterministic allocators and the causal walk-forward core are now connected to the existing bounded R3 runtime, complete trial accounting, required Agent audit and a thin Research Console. Offline scripted fixtures cover both factor selection/comparison and a new current-time FactorGraph entering TESTING and retrospective development evaluation. Static historical admission remains unchanged; adaptive proposal/visible-history identities are explicit. The AG-UI SDK is a thin embedded SSE event adapter. Next admit a trusted provider/evaluator (B-005) and freeze source, pool, budget, stopping rule and matched comparison protocol before any real campaign. Controlled fixtures do not establish GMM information, allocator profitability, Agent value or an accepted AdaptiveStrategy. Exposure timing, multi-year inputs, CopilotKit and frontend query migration remain deferred.
+Controller/Console and all five deterministic allocators are implemented. The content-addressed R4 protocol now separates fixed-pool selection/allocation from exploratory discovery, freezes three independent Agent runs per scope, research slots, LLM overhead, zero infrastructure retries, host Agent-value and candidate gates, and an AdaptiveStrategySpec builder. The synthetic full campaign passes through freeze, verification, existing runtime/ledger/audit and real numerical core; static/adaptive admission remains unchanged. Real execution is blocked by B-005. Discovery lacks an admitted matched non-Agent FactorGraph search and cannot establish a separate discovery increment or supply the primary candidate. No real matched campaign or R4 terminal has occurred. Exposure timing, multi-year inputs, CopilotKit and query migration remain deferred. Any subsequent change requires a new versioned freeze; retain the original.
 
 ### B-007 — PAPER is not end-to-end accepted
 

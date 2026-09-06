@@ -4,6 +4,8 @@ This is **not** a chronological changelog. It preserves only completed work and 
 
 R4 Controller milestone: the existing bounded R3 runtime now executes offline research loops over the deterministic R4 core, including current-time FactorGraph proposals evaluated retrospectively without backdating. Complete trial/audit history and the thin Console make explicit actions, results, budgets and authority inspectable. This establishes engineering capability only: no real LLM campaign or matched Agent comparison was executed, and no AdaptiveStrategy/Alpha/PAPER/live acceptance follows.
 
+R4 campaign engineering milestone: matched resource/tool/failure/terminal rules and immutable freeze verification now run through a full synthetic campaign using the existing runtime, ledger, audit and deterministic evaluator. Real 2025 source lineage and train-prefix MarketState admission were bound without factor/portfolio PnL evaluation. The single real non-research provider probe failed verification; no accepted real campaign freeze or financial campaign exists. The blocked freeze preserves the design and failed admission lineage. This does not establish Agent value or advance R4/Alpha/PAPER/live authority.
+
 ## 1. A-share historical line
 
 The A-share historical product line was accepted as `finagent-ashare-historical-v1.0` on 2026-09-01.

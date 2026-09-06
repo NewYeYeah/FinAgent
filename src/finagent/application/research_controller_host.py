@@ -41,6 +41,7 @@ from finagent.research.factor_library_evaluation import (
     FactorEvaluationConfig,
     evaluate_factor_library,
 )
+from finagent.research.factor_performance import NORMALIZATION, SUPPORT_RULE
 from finagent.research.market_state import MarketStateRow, utc_text
 from finagent.research.market_state_gmm import MarketStateModel
 from finagent.research.r4_feedback import portfolio_feedback
@@ -94,6 +95,21 @@ class R4ResearchAdmission:
             raise ValueError("development evaluator source binding mismatch")
         return {
             "source": asdict(self.source.identity),
+            "universe": list(self.source.universe),
+            "calendar_id": self.source.calendar.calendar_id,
+            "initial_factors": [f.to_dict() for f in factors],
+            "initial_lifecycle": {r["factor_id"]: r["status"] for r in self._seed_rows()},
+            "normalization_support": {"normalization": NORMALIZATION, "support_rule": SUPPORT_RULE},
+            "execution_semantics": {
+                "signal_clock": "15m",
+                "delay_bars": 1,
+                "holding_bars": 4,
+                "schedule": "rolling_sleeves",
+                "gross_exposure": "fixed_sleeve_budget; no_allocator_timing",
+                "cost_bps": [0, 1, 5, 10],
+                "cash": "existing_R3_positive_weights_missing_support_and_session_close",
+            },
+            "missing_fallback": "shared_support; unavailable sessions unresolved; positive_weights empty => cash; allocator unavailable quality => equal_weight",
             "input_bindings": dict(self.source.bindings),
             "seed_library": file_digest(self.seed_library),
             "folds": [f.to_dict() for f in self.folds],
@@ -101,6 +117,8 @@ class R4ResearchAdmission:
             "market_model": self.market_model.to_dict(),
             "market_snapshot": self.market_snapshot.to_dict(),
             "scope_id": self.scope.manifest_id,
+            "evaluator_id": self.scope.evaluator_id,
+            "evaluation_source_id": self.scope.evaluation_source_id,
             "admitted_at": utc_text(self.admitted_at),
             "implementation": allocation_implementation_ids(),
             "quality": {"lookback_sessions": 20, "minimum_observations": 5},
@@ -114,6 +132,13 @@ class R4ResearchAdmission:
             },
             **AUTHORITY,
         }
+
+    def _seed_rows(self) -> list[dict[str, Any]]:
+        library = FactorLibrary(self.seed_library, read_only=True)
+        try:
+            return list(library.list_factors())
+        finally:
+            library.close()
 
 
 class R4ResearchHost:

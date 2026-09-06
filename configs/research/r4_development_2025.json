@@ -1,0 +1,10 @@
+{
+  "source": "data/us_r2/robustness/base/year=2025/us_r2_robustness_base.parquet",
+  "calendar": "reports/us_calendar/xnys_1992_2026.json",
+  "base_plan": "reports/us_r2/robustness/base/year_2025/us_r2_robustness_base_plan.json",
+  "evidence": "reports/us_r2/robustness/base/year_2025/us_r2_robustness_base_evidence.json",
+  "source_id": "hf-mito0o852-ohlcv-1m",
+  "source_revision": "776328445b7ac6e7815ef3a483e9c8ded1eb6d56",
+  "proxy_asset": "IWM",
+  "universe": ["AAPL", "AMD", "AMZN", "AVGO", "COIN", "EEM", "GLD", "GOOG", "GOOGL", "INTC", "IWM", "JPM", "META", "MSFT", "MSTR", "MU", "NFLX", "NVDA", "ORCL", "PLTR", "SNDK", "TSLA", "TSM", "XLE", "XOM"]
+}
