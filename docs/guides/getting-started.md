@@ -1,20 +1,22 @@
 # Getting started
 
-## Reproducible development baseline
+## 1. Read project context first
 
-ENG-0 defines one canonical developer environment identity while compatibility CI may still exercise newer supported Python versions.
+Before installing or changing code, read [`../../AGENTS.md`](../../AGENTS.md), then [`../status.toml`](../status.toml) and the current stage plan named there.
+
+Do not infer the active stage from README prose, old PRs or historical release docs.
+
+## 2. Python environment
+
+Canonical baseline:
 
 ```text
-Python baseline: 3.11            (.python-version)
-Python resolver: uv 0.12.1       ([tool.uv].required-version)
-Python resolution: uv.lock
-Node baseline: 22                (.nvmrc)
-Frontend resolution: workspace/package-lock.json
+Python 3.11
+uv 0.12.1
+uv.lock
 ```
 
-`pyproject.toml` remains dependency intent. `uv.lock` is the resolved Python environment authority. Do not maintain a second hand-written requirements/conda lock as a competing authority.
-
-Install the canonical resolver, verify the lock, reproduce the development environment, and run the suite:
+Install and verify:
 
 ```bash
 python -m pip install "uv==0.12.1"
@@ -24,7 +26,7 @@ uv pip check
 uv run --frozen python -m pytest -q
 ```
 
-Common optional extras remain part of the same lock and are enabled explicitly, for example:
+Common optional extras:
 
 ```bash
 uv sync --frozen --extra dev --extra llm
@@ -33,11 +35,16 @@ uv sync --frozen --extra dev --extra workspace
 uv sync --frozen --extra dev --extra us-market
 ```
 
-Python 3.12/3.13 CI is compatibility coverage, not a second canonical resolution authority.
+`pyproject.toml` expresses dependency intent; `uv.lock` is the resolved environment authority.
 
-## Workbench frontend
+## 3. Frontend environment
 
-Use Node 22.x. `.nvmrc` records the current frontend developer/CI major baseline; `workspace/package-lock.json` is the npm resolution authority.
+Canonical frontend baseline:
+
+```text
+Node 22
+workspace/package-lock.json
+```
 
 ```bash
 cd workspace
@@ -47,33 +54,43 @@ npm run test
 npm run build
 ```
 
-Do not change npm install-script policy merely to silence warnings; dependency install scripts require an explicit review.
+Use Playwright when the changed surface has browser acceptance requirements.
 
-## Windows broker-prep boundary
+## 4. Workbench
 
-The reproducibility gate also exercises the locked Python 3.11 environment and Node 22 frontend on Windows. The official `MetaTrader5` SDK is intentionally **not** an ENG-0 dependency: its optional dependency/import-safety and real terminal capability evidence belong to `MT5-P0`.
-
-## Run the Workbench
-
-Start the read-only Evidence Plane after installing the Workspace dependencies:
+Install Workspace dependencies:
 
 ```bash
 uv sync --frozen --extra dev --extra workspace --extra local-parquet
+```
+
+Start the read-only Evidence Plane:
+
+```bash
 python scripts/run_workspace.py --reports reports --configs configs --open-browser
 ```
 
-The separately governed local Control Plane is started explicitly:
+Start the separately governed local Control Plane only when needed:
 
 ```bash
 python scripts/run_workbench_control.py --configs configs --reports reports
 ```
 
-Do not treat Control as a generic shell or live-trading interface.
+Control is typed application-service access, not a generic shell or broker/live interface.
 
-## Before starting new work
+See [`workbench.md`](workbench.md).
 
-1. read [`../status.toml`](../status.toml);
-2. read the active stage in [`../development/current-plan.md`](../development/current-plan.md);
-3. preserve current architecture decisions unless the PR explicitly revises them;
-4. declare documentation impact in the PR template;
-5. run `python scripts/check_docs.py` when documentation changes.
+## 5. Broker/MT5 environment
+
+Official MetaTrader5 integration remains environment-specific and is normally exercised on Windows with a terminal/account. Core research and replay development must remain usable without MT5.
+
+See [`mt5-paper.md`](mt5-paper.md) before running broker-facing work.
+
+## 6. Documentation check
+
+After changing documentation:
+
+```bash
+python scripts/check_docs.py
+python -m pytest -q tests/test_docs_governance.py
+```
