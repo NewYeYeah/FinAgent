@@ -100,7 +100,7 @@ Architectural lesson: the R2 decomposition into many infrastructure-only increme
 
 ## 6. US-R3 Agent expansion
 
-The active R3 branch/PR #174 expanded two capabilities:
+R3 PR #174 expanded two capabilities and landed on main in merge `e3f9121` on 2026-09-06:
 
 1. minute-panel FactorGraph usability and a small set of executable OHLCV alpha prototypes;
 2. a v2 controlled Agent runtime with typed actions, development feedback and a transactional SQLite budget/trial ledger.
@@ -115,7 +115,7 @@ Financial facts that shape the next roadmap:
 - real/independent Alpha is not established;
 - exposed historical periods cannot become independent confirmation data by renaming folds or changing provider labels.
 
-R3's reusable runtime/evaluator should be preserved, but R3 should stop expanding. The next research question is adaptive research/allocation, not another unconstrained formula sweep.
+R3-CLOSE passed: 216 focused local tests, 25-file strict typing/lint, documentation governance and all 55 GitHub workflows passed before PR #174 merged. Closeout repaired obsolete status-v1 assertions/CI guards and an undeclared DuckDB timezone-conversion dependency without changing the research result. The reusable runtime/evaluator remains available to R4; `WORKFLOW_VERIFIED_NO_CONFIRMED_ALPHA` is preserved. The next research question is adaptive research/allocation, not another unconstrained formula sweep.
 
 ## 7. Existing Workbench capability
 

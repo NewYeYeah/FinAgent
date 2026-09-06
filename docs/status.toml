@@ -1,10 +1,10 @@
 schema_version = "finagent.project-status.v2"
 planning_revision = "5.0"
 planning_document = "docs/development/current-plan.md"
-current_stage = "R3-CLOSE"
-current_stage_status = "r3_capabilities_present_no_alpha_closeout_pending"
-next_stage = "R4-AGENT-ADAPTIVE"
-stage_plan = "docs/development/stages/r3-close.md"
+current_stage = "R4-AGENT-ADAPTIVE"
+current_stage_status = "market_state_factor_library_pending"
+next_stage = "R5-INDEPENDENT-CONFIRMATION if candidate; WORKBENCH-2 after stable R4 semantics"
+stage_plan = "docs/development/stages/r4-agent-adaptive.md"
 last_updated = "2026-09-06"
 
 [authority]

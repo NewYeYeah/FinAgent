@@ -10,13 +10,6 @@ This is the only active unresolved-work register. Items are removed or marked re
 
 ## P0
 
-### B-001 — R3 closeout and branch integration
-
-**Affects:** R3-CLOSE  
-**State:** OPEN
-
-PR #174 contains useful FactorGraph panel execution, economic evaluator and Agent runtime work, but it is large and still represents exploratory/no-alpha R3 rather than a confirmed strategy. Stop adding new R3 hypotheses. Close by preserving reusable components, running relevant tests, merging/landing the code coherently and recording the negative research terminal.
-
 ### B-002 — No independent confirmation evidence for post-R2 adaptive research
 
 **Affects:** R4, R5  
