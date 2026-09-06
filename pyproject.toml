@@ -25,6 +25,7 @@ dev = [
   "mypy>=1.15,<2",
   "build>=1.2,<2",
   "duckdb>=1.4,<2",
+  "scikit-learn>=1.7,<2",
   # The full project pytest suite collects Workspace API tests. Keep the
   # read-only API test dependencies in dev so `pip install -e .[dev]` is a
   # complete test environment rather than failing during collection.
@@ -51,6 +52,10 @@ us-market = [
 ]
 local-parquet = [
   "duckdb>=1.4,<2",
+]
+adaptive-research = [
+  "duckdb>=1.4,<2",
+  "scikit-learn>=1.7,<2",
 ]
 # Vendor-neutral OTLP exporter used by the optional Agent trace UI integration.
 # Phoenix itself is run as a separate local service (`pip install arize-phoenix`).

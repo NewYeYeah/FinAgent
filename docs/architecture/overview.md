@@ -130,9 +130,19 @@ No authoritative historical Tick/LOB source is part of the active architecture.
 
 ## 6. Factor architecture
 
-Current typed FactorGraph provides bounded declarative factor representation and shared-DAG execution. R4 adds **research-level** MarketState, FactorLibrary and allocator concepts around this implementation; it does not replace the graph engine.
+Current typed FactorGraph provides bounded declarative factor representation and shared-DAG execution. R4 now adds **research-level** MarketState and FactorLibrary around this implementation; the allocator remains planned.
 
-Intended R4 relationship:
+Implemented research objects:
+
+- `research/market_state.py` builds two same-session complete-window proxy features from the canonical 15m bars: trailing simple return and realized volatility (root mean square of adjacent returns). `event_time`, `available_at`, `TimeRange` and the existing panel validation remain authoritative.
+- `research/market_state_gmm.py` wraps scikit-learn StandardScaler/GaussianMixture with a frozen seed, diagonal covariance and one-thread fitting. Only the declared train window enters fitting; state numbering follows training centroids. JSON artifacts retain parameters, source/feature/window identity, availability, dependency and implementation identities. Projection refuses training rows, unavailable observations and changed implementations/dependencies; it never smooths a future sequence.
+- `research/factor_library.py` owns a SQLite registry keyed by the existing canonical FactorGraph candidate ID, immutable hypothesis/provenance, append-only lifecycle and evaluation history. ACTIVE means research membership only and requires a prior available evaluation; it grants no trading authority. Exact duplicate registration/evaluation is idempotent, conflicting provenance is rejected, and inspection can open SQLite in read-only mode.
+- `research/factor_library_evaluation.py` materializes the real shared DAG, reuses baseline rank-correlation and R3 economic accounting, and produces global and probability-weighted conditional coverage/turnover/decay/similarity. Separate economic diagnostics gate entries by the fixed argmax state, retain full cash/session/exit accounting and all cost scenarios. Missing whole sessions remain in the denominator and invalidate economic NAV.
+- `research/adaptive_inputs.py` verifies locally trusted R2 Parquet/plan/evidence/calendar bindings and reads only requested full sessions through the existing no-label projection/parser. `application/adaptive_research.py` freezes the request, runs the complete slice and persists model/probabilities/metrics or an explicit failure. These are bounded panels rather than a second Data Plane or an invented ResearchDataset clock.
+
+The first adapter accepts one annual R2 artifact, an explicit universe of at most 32 assets and at most 252 sessions per window. It does not authenticate arbitrary upstream data, join multiple annual artifacts or implement walk-forward allocation. The R2 deterministic IWM regime implementation remains available separately as the comparator. Software/fixture completion does not establish incremental MarketState information or Alpha.
+
+R4 relationship (FactorAllocator/AdaptiveStrategy remain planned):
 
 ```text
 FactorGraph candidates ──→ FactorLibrary
