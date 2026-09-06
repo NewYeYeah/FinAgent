@@ -76,7 +76,11 @@ def _worker(
             load_llm_profile,
         )
 
-        profile = load_llm_profile(config_path, profile_name=profile_name)
+        profile = (
+            load_llm_profile(config_path)
+            if profile_name is None
+            else load_llm_profile(config_path, profile_name=profile_name)
+        )
         if (
             profile.provider != "deepseek"
             or profile.model != "deepseek-v4-pro"

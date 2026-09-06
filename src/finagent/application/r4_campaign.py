@@ -223,7 +223,12 @@ def runtime_policy(budget: dict[str, Any]) -> ResearchRuntimePolicy:
 
 
 def record_blocked_freeze(
-    admission: R4ResearchAdmission, probe_directory: Path, output: Path, *, config: Path
+    admission: R4ResearchAdmission,
+    probe_directory: Path,
+    output: Path,
+    *,
+    config: Path,
+    version: str = "r4-matched-v1-blocked-provider",
 ) -> R4CampaignFreeze:
     """Retain the exact design and failed probe lineage without accepting execution."""
     if output.exists() and any(output.iterdir()):
@@ -252,7 +257,7 @@ def record_blocked_freeze(
     }
     research_id = identity(manifest, "r4-research-admission")
     protocol = matched_protocol(
-        version="r4-matched-v1-blocked-provider",
+        version=version,
         frozen_at=at,
         provider_admission_id=identity(blocker, "unaccepted-provider"),
         research_admission_id=research_id,

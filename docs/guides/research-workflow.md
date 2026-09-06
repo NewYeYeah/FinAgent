@@ -230,7 +230,7 @@ The real source admission was created with:
 .venv/Scripts/python.exe scripts/r4_campaign.py admit-source --source-config configs/research/r4_development_2025.json --output reports/r4_campaign_admission/development_2025_v1
 ```
 
-This binds the existing annual R2 artifact, calendar, plan/evidence, explicit universe and actual-time seed registrations. It fits only the TRAIN-prefix state model; it does not run factor/portfolio economics. Do not overwrite that directory. Its immutable manifest is also embedded in the [blocked design](../../configs/research/r4_matched_v1_blocked/campaign_freeze.json).
+This binds the existing annual R2 artifact, calendar, plan/evidence, explicit universe and actual-time seed registrations. It fits only the TRAIN-prefix state model; it does not run factor/portfolio economics. Do not overwrite that directory. Its immutable manifest is also embedded in the [blocked design](../../configs/research/r4_matched_v2_blocked/campaign_freeze.json).
 
 After a separately authorized successful admission, use a fresh output directory and explicit admission files:
 
@@ -239,4 +239,4 @@ python scripts/r4_campaign.py freeze --research-admission RESEARCH_ADMISSION_DIR
 python scripts/r4_campaign.py verify --research-admission RESEARCH_ADMISSION_DIRECTORY --provider-admission ACCEPTED_PROVIDER_JSON --output NEW_CAMPAIGN_DIRECTORY --accepted-freeze-id EXACT_ACCEPTED_ID
 ```
 
-The current blocked ID cannot satisfy `verify` or `run_campaign`. Execution must use a new accepted ID and unchanged design. Any code, input, provider, pool, fold, budget, tool, cost or terminal-rule change requires another versioned freeze; retain the prior record. No local OHLCV or secrets belong in Git.
+The current blocked ID cannot satisfy `verify` or `run_campaign`. Execution must use a new accepted ID and unchanged design. Use `--campaign-version NEW_VERSION` when creating a subsequent freeze. Any code, input, provider, pool, fold, budget, tool, cost or terminal-rule change requires another versioned freeze; retain the prior record. The original v1 blocked freeze is retained alongside v2, which binds a backward-compatible R3 loader-call correction with unchanged research rules. No local OHLCV or secrets belong in Git.

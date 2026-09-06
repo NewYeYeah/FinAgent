@@ -36,7 +36,7 @@ jobs:
       - name: Offline freeze, drift, budgets, host gates and full campaign fixture
         run: uv run --frozen pytest tests/test_r4_campaign_freeze.py
       - name: Existing static/adaptive admission and runtime regression
-        run: uv run --frozen pytest tests/test_r4_controller.py tests/test_r4_controller_boundaries.py tests/test_us_r3_agent_runtime.py tests/test_adaptive_walkforward.py
+        run: uv run --frozen pytest tests/test_r4_controller.py tests/test_r4_controller_boundaries.py tests/test_us_r3_agent_runtime.py tests/test_us_r3_provider.py tests/test_adaptive_walkforward.py
       - name: Focused typing
         run: >-
           uv run --frozen mypy --strict --follow-imports=silent

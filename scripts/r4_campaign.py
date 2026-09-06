@@ -27,6 +27,7 @@ def main() -> None:
     parser.add_argument("--provider-admission", type=Path)
     parser.add_argument("--accepted-freeze-id")
     parser.add_argument("--probe-directory", type=Path)
+    parser.add_argument("--campaign-version", default="r4-matched-v1")
     args = parser.parse_args()
     if args.command == "probe":
         print(probe_provider(args.config, args.output).admission_id)
@@ -45,6 +46,7 @@ def main() -> None:
             args.probe_directory,
             args.output,
             config=args.config,
+            version=args.campaign_version,
         )
         print(
             canonical_json(
@@ -66,7 +68,9 @@ def main() -> None:
             from finagent.agents.r4_provider_admission import provider_binding
 
             provider.verify(provider_binding(args.config))
-            frozen = freeze_campaign(admission, provider, args.output, config=args.config)
+            frozen = freeze_campaign(
+                admission, provider, args.output, config=args.config, version=args.campaign_version
+            )
         else:
             if not args.accepted_freeze_id:
                 parser.error("--accepted-freeze-id required")
