@@ -9,7 +9,7 @@ from __future__ import annotations
 import math
 import tempfile
 from collections.abc import Mapping, Sequence
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -201,11 +201,17 @@ def audit_campaign(
             ):
                 raise ValueError("ledger session/strategy binding mismatch")
             rows = connection.execute(
-                "SELECT research_asset_id, available_at, close, volume FROM minutes "
+                "SELECT research_asset_id, available_at AT TIME ZONE 'UTC', close, volume "
+                "FROM minutes "
                 "WHERE available_at > ? AND available_at <= ?",
                 [session.open_at, session.close_at],
             ).fetchall()
-            bars = {(asset, clock): (close, volume) for asset, clock, close, volume in rows}
+            # Fetch a UTC wall clock and attach stdlib UTC explicitly. DuckDB's
+            # TIMESTAMPTZ Python conversion otherwise requires undeclared pytz.
+            bars = {
+                (asset, clock.replace(tzinfo=UTC)): (close, volume)
+                for asset, clock, close, volume in rows
+            }
             if len(bars) != len(rows):
                 raise ValueError("duplicate cleaned minute")
             session_results = {}

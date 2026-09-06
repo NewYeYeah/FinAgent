@@ -39,10 +39,9 @@ on:
       - "scripts/freeze_us_r3_research_iteration.py"
       - "tests/test_us_a1_factor_panel_materialization.py"
       - "tests/test_us_r3_agent_alpha_expansion.py"
-      - "docs/guides/us-a1-factorgraph-materialization.md"
-      - "docs/guides/us-r3-agent-alpha-expansion.md"
+      - "docs/development/stages/r3-close.md"
       - "docs/development/current-plan.md"
-      - "docs/development/changelog.md"
+      - "docs/development/history.md"
       - "docs/status.toml"
       - ".github/workflows/us-r3-agent-alpha-expansion.yml"
   workflow_dispatch:

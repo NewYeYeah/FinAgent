@@ -24,7 +24,8 @@ on:
       - "tests/test_streaming_feature_strategy_v1.py"
       - "tests/test_us_i0_delayed_reference.py"
       - "tests/test_us_d3_simulation_admission.py"
-      - "docs/guides/real-live-data-workflow-reactivation.md"
+      - "docs/status.toml"
+      - "docs/guides/data.md"
       - ".github/workflows/real-live-data-workflow.yml"
   workflow_dispatch:
 
@@ -122,33 +123,18 @@ jobs:
 
           with Path("docs/status.toml").open("rb") as handle:
               status = tomllib.load(handle)
-          us_d3 = status.get("stage", {}).get("us_d3", {})
-          # This workflow protects the completed live-data prerequisite.  It must
-          # remain valid after the project advances; exact per-stage authority is
-          # enforced by the formal B0/A0/R1 operators themselves.
-          stages_at_or_after_us_b0 = {
-              "US-B0",
-              "US-A0",
-              "US-R1",
-              "US-X0",
-              "US-X1",
-              "RT-R0",
-              "RT-R1",
-              "RT-R2",
-              "MT5-M1",
-              "MT5-E1",
-              "MT5-E2",
-          }
+          # Status v2 owns accepted baseline capability independently of stage.
+          # This read-only workflow cannot grant PAPER or broker authority.
+          minute = status.get("baseline", {}).get("us_minute", {})
           required = {
-              "current_stage_at_or_after_us_b0": (
-                  status.get("current_stage") in stages_at_or_after_us_b0
+              "status_schema": status.get("schema_version") == "finagent.project-status.v2",
+              "historical_research_scope": (
+                  status.get("authority", {}).get("historical_us_data")
+                  == "accepted_for_current_limited_research_scope"
               ),
-              "us_d3.status": us_d3.get("status") == "accepted",
-              "us_d3.outcome": (
-                  us_d3.get("certification_outcome")
-                  == "CERTIFIED_FOR_ENGINEERING_RESEARCH"
-              ),
-              "us_d3.exit_gate": us_d3.get("stage_exit_gate_passed") is True,
+              "certification": minute.get("certification") == "accepted_under_bounded_quarantine",
+              "local_scope": minute.get("local_scope") == "non_redistributed_research",
+              "source_revision": bool(minute.get("revision")),
           }
           failed = [name for name, passed in required.items() if not passed]
           if failed:

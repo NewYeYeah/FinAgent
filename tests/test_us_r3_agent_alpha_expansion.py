@@ -155,36 +155,19 @@ def test_panel_extension_preserves_the_accepted_legacy_compiled_batch_identity()
     assert compiled.batch_id == "us-a1-compiled-factor-batch-0167c906375507a1ea810b2d"
 
 
-def test_status_authority_is_bound_to_the_frozen_data_blind_bundle() -> None:
+def test_preserved_r3_terminal_does_not_promote_the_data_blind_bundle() -> None:
     root = Path(__file__).resolve().parents[1]
     with (root / "docs/status.toml").open("rb") as handle:
         status = tomllib.load(handle)
     bundle = build_bundle()
-    stage = status["stage"]["us_r3"]
-
-    assert status["current_stage"] == "US-R3"
-    assert stage["research_iteration_bundle_id"] == bundle["bundle_id"]
-    assert stage["agent_boundary_policy_id"] == bundle["agent_boundary_policy"]["policy_id"]
-    assert stage["research_iteration_plan_id"] == bundle["research_iteration_plan"]["plan_id"]
-    # The preserved v1 contract remains data-blind even after a separately
-    # frozen deterministic economic screen consumes exposed development data.
+    research = status["research"]
+    # Historical research facts survive stage transitions. Executable bundle
+    # identity is tested above, rather than duplicated in compact status v2.
     assert bundle["financial_performance_evaluated"] is False
-    assert stage["financial_performance_evaluated"] is True
-    assert stage["economic_exploratory_protocol_frozen"] is True
-    assert stage["economic_terminal"] == "EXPLORATORY_COMPLETE"
-    assert stage["economic_trading_arm_full_period_evaluable"] is True
-    assert stage["economic_loop_exit_gate_passed"] is True
-    assert stage["economic_all_trading_arms_negative_at_5bps"] is True
-    assert stage["opening_experiment_terminal"] == "EXPLORATORY_COMPLETE"
-    assert stage["opening_experiment_research_decision"] == "STOP_TESTED_OPENING_60M_ONCE_VARIANTS"
-    assert stage["opening_experiment_both_negative_gross_compounded"] is True
-    assert stage["opening_experiment_preserved_seven_arm_metrics_identical"] is True
-    assert stage["activity_context_implemented"] is True
-    assert stage["activity_experiment_terminal"] == "EXPLORATORY_COMPLETE"
-    assert stage["activity_experiment_followup_rule_passed"] is False
-    assert stage["activity_experiment_research_decision"] == "STOP_TESTED_ACTIVITY_RELATIVE_REVERSAL"
-    assert stage["mt5_accessed"] is False
-    assert stage["alpha_authority"] is False
+    assert research["r3_outcome"] == "WORKFLOW_VERIFIED_NO_CONFIRMED_ALPHA"
+    assert research["r3_primary_development_cost_bps"] == 5
+    assert research["r3_complete_pilot_runs"] == research["r3_selected_cash_runs"] == 12
+    assert research["r3_independent_confirmation"] is False
 
 
 def test_new_us_r3_runtime_has_no_mt5_import() -> None:

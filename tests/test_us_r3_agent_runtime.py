@@ -523,16 +523,12 @@ def test_runtime_implementation_drift_cannot_reuse_ledger(tmp_path: Path, monkey
 def test_v2_policy_identity_and_stage_authority_remain_separate() -> None:
     repository = Path(__file__).resolve().parents[1]
     status = tomllib.loads((repository / "docs/status.toml").read_text(encoding="utf-8"))
-    stage = status["stage"]["us_r3"]
-    assert stage["development_feedback_policy_v2_id"] == ResearchRuntimePolicy().policy_id
-    assert stage["generation_ledger_implemented"] is True
-    assert stage["scoped_feedback_runtime_implemented"] is True
-    assert stage["real_provider_adapter_admitted"] is True
-    assert stage["completion_real_adaptive_loop_accepted"] is False
-    assert stage["independent_confirmation_evidence_admitted"] is False
-    assert stage["large_api_generation_admitted"] is False
-    assert stage["stage_exit_gate_passed"] is False
-    assert stage["alpha_gate_evaluated"] is False
+    assert status["capability"]["agent_research_runtime"] == (
+        "implemented_with_bounded_development_feedback"
+    )
+    assert status["research"]["r3_independent_confirmation"] is False
+    assert status["research"]["agent_incremental_value"] == "not_established"
+    assert ResearchRuntimePolicy().to_dict()["alpha_authority"] is False
 
 
 def test_offline_cli_resumes_without_provider_calls_and_preserves_evidence(tmp_path: Path) -> None:
