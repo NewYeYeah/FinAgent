@@ -29,6 +29,33 @@ PRIMARY_MIN_FACTOR_SET_SIZE = 2
 PRIMARY_MAX_FACTOR_SET_SIZE = 20
 PRIMARY_AGENT_RUNS = ("selection-01", "selection-02", "selection-03")
 AGENT_VALUE_BASIS = "research_efficiency_under_exhaustive_oracle"
+CURRENT_R4_MATCHED_PROTOCOL_VERSION = "r4-matched-v3"
+CURRENT_R4_BLOCKED_PROTOCOL_VERSION = (
+    f"{CURRENT_R4_MATCHED_PROTOCOL_VERSION}-blocked-provider"
+)
+SUPERSEDED_R4_MATCHED_PROTOCOL_VERSIONS = frozenset(
+    {
+        "r4-matched-v1",
+        "r4-matched-v2",
+        "r4-matched-v1-blocked-provider",
+        "r4-matched-v2-blocked-provider",
+    }
+)
+
+
+def validate_new_r4_protocol_version(version: str) -> str:
+    """Keep newly generated corrected artifacts inside the current v3 version family."""
+    if not version or version != version.strip():
+        raise ValueError("invalid R4 matched protocol version")
+    if version in SUPERSEDED_R4_MATCHED_PROTOCOL_VERSIONS:
+        raise ValueError(
+            "superseded historical R4 matched protocol version cannot label a new artifact"
+        )
+    if version != CURRENT_R4_MATCHED_PROTOCOL_VERSION and not version.startswith(
+        f"{CURRENT_R4_MATCHED_PROTOCOL_VERSION}-"
+    ):
+        raise ValueError("new R4 matched protocol artifacts must use the current v3 version family")
+    return version
 
 
 @dataclass(frozen=True)
@@ -100,6 +127,7 @@ def matched_protocol(
     initial_factor_ids: list[str],
     folds: list[dict[str, Any]],
 ) -> R4MatchedComparisonProtocol:
+    version = validate_new_r4_protocol_version(version)
     ids = sorted(initial_factor_ids)
     if len(ids) != 3 or len(set(ids)) != 3:
         raise ValueError("current Primary protocol requires exactly three distinct initial factors")

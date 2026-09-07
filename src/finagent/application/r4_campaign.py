@@ -31,10 +31,13 @@ from finagent.agents.r4_provider_admission import (
 from finagent.application.research_controller import open_research_session, run_research_session
 from finagent.application.research_controller_host import R4ResearchAdmission, R4ResearchHost
 from finagent.research.r4_campaign_protocol import (
+    CURRENT_R4_BLOCKED_PROTOCOL_VERSION,
+    CURRENT_R4_MATCHED_PROTOCOL_VERSION,
     AdaptiveStrategySpec,
     R4MatchedComparisonProtocol,
     assess_campaign,
     matched_protocol,
+    validate_new_r4_protocol_version,
 )
 from finagent.research.us_r3_economic_campaign import file_digest
 from finagent.research.us_r3_usability import write_immutable_json
@@ -95,10 +98,13 @@ def freeze_campaign(
     provider: ProviderAdmission,
     output: Path,
     *,
-    version: str = "r4-matched-v3",
+    version: str = CURRENT_R4_MATCHED_PROTOCOL_VERSION,
     fixture: bool = False,
     config: Path | None = None,
 ) -> R4CampaignFreeze:
+    version = validate_new_r4_protocol_version(version)
+    if not fixture and version != CURRENT_R4_MATCHED_PROTOCOL_VERSION:
+        raise ValueError("real R4 campaign freeze must use the current v3 protocol version")
     if output.exists() and any(output.iterdir()):
         raise ValueError(
             "freeze requires a fresh directory; financial/provider/trial outputs cannot predate freeze"
@@ -228,9 +234,12 @@ def record_blocked_freeze(
     output: Path,
     *,
     config: Path,
-    version: str = "r4-matched-v3-blocked-provider",
+    version: str = CURRENT_R4_BLOCKED_PROTOCOL_VERSION,
 ) -> R4CampaignFreeze:
     """Retain the exact design and failed probe lineage without accepting execution."""
+    version = validate_new_r4_protocol_version(version)
+    if version != CURRENT_R4_BLOCKED_PROTOCOL_VERSION:
+        raise ValueError("new blocked R4 freeze must use the current v3 blocked protocol version")
     if output.exists() and any(output.iterdir()):
         raise ValueError("blocked freeze requires a fresh directory")
     failure = json.loads((probe_directory / "failure.json").read_text())

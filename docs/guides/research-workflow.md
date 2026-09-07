@@ -230,7 +230,9 @@ The real source admission was created with:
 .venv/Scripts/python.exe scripts/r4_campaign.py admit-source --source-config configs/research/r4_development_2025.json --output reports/r4_campaign_admission/development_2025_v1
 ```
 
-This binds the existing annual R2 artifact, calendar, plan/evidence, explicit universe and actual-time seed registrations. It fits only the TRAIN-prefix state model; it does not run factor/portfolio economics. Do not overwrite that directory. Its immutable manifest is also embedded in the [blocked design](../../configs/research/r4_matched_v2_blocked/campaign_freeze.json).
+This binds the existing annual R2 artifact, calendar, plan/evidence, explicit universe and actual-time seed registrations. It fits only the TRAIN-prefix state model; it does not run factor/portfolio economics. Do not overwrite that directory. Its immutable manifest is also embedded in the historical [v2 blocked design](../../configs/research/r4_matched_v2_blocked/campaign_freeze.json).
+
+The corrected protocol version is code-owned by `src/finagent/research/r4_campaign_protocol.py`: normal accepted freeze generation uses `r4-matched-v3`, while a newly recorded provider-blocked design uses `r4-matched-v3-blocked-provider`. The operator CLI does not expose protocol-version selection; ordinary commands inherit those canonical versions automatically. Test-only variants such as `r4-matched-v3-test` are restricted to fixture generation and are not valid real freezes.
 
 After a separately authorized successful admission, use a fresh output directory and explicit admission files:
 
@@ -239,4 +241,10 @@ python scripts/r4_campaign.py freeze --research-admission RESEARCH_ADMISSION_DIR
 python scripts/r4_campaign.py verify --research-admission RESEARCH_ADMISSION_DIRECTORY --provider-admission ACCEPTED_PROVIDER_JSON --output NEW_CAMPAIGN_DIRECTORY --accepted-freeze-id EXACT_ACCEPTED_ID
 ```
 
-The current blocked ID cannot satisfy `verify` or `run_campaign`. Execution must use a new accepted ID and unchanged design. Use `--campaign-version NEW_VERSION` when creating a subsequent freeze. Any code, input, provider, pool, fold, budget, tool, cost or terminal-rule change requires another versioned freeze; retain the prior record. The original v1 blocked freeze is retained alongside v2, which binds a backward-compatible R3 loader-call correction with unchanged research rules. No local OHLCV or secrets belong in Git.
+If the already-recorded failed provider lineage must be retained again under the corrected design, `record-blocker` likewise needs no version flag:
+
+```powershell
+python scripts/r4_campaign.py record-blocker --research-admission RESEARCH_ADMISSION_DIRECTORY --probe-directory FAILED_PROBE_DIRECTORY --output NEW_BLOCKED_DIRECTORY
+```
+
+The historical v1/v2 blocked directories and their old `minimum_mean_fold_improvement = 0.002` semantics are immutable evidence. Their labels (`r4-matched-v1[-blocked-provider]` and `r4-matched-v2[-blocked-provider]`) are superseded and cannot label a newly generated corrected artifact. The historical v2 blocked ID cannot satisfy `verify` or `run_campaign`; a future real campaign requires a newly generated accepted v3 freeze after provider admission. Any later semantic change must advance the code-owned protocol version rather than reusing a historical label. No local OHLCV or secrets belong in Git.

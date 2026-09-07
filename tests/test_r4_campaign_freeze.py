@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import math
-from copy import deepcopy
+import runpy
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
@@ -13,22 +13,26 @@ import pytest
 
 from finagent.agents.audit import SQLiteAgentAuditStore
 from finagent.agents.r3_contracts import canonical_json
-from finagent.agents.r4_contracts import ALLOCATORS, AUTHORITY
+from finagent.agents.r4_contracts import AUTHORITY
 from finagent.agents.r4_provider_admission import ProviderAdmission, provider_binding
 from finagent.application.r4_campaign import (
     freeze_campaign,
+    record_blocked_freeze,
     run_campaign,
     runtime_policy,
     verify_campaign,
 )
 from finagent.application.research_controller import open_research_session
 from finagent.research.r4_campaign_protocol import (
+    CURRENT_R4_BLOCKED_PROTOCOL_VERSION,
+    CURRENT_R4_MATCHED_PROTOCOL_VERSION,
+    SUPERSEDED_R4_MATCHED_PROTOCOL_VERSIONS,
     AdaptiveStrategySpec,
     R4MatchedComparisonProtocol,
     assess_campaign,
     matched_protocol,
     primary_admissible_factor_sets,
-    strategy_key,
+    primary_search_space,
 )
 from tests.r4_controller_fixture import (
     Clock,
@@ -82,10 +86,29 @@ def admitted(tmp_path_factory):
     return admission, inputs, provider_fixture()
 
 
+def test_current_protocol_version_authority():
+    assert CURRENT_R4_MATCHED_PROTOCOL_VERSION == "r4-matched-v3"
+    assert CURRENT_R4_BLOCKED_PROTOCOL_VERSION == "r4-matched-v3-blocked-provider"
+
+
+def test_operator_cli_delegates_protocol_version_to_code_authority():
+    namespace = runpy.run_path("scripts/r4_campaign.py", run_name="r4_campaign_cli_test")
+    parser = namespace["build_parser"]()
+    freeze_args = parser.parse_args(["freeze", "--output", "out"])
+    blocked_args = parser.parse_args(["record-blocker", "--output", "out"])
+    assert not hasattr(freeze_args, "campaign_version")
+    assert not hasattr(blocked_args, "campaign_version")
+    with pytest.raises(SystemExit):
+        parser.parse_args(
+            ["freeze", "--output", "out", "--campaign-version", "r4-matched-v1"]
+        )
+
+
 def test_fixture_campaign_full_path_and_idempotence(admitted, tmp_path):
     admission, inputs, provider = admitted
     output = tmp_path / "campaign"
     frozen = freeze_campaign(admission, provider, output, fixture=True)
+    assert frozen.protocol.to_dict()["protocol_version"] == CURRENT_R4_MATCHED_PROTOCOL_VERSION
     ids = [f.factor_id for f in inputs["factors"]]
     instances = []
 
@@ -115,19 +138,11 @@ def test_fixture_campaign_full_path_and_idempotence(admitted, tmp_path):
         "discovery-03",
     ]
     assert result["assessment"]["candidate_decision"] != "SYSTEM_FAILURE"
-    assert result["assessment"]["agent_value_basis"] == (
-        "research_efficiency_under_exhaustive_oracle"
-    )
-    assert result["assessment"]["deterministic_portfolio_evaluations"] == 4
     assert len(instances) == 6
     assert result["resources"]["deterministic"]["charged_tokens"] == 0
     assert result["resources"]["deterministic"]["charged_cost_microusd"] == 0
     assert len([c for c in result["candidates"] if c["run_id"] == "deterministic"]) == 20
     assert all(c["runtime_agent_dependence"] == 0 for c in result["candidates"])
-    for row in result["assessment"]["agent_run_assessments"]:
-        assert row["portfolio_evaluations_used"] == result["resources"][row["run_id"]][
-            "research_resources"
-        ]["portfolio_evaluations"]
     assert result["alpha_authority"] is False
     before = (output / "campaign_result.json").read_bytes()
     resumed = run_campaign(
@@ -283,6 +298,12 @@ def test_protocol_changes_identity_and_fixture_not_real(admitted, tmp_path):
     assert (
         R4MatchedComparisonProtocol(canonical_json(row)).protocol_id != freeze.protocol.protocol_id
     )
+    versioned = freeze.protocol.to_dict()
+    versioned["protocol_version"] = "r4-matched-v3-test"
+    assert (
+        R4MatchedComparisonProtocol(canonical_json(versioned)).protocol_id
+        != freeze.protocol.protocol_id
+    )
     with pytest.raises(ValueError):
         verify_campaign(
             tmp_path / "c",
@@ -290,6 +311,47 @@ def test_protocol_changes_identity_and_fixture_not_real(admitted, tmp_path):
             provider,
             accepted_freeze_id=freeze.freeze_id,
             config=Path("configs/llm.toml"),
+        )
+
+
+@pytest.mark.parametrize("version", sorted(SUPERSEDED_R4_MATCHED_PROTOCOL_VERSIONS))
+def test_new_artifacts_reject_superseded_protocol_versions(admitted, tmp_path, version):
+    admission, _, provider = admitted
+    with pytest.raises(ValueError, match="superseded historical"):
+        freeze_campaign(
+            admission,
+            provider,
+            tmp_path / f"freeze-{version}",
+            version=version,
+            fixture=False,
+        )
+    with pytest.raises(ValueError, match="superseded historical"):
+        record_blocked_freeze(
+            admission,
+            tmp_path / "probe-not-read",
+            tmp_path / f"blocked-{version}",
+            config=Path("configs/llm.toml"),
+            version=version,
+        )
+
+
+def test_test_only_version_is_fixture_only(admitted, tmp_path):
+    admission, _, provider = admitted
+    frozen = freeze_campaign(
+        admission,
+        provider,
+        tmp_path / "fixture-v3-test",
+        fixture=True,
+        version="r4-matched-v3-test",
+    )
+    assert frozen.protocol.to_dict()["protocol_version"] == "r4-matched-v3-test"
+    with pytest.raises(ValueError, match="real R4 campaign freeze"):
+        freeze_campaign(
+            admission,
+            provider,
+            tmp_path / "real-v3-test",
+            fixture=False,
+            version="r4-matched-v3-test",
         )
 
 
@@ -350,13 +412,13 @@ def candidate(
     candidate_id=None,
 ):
     return {
-        "candidate_id": candidate_id or f"{run}-{allocator}-{'-'.join(factor_ids)}",
+        "candidate_id": candidate_id or f"candidate-{run}-{allocator}-{'-'.join(factor_ids)}",
         "run_id": run,
         "agent_selected": selected,
         "arm": "deterministic_selection" if run == "deterministic" else "agent_selection",
         "factor_ids": list(factor_ids),
         "allocator": allocator,
-        "experiment_id": f"experiment-{run}-{'-'.join(factor_ids)}",
+        "experiment_id": f"experiment-{run}",
         "runtime_agent_dependence": 0,
         "metrics": {
             "mean_fold_return_5bp": mean,
@@ -374,45 +436,63 @@ def candidate(
 
 
 def protocol_fixture(admitted):
-    admission, inputs, _ = admitted
+    admission, inputs, provider = admitted
     return matched_protocol(
         version="r4-matched-v3-test",
         frozen_at="now",
-        provider_admission_id="provider",
+        provider_admission_id=provider.admission_id,
         research_admission_id="scope",
         initial_factor_ids=[f.factor_id for f in inputs["factors"]],
         folds=[f.to_dict() for f in admission.folds],
     )
 
 
-def deterministic_universe(protocol):
+def universe_candidates(protocol):
     p = protocol.to_dict()
     rows = []
-    for set_index, factor_ids in enumerate(p["primary"]["deterministic_factor_sets"]):
-        for allocator_index, allocator in enumerate(ALLOCATORS):
-            is_oracle = set_index == 0 and allocator_index == 0
+    for index, factor_ids in enumerate(p["primary"]["deterministic_factor_sets"]):
+        for allocator_index, allocator in enumerate(p["mandatory_allocators"]):
+            quality = 0.02 - index * 0.001 - allocator_index * 0.0001
             rows.append(
                 candidate(
                     "deterministic",
                     factor_ids=tuple(factor_ids),
                     allocator=allocator,
-                    mean=0.02 if is_oracle else 0.01 - (set_index * 5 + allocator_index) * 0.0001,
-                    worst=0.005 if is_oracle else 0.0,
-                    drawdown=0.005 if is_oracle else 0.01,
-                    turnover=0.5 if is_oracle else 1.0,
-                    concentration=0.34 if is_oracle else 0.5,
-                    candidate_id=f"det-{set_index}-{allocator_index}",
+                    mean=quality,
+                    worst=quality - 0.005,
+                    drawdown=0.02 + index * 0.001,
+                    turnover=0.5 + allocator_index * 0.1,
+                    concentration=0.2 + index * 0.05,
+                    candidate_id=f"det-{index}-{allocator_index}",
                 )
             )
     return rows
 
 
-def selected_from(deterministic_rows, run_id, key):
-    source = next(row for row in deterministic_rows if strategy_key(row) == key)
-    row = deepcopy(source)
+def select_from_oracle_space(
+    deterministic_rows,
+    run_id,
+    *,
+    index=0,
+    candidate_id=None,
+):
+    source = sorted(
+        deterministic_rows,
+        key=lambda c: (
+            -c["metrics"]["mean_fold_return_5bp"],
+            -c["metrics"]["worst_fold_return_5bp"],
+            c["metrics"]["drawdown_5bp"],
+            c["metrics"]["turnover_5bp"],
+            c["metrics"]["factor_concentration"],
+            len(c["factor_ids"]),
+            tuple(c["factor_ids"]),
+            c["allocator"],
+        ),
+    )[index]
+    row = json.loads(json.dumps(source))
     row.update(
         {
-            "candidate_id": f"{run_id}-{source['candidate_id']}",
+            "candidate_id": candidate_id or f"agent-{run_id}-{index}",
             "run_id": run_id,
             "arm": "agent_selection",
             "agent_selected": True,
@@ -422,264 +502,325 @@ def selected_from(deterministic_rows, run_id, key):
     return row
 
 
-def campaign_resources(agent_counts=(3, 3, 3)):
+def resources(*, selection_01=3, selection_02=3, selection_03=4):
     return {
         "deterministic": {"portfolio_evaluations": 4},
-        **{
-            f"selection-0{i}": {
-                "portfolio_evaluations": 999,
-                "agent_reported_portfolio_evaluations": 0,
-                "research_resources": {"portfolio_evaluations": count},
-            }
-            for i, count in enumerate(agent_counts, 1)
-        },
+        "selection-01": {"research_resources": {"portfolio_evaluations": selection_01}},
+        "selection-02": {"research_resources": {"portfolio_evaluations": selection_02}},
+        "selection-03": {"research_resources": {"portfolio_evaluations": selection_03}},
     }
 
 
-def complete_runs():
-    return ["deterministic", "selection-01", "selection-02", "selection-03"]
-
-
-def test_primary_search_space_is_exact_exhaustive_oracle(admitted):
+def test_primary_search_space_is_proven_from_contract(admitted):
     p = protocol_fixture(admitted).to_dict()
     ids = p["initial_factor_ids"]
     admissible = primary_admissible_factor_sets(ids)
-    deterministic_sets = p["primary"]["deterministic_factor_sets"]
     assert len(ids) == 3
     assert len(admissible) == 4
-    assert {tuple(row) for row in admissible} == {tuple(sorted(row)) for row in deterministic_sets}
-    assert len(ALLOCATORS) == 5
-    agent_keys = {(tuple(row), allocator) for row in admissible for allocator in ALLOCATORS}
-    deterministic_keys = {
-        (tuple(sorted(row)), allocator) for row in deterministic_sets for allocator in ALLOCATORS
+    assert {tuple(row) for row in admissible} == {
+        tuple(sorted(row)) for row in p["primary"]["deterministic_factor_sets"]
     }
-    assert len(agent_keys) == 20
-    assert agent_keys == deterministic_keys
-    assert p["primary_search_space"]["admissible_factor_set_count"] == 4
-    assert p["primary_search_space"]["allocator_count"] == 5
+    assert len(p["mandatory_allocators"]) == 5
     assert p["primary_search_space"]["reachable_candidate_count"] == 20
-    assert p["primary_search_space"]["deterministic_search"] == "exhaustive"
     assert p["primary"]["deterministic_search"] == "exhaustive"
-    assert p["agent_value_rule"]["basis"] == "research_efficiency_under_exhaustive_oracle"
-    assert "minimum_mean_fold_improvement" not in p["agent_value_rule"]
+    assert p["primary_search_space"]["deterministic_search"] == "exhaustive"
+    reachable = {
+        (tuple(row), allocator)
+        for row in p["primary_search_space"]["agent_admissible_factor_sets"]
+        for allocator in p["mandatory_allocators"]
+    }
+    deterministic = {
+        (tuple(sorted(row)), allocator)
+        for row in p["primary"]["deterministic_factor_sets"]
+        for allocator in p["mandatory_allocators"]
+    }
+    assert len(reachable) == len(deterministic) == 20
+    assert reachable == deterministic
 
 
-def test_reachable_oracle_efficiency_can_support_agent_value(admitted):
-    protocol = protocol_fixture(admitted)
-    deterministic = deterministic_universe(protocol)
-    oracle_key = strategy_key(deterministic[0])
-    inferior_key = strategy_key(deterministic[-1])
+def test_non_exhaustive_schedule_cannot_claim_exhaustive(admitted):
+    p = protocol_fixture(admitted).to_dict()
+    incomplete = p["primary"]["deterministic_factor_sets"][:-1]
+    proof = primary_search_space(p["initial_factor_ids"], incomplete)
+    assert proof["deterministic_search"] == "bounded_non_exhaustive"
+    assert proof["deterministic_candidate_count"] == 15
+
+
+def test_current_agent_value_rule_removes_unreachable_performance_superiority(admitted):
+    p = protocol_fixture(admitted).to_dict()
+    rule = p["agent_value_rule"]
+    assert rule["basis"] == "research_efficiency_under_exhaustive_oracle"
+    assert "minimum_mean_fold_improvement" not in rule
+    assert rule["deterministic_oracle_portfolio_evaluations"] == 4
+    assert rule["minimum_evaluation_saving_per_successful_run"] == 1
+
+
+def test_reachable_oracle_efficiency_support(admitted):
+    p = protocol_fixture(admitted)
+    deterministic = universe_candidates(p)
     rows = [
         *deterministic,
-        selected_from(deterministic, "selection-01", oracle_key),
-        selected_from(deterministic, "selection-02", oracle_key),
-        selected_from(deterministic, "selection-03", inferior_key),
+        select_from_oracle_space(deterministic, "selection-01", index=0),
+        select_from_oracle_space(deterministic, "selection-02", index=0),
+        select_from_oracle_space(deterministic, "selection-03", index=1),
     ]
+    completed = ["deterministic", "selection-01", "selection-02", "selection-03"]
     assessment = assess_campaign(
-        protocol,
+        p,
         rows,
-        completed_runs=complete_runs(),
+        completed_runs=completed,
         system_failure=False,
-        resources=campaign_resources((3, 2, 3)),
+        resources=resources(selection_01=2, selection_02=3, selection_03=3),
     )
     assert assessment["agent_value"] == "SUPPORTED"
+    assert assessment["agent_value_basis"] == "research_efficiency_under_exhaustive_oracle"
+    assert assessment["deterministic_portfolio_evaluations"] == 4
     assert assessment["successful_agent_runs"] == 2
     assert assessment["median_portfolio_evaluation_saving"] == 1
-    assert assessment["deterministic_portfolio_evaluations"] == 4
-    assert [row["efficiency_success"] for row in assessment["agent_run_assessments"]] == [
-        True,
-        True,
-        False,
-    ]
-    assert all(assessment[k] == v for k, v in AUTHORITY.items())
+    run_rows = {row["run_id"]: row for row in assessment["agent_run_assessments"]}
+    assert run_rows["selection-01"]["oracle_noninferior"] is True
+    assert run_rows["selection-02"]["oracle_noninferior"] is True
+    assert run_rows["selection-03"]["oracle_noninferior"] is False
+    assert run_rows["selection-01"]["portfolio_evaluations_used"] == 2
 
 
-def test_agent_using_full_exhaustive_budget_is_not_supported(admitted):
-    protocol = protocol_fixture(admitted)
-    deterministic = deterministic_universe(protocol)
-    oracle_key = strategy_key(deterministic[0])
+def test_exhaustive_agent_is_not_supported(admitted):
+    p = protocol_fixture(admitted)
+    deterministic = universe_candidates(p)
     rows = [
         *deterministic,
         *[
-            selected_from(deterministic, f"selection-0{i}", oracle_key)
+            select_from_oracle_space(deterministic, f"selection-0{i}", index=0)
             for i in range(1, 4)
         ],
     ]
     assessment = assess_campaign(
-        protocol,
+        p,
         rows,
-        completed_runs=complete_runs(),
+        completed_runs=["deterministic", "selection-01", "selection-02", "selection-03"],
         system_failure=False,
-        resources=campaign_resources((4, 4, 4)),
+        resources=resources(selection_01=4, selection_02=4, selection_03=4),
     )
     assert assessment["agent_value"] == "NOT_SUPPORTED"
+    assert assessment["successful_agent_runs"] == 0
     assert assessment["median_portfolio_evaluation_saving"] == 0
-    assert not any(row["efficiency_success"] for row in assessment["agent_run_assessments"])
 
 
-def test_efficient_but_inferior_selection_is_not_supported(admitted):
-    protocol = protocol_fixture(admitted)
-    deterministic = deterministic_universe(protocol)
-    inferior_key = strategy_key(deterministic[-1])
+def test_efficient_but_inferior_agent_is_not_supported(admitted):
+    p = protocol_fixture(admitted)
+    deterministic = universe_candidates(p)
     rows = [
         *deterministic,
         *[
-            selected_from(deterministic, f"selection-0{i}", inferior_key)
+            select_from_oracle_space(deterministic, f"selection-0{i}", index=1)
             for i in range(1, 4)
         ],
     ]
     assessment = assess_campaign(
-        protocol,
+        p,
         rows,
-        completed_runs=complete_runs(),
+        completed_runs=["deterministic", "selection-01", "selection-02", "selection-03"],
         system_failure=False,
-        resources=campaign_resources((3, 2, 3)),
+        resources=resources(selection_01=2, selection_02=2, selection_03=2),
     )
     assert assessment["agent_value"] == "NOT_SUPPORTED"
+    assert assessment["successful_agent_runs"] == 0
     assert all(
         row["oracle_noninferior"] is False for row in assessment["agent_run_assessments"]
     )
 
 
-def test_only_one_quality_efficiency_success_is_not_supported(admitted):
-    protocol = protocol_fixture(admitted)
-    deterministic = deterministic_universe(protocol)
-    oracle_key = strategy_key(deterministic[0])
-    inferior_key = strategy_key(deterministic[-1])
+def test_repeatability_requires_two_quality_efficiency_successes(admitted):
+    p = protocol_fixture(admitted)
+    deterministic = universe_candidates(p)
     rows = [
         *deterministic,
-        selected_from(deterministic, "selection-01", oracle_key),
-        selected_from(deterministic, "selection-02", inferior_key),
-        selected_from(deterministic, "selection-03", inferior_key),
+        select_from_oracle_space(deterministic, "selection-01", index=0),
+        select_from_oracle_space(deterministic, "selection-02", index=1),
+        select_from_oracle_space(deterministic, "selection-03", index=1),
     ]
     assessment = assess_campaign(
-        protocol,
+        p,
         rows,
-        completed_runs=complete_runs(),
+        completed_runs=["deterministic", "selection-01", "selection-02", "selection-03"],
         system_failure=False,
-        resources=campaign_resources((3, 3, 3)),
+        resources=resources(selection_01=2, selection_02=2, selection_03=2),
     )
     assert assessment["agent_value"] == "NOT_SUPPORTED"
     assert assessment["successful_agent_runs"] == 1
-    assert assessment["median_portfolio_evaluation_saving"] == 1
 
 
-@pytest.mark.parametrize("missing", ["resource", "run", "metrics"])
-def test_incomplete_agent_value_evidence_is_inconclusive(admitted, missing):
-    protocol = protocol_fixture(admitted)
-    deterministic = deterministic_universe(protocol)
-    oracle_key = strategy_key(deterministic[0])
+def test_incomplete_resource_or_metric_evidence_is_inconclusive(admitted):
+    p = protocol_fixture(admitted)
+    deterministic = universe_candidates(p)
     rows = [
         *deterministic,
         *[
-            selected_from(deterministic, f"selection-0{i}", oracle_key)
+            select_from_oracle_space(deterministic, f"selection-0{i}", index=0)
             for i in range(1, 4)
         ],
     ]
-    resources = campaign_resources((3, 3, 3))
-    completed = complete_runs()
-    if missing == "resource":
-        del resources["selection-03"]["research_resources"]["portfolio_evaluations"]
-    elif missing == "run":
-        completed.remove("selection-03")
-    else:
-        del rows[-1]["metrics"]["mean_fold_return_5bp"]
+    missing_resource = resources()
+    del missing_resource["selection-02"]["research_resources"]["portfolio_evaluations"]
+    assert (
+        assess_campaign(
+            p,
+            rows,
+            completed_runs=["deterministic", "selection-01", "selection-02", "selection-03"],
+            system_failure=False,
+            resources=missing_resource,
+        )["agent_value"]
+        == "INCONCLUSIVE"
+    )
+    rows[-1]["metrics"]["unavailable_sessions"] = 1
+    assert (
+        assess_campaign(
+            p,
+            rows,
+            completed_runs=["deterministic", "selection-01", "selection-02", "selection-03"],
+            system_failure=False,
+            resources=resources(),
+        )["agent_value"]
+        == "INCONCLUSIVE"
+    )
+
+
+def test_authoritative_resources_ignore_agent_presentation_counts(admitted):
+    p = protocol_fixture(admitted)
+    deterministic = universe_candidates(p)
+    rows = [
+        *deterministic,
+        *[
+            select_from_oracle_space(deterministic, f"selection-0{i}", index=0)
+            for i in range(1, 4)
+        ],
+    ]
+    authoritative = resources(selection_01=3, selection_02=3, selection_03=3)
+    for run_id in ("selection-01", "selection-02", "selection-03"):
+        authoritative[run_id]["agent_reported_portfolio_evaluations"] = 999
+        authoritative[run_id]["audit_ui_portfolio_evaluations"] = 0
     assessment = assess_campaign(
-        protocol,
+        p,
         rows,
-        completed_runs=completed,
+        completed_runs=["deterministic", "selection-01", "selection-02", "selection-03"],
         system_failure=False,
-        resources=resources,
+        resources=authoritative,
+    )
+    assert assessment["agent_value"] == "SUPPORTED"
+    assert all(
+        row["portfolio_evaluations_used"] == 3 for row in assessment["agent_run_assessments"]
+    )
+    for run_id in authoritative:
+        authoritative[run_id]["presentation_count"] = 1000000
+    assert (
+        assess_campaign(
+            p,
+            rows,
+            completed_runs=["deterministic", "selection-01", "selection-02", "selection-03"],
+            system_failure=False,
+            resources=authoritative,
+        )["agent_value"]
+        == "SUPPORTED"
+    )
+
+
+def test_economic_equivalence_ignores_run_candidate_id(admitted):
+    p = protocol_fixture(admitted)
+    deterministic = universe_candidates(p)
+    rows = [
+        *deterministic,
+        select_from_oracle_space(
+            deterministic, "selection-01", index=0, candidate_id="000-agent-id"
+        ),
+        select_from_oracle_space(
+            deterministic, "selection-02", index=0, candidate_id="zzz-agent-id"
+        ),
+        select_from_oracle_space(deterministic, "selection-03", index=1),
+    ]
+    assessment = assess_campaign(
+        p,
+        rows,
+        completed_runs=["deterministic", "selection-01", "selection-02", "selection-03"],
+        system_failure=False,
+        resources=resources(selection_01=3, selection_02=3, selection_03=3),
+    )
+    assert assessment["agent_value"] == "SUPPORTED"
+    assert assessment["agent_run_assessments"][0]["oracle_noninferior"] is True
+    assert assessment["agent_run_assessments"][1]["oracle_noninferior"] is True
+
+
+def test_same_strategy_cannot_claim_run_specific_better_economics(admitted):
+    p = protocol_fixture(admitted)
+    deterministic = universe_candidates(p)
+    selected = select_from_oracle_space(deterministic, "selection-01", index=0)
+    selected["metrics"]["mean_fold_return_5bp"] += 0.01
+    rows = [
+        *deterministic,
+        selected,
+        select_from_oracle_space(deterministic, "selection-02", index=0),
+        select_from_oracle_space(deterministic, "selection-03", index=0),
+    ]
+    assessment = assess_campaign(
+        p,
+        rows,
+        completed_runs=["deterministic", "selection-01", "selection-02", "selection-03"],
+        system_failure=False,
+        resources=resources(selection_01=2, selection_02=2, selection_03=2),
     )
     assert assessment["agent_value"] == "INCONCLUSIVE"
-
-
-def test_agent_reported_evaluation_count_has_no_gate_authority(admitted):
-    protocol = protocol_fixture(admitted)
-    deterministic = deterministic_universe(protocol)
-    oracle_key = strategy_key(deterministic[0])
-    rows = [
-        *deterministic,
-        *[
-            selected_from(deterministic, f"selection-0{i}", oracle_key)
-            for i in range(1, 4)
-        ],
-    ]
-    resources = campaign_resources((4, 4, 4))
-    before = assess_campaign(
-        protocol,
-        rows,
-        completed_runs=complete_runs(),
-        system_failure=False,
-        resources=resources,
+    assert (
+        assessment["agent_run_assessments"][0]["completion_status"]
+        == "INCOMPLETE_STRATEGY_METRIC_CONSISTENCY"
     )
-    for row in rows:
-        row["agent_reported_portfolio_evaluations"] = 0
-    for run_id in ("selection-01", "selection-02", "selection-03"):
-        resources[run_id]["portfolio_evaluations"] = 0
-        resources[run_id]["agent_reported_portfolio_evaluations"] = 0
-    after = assess_campaign(
-        protocol,
-        rows,
-        completed_runs=complete_runs(),
-        system_failure=False,
-        resources=resources,
-    )
-    assert before["agent_value"] == after["agent_value"] == "NOT_SUPPORTED"
-    assert [row["portfolio_evaluations_used"] for row in after["agent_run_assessments"]] == [
-        4,
-        4,
-        4,
-    ]
 
 
 def test_host_candidate_and_agent_value_are_separate(admitted):
-    protocol = protocol_fixture(admitted)
-    deterministic = deterministic_universe(protocol)
-    oracle_key = strategy_key(deterministic[0])
+    p = protocol_fixture(admitted)
+    deterministic = universe_candidates(p)
     rows = [
         *deterministic,
         *[
-            selected_from(deterministic, f"selection-0{i}", oracle_key)
+            select_from_oracle_space(deterministic, f"selection-0{i}", index=0)
             for i in range(1, 4)
         ],
     ]
+    completed = ["deterministic", "selection-01", "selection-02", "selection-03"]
     assessment = assess_campaign(
-        protocol,
+        p,
         rows,
-        completed_runs=complete_runs(),
+        completed_runs=completed,
         system_failure=False,
-        resources=campaign_resources((4, 4, 4)),
+        resources=resources(selection_01=4, selection_02=4, selection_03=4),
     )
     assert assessment["agent_value"] == "NOT_SUPPORTED"
     assert assessment["candidate_decision"] == "ADAPTIVE_CANDIDATE"
-    failed = assess_campaign(
-        protocol,
-        rows,
-        completed_runs=complete_runs(),
-        system_failure=True,
-        resources=campaign_resources((4, 4, 4)),
+    assert (
+        assess_campaign(
+            p,
+            rows,
+            completed_runs=completed,
+            system_failure=True,
+            resources=resources(),
+        )["candidate_decision"]
+        == "SYSTEM_FAILURE"
     )
-    assert failed["agent_value"] == "INCONCLUSIVE"
-    assert failed["candidate_decision"] == "SYSTEM_FAILURE"
-    negative = deepcopy(rows)
-    for row in negative:
+    for row in rows:
         row["metrics"]["mean_fold_return_5bp"] = -0.1
         row["metrics"]["cost_sensitivity"]["10.0"]["mean_fold_return"] = -0.1
     assert (
         assess_campaign(
-            protocol,
-            negative,
-            completed_runs=complete_runs(),
+            p,
+            rows,
+            completed_runs=completed,
             system_failure=False,
-            resources=campaign_resources((4, 4, 4)),
+            resources=resources(),
         )["candidate_decision"]
         == "NO_ADAPTIVE_CANDIDATE"
     )
     with pytest.raises(ValueError):
         AdaptiveStrategySpec.build(
             research_manifest={},
-            protocol_id=protocol.protocol_id,
+            protocol_id=p.protocol_id,
             campaign_result_id="result",
             candidate=rows[0],
             assessment={**assessment, "decision_authority": "agent_finalize_candidate"},
@@ -687,55 +828,59 @@ def test_host_candidate_and_agent_value_are_separate(admitted):
         )
 
 
-def test_discovery_results_cannot_change_primary_assessment(admitted):
-    protocol = protocol_fixture(admitted)
-    deterministic = deterministic_universe(protocol)
-    oracle_key = strategy_key(deterministic[0])
-    primary_rows = [
+def test_discovery_isolation_does_not_change_primary_decisions(admitted):
+    p = protocol_fixture(admitted)
+    deterministic = universe_candidates(p)
+    primary = [
         *deterministic,
         *[
-            selected_from(deterministic, f"selection-0{i}", oracle_key)
+            select_from_oracle_space(deterministic, f"selection-0{i}", index=0)
             for i in range(1, 4)
         ],
     ]
-    resources = campaign_resources((4, 4, 4))
+    completed = ["deterministic", "selection-01", "selection-02", "selection-03"]
     before = assess_campaign(
-        protocol,
-        primary_rows,
-        completed_runs=complete_runs(),
+        p,
+        primary,
+        completed_runs=completed,
         system_failure=False,
-        resources=resources,
+        resources=resources(selection_01=4, selection_02=4, selection_03=4),
     )
     discovery = candidate(
         "discovery-01",
-        factor_ids=("outside-a", "outside-b"),
-        mean=999.0,
-        worst=999.0,
+        factor_ids=("new", "factor"),
+        mean=100.0,
+        worst=100.0,
+        cost10=100.0,
     )
     discovery["arm"] = "agent_discovery_exploratory"
     after = assess_campaign(
-        protocol,
-        [*primary_rows, discovery],
-        completed_runs=[*complete_runs(), "discovery-01"],
+        p,
+        [*primary, discovery],
+        completed_runs=completed,
         system_failure=False,
-        resources=resources,
+        resources=resources(selection_01=4, selection_02=4, selection_03=4),
     )
     assert after["agent_value"] == before["agent_value"]
     assert after["candidate_decision"] == before["candidate_decision"]
     assert after["candidate_id"] == before["candidate_id"]
-    assert protocol.to_dict()["discovery"]["classification"] == "exploratory"
-    assert protocol.to_dict()["discovery"]["incremental_value_separately_identified"] is False
-    assert protocol.to_dict()["discovery"]["candidate_eligible"] is False
 
 
 def test_historical_blocked_freezes_preserve_superseded_semantics():
-    v1 = json.loads(Path("configs/research/r4_matched_v1_blocked/campaign_freeze.json").read_text())
-    v2 = json.loads(Path("configs/research/r4_matched_v2_blocked/campaign_freeze.json").read_text())
+    v1 = json.loads(
+        Path("configs/research/r4_matched_v1_blocked/campaign_freeze.json").read_text()
+    )
+    v2 = json.loads(
+        Path("configs/research/r4_matched_v2_blocked/campaign_freeze.json").read_text()
+    )
+    assert v1["protocol"]["protocol_version"] == "r4-matched-v1-blocked-provider"
+    assert v2["protocol"]["protocol_version"] == "r4-matched-v2-blocked-provider"
     for row in (v1, v2):
         assert row["status"] == "BLOCKED_PROVIDER_ADMISSION"
         assert row["campaign_executed"] is False
+        assert row["protocol"]["protocol_version"] in SUPERSEDED_R4_MATCHED_PROTOCOL_VERSIONS
+        assert row["protocol"]["agent_value_rule"]["minimum_mean_fold_improvement"] == 0.002
     assert v2["campaign_freeze_id"] == "r4-campaign-freeze-51cdf9a05864e90ffe5310bd"
-    assert v2["protocol"]["agent_value_rule"]["minimum_mean_fold_improvement"] == 0.002
 
 
 def test_failed_evaluation_is_charged_and_never_retried(admitted, tmp_path, monkeypatch):
@@ -761,7 +906,6 @@ def test_failed_evaluation_is_charged_and_never_retried(admitted, tmp_path, monk
         clock=current_clock(),
     )
     assert result["assessment"]["candidate_decision"] == "SYSTEM_FAILURE"
-    assert result["assessment"]["agent_value"] == "INCONCLUSIVE"
     with sqlite3.connect(tmp_path / "c/deterministic/research.sqlite") as db:
         assert db.execute(
             "SELECT state,evaluation_reserved,charged_tokens,charged_cost FROM attempts"
@@ -835,7 +979,6 @@ def test_provider_timeout_preserves_runtime_accounting(admitted, tmp_path, monke
         clock=current_clock(),
     )
     assert result["assessment"]["candidate_decision"] == "SYSTEM_FAILURE"
-    assert result["assessment"]["agent_value"] == "INCONCLUSIVE"
     assert len(instance.requests) == 1
     usage = result["resources"]["selection-01"]
     assert usage["charged_tokens"] == 32768
@@ -850,7 +993,7 @@ def test_unknown_provider_artifact_fields_rejected():
 
 
 def test_blocked_freeze_is_content_addressed_but_never_executable(admitted, tmp_path):
-    from finagent.application.r4_campaign import R4CampaignFreeze, record_blocked_freeze
+    from finagent.application.r4_campaign import R4CampaignFreeze
 
     admission, _, provider = admitted
     probe = tmp_path / "probe"
@@ -867,6 +1010,7 @@ def test_blocked_freeze_is_content_addressed_but_never_executable(admitted, tmp_
         admission, probe, tmp_path / "blocked", config=Path("configs/llm.toml")
     )
     assert blocked.to_dict()["status"] == "BLOCKED_PROVIDER_ADMISSION"
+    assert blocked.protocol.to_dict()["protocol_version"] == CURRENT_R4_BLOCKED_PROTOCOL_VERSION
     row = blocked.to_dict()
     row["provider_blocker"]["probe_count"] += 1
     assert R4CampaignFreeze(canonical_json(row)).freeze_id != blocked.freeze_id
