@@ -95,7 +95,7 @@ def freeze_campaign(
     provider: ProviderAdmission,
     output: Path,
     *,
-    version: str = "r4-matched-v1",
+    version: str = "r4-matched-v3",
     fixture: bool = False,
     config: Path | None = None,
 ) -> R4CampaignFreeze:
@@ -228,7 +228,7 @@ def record_blocked_freeze(
     output: Path,
     *,
     config: Path,
-    version: str = "r4-matched-v1-blocked-provider",
+    version: str = "r4-matched-v3-blocked-provider",
 ) -> R4CampaignFreeze:
     """Retain the exact design and failed probe lineage without accepting execution."""
     if output.exists() and any(output.iterdir()):
@@ -552,7 +552,11 @@ def run_campaign(
     except Exception:  # noqa: BLE001 -- preserve ledgers and return host-owned failure, not exception secrets.
         failure = True
     assessment = assess_campaign(
-        freeze.protocol, candidates, completed_runs=completed, system_failure=failure
+        freeze.protocol,
+        candidates,
+        completed_runs=completed,
+        system_failure=failure,
+        resources=resources,
     )
     artifact_digests = {
         str(p.relative_to(output)).replace("\\", "/"): file_digest(p)
