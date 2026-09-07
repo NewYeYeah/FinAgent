@@ -8,10 +8,10 @@ from pathlib import Path
 
 import pytest
 
+from finagent.agents import r4_provider_admission as admission
 from finagent.agents.r3_contracts import canonical_json
 from finagent.agents.r3_runtime import ResearchReply
 from finagent.agents.r4_contracts import r4_manifest
-from finagent.agents import r4_provider_admission as admission
 
 
 def _receipt() -> dict[str, object]:
