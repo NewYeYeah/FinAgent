@@ -222,7 +222,11 @@ Retrospective artifacts bind `evaluation_mode = adaptive_development_retrospecti
 
 `scripts/r4_campaign.py` provides explicit `probe`, `admit-source`, `freeze`, `verify`, `record-blocker` and `run` commands. Normal Workbench startup does not discover keys, select another provider or acquire campaign authority, and there is no browser campaign-run POST. The explicit profile is `r4_deepseek_v4_pro`; its existing StrictDeepSeek transport uses thinking disabled, temperature 0.7, strict JSON and one attempt. This does not change the shared generic-provider default.
 
-The non-research probe has already been attempted once and failed verification. Do not repeat it as part of ordinary development. Its immutable failure lacks an accepted identity/usage receipt. B-005 remains OPEN; obtaining a new probe requires a separate operator decision. No credential/quota/model/cost success is inferred. Public tariff accounting uses a conservative peak upper bound, not an invoice claim; see [DeepSeek pricing](https://api-docs.deepseek.com/quick_start/pricing/).
+Provider probing remains a separately authorized non-research action; do not run it as part of ordinary development or CI. The original 2026-09-06 attempt failed before a verified identity/usage receipt was retained. A later separately authorized real probe on **2026-09-07** produced a complete verified transport receipt: authenticated endpoint/quota transport succeeded, `deepseek-v4-pro` response identity was present, response ID and system fingerprint were available, prompt/completion/cache usage was complete, and conservative cost accounting was retained. The attempt then failed at `phase = strict_action`; no `ProviderAdmission` was created. B-005 therefore remains OPEN, but transport/model/usage reachability for that attempt is established and should no longer be described as wholly unverified.
+
+The hardened probe aligns its provider-visible contract with the actual R4 capability runtime. Its context contains the public `r4_manifest()` as `capability_set`, a frozen exact `PROBE_ACTION`, `research_history = false`, empty state/resources/feedback, and no market values, factor evidence, PnL, research objective or campaign result. The model must still return the exact target action; “any valid R4 action” is not sufficient. A valid but different typed action records `probe_contract_mismatch`. A strict decoder failure records `probe_action_contract_failed` plus only a bounded allowlisted `strict_action_error_code`; raw returned action text, raw exception/provider content, hidden reasoning and credentials are never persisted. The existing verified transport receipt is retained when available.
+
+`provider_binding()` now includes `probe_contract_digest`, derived from the frozen probe context/action contract. A change to `r4_manifest()`, `PROBE_ACTION` or the probe-context semantics therefore changes provider admission identity. The binding remains secret-free and contains no local path. The transport still has one attempt and no fallback. A failed output directory is immutable evidence and cannot be retried in place.
 
 The real source admission was created with:
 
@@ -260,7 +264,7 @@ python scripts/r4_campaign.py run --research-admission RESEARCH_ADMISSION_DIRECT
 
 If `campaign_result.json` already exists and its artifact digests/result identity verify, `run_campaign()` returns the committed result without another provider or evaluator call. Infrastructure/provider/evaluator/audit uncertainty remains a campaign system failure with no automatic retry. CLI stdout is only a bounded identity/terminal/authority summary; the immutable result artifact remains the numerical/evidence authority. A successful R4 run still carries development-only authority and does not confirm Alpha, accept PAPER, authorize Live, or enter R5 automatically.
 
-If the already-recorded failed provider lineage must be retained again under the corrected design, `record-blocker` likewise needs no version flag:
+If an already-recorded failed provider lineage must be retained under the corrected design, `record-blocker` likewise needs no version flag:
 
 ```powershell
 python scripts/r4_campaign.py record-blocker --research-admission RESEARCH_ADMISSION_DIRECTORY --probe-directory FAILED_PROBE_DIRECTORY --output NEW_BLOCKED_DIRECTORY

@@ -88,9 +88,9 @@ def r4_manifest() -> dict[str, Any]:
     factor_proposal["hypothesis"]["direction"] = [FactorExpectedDirection.POSITIVE.value]
     return {
         "schema_version": "finagent.r4-action.v1",
-        "tools": FIELDS,
+        "tools": {tool: list(fields) for tool, fields in FIELDS.items()},
         "authority": AUTHORITY,
-        "allocator_catalog": ALLOCATORS,
+        "allocator_catalog": list(ALLOCATORS),
         "allocator_config": {"lookback_sessions": 20, "minimum_observations": 5, "ridge_alpha": 1},
         "factor_proposal": factor_proposal,
         "node_parameters": action_guide()["node_parameters"],

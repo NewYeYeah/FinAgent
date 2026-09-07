@@ -10,10 +10,10 @@ from pathlib import Path
 from typing import Any
 
 from finagent.agents.providers.config import load_llm_profile
-from finagent.agents.r3_contracts import canonical_json, identity
+from finagent.agents.r3_contracts import ContractError, canonical_json, identity
 from finagent.agents.r3_provider import TARIFF, StrictDeepSeekProvider, parse_reply
 from finagent.agents.r3_runtime import ResearchReply, ResearchRequest
-from finagent.agents.r4_contracts import AUTHORITY, decode_r4_action
+from finagent.agents.r4_contracts import AUTHORITY, decode_r4_action, r4_manifest
 from finagent.research.us_r3_economic_campaign import file_digest
 from finagent.research.us_r3_usability import write_immutable_json
 
@@ -23,17 +23,75 @@ INSTRUCTION = (
     "Use only admitted tools and IDs. Persist explicit actions and decisions only. "
     "Never return hidden reasoning or a scratchpad. All evidence is exposed development."
 )
+PROBE_SCOPE = "non_research_no_market_no_objective"
+PROBE_CONTEXT_SCHEMA = "finagent.r4-provider-admission-probe-context.v2"
+PROBE_CONTEXT_INSTRUCTION = "Return required_action exactly as one typed JSON action."
 PROBE_ACTION = {
     "schema_version": "finagent.r4-action.v1",
     "tool": "record_decision",
     "arguments": {"critique": "Transport admission only.", "next_action": "Stop."},
 }
-PROBE_CONTEXT = canonical_json(
+STRICT_ACTION_ERROR_CODES = frozenset(
     {
-        "transport_check": "Return the supplied JSON action exactly; no research is requested.",
-        "action": PROBE_ACTION,
+        "payload_bound_exceeded",
+        "invalid_json",
+        "duplicate_json_key",
+        "nonfinite_json",
+        "json_depth_exceeded",
+        "invalid_object_fields",
+        "action_schema_mismatch",
+        "unknown_r4_tool",
+        "invalid_text",
+        "invalid_identifier",
+        "invalid_integer",
+        "reference_list_bound",
+        "duplicate_reference",
+        "empty_experiment_selection",
+        "allocator_not_admitted",
+        "lifecycle_authority_denied",
+        "invalid_recommendation",
+        "positive_graph_direction_required_use_explicit_NEGATE",
     }
 )
+SAFE_PROBE_FAILURE_REASONS = frozenset(
+    {
+        "credential_unavailable",
+        "provider_profile_mismatch",
+        "transport_uncertain",
+        "provider_quota",
+        "transport_deadline",
+        "probe_contract_mismatch",
+        "provider_response_identity_mismatch",
+        "provider_usage_unverified",
+        "provider_usage_breach",
+    }
+)
+
+
+def probe_contract() -> dict[str, Any]:
+    """Public non-research context aligned with the real R4 capability contract."""
+    return {
+        "schema_version": PROBE_CONTEXT_SCHEMA,
+        "scope_id": "r4-provider-admission-probe",
+        "attempt": 1,
+        "research_history": False,
+        "probe_scope": PROBE_SCOPE,
+        "instructions": PROBE_CONTEXT_INSTRUCTION,
+        "capability_set": r4_manifest(),
+        "state": {},
+        "resources": [],
+        "feedback": [],
+        "required_action": PROBE_ACTION,
+    }
+
+
+def probe_contract_digest() -> str:
+    return identity(probe_contract(), "r4-provider-probe-contract")
+
+
+def _safe_strict_action_error_code(error: ContractError) -> str:
+    code = str(error)
+    return code if code in STRICT_ACTION_ERROR_CODES else "r4_action_contract_invalid"
 
 
 def provider_binding(config: Path) -> dict[str, Any]:
@@ -64,6 +122,7 @@ def provider_binding(config: Path) -> dict[str, Any]:
         "stream": False,
         "contract": "finagent.r4-action.v1",
         "instruction_digest": identity(INSTRUCTION, "prompt"),
+        "probe_contract_digest": probe_contract_digest(),
         "timeout_seconds": 120,
         "maximum_input_tokens": 28672,
         "maximum_output_tokens": 3000,
@@ -114,10 +173,7 @@ class ProviderAdmission:
             raise ValueError("PROVIDER_ADMISSION_FAILED: artifact fields/authority")
         if row["binding"] != binding or row["fixture_only"] != fixture:
             raise ValueError("PROVIDER_ADMISSION_FAILED: binding mismatch")
-        if (
-            row["status"] != "ACCEPTED"
-            or row["probe_scope"] != "non_research_no_market_no_objective"
-        ):
+        if row["status"] != "ACCEPTED" or row["probe_scope"] != PROBE_SCOPE:
             raise ValueError("PROVIDER_ADMISSION_FAILED: probe not accepted")
         receipt = row["receipt"]
         if set(receipt.get("usage", {})) != {
@@ -166,7 +222,11 @@ class ProviderAdmission:
 
 def probe_provider(config: Path, output: Path) -> ProviderAdmission:
     """Exactly one non-research request. An existing attempt is never retried."""
+    contract = probe_contract()
     binding = provider_binding(config)
+    if binding["probe_contract_digest"] != identity(contract, "r4-provider-probe-contract"):
+        raise ValueError("PROVIDER_ADMISSION_FAILED: probe contract binding mismatch")
+    context_json = canonical_json(contract)
     requested_at = datetime.now(UTC).isoformat()
     if output.exists() and any(output.iterdir()):
         raise ValueError("probe already attempted; retain original evidence")
@@ -175,19 +235,27 @@ def probe_provider(config: Path, output: Path) -> ProviderAdmission:
         {
             "binding": binding,
             "requested_at": requested_at,
-            "context": json.loads(PROBE_CONTEXT),
+            "context": contract,
             "research_history": False,
         },
     )
     provider = StrictDeepSeekProvider(config, INSTRUCTION, profile_name=PROFILE)
     phase = "transport"
+    strict_action_error_code: str | None = None
     try:
         reply = provider.respond(
-            ResearchRequest("r4-non-research-probe", PROBE_CONTEXT, 32768, 50000, 120)
+            ResearchRequest("r4-non-research-probe", context_json, 32768, 50000, 120)
         )
         phase = "strict_action"
-        if decode_r4_action(reply.action_json) != PROBE_ACTION or provider.last_receipt is None:
+        try:
+            decoded = decode_r4_action(reply.action_json)
+        except ContractError as error:
+            strict_action_error_code = _safe_strict_action_error_code(error)
+            raise ValueError("probe_action_contract_failed") from None
+        if decoded != PROBE_ACTION:
             raise ValueError("probe_contract_mismatch")
+        if provider.last_receipt is None:
+            raise ValueError("probe_verification_failed")
         admission = ProviderAdmission(
             canonical_json(
                 {
@@ -195,7 +263,7 @@ def probe_provider(config: Path, output: Path) -> ProviderAdmission:
                     "fixture_only": False,
                     "binding": binding,
                     "admitted_at": datetime.now(UTC).isoformat(),
-                    "probe_scope": "non_research_no_market_no_objective",
+                    "probe_scope": PROBE_SCOPE,
                     "admission_evidence_id": identity(
                         {"requested_at": requested_at, "receipt": provider.last_receipt},
                         "provider-probe",
@@ -209,33 +277,22 @@ def probe_provider(config: Path, output: Path) -> ProviderAdmission:
         admission.verify(binding)
         write_immutable_json(output / "provider_admission.json", admission.to_dict())
         return admission
-    except Exception as error:  # noqa: BLE001 -- only allowlisted error codes, never transport text.
-        code = (
-            str(error)
-            if str(error)
-            in {
-                "credential_unavailable",
-                "provider_profile_mismatch",
-                "transport_uncertain",
-                "provider_quota",
-                "transport_deadline",
-                "probe_contract_mismatch",
-                "provider_response_identity_mismatch",
-                "provider_usage_unverified",
-                "provider_usage_breach",
-            }
-            else "probe_verification_failed"
-        )
-        write_immutable_json(
-            output / "failure.json",
-            {
-                "status": "PROVIDER_ADMISSION_FAILED",
-                "research_history": False,
-                "reason": code,
-                "phase": phase,
-                "verified_transport_receipt": provider.last_receipt,
-            },
-        )
+    except Exception as error:  # noqa: BLE001 -- only fixed safe codes cross this boundary.
+        if phase == "strict_action" and strict_action_error_code is not None:
+            reason = "probe_action_contract_failed"
+        else:
+            candidate = str(error)
+            reason = candidate if candidate in SAFE_PROBE_FAILURE_REASONS else "probe_verification_failed"
+        failure: dict[str, Any] = {
+            "status": "PROVIDER_ADMISSION_FAILED",
+            "research_history": False,
+            "reason": reason,
+            "phase": phase,
+            "verified_transport_receipt": provider.last_receipt,
+        }
+        if reason == "probe_action_contract_failed":
+            failure["strict_action_error_code"] = strict_action_error_code
+        write_immutable_json(output / "failure.json", failure)
         raise ValueError("PROVIDER_ADMISSION_FAILED; sanitized probe failure retained") from None
 
 
