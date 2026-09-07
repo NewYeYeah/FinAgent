@@ -1026,6 +1026,7 @@ def test_blocked_freeze_is_content_addressed_but_never_executable(admitted, tmp_
 
 def test_probe_offline_contract_and_single_attempt(monkeypatch, tmp_path):
     from finagent.agents.r3_runtime import ResearchReply
+    from finagent.agents.r4_contracts import r4_manifest
     from finagent.agents.r4_provider_admission import PROBE_ACTION, probe_provider
 
     calls = []
@@ -1043,9 +1044,13 @@ def test_probe_offline_contract_and_single_attempt(monkeypatch, tmp_path):
     )
     admitted_probe = probe_provider(Path("configs/llm.toml"), tmp_path / "probe")
     assert admitted_probe.to_dict()["probe_scope"] == "non_research_no_market_no_objective"
-    assert not any(
-        s in calls[0].context_json for s in ("factor_ids", "market_state", "objective", "OHLCV")
-    )
+    context = json.loads(calls[0].context_json)
+    assert context["capability_set"] == r4_manifest()
+    assert context["research_history"] is False
+    assert context["state"] == {}
+    assert context["resources"] == []
+    assert context["feedback"] == []
+    assert all(key not in context for key in ("objective", "market_data", "pnl", "campaign_result"))
     with pytest.raises(ValueError, match="already attempted"):
         probe_provider(Path("configs/llm.toml"), tmp_path / "probe")
     assert len(calls) == 1
