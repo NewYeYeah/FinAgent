@@ -33,8 +33,8 @@ jobs:
         with:
           version: "0.12.1"
       - run: uv sync --frozen --extra dev --extra workspace --extra adaptive-research
-      - name: Offline freeze, drift, budgets, host gates and full campaign fixture
-        run: uv run --frozen pytest tests/test_r4_campaign_freeze.py
+      - name: Offline freeze, guarded execution, drift, budgets and full campaign fixtures
+        run: uv run --frozen pytest tests/test_r4_campaign_freeze.py tests/test_r4_campaign_operator.py
       - name: Existing static/adaptive admission and runtime regression
         run: uv run --frozen pytest tests/test_r4_controller.py tests/test_r4_controller_boundaries.py tests/test_us_r3_agent_runtime.py tests/test_us_r3_provider.py tests/test_adaptive_walkforward.py
       - name: Focused typing
@@ -51,5 +51,6 @@ jobs:
           src/finagent/agents/r3_provider.py src/finagent/agents/r3_runtime.py src/finagent/agents/r3_ledger.py
           src/finagent/agents/r4_campaign_capabilities.py src/finagent/agents/r4_provider_admission.py
           src/finagent/application/r4_campaign.py src/finagent/application/r4_campaign_admission.py
-          src/finagent/research/r4_campaign_protocol.py scripts/r4_campaign.py tests/test_r4_campaign_freeze.py
+          src/finagent/research/r4_campaign_protocol.py scripts/r4_campaign.py
+          tests/test_r4_campaign_freeze.py tests/test_r4_campaign_operator.py
       - run: uv run --frozen python scripts/check_docs.py
