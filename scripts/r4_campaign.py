@@ -44,30 +44,40 @@ def _campaign_inputs(parser: argparse.ArgumentParser, *, required: bool = False)
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     commands = parser.add_subparsers(dest="command", required=True)
 
-    probe = commands.add_parser("probe", help="perform one explicit non-research provider probe")
+    probe = commands.add_parser(
+        "probe", help="perform one explicit non-research provider probe", allow_abbrev=False
+    )
     _output(probe)
     _config(probe)
 
-    admit = commands.add_parser("admit-source", help="bind the R4 development source")
+    admit = commands.add_parser(
+        "admit-source", help="bind the R4 development source", allow_abbrev=False
+    )
     _output(admit)
     admit.add_argument("--source-config", type=Path)
 
-    freeze = commands.add_parser("freeze", help="create a fresh accepted campaign freeze")
+    freeze = commands.add_parser(
+        "freeze", help="create a fresh accepted campaign freeze", allow_abbrev=False
+    )
     _output(freeze)
     _config(freeze)
     _campaign_inputs(freeze)
 
-    verify = commands.add_parser("verify", help="verify one exact accepted campaign freeze")
+    verify = commands.add_parser(
+        "verify", help="verify one exact accepted campaign freeze", allow_abbrev=False
+    )
     _output(verify)
     _config(verify)
     _campaign_inputs(verify)
     verify.add_argument("--accepted-freeze-id")
 
     blocker = commands.add_parser(
-        "record-blocker", help="record failed provider admission lineage without execution authority"
+        "record-blocker",
+        help="record failed provider admission lineage without execution authority",
+        allow_abbrev=False,
     )
     _output(blocker)
     _config(blocker)
@@ -83,6 +93,7 @@ def build_parser() -> argparse.ArgumentParser:
             "directory and provider config. This command never probes, freezes, retries, resets or "
             "changes protocol/research settings."
         ),
+        allow_abbrev=False,
     )
     _output(run)
     _config(run, required=True)

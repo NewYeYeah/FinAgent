@@ -10,6 +10,7 @@ from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 
+import duckdb
 import pytest
 
 from finagent.agents.r3_contracts import DevelopmentScope, canonical_json, identity
@@ -354,8 +355,15 @@ def test_operator_fails_closed_on_research_or_implementation_drift(
     if mutation == "source":
         restore_path = operator_fixture["inputs"]["paths"][0]
         restore_bytes = restore_path.read_bytes()
-        with restore_path.open("ab") as handle:
-            handle.write(b"operator-drift")
+        mutated = restore_path.with_name("bars-operator-mutated.parquet")
+        with duckdb.connect() as connection:
+            connection.execute(
+                "CREATE TABLE bars AS SELECT * FROM read_parquet(?)", [str(restore_path)]
+            )
+            connection.execute("UPDATE bars SET close = close + 0.0001 WHERE rowid = 0")
+            connection.execute("COPY bars TO ? (FORMAT PARQUET)", [str(mutated)])
+        restore_path.write_bytes(mutated.read_bytes())
+        mutated.unlink()
     elif mutation == "library":
         restore_path = operator_fixture["research"] / "seed_factor_library.sqlite"
         restore_bytes = restore_path.read_bytes()
