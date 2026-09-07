@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from finagent.agents.r3_contracts import canonical_json
 from finagent.agents.r4_provider_admission import ProviderAdmission, probe_provider
