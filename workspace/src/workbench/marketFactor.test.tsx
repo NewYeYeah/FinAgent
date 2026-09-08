@@ -58,7 +58,7 @@ describe("Workbench-2 Market State + Factor Intelligence", () => {
     expect(screen.getByText("AgentValue INCONCLUSIVE")).toBeInTheDocument();
     expect(screen.getByText("0/20 complete deterministic strategies")).toBeInTheDocument();
     expect(screen.getByText("62 rejected actions")).toBeInTheDocument();
-    expect(screen.getByText("OBSERVATION_NOT_AVAILABLE")).toBeInTheDocument();
+    expect(screen.getAllByText("OBSERVATION_NOT_AVAILABLE")).toHaveLength(2);
     expect(screen.getByText("0 → 1")).toBeInTheDocument();
     expect(screen.getByText(/browser_refit=false/)).toBeInTheDocument();
     expect(screen.getByText(/feature identities: unavailable_not_persisted/)).toBeInTheDocument();
