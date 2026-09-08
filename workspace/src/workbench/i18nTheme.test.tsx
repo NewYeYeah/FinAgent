@@ -65,7 +65,7 @@ describe("Workbench bilingual high-contrast UI", () => {
     expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("factor-1");
     expect(screen.getByText("No adaptive strategy candidate")).toBeVisible();
     expect(screen.getByText("NO_ADAPTIVE_CANDIDATE")).toBeVisible();
-    expect(screen.getByText("INCONCLUSIVE")).toBeVisible();
+    expect(screen.getByText("AgentValue INCONCLUSIVE")).toBeVisible();
     expect(screen.getByText("NONE")).toBeVisible();
     expect(screen.getByText("NOT STARTED")).toBeVisible();
     expect(screen.getByRole("button", { name: "Start bounded research run" })).toBeDisabled();
@@ -89,7 +89,7 @@ describe("Workbench bilingual high-contrast UI", () => {
     expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("factor-1");
     expect(screen.getByText("无自适应候选策略")).toBeVisible();
     expect(screen.getByText("NO_ADAPTIVE_CANDIDATE")).toBeVisible();
-    expect(screen.getByText("INCONCLUSIVE")).toBeVisible();
+    expect(screen.getByText("AgentValue INCONCLUSIVE")).toBeVisible();
     expect(screen.getByText("研究目标 / 会话")).toBeVisible();
     expect(screen.getByRole("button", { name: "启动受限研究运行" })).toBeDisabled();
     expect(screen.getByRole("article", { name: "因子提案" })).toBeVisible();
