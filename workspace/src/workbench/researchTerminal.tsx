@@ -31,7 +31,7 @@ export function R4TerminalSummary() {
           <span className="eyebrow">{t("Canonical accepted research evidence")}</span>
           <h2><PersistedTerminalLabel value={value.terminal} /></h2>
         </div>
-        <span className="research-negative-pill">AgentValue <code>{value.agentValue}</code></span>
+        <span className="research-negative-pill">AgentValue {value.agentValue}</span>
       </header>
       <p>{t(value.interpretation)} {t("No candidate identity exists and no AdaptiveStrategy is accepted.")}</p>
       <dl className="research-terminal-grid">
