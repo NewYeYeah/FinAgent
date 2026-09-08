@@ -4,22 +4,18 @@ import { PanelRegistry, defaultPanelRegistry } from "./panels";
 
 describe("PanelRegistry", () => {
   it("exposes V4 linked analytics, V3 catalogs and reserved future surfaces", () => {
-    expect(defaultPanelRegistry.get("agent")).toMatchObject({
+    expect(defaultPanelRegistry.get("agent")).toMatchObject({ status: "available", route: "/agent", slot: "main" });
+    expect(defaultPanelRegistry.get("research-graph")).toMatchObject({
       status: "available",
-      route: "/agent",
-      slot: "main",
+      route: "/research-graph",
+      slot: "chart",
+      context_keys: ["project_id", "thread_id", "run_id", "experiment_id", "factor_id", "research_cycle_id", "graph_node_id", "market_state_model_id", "strategy_id", "portfolio_validation_id"],
     });
     expect(defaultPanelRegistry.get("strategy")).toMatchObject({
       status: "available",
       route: "/strategy",
       slot: "chart",
-      context_keys: [
-        "portfolio_validation_id",
-        "asset_id",
-        "date_range",
-        "session_date",
-        "fold_id",
-      ],
+      context_keys: ["research_cycle_id", "strategy_id", "market_state_model_id", "factor_id", "experiment_id", "portfolio_validation_id", "run_id", "asset_id", "date_range", "session_date", "fold_id"],
     });
     expect(defaultPanelRegistry.get("factors")).toMatchObject({
       status: "available",
@@ -31,69 +27,28 @@ describe("PanelRegistry", () => {
       status: "available",
       route: "/market",
       slot: "chart",
-      context_keys: ["market_state_model_id", "factor_id", "experiment_id", "run_id"],
+      context_keys: ["market_state_model_id", "factor_id", "experiment_id", "run_id", "research_cycle_id", "strategy_id", "portfolio_validation_id"],
     });
     expect(defaultPanelRegistry.get("portfolio")).toMatchObject({
       status: "available",
       route: "/portfolio",
       slot: "chart",
-      context_keys: [
-        "portfolio_validation_id",
-        "date_range",
-        "session_date",
-        "fold_id",
-      ],
+      context_keys: ["research_cycle_id", "strategy_id", "portfolio_validation_id", "date_range", "session_date", "fold_id"],
     });
     expect(defaultPanelRegistry.get("execution")).toMatchObject({
       status: "available",
       route: "/execution",
       slot: "chart",
-      context_keys: [
-        "portfolio_validation_id",
-        "asset_id",
-        "order_id",
-        "date_range",
-        "session_date",
-        "fold_id",
-      ],
+      context_keys: ["research_cycle_id", "strategy_id", "portfolio_validation_id", "asset_id", "order_id", "date_range", "session_date", "fold_id"],
     });
-    expect(defaultPanelRegistry.get("risk")).toMatchObject({
-      status: "reserved",
-      slot: "chart",
-    });
-    expect(defaultPanelRegistry.get("configuration")).toMatchObject({
-      status: "available",
-      route: "/widgets",
-      search_params: { surface: "configs" },
-      slot: "config",
-    });
-    expect(defaultPanelRegistry.get("command-catalog")).toMatchObject({
-      status: "available",
-      route: "/widgets",
-      search_params: { surface: "commands" },
-      slot: "command",
-    });
+    expect(defaultPanelRegistry.get("risk")).toMatchObject({ status: "reserved", slot: "chart" });
+    expect(defaultPanelRegistry.get("configuration")).toMatchObject({ status: "available", route: "/widgets", search_params: { surface: "configs" }, slot: "config" });
+    expect(defaultPanelRegistry.get("command-catalog")).toMatchObject({ status: "available", route: "/widgets", search_params: { surface: "commands" }, slot: "command" });
   });
 
   it("rejects duplicate panel identity", () => {
     const registry = new PanelRegistry();
-    registry.register({
-      panel_id: "factor-chart",
-      module: "factors",
-      title: "Factor chart",
-      status: "reserved",
-      context_keys: ["factor_id", "date_range"],
-      slot: "chart",
-    });
-    expect(() =>
-      registry.register({
-        panel_id: "factor-chart",
-        module: "factors",
-        title: "Duplicate",
-        status: "reserved",
-        context_keys: [],
-        slot: "chart",
-      }),
-    ).toThrow(/already registered/);
+    registry.register({ panel_id: "factor-chart", module: "factors", title: "Factor chart", status: "reserved", context_keys: ["factor_id", "date_range"], slot: "chart" });
+    expect(() => registry.register({ panel_id: "factor-chart", module: "factors", title: "Duplicate", status: "reserved", context_keys: [], slot: "chart" })).toThrow(/already registered/);
   });
 });
