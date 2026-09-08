@@ -12,6 +12,10 @@ export interface WorkbenchContextState {
   project_id?: string;
   thread_id?: string;
   run_id?: string;
+  experiment_id?: string;
+  comparison_ids?: string;
+  research_cycle_id?: string;
+  graph_node_id?: string;
   program_id?: string;
   factor_id?: string;
   portfolio_validation_id?: string;
@@ -31,6 +35,8 @@ export type WorkbenchInteractionEvent =
   | "project_selected"
   | "thread_selected"
   | "run_selected"
+  | "experiment_selected"
+  | "graph_node_selected"
   | "asset_selected"
   | "date_range_selected"
   | "session_selected"
@@ -42,6 +48,10 @@ const CONTEXT_PARAM_BY_KEY: Record<WorkbenchContextKey, string> = {
   project_id: "project",
   thread_id: "thread",
   run_id: "run",
+  experiment_id: "experiment",
+  comparison_ids: "compare",
+  research_cycle_id: "cycle",
+  graph_node_id: "graph_node",
   program_id: "program",
   factor_id: "factor",
   portfolio_validation_id: "portfolio",

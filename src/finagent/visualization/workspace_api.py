@@ -21,6 +21,8 @@ from finagent.runtime import DEFAULT_PARALLEL_POLICY, ParallelPlan
 
 from .agent_index import AgentIndexProjection, build_agent_artifact_catalog, load_agent_index
 from .agent_projection import load_agent_run_projection
+from .research_workspace import ResearchWorkspaceProjection
+from .research_workspace_routes import attach_research_workspace_routes
 from .reserve_projection import ReserveWorkspaceProjection
 from .semantic import (
     EvidenceBundle,
@@ -358,6 +360,7 @@ def create_workspace_app(
     catalog = WorkspaceEvidenceCatalog(report_paths, git_sha=git_sha)
     agent_artifact_catalog = build_agent_artifact_catalog(catalog.bundles())
     agent_path = Path(agent_audit_path).expanduser() if agent_audit_path else None
+    research_workspace = ResearchWorkspaceProjection(agent_path)
     static_root = Path(frontend_dir).expanduser() if frontend_dir else None
     reserve_projection = ReserveWorkspaceProjection(
         eligibility_path=reserve_eligibility_path,
@@ -382,6 +385,7 @@ def create_workspace_app(
     )
     app.state.catalog = catalog
     app.state.agent_audit_path = agent_path
+    app.state.research_workspace = research_workspace
     app.state.read_only = True
     app.state.workspace_v2 = v2
     app.state.reserve_projection = reserve_projection
@@ -393,6 +397,8 @@ def create_workspace_app(
         allow_headers=["*"],
     )
 
+    attach_research_workspace_routes(app, research_workspace)
+
     @app.get("/api/v1/health")
     def health() -> dict[str, object]:
         return {
@@ -403,6 +409,7 @@ def create_workspace_app(
             "warning_count": len(catalog.warnings),
             "notice_count": len(catalog.notices),
             "agent_audit_configured": agent_path is not None,
+            "research_workspace": research_workspace.status(),
             "workspace_v2": True,
             "v2_warning_count": len(v2.warnings),
             "reserve_lifecycle": reserve_projection.configuration(),

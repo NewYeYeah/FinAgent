@@ -39,6 +39,8 @@ import {
   ProjectCockpitPage,
 } from "./v2";
 import { AgentWorkbenchPage, LegacyAgentRunRedirect } from "./workbench/agent";
+import { ExperimentsPage } from "./workbench/experiments";
+import { ResearchGraphPage } from "./workbench/researchGraph";
 import { FactorTearSheetIndexPage, FactorTearSheetPage } from "./workbench/factor";
 import {
   ExecutionInteractivePage,
@@ -476,6 +478,8 @@ export default function App() {
             <Route path="/factor/:digest" element={<FactorPage />} />
             <Route path="/agent" element={<AgentWorkbenchPage />} />
             <Route path="/agent/:runId" element={<LegacyAgentRunRedirect />} />
+            <Route path="/experiments" element={<ExperimentsPage />} />
+            <Route path="/research-graph" element={<ResearchGraphPage />} />
             <Route path="/ref/:kind/:identity" element={<WorkbenchReferencePage />} />
             <Route path="/widgets" element={<WidgetCatalogPage />} />
             <Route path="*" element={<NotFoundPage />} />

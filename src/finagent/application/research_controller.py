@@ -104,6 +104,8 @@ def open_research_session(
             "thread_id": "thread-" + run_id,
             "trigger_type": "research_objective",
             "controller": "r4",
+            "provider_id": provider_id,
+            "model_id": model_id,
             "binding_id": identity(request, "r4-research-request"),
             "authority": "development_only; no_alpha_paper_live",
         },
