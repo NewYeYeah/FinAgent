@@ -1,0 +1,36 @@
+name: workbench2-market-factor-apply
+
+on:
+  push:
+    branches:
+      - codex/workbench2-market-factor-intelligence
+    paths:
+      - .github/workflows/workbench2-market-factor-apply.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/workbench2-market-factor-intelligence
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Apply Workbench-2 Market/Factor patch
+        run: |
+          python .github/workbench2_market_factor_apply.py
+          python .github/workbench2_market_factor_fix.py
+      - name: Commit implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs src tests workspace
+          git commit -m "feat(workbench): add market state and factor intelligence"
+          git rm .github/workbench2_market_factor_apply.py .github/workbench2_market_factor_fix.py .github/workflows/workbench2-market-factor-apply.yml
+          git commit -m "chore(workbench): remove temporary apply workflow"
+          git push origin HEAD:codex/workbench2-market-factor-intelligence
