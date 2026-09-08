@@ -14,7 +14,7 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { ErrorState, LoadingState } from "../components";
-import { useWorkbenchContext, workbenchContextSearch, type WorkbenchContextState } from "./context";
+import { patchWorkbenchContext, useWorkbenchContext, workbenchContextSearch, type WorkbenchContextState } from "./context";
 import { researchQueryKeys, researchWorkspaceApi, type ResearchGraphNode } from "./researchWorkspaceApi";
 import { WorkbenchInspectorSlot } from "./shell";
 import { useWorkbenchSse } from "./stream";
@@ -116,8 +116,13 @@ function GraphContent() {
   const onNodeClick: NodeMouseHandler = (_event, flowNode) => {
     const canonical = byId.get(flowNode.id);
     if (!canonical) return;
-    select(canonicalPatch(canonical), "graph_node_selected");
-    if (canonical.href) navigate(canonical.href);
+    const patch = canonicalPatch(canonical);
+    const nextContext = patchWorkbenchContext(context, patch);
+    select(patch, "graph_node_selected");
+    if (canonical.href) {
+      const target = new URL(canonical.href, window.location.origin);
+      navigate({ pathname: target.pathname, search: workbenchContextSearch(nextContext) });
+    }
   };
 
   if (query.isPending) return <LoadingState label="Loading canonical research lineage" />;

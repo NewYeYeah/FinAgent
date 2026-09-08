@@ -43,6 +43,7 @@ function ExperimentList({
       <StatusBadge value={item.status} tone={item.status === "completed" ? "positive" : item.status === "failed" || item.status === "rejected" ? "negative" : "neutral"} />
       <small>{item.objective}</small>
       <small>{identity(item.allocator)} · {identity(item.factor_set_id)}</small>
+      {item.error ? <small className="experiment-negative-detail">{item.error}</small> : null}
     </button>
     <label className="experiment-compare-toggle">
       <input
