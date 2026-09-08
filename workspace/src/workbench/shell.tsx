@@ -22,6 +22,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { useState, type ReactNode } from "react";
 
 import { ReadOnlyBanner } from "../components";
+import { LocaleToggle, WorkbenchI18nProvider, useWorkbenchI18n } from "../i18n";
 import { CommandCatalogSurface } from "./commandCatalog";
 import { ConfigurationCatalogSurface } from "./configuration";
 import { CommandPalette, ControlPlaneProvider, useControlPlane } from "./control";
@@ -80,13 +81,8 @@ const CONTEXT_LABELS: Record<WorkbenchContextKey, string> = {
   environment: "Environment",
 };
 
-function mergedSearch(
-  context: WorkbenchContextState,
-  fixed: Record<string, string> = {},
-): string {
-  const params = new URLSearchParams(
-    workbenchContextSearch(context).replace(/^\?/, ""),
-  );
+function mergedSearch(context: WorkbenchContextState, fixed: Record<string, string> = {}): string {
+  const params = new URLSearchParams(workbenchContextSearch(context).replace(/^\?/, ""));
   for (const [key, value] of Object.entries(fixed)) params.set(key, value);
   const output = params.toString();
   return output ? `?${output}` : "";
@@ -95,29 +91,21 @@ function mergedSearch(
 function NavigationItem({ panel }: { panel: WorkbenchPanelDescriptor }) {
   const icon = ICONS[panel.module];
   const { context } = useWorkbenchContext();
+  const { t } = useWorkbenchI18n();
   if (panel.status === "reserved" || !panel.route) {
     return (
-      <span
-        className="workbench-nav-item workbench-nav-reserved"
-        aria-disabled="true"
-      >
-        {icon}
-        <span>{panel.title}</span>
-        <small>planned</small>
+      <span className="workbench-nav-item workbench-nav-reserved" aria-disabled="true">
+        {icon}<span>{t(panel.title)}</span><small>{t("planned")}</small>
       </span>
     );
   }
   return (
     <NavLink
       className="workbench-nav-item"
-      to={{
-        pathname: panel.route,
-        search: mergedSearch(context, panel.search_params),
-      }}
+      to={{ pathname: panel.route, search: mergedSearch(context, panel.search_params) }}
       end={panel.route === "/"}
     >
-      {icon}
-      <span>{panel.title}</span>
+      {icon}<span>{t(panel.title)}</span>
     </NavLink>
   );
 }
@@ -125,6 +113,7 @@ function NavigationItem({ panel }: { panel: WorkbenchPanelDescriptor }) {
 export function ContextBar() {
   const { context, lastEvent, clear } = useWorkbenchContext();
   const control = useControlPlane();
+  const { t } = useWorkbenchI18n();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const active = WORKBENCH_CONTEXT_KEYS.flatMap((key) => {
     const value = context[key];
@@ -134,33 +123,24 @@ export function ContextBar() {
     <>
       <div className="workbench-context-bar" data-testid="workbench-context-bar">
         <div className="workbench-context-values">
-          <strong>Context</strong>
-          {active.length ? (
-            active.map(({ key, value }) => (
-              <span className="context-chip" key={key} title={value}>
-                <b>{CONTEXT_LABELS[key]}</b>
-                <span className="mono">{value}</span>
-              </span>
-            ))
-          ) : (
-            <span className="workbench-context-empty">No linked selection</span>
-          )}
+          <strong>{t("Context")}</strong>
+          {active.length ? active.map(({ key, value }) => (
+            <span className="context-chip" key={key} title={value}>
+              <b>{t(CONTEXT_LABELS[key])}</b><span className="mono">{value}</span>
+            </span>
+          )) : <span className="workbench-context-empty">{t("No linked selection")}</span>}
         </div>
         <div className="workbench-context-actions">
           {lastEvent ? <span className="context-event mono">{lastEvent}</span> : null}
-          {active.length ? (
-            <button className="context-clear" type="button" onClick={() => clear()}>
-              Clear
-            </button>
-          ) : null}
+          {active.length ? <button className="context-clear" type="button" onClick={() => clear()}>{t("Clear")}</button> : null}
           <button
             className="workbench-slot-button"
             data-slot="config-drawer"
             type="button"
             disabled
-            title="Configuration remains read-only; protocol edits require a future governed fork workflow"
+            title={t("Configuration remains read-only; protocol edits require a future governed fork workflow")}
           >
-            <Settings2 size={14} /> Config
+            <Settings2 size={14} /> {t("Config")}
           </button>
           <button
             className="workbench-slot-button"
@@ -168,13 +148,9 @@ export function ContextBar() {
             type="button"
             disabled={!control.available}
             onClick={() => setPaletteOpen(true)}
-            title={
-              control.available
-                ? "Open the local governed Command Palette"
-                : "Control Plane unavailable; start scripts/run_workbench_control.py"
-            }
+            title={t(control.available ? "Open the local governed Command Palette" : "Control Plane unavailable; start scripts/run_workbench_control.py")}
           >
-            <Command size={14} /> Commands
+            <Command size={14} /> {t("Commands")}
           </button>
         </div>
       </div>
@@ -185,14 +161,13 @@ export function ContextBar() {
 
 function WorkbenchSidebarFooter() {
   const control = useControlPlane();
+  const { t } = useWorkbenchI18n();
   return (
     <div className="workbench-sidebar-footer">
       <ShieldCheck size={15} />
       <div>
-        <strong>Evidence Plane</strong>
-        <span>
-          GET-only · {control.available ? "local Control connected" : "Control unavailable"}
-        </span>
+        <strong>{t("Evidence Plane")}</strong>
+        <span>{t("GET-only")} · {t(control.available ? "local Control connected" : "Control unavailable")}</span>
       </div>
     </div>
   );
@@ -201,29 +176,21 @@ function WorkbenchSidebarFooter() {
 export function WorkbenchShell({ children }: { children: ReactNode }) {
   const panels = defaultPanelRegistry.list();
   const location = useLocation();
+  const { t } = useWorkbenchI18n();
   const requestedSurface = new URLSearchParams(location.search).get("surface");
-  const configurationSurface =
-    location.pathname === "/widgets" && requestedSurface === "configs";
-  const commandSurface =
-    location.pathname === "/widgets" && requestedSurface === "commands";
+  const configurationSurface = location.pathname === "/widgets" && requestedSurface === "configs";
+  const commandSurface = location.pathname === "/widgets" && requestedSurface === "commands";
 
   return (
-    <div className="workbench-shell">
+    <div className="workbench-shell" data-theme="high-contrast-dark">
       <aside className="workbench-sidebar">
         <div className="brand workbench-brand">
           <div className="brand-mark">FA</div>
-          <div>
-            <strong>FinAgent</strong>
-            <span>Workbench Foundation</span>
-          </div>
+          <div><strong>FinAgent</strong><span>{t("Workbench Foundation")}</span></div>
         </div>
-        <nav
-          className="workbench-navigation"
-          aria-label="FinAgent Workbench modules"
-        >
-          {panels.map((panel) => (
-            <NavigationItem key={panel.panel_id} panel={panel} />
-          ))}
+        <LocaleToggle />
+        <nav className="workbench-navigation" aria-label={t("FinAgent Workbench modules")}>
+          {panels.map((panel) => <NavigationItem key={panel.panel_id} panel={panel} />)}
         </nav>
         <WorkbenchSidebarFooter />
       </aside>
@@ -231,13 +198,7 @@ export function WorkbenchShell({ children }: { children: ReactNode }) {
         <ReadOnlyBanner />
         <ContextBar />
         <div className="workbench-main-slot" data-slot="chart-workspace">
-          {configurationSurface ? (
-            <ConfigurationCatalogSurface surface="configs" />
-          ) : commandSurface ? (
-            <CommandCatalogSurface />
-          ) : (
-            children
-          )}
+          {configurationSurface ? <ConfigurationCatalogSurface surface="configs" /> : commandSurface ? <CommandCatalogSurface /> : children}
         </div>
       </main>
     </div>
@@ -249,59 +210,34 @@ export function WorkbenchProviders({ children }: { children: ReactNode }) {
     defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false, staleTime: 1_500 } },
   }));
   return (
-    <QueryClientProvider client={queryClient}>
-      <WorkbenchQueryProvider>
-        <WorkbenchContextProvider>
-          <ControlPlaneProvider>{children}</ControlPlaneProvider>
-        </WorkbenchContextProvider>
-      </WorkbenchQueryProvider>
-    </QueryClientProvider>
+    <WorkbenchI18nProvider>
+      <QueryClientProvider client={queryClient}>
+        <WorkbenchQueryProvider>
+          <WorkbenchContextProvider>
+            <ControlPlaneProvider>{children}</ControlPlaneProvider>
+          </WorkbenchContextProvider>
+        </WorkbenchQueryProvider>
+      </QueryClientProvider>
+    </WorkbenchI18nProvider>
   );
 }
 
-export function WorkbenchInspectorSlot({
-  title = "Inspector",
-  children,
-}: {
-  title?: string;
-  children: ReactNode;
-}) {
+export function WorkbenchInspectorSlot({ title = "Inspector", children }: { title?: string; children: ReactNode }) {
+  const { t } = useWorkbenchI18n();
   return (
     <aside className="workbench-inspector-slot" data-slot="inspector">
-      <header>
-        <GitBranch size={15} />
-        <strong>{title}</strong>
-      </header>
+      <header><GitBranch size={15} /><strong>{t(title)}</strong></header>
       <div>{children}</div>
     </aside>
   );
 }
 
-export function WorkbenchReservedSlot({
-  kind,
-  title,
-  detail,
-}: {
-  kind: "config" | "command" | "chart";
-  title: string;
-  detail: string;
-}) {
-  const icon =
-    kind === "config" ? (
-      <SlidersHorizontal size={18} />
-    ) : kind === "command" ? (
-      <Command size={18} />
-    ) : (
-      <ChartCandlestick size={18} />
-    );
+export function WorkbenchReservedSlot({ kind, title, detail }: { kind: "config" | "command" | "chart"; title: string; detail: string }) {
+  const { t } = useWorkbenchI18n();
+  const icon = kind === "config" ? <SlidersHorizontal size={18} /> : kind === "command" ? <Command size={18} /> : <ChartCandlestick size={18} />;
   return (
     <section className="workbench-reserved-slot" data-slot={kind}>
-      {icon}
-      <div>
-        <strong>{title}</strong>
-        <p>{detail}</p>
-      </div>
-      <LockKeyhole size={14} />
+      {icon}<div><strong>{t(title)}</strong><p>{t(detail)}</p></div><LockKeyhole size={14} />
     </section>
   );
 }
