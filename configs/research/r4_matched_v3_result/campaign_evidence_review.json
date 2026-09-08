@@ -1,0 +1,39 @@
+{
+  "schema_version": "finagent.r4-campaign-evidence-review.v1",
+  "review_disposition": "R4_RESULT_ACCEPTED",
+  "result_identity": "PASS",
+  "campaign_result_id": "r4-campaign-result-d32ec253d62eb4f9349896b0",
+  "campaign_result_sha256": {
+    "status": "PASS",
+    "value": "5f9cb2b687f5b5750255c4d91e6db273fdf2577a8ce71f33365cddf19789c8ac"
+  },
+  "campaign_review_bundle_sha256": "5e387790ec9b6d3198a2439c02900c1817d742de1b123c854f2ca31d4328c69d",
+  "freeze_binding": "PASS",
+  "campaign_freeze_id": "r4-campaign-freeze-1d12fade12cb269d2b4da416",
+  "campaign_freeze_sha256": "c7ae0d5151f818b3dc190c223cf1663a5d547c1b4ef0c5771553dc50741e41c3",
+  "protocol_binding": "PASS",
+  "protocol_id": "r4-matched-protocol-191d511a8addb59081d261e8",
+  "protocol_version": "r4-matched-v3",
+  "fixture_only": false,
+  "completed_runs": {
+    "status": "PASS",
+    "count": 7,
+    "required_count": 7
+  },
+  "artifact_digests": {
+    "status": "PASS",
+    "passed": 44,
+    "expected": 44,
+    "missing": 0,
+    "mismatch": 0
+  },
+  "provider_usage": "PASS",
+  "post_run_freeze_integrity": "PASS",
+  "post_run_exact_verify": "PASS",
+  "research_admission_integrity": "PASS",
+  "git_environment_integrity": "PASS",
+  "secret_local_path_scan": "PASS",
+  "system_failure": false,
+  "candidate_decision": "NO_ADAPTIVE_CANDIDATE",
+  "agent_value": "INCONCLUSIVE"
+}
