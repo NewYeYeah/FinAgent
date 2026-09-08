@@ -10,7 +10,7 @@ Read:
 2. [`../development/current-plan.md`](../development/current-plan.md);
 3. the current stage plan.
 
-For current R3/R4 work, inspect existing `src/finagent/research/us_a1_*`, `src/finagent/research/us_r3_*` and `src/finagent/agents/r3_*` code/tests before proposing another research runtime.
+Inspect existing research/runtime/source tests before proposing another research runtime. Reuse FactorGraph, MarketState, FactorLibrary, allocator/evaluator and the bounded Agent runtime rather than creating parallel authorities.
 
 ## 2. Research loop
 
@@ -27,157 +27,35 @@ objective
 → freeze candidate or stop
 ```
 
-The Agent chooses development research actions. Deterministic code computes metrics and enforces the admitted scope/budget.
+The Agent chooses development research actions. Deterministic code computes metrics and enforces admitted scope, resource accounting, completeness, candidate and authority gates.
 
 ## 3. Factor representation
 
-Use typed FactorGraph for ordinary formula factors.
-
-Do not replace it with arbitrary model-generated Python merely to gain expressiveness. If a mechanism cannot be represented, first decide whether it is actually:
-
-- a new factor operator;
-- a MarketState feature;
-- an allocation/exposure rule;
-- a portfolio/execution mechanism.
-
-Only the first category necessarily belongs in FactorGraph.
+Use typed FactorGraph for ordinary formula factors. Do not replace it with arbitrary model-generated Python merely to gain expressiveness. If a mechanism cannot be represented, first decide whether it is a factor operator, MarketState feature, allocation/exposure rule or portfolio/execution mechanism.
 
 ## 4. Development feedback
 
-Development feedback is allowed in R4 but must be treated as adaptive exposure.
+Development feedback is allowed in R4 but is adaptive exposure. Keep exact trial identity, failed/invalid/repaired/duplicate attempts, evaluator calls, provider/model identity, tokens/cost/time budget and explicit Agent decisions. Do not discard poor trials because they are inconvenient for Agent-value accounting.
 
-Keep:
+## 5. MarketState and FactorLibrary
 
-- exact trial identity;
-- failed/invalid/repaired/duplicate attempts;
-- evaluator calls;
-- model/provider identity;
-- tokens/cost/time budget;
-- explicit Agent decision after each result.
+The first adaptive MarketState uses train-only StandardScaler plus `sklearn.mixture.GaussianMixture`; the R2 four-state IWM rule remains the deterministic comparator. Market clocks, fit windows, state probabilities and availability must remain explicit and causal.
 
-Do not discard poor trials because they are inconvenient for Agent-value accounting.
+FactorLibrary is the persistent bounded registry for FactorGraphs, lifecycle, global/state-conditioned development evidence, economic diagnostics and provenance. Successful development evaluation never grants Alpha/PAPER/live authority.
 
-## 5. MarketState
+## 6. Deterministic allocation
 
-The first adaptive MarketState is implemented with train-only StandardScaler and
-[scikit-learn GaussianMixture](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html).
-The existing R2 four-state IWM rule remains available as the deterministic comparator.
+The five frozen R4 baselines are:
 
-Install `uv sync --frozen --extra dev --extra adaptive-research`. Run
-`python scripts/run_r4_research_slice.py run --help` for the full command. Supply
-existing local R2 base Parquet, calendar, plan and passed evidence paths, source
-ID/revision, an explicit comma-separated universe, and aware `--fit-start`,
-`--fit-end`, `--evaluation-start`, `--evaluation-end` timestamps. Each window must
-include complete calendar sessions, fit must finish before evaluation, and both
-windows must fit the single annual source artifact. Default proxy is IWM; the
-universe must contain it. Default breadth/top-count is 20/5; small synthetic
-fixtures must declare their smaller breadth/count explicitly.
+| Allocator | Frozen role |
+| --- | --- |
+| EqualWeight | equal factor weights |
+| RollingICWeight | positive completed-session RankIC quality |
+| RollingNetReturnWeight | positive completed-session standalone 5bp return quality |
+| RegimeConditionalWeight | then-available state-conditioned historical quality |
+| RidgeMetaAllocator | train-only regularized meta allocation with lagged features |
 
-The CLI registers three existing R3 prototypes with their prior no-confirmed-Alpha
-terminal in provenance, performs no candidate search, and leaves them TESTING.
-`--output` receives `request.json`, `market_state_model.json`, `result.json` and
-`factor_library.sqlite`; unsuccessful fitting preserves `failure.json` and the
-original request. Use a new output directory for a changed request, input or
-implementation. Repeating identical inputs reproduces the result and does not
-duplicate registry evaluations (it currently recomputes the bounded slice).
-
-Inspect without mutation:
-
-```bash
-python scripts/run_r4_research_slice.py inspect --library <output>/factor_library.sqlite
-python scripts/run_r4_research_slice.py inspect --library <output>/factor_library.sqlite --factor <candidate-id>
-```
-
-`--factor` inspection also supports an aware `--as-of` cutoff. Result files contain
-global and soft-state-weighted coverage, signal-target turnover, 15m/60m RankIC
-decay and rank similarity. Economic diagnostics separately apply each fixed argmax
-state as an entry gate under the full 0/1/5/10 bps grid, with delayed entries and
-ungated exits. These scenarios are hypothetical costs, not measured broker fills.
-Missing entire sessions invalidate economic NAV rather than disappearing or
-becoming a successful cash day. Missing labels reduce the reported observation
-weight without changing formation coverage. These are development diagnostics,
-not evidence that MarketState adds value or that Alpha/PAPER/live is accepted.
-
-## 6. Factor allocation
-
-Five deterministic baselines now share one frozen pool and execution policy:
-
-| Allocator | Frozen rule | Fallback |
-| --- | --- | --- |
-| EqualWeight | `1 / factor_count`; ignores performance history | none |
-| RollingICWeight | positive part of mean completed-session RankIC | equal weights |
-| RollingNetReturnWeight | positive part of mean standalone session return at 5bp | equal weights |
-| RegimeConditionalWeight | historical decision IC weighted by then-available state probabilities; normalize each state's positive qualities, then mix with current soft probabilities | equal component weights; current state unavailable means equal weights |
-| RidgeMetaAllocator | [sklearn Ridge](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Ridge.html), positive coefficients, alpha 1, train-only StandardScaler; lagged mean IC/net-bps predict next-session standalone net-bps | equal weights on missing fit/features or all nonpositive predictions |
-
-Rolling features use the last **20 completed sessions**, requiring **5 valid
-sessions** per quality; Ridge requires **8 pooled mature training examples**.
-These are fixed baseline settings, not tuned to the reported results. Ridge
-coefficients remain frozen within evaluation; its lagged quality inputs update
-after each session. Conditional IC requires five supported historical sessions
-and retains probabilities at the exact historical decision, not a retrospective
-label. No whole-window FactorLibrary aggregate metric enters an allocator.
-
-Run `python scripts/run_r4_walkforward.py --help`. Use the same source/calendar/
-base-plan/base-evidence, source ID/revision and explicit universe as the first
-slice, plus `--library <existing-factor-library.sqlite>`, `--folds <folds.json>` and
-`--output <new-directory>`. The library is read-only input; all registered factors
-are used unless `--factor-ids` freezes an explicit subset. Rejected/retired factors
-fail the request. Defaults remain IWM and breadth/top-count 20/5; controlled small
-fixtures must explicitly supply their proxy and smaller breadth/count.
-
-The fold file is a JSON array of 2–12 chronological folds, with nonoverlapping
-evaluation windows. Use aware timestamps and complete sessions in the bound year:
-
-```json
-[
-  {
-    "name": "fold-1",
-    "train": {"start": "2025-01-02T00:00:00+00:00", "end": "2025-02-03T00:00:00+00:00"},
-    "state_fit_end": "2025-01-13T00:00:00+00:00",
-    "evaluation": {"start": "2025-02-03T00:00:00+00:00", "end": "2025-02-10T00:00:00+00:00"}
-  },
-  {
-    "name": "fold-2",
-    "train": {"start": "2025-01-02T00:00:00+00:00", "end": "2025-02-10T00:00:00+00:00"},
-    "state_fit_end": "2025-01-20T00:00:00+00:00",
-    "evaluation": {"start": "2025-02-10T00:00:00+00:00", "end": "2025-02-17T00:00:00+00:00"}
-  }
-]
-```
-
-Adapt dates to the admitted calendar before running. Each fold refits GMM using
-only its declared TRAIN prefix. Subsequent TRAIN sessions initialize genuinely
-causal state/performance history; prefix decisions have unavailable states. Ridge
-uses mature TRAIN labels and features formed from earlier completed sessions.
-All labels and holdings finish within their session; releases occur at close,
-and the next session's allocator input cutoff cannot exceed its open. This
-prevents label overlap across the TRAIN/evaluation boundary without dropping
-extra sessions for a nominal embargo.
-
-Normalization ranks every factor on the same current common-support intersection.
-All arms then use identical full top-K basket budgets, one-bar delay, four-bar
-holding, rolling sleeves and 0/1/5/10bp costs. A fixed score offset preserves
-ranking even when combined scores are negative or tied; state probabilities
-change factor weights only. Missing common support remains explicit and shared.
-
-Outputs remain `request.json`, `result.json`, `failure.json` on failure, and
-`factor_library.sqlite`. The request binds folds, definitions, configurations,
-source files, code and dependencies before evaluation reads. The result retains
-fold-local models, session performance releases, all five FactorWeightSeries,
-targets, history cutoff/identity, fallbacks and state probabilities, plus each
-fold/arm/cost's economic and weight metrics. A failed later fold retains already
-completed fold evidence. Identical replay is idempotent; changed requests require
-a new output directory.
-
-Session release `decision_time` identifies the first covered formation; nested
-decision records preserve each IC's actual decision/outcome clocks and then-known
-state. The standalone 5bp session return is stored once. State-conditional strategy
-metrics describe NAV changes using the state known at each interval's beginning;
-they are not separate investable state strategies. Overall mean/worst fold return
-is unavailable if any fold's NAV is unresolved, and fold averages are not stitched
-NAV. These are development comparisons, without Alpha/PAPER/live authority or
-evidence yet of GMM/allocator profitability. The bounded R4 Controller reuses this core through explicit research-time admission.
+All share the same normalization, basket budget, delay, holding and 0/1/5/10bp cost scenarios. Missing whole sessions remain explicit rather than disappearing into a successful cash result. These are development comparisons, not Alpha/PAPER/live evidence.
 
 ## 7. Exploration versus confirmation
 
@@ -188,88 +66,82 @@ candidate strategy or NO_ADAPTIVE_CANDIDATE
 development evidence only
 ```
 
-R5 result:
+R5 result, only when an R4 candidate exists:
 
 ```text
 CONFIRMED / REJECTED / INSUFFICIENT_INDEPENDENT_EVIDENCE
 ```
 
-Never describe an adaptively optimized R4 development result as independent Alpha evidence.
+Never describe adaptively optimized R4 development evidence as independent Alpha evidence.
 
 ## 8. Research Console
 
-During R4, expose only what is needed to understand/control the loop:
+During R4, expose only what is needed to understand/control the loop: objective, Agent actions/tool calls, experiment cards, MarketState, factor set/allocator, remaining budget and explicit next decision. The full Workbench 2.0 productization is separate.
 
-- objective;
-- Agent actions/tool calls;
-- experiment result cards;
-- current MarketState;
-- selected factor set/allocator;
-- remaining budget;
-- explicit next decision.
+The Controller uses the existing ResearchCapabilityRuntime/provider/ResearchLedger/audit boundaries. It may inspect admitted state/factors/history, propose/validate/evaluate factors, propose factor sets/allocators, request deterministic portfolio comparisons and finalize a development recommendation. It cannot change frozen costs, holding/delay, allocator hyperparameters, budgets or final authority.
 
-The full Workbench 2.0 productization is a later stage.
+Retrospective artifacts remain `development_only = true` and non-independent. `DEVELOPMENT_CANDIDATE_PROPOSED` and `NO_CANDIDATE_RECOMMENDED` are Controller recommendations; the campaign terminal is owned by the deterministic host.
 
-The implemented Controller uses the existing `ResearchCapabilityRuntime`, provider and ResearchLedger. It can inspect admitted state/factors/literature/all trial outcomes, validate and propose FactorGraphs, select 2..20 nonterminal canonical factors, choose one of the five frozen allocator configurations, request deterministic evaluations/comparisons, record lifecycle decisions and finalize a development recommendation. It cannot change costs, holding/delay, quality lookback (20/5), Ridge alpha (1), budgets or final authority. Portfolio requests always run all five comparator arms. Proposed graphs must encode their own positive hypothesis direction; use the existing `NEGATE` operator for an inverse signal, with no allocator sign flip.
+## 9. Campaign admission, review, execution and result recording
 
-Default `PREDECLARED_STATIC` admission still rejects definitions created after first TRAIN. The Controller explicitly selects `ADAPTIVE_RETROSPECTIVE` with an immutable proposal envelope/request. `proposal_id`, `factor_definition_digest`, `proposed_at`, run/actor/scope and `visible_history_id` identify the actual research decision; `proposal_context_id` names that same exact bounded explicit-context digest. `visible_experiment_ids` and the history cutoff cannot include a later result. Successful factor development evaluation admits TESTING, never automatic ACTIVE.
+The accepted R4 governance path is now complete for the first `r4-matched-v3` cycle:
 
-Market clocks describe historical causal information. Research proposal clocks describe when the definition really existed. The ledger publishes a result only after evaluation completes (`completed_at`), so it can affect subsequent Agent actions only. Replay reuses committed requests and identical experiment specifications without another evaluation charge. Failed/negative/duplicate attempts remain visible. Unknown pending execution or an audit mismatch stops the run for reconciliation.
-
-Retrospective artifacts bind `evaluation_mode = adaptive_development_retrospective`, `historically_predeclared = false`, `adaptive_search_exposed = true`, `development_only = true` and false independent/Alpha/PAPER/live flags. Internal walk-forward partitions are called **fold evaluation**; the whole Agent search remains exposed development evidence. `DEVELOPMENT_CANDIDATE_PROPOSED` and `NO_CANDIDATE_RECOMMENDED` are Controller recommendations, not the R4 stage terminal. A frozen matched-budget comparison and later independent confirmation remain required.
-
-## Campaign admission, freeze review and execution
-
-`scripts/r4_campaign.py` provides explicit `probe`, `admit-source`, `freeze`, `verify`, `record-blocker` and `run` commands. Normal Workbench startup does not discover keys, select another provider or acquire campaign authority, and there is no browser campaign-run POST. The explicit profile is `r4_deepseek_v4_pro`; its existing StrictDeepSeek transport uses thinking disabled, temperature 0.7, strict JSON and one attempt. This does not change the shared generic-provider default.
-
-Provider probing remains a separately authorized non-research action; do not run it as part of ordinary development or CI. The original 2026-09-06 attempt failed before a verified identity/usage receipt was retained. An earlier separately authorized real probe on **2026-09-07** produced a complete verified transport receipt: authenticated endpoint/quota transport succeeded, `deepseek-v4-pro` response identity was present, response ID and system fingerprint were available, prompt/completion/cache usage was complete, and conservative cost accounting was retained. The attempt then failed at `phase = strict_action`; no `ProviderAdmission` was created. That failure remains historical evidence. After hardening, a later separately authorized 2026-09-07 non-research probe passed the exact R4 action and created accepted ProviderAdmission. Its accepted v3 freeze passed two exact-ID verifications and 34/34 invariants, and independent review returned `EVIDENCE_ACCEPTED`. The [accepted evidence record](../../configs/research/r4_matched_v3_accepted/README.md) resolves B-005. B-006 remains OPEN: no real matched campaign, Agent-value result, accepted AdaptiveStrategy or R4 terminal exists.
-
-The hardened probe aligns its provider-visible contract with the actual R4 capability runtime. Its context contains the public `r4_manifest()` as `capability_set`, a frozen exact `PROBE_ACTION`, `research_history = false`, empty state/resources/feedback, and no market values, factor evidence, PnL, research objective or campaign result. The model must still return the exact target action; “any valid R4 action” is not sufficient. A valid but different typed action records `probe_contract_mismatch`. A strict decoder failure records `probe_action_contract_failed` plus only a bounded allowlisted `strict_action_error_code`; raw returned action text, raw exception/provider content, hidden reasoning and credentials are never persisted. The existing verified transport receipt is retained when available.
-
-`provider_binding()` now includes `probe_contract_digest`, derived from the frozen probe context/action contract. A change to `r4_manifest()`, `PROBE_ACTION` or the probe-context semantics therefore changes provider admission identity. The binding remains secret-free and contains no local path. The transport still has one attempt and no fallback. A failed output directory is immutable evidence and cannot be retried in place.
-
-The historical v1 source admission was created with this command (history only, not an instruction to recreate admission):
-
-```powershell
-.venv/Scripts/python.exe scripts/r4_campaign.py admit-source --source-config configs/research/r4_development_2025.json --output reports/r4_campaign_admission/development_2025_v1
+```text
+ProviderAdmission
+→ accepted CampaignFreeze
+→ independent freeze review
+→ one separately authorized real matched campaign
+→ independent CampaignResult review
+→ canonical repository-safe result recording
 ```
 
-This binds the existing annual R2 artifact, calendar, plan/evidence, explicit universe and actual-time seed registrations. It fits only the TRAIN-prefix state model; it does not run factor/portfolio economics. Do not overwrite that directory. Its immutable manifest is also embedded in the historical [v2 blocked design](../../configs/research/r4_matched_v2_blocked/campaign_freeze.json). The accepted v3 freeze instead reuses ResearchAdmission `r4-research-admission-61df92c1caacb80e369f538f`, retained in the existing `development_2025_v2_main_289c1418` admission directory. Reuse the matching immutable admission; do not rebuild or rename it for publication.
+The admission/freeze record is [`../../configs/research/r4_matched_v3_accepted/README.md`](../../configs/research/r4_matched_v3_accepted/README.md). The accepted result record is [`../../configs/research/r4_matched_v3_result/README.md`](../../configs/research/r4_matched_v3_result/README.md).
 
-The corrected protocol version is code-owned by `src/finagent/research/r4_campaign_protocol.py`: normal accepted freeze generation uses `r4-matched-v3`, while a newly recorded provider-blocked design uses `r4-matched-v3-blocked-provider`. The operator CLI does not expose protocol-version selection; ordinary commands inherit those canonical versions automatically. Test-only variants such as `r4-matched-v3-test` are restricted to fixture generation and are not valid real freezes.
+Exact accepted identities are:
 
-A real campaign is deliberately a multi-step human-governed sequence. For the accepted evidence recorded above, steps 1–5 have completed and execution remains stopped. Do not repeat completed admission/freeze work for this evidence PR or combine freeze and run in one shell expression or wrapper:
+- ResearchAdmission `r4-research-admission-61df92c1caacb80e369f538f`;
+- ProviderAdmission `r4-provider-admission-b78a63f33352d5a01bf2a4ca`;
+- CampaignFreeze `r4-campaign-freeze-1d12fade12cb269d2b4da416`;
+- Protocol `r4-matched-protocol-191d511a8addb59081d261e8` / `r4-matched-v3`;
+- CampaignResult `r4-campaign-result-d32ec253d62eb4f9349896b0`;
+- CampaignResult SHA256 `5f9cb2b687f5b5750255c4d91e6db273fdf2577a8ce71f33365cddf19789c8ac`;
+- accepted result review disposition `R4_RESULT_ACCEPTED`.
 
-1. obtain a separately authorized successful provider probe/admission;
-2. verify the intended source admission;
-3. create a fresh accepted v3 freeze;
-4. verify the freeze against current provider/source/code/environment bindings;
-5. independently review the exact `campaign_freeze_id`, then **STOP**;
-6. only under a separately authorized local execution plan, revalidate bindings and run that exact reviewed freeze ID. Evidence recording or PR merge is not this authorization.
+The real matched campaign was invoked exactly once. It completed deterministic, selection-01/02/03 and discovery-01/02/03 in that order, with no automatic retry, rerun or provider fallback. The accepted deterministic-host result is:
 
-For a separately authorized future admission cycle, the creation/verification commands are shown below. They must not regenerate the already accepted freeze for publication:
-
-```powershell
-python scripts/r4_campaign.py freeze --research-admission RESEARCH_ADMISSION_DIRECTORY --provider-admission ACCEPTED_PROVIDER_JSON --output NEW_CAMPAIGN_DIRECTORY
-python scripts/r4_campaign.py verify --research-admission RESEARCH_ADMISSION_DIRECTORY --provider-admission ACCEPTED_PROVIDER_JSON --output NEW_CAMPAIGN_DIRECTORY --accepted-freeze-id EXACT_ACCEPTED_ID
+```text
+AgentValue = INCONCLUSIVE
+successful_agent_runs = 0
+median_portfolio_evaluation_saving = 3
+deterministic_oracle = null
+candidate_decision = NO_ADAPTIVE_CANDIDATE
+candidate_id = null
 ```
 
-Only when a new local campaign execution plan explicitly authorizes it after review, the operator command for the original full freeze is:
+### Completeness interpretation
 
-```powershell
-python scripts/r4_campaign.py run --research-admission RESEARCH_ADMISSION_DIRECTORY --provider-admission ACCEPTED_PROVIDER_JSON --output NEW_CAMPAIGN_DIRECTORY --accepted-freeze-id EXACT_ACCEPTED_ID --config configs/llm.toml
-```
+The frozen Primary search structurally contained 4 factor sets x 5 allocators = 20 deterministic strategies, all of which were present. Economic completeness was different: 0/20 deterministic strategies had complete three-fold evidence. Every deterministic strategy had `evaluable_folds = 0/3`; unavailable sessions ranged from 39 to 64; and all 30 Primary candidate rows were incomplete under the Candidate completeness rule.
 
-`run` requires all five operator bindings explicitly. It does not infer a freeze from a directory, newest JSON, Workbench state or environment discovery. It does not create a ProviderAdmission, probe, freeze, blocker, protocol version, factor pool, fold, budget, cost or stopping rule. It exposes no `--campaign-version`, `--force`, `--retry`, `--rerun`, `--reset` or overwrite control. The real path accepts only `status = ACCEPTED` and `fixture_only = false`; blocked and fixture freezes fail closed through `verify_campaign()` before research calls.
+Therefore no deterministic economic oracle could be constructed. Median evaluation saving of 3 is not positive Agent-value evidence. The accepted `NO_ADAPTIVE_CANDIDATE` is **coverage/completeness-driven**, not a claim that all strategies lost money or that economic performance was proven negative.
 
-If `campaign_result.json` already exists and its artifact digests/result identity verify, `run_campaign()` returns the committed result without another provider or evaluator call. Infrastructure/provider/evaluator/audit uncertainty remains a campaign system failure with no automatic retry. CLI stdout is only a bounded identity/terminal/authority summary; the immutable result artifact remains the numerical/evidence authority. A successful R4 run still carries development-only authority and does not confirm Alpha, accept PAPER, authorize Live, or enter R5 automatically.
+This is not `SYSTEM_FAILURE`. All deterministic evaluations completed as `PORTFOLIO_EVALUATED`, all required Primary runs completed, and discovery-03's `SLOT_ATTEMPTS_EXHAUSTED` is an admitted normal run terminal. System failure remains reserved for the frozen infrastructure/provider/evaluator/audit failure semantics.
 
-If an already-recorded failed provider lineage must be retained under the corrected design, `record-blocker` likewise needs no version flag:
+### Provider/resource and reliability accounting
 
-```powershell
-python scripts/r4_campaign.py record-blocker --research-admission RESEARCH_ADMISSION_DIRECTORY --probe-directory FAILED_PROBE_DIRECTORY --output NEW_BLOCKED_DIRECTORY
-```
+The accepted aggregate campaign accounting is 100 verified provider calls, 317104 input tokens, 10452 output tokens, 327556 charged tokens, 437643 microusd ledger cost and six portfolio evaluations. It is ledger/provider accounting, not a reconciled provider invoice.
 
-The historical v1/v2 blocked directories and their old `minimum_mean_fold_improvement = 0.002` semantics are immutable evidence. Their labels (`r4-matched-v1[-blocked-provider]` and `r4-matched-v2[-blocked-provider]`) are superseded and cannot label a newly generated corrected artifact. The historical v2 blocked ID cannot satisfy real `verify` or `run`. The separately reviewed accepted v3 freeze now exists; use its original full artifact and exact ID only under the next explicit execution authorization.
+All negative operational evidence is retained. There were 62 rejected Agent action attempts. Discovery-03 used 48 provider calls, retained 44 rejected actions and ended `SLOT_ATTEMPTS_EXHAUSTED`; 43 rejections were `candidate_not_proposed_in_run`. This is not a ProviderAdmission failure and must not be hidden by weakening the typed tool contract.
 
-`campaign_implementation()` binds tracked executable `src/`, `scripts/`, Workspace code and dependency intents, including `scripts/r4_campaign.py`. The accepted freeze was generated after this execution operator merged on main `edf7c1942b3acf97926390e45bd46c8ac9aacbee`. Any later executable change causes implementation drift and requires a new freeze; an existing accepted freeze is never modified to tolerate new code. No local OHLCV or secrets belong in Git. The full accepted freeze also stays local because its embedded input bindings contain absolute local paths. The public sanitized attestation records the original ID/hash and is neither a replacement freeze nor an executable input. Never edit the full freeze, re-freeze, or run a campaign merely to publish evidence.
+## 10. No result-driven rerun and no automatic R5
+
+The first `r4-matched-v3` matched campaign is historical accepted evidence. **Do not rerun it because of its result.** Any future R4 research attempt must be a **new versioned R4 cycle** with its own preregistered semantics and evidence identities. The accepted result must not be reinterpreted under later executable code.
+
+The accepted campaign produced no development-candidate artifact and no AdaptiveStrategy. Accordingly R5 is **not started** and `r5_eligible = false`. Alpha remains not confirmed, PAPER remains not accepted and Live remains not authorized.
+
+The current roadmap already permits either a future versioned R4 research cycle or WORKBENCH-2 productization after stable R4 semantics. The result-recording phase does not invent or force which route is next.
+
+## 11. Repository-safe evidence boundary
+
+Full immutable campaign artifacts remain outside repository publication when they contain local/private execution bindings. Repository evidence records exact IDs/hashes, accepted review disposition, aggregate/run-level accounting and interpretation without reconstructing the original result bytes.
+
+Evidence/governance development must not call the real provider, access campaign credentials/private market inputs, regenerate ProviderAdmission or CampaignFreeze, or execute `r4_campaign.py run`. GitHub CI validates repository implementation/docs/evidence packaging only; it is not a substitute campaign execution environment.
