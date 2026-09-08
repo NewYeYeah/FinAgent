@@ -6,7 +6,7 @@ Test whether an Agent adds measurable value by **choosing research directions, m
 
 R4 is a development/exploration program. It may use adaptive feedback, but its results are not independent confirmation.
 
-Implemented and completed for the first frozen cycle: causal MarketState/FactorLibrary, five deterministic allocator baselines, session walk-forward evidence, bounded Agent Research Controller, thin Research Console, matched-campaign protocol/runner, guarded real campaign execution operator, accepted real ProviderAdmission and independently reviewed `r4-matched-v3` freeze. The separately authorized matched campaign was subsequently executed exactly once and independently reviewed as `R4_RESULT_ACCEPTED`. B-005 and B-006 are resolved. The frozen R4 terminal is `NO_ADAPTIVE_CANDIDATE`; Agent value is `INCONCLUSIVE`; no AdaptiveStrategy exists. The R4 exit gate is satisfied for this cycle, with development-only authority unchanged.
+Implemented: causal MarketState/FactorLibrary, five deterministic allocator baselines, session walk-forward evidence, bounded Agent Research Controller, a thin Research Console, the matched-campaign protocol/runner with the Primary reachability correction, a guarded real campaign execution operator, and a provider-admission probe contract aligned to the real R4 capability manifest. Real ProviderAdmission is accepted, the independently reviewed ACCEPTED v3 freeze passed exact verification, and the separately authorized real matched campaign completed exactly once with independent result review `R4_RESULT_ACCEPTED`. B-005 and B-006 are resolved. The frozen R4 terminal is `NO_ADAPTIVE_CANDIDATE`; Agent value is `INCONCLUSIVE`; no AdaptiveStrategy exists. The R4 exit gate is satisfied for this cycle with development-only authority unchanged.
 
 The current Controller admits frozen quality lookback/minimum 20/5 and Ridge alpha 1. It always runs all five comparators with common execution/cost semantics. MarketState changes factor weights only; exposure timing is a later separate ablation. Default `PREDECLARED_STATIC` rejects post-TRAIN definitions; explicit `ADAPTIVE_RETROSPECTIVE` permits proposals created now and frozen before retrospective development evaluation. No proposal dates are backfilled. Agent feedback remains exposed development evidence even when the numerical evaluator uses train-only models and causal fold evaluation.
 
@@ -28,37 +28,152 @@ Secondary questions:
 
 Keep the existing R2 four-state IWM rule as the deterministic baseline.
 
-The first probabilistic model uses `sklearn.mixture.GaussianMixture` with train-only feature fitting, explicit state probabilities/availability and reproducible model identity. All historical signals and transformations retain causal session/clock semantics.
+Implement a first probabilistic model using mature library code, initially `sklearn.mixture.GaussianMixture` unless evidence justifies another model.
+
+Causal candidate features may include:
+
+```text
+market/proxy trailing return
+intraday or trailing realized volatility
+cross-sectional breadth
+cross-sectional dispersion
+same-time-of-day relative volume
+open-relative market return
+```
+
+All scalers, thresholds, PCA/components, cluster parameters and state mapping must be fit using only data available in the allowed training/development window. Realtime state uses filtering/current features; no future-sequence smoothing is permitted.
+
+Persist/model-bind at least:
+
+```text
+MarketStateModel identity
+feature definitions
+fit window
+state probabilities
+availability time
+state interpretation mapping
+```
 
 ### 2. FactorLibrary
 
-The research registry remains the durable FactorGraph lifecycle/evidence surface. It retains identity, hypothesis/source, lifecycle state, global/state-conditioned development metrics, turnover/coverage/decay, economic diagnostics, correlation/similarity and provenance. It is a bounded interpretable library, not unbounded formula generation.
+Create a research-level registry over current FactorGraphs rather than another denominator-specific cache architecture.
+
+Each factor should expose:
+
+```text
+identity / family / hypothesis / source
+status: PROPOSED | TESTING | ACTIVE | DORMANT | REJECTED | RETIRED
+global development metrics
+metrics by market state
+turnover / coverage / decay
+net economic metrics under frozen cost scenarios
+correlation / behavioral similarity
+Agent/manual/programmatic provenance
+```
+
+Start with a deliberately small interpretable factor pool (roughly 8–20 mechanisms/variants) plus bounded Agent proposals. Do not reopen unbounded formula generation.
 
 ### 3. Non-Agent allocator baselines
 
-The frozen deterministic comparisons are:
+Before giving Agent allocation authority, implement strong deterministic comparisons:
 
 ```text
 EqualWeight
 RollingICWeight
 RollingNetReturnWeight
 RegimeConditionalWeight
-RidgeMetaAllocator
+regularized linear / ridge-style meta allocator
 ```
 
-They share frozen factor-pool, execution and cost semantics and provide the non-Agent comparison authority for the matched campaign.
+Use Optuna only when parameter search is actually required; preserve all attempted trials and freeze its search budget before looking at the final comparison.
+
+A market-state layer may also control gross exposure/cash. Do not force a market-timing mechanism through a cross-sectional RankIC-only gate.
 
 ### 4. Agent Research Controller
 
-The Controller extends the existing R3 capability runtime. Its typed actions cover admitted inspection, factor lifecycle, factor-set/allocator proposals, deterministic evaluations/comparisons, budget decisions and final recommendation. It cannot alter frozen thresholds, erase failed trials, access R5 sealed evidence, own broker/account truth or grant safety/live authority.
+Extend the existing R3 capability runtime rather than replacing it.
+
+Target controlled actions:
+
+```text
+inspect_market_state
+inspect_factor_library
+inspect_factor
+inspect_experiment_history
+read_literature
+
+propose_factor
+validate_factor
+evaluate_factor
+
+propose_factor_set
+propose_allocator
+evaluate_portfolio
+
+compare_experiments
+allocate_budget
+retire_hypothesis
+finalize_candidate
+```
+
+Agent may decide:
+
+- which admitted mechanism to investigate next;
+- which factors to keep/retire/test together;
+- which admitted allocator/bounded parameters to try;
+- which ablation to request;
+- how to spend the remaining development experiment budget;
+- when to stop a failed hypothesis family.
+
+Agent may **not** decide:
+
+- final statistical/Alpha thresholds after seeing results;
+- which failed trials disappear from accounting;
+- access to R5 sealed evidence;
+- broker/account truth;
+- safety limits or live-capital authority.
 
 ### 5. Thin Research Console
 
-The R4 console exposes the objective, Agent action stream, experiment cards, MarketState, factor set/allocator, remaining budget and explicit Agent decisions. It is not a financial-calculation authority and is not the full Workbench 2.0 redesign.
+R4 should expose the research loop early through a minimal extension of the existing Workbench, not a full redesign.
+
+Minimum view:
+
+```text
+current research objective
+Agent tool/action stream
+experiment result cards
+MarketState snapshot
+current factor set / allocator
+remaining budget
+explicit Agent decision / next action
+```
+
+Prefer an AG-UI adapter for standardized Agent event/tool/state streaming if a bounded spike integrates cleanly with the existing runtime. Do not migrate the Agent backend to LangGraph/CrewAI/AutoGen solely for UI convenience.
 
 ### 6. Controlled comparison
 
-The first real matched comparison is complete. It retained strategy outcomes and research resources under the frozen protocol, including LLM calls/tokens/cost, portfolio evaluations and failed/rejected actions. The repository-safe result evidence is recorded at [`../../../configs/research/r4_matched_v3_result/README.md`](../../../configs/research/r4_matched_v3_result/README.md).
+At minimum compare:
+
+```text
+static equal-weight factor pool
+best deterministic rolling allocator
+regime-conditional deterministic allocator
+Agent-controlled adaptive allocator/research loop
+```
+
+Keep factor pool/data/cost assumptions and allowed evaluation budget comparable. Report both strategy outcome and research resources:
+
+```text
+net return / Sharpe-like risk-adjusted metric / drawdown
+worst state / stability
+turnover and costs
+factor concentration / redundancy
+number of proposals/evaluations
+LLM calls/tokens/cost
+failed/duplicate/repaired trials
+wall-clock or evaluator budget
+```
 
 ## Leakage and adaptive-overfit rules
 
@@ -71,6 +186,22 @@ R4 may adapt to the development set. Therefore:
 - retain every Agent/Optuna/manual trial in the effective development search record;
 - never describe R4 p-values as independent confirmation of an adaptively tuned final strategy.
 
+## Open-source reuse
+
+Priority:
+
+```text
+scikit-learn GMM          market-state baseline
+Optuna                    bounded deterministic search where needed
+existing FactorGraph      factor representation/execution
+existing R3 runtime       Agent capability/ledger
+existing evaluator        economics
+ECharts/React Flow        thin console views
+AG-UI                     candidate Agent/UI event protocol
+```
+
+PyPortfolioOpt may be used as a comparator where its portfolio problem matches the experiment, but it must not replace FinAgent's authoritative historical execution/cost semantics.
+
 ## Non-goals
 
 - Tick/LOB/order-flow research;
@@ -80,85 +211,56 @@ R4 may adapt to the development set. Therefore:
 - broker mutation/PAPER;
 - independent Alpha certification.
 
-## Accepted matched-campaign terminal
+## Suggested PR slices
 
-The accepted result binds:
+Natural decomposition, subject to reviewability rather than a fixed count:
 
-- execution main `276846f5d83abe9753614e90a24613e176859f61`;
-- frozen executable main `edf7c1942b3acf97926390e45bd46c8ac9aacbee`;
-- ResearchAdmission `r4-research-admission-61df92c1caacb80e369f538f`;
-- ProviderAdmission `r4-provider-admission-b78a63f33352d5a01bf2a4ca`;
-- CampaignFreeze `r4-campaign-freeze-1d12fade12cb269d2b4da416`, SHA256 `c7ae0d5151f818b3dc190c223cf1663a5d547c1b4ef0c5771553dc50741e41c3`;
-- Protocol `r4-matched-protocol-191d511a8addb59081d261e8` / `r4-matched-v3`;
-- CampaignResult `r4-campaign-result-d32ec253d62eb4f9349896b0`, SHA256 `5f9cb2b687f5b5750255c4d91e6db273fdf2577a8ce71f33365cddf19789c8ac`.
+1. MarketState + FactorLibrary vertical slice.
+2. Deterministic allocators + adaptive portfolio evaluator.
+3. Agent Research Controller + thin Research Console.
+4. Separately admitted and preregistered matched-budget comparison/campaign after Controller/console merge and repository-state recheck. This slice is now complete through the accepted `NO_ADAPTIVE_CANDIDATE` result; it was executed in the separate Offline Testing Phase, not by an evidence PR.
 
-Exactly one real campaign invocation completed. There was no automatic retry, rerun or provider fallback. The completed run order was:
+Do not split each contract/cache/statistic into its own PR.
 
-```text
-deterministic
-selection-01
-selection-02
-selection-03
-discovery-01
-discovery-02
-discovery-03
-```
+## Campaign admission, frozen design and accepted result
 
-All required Primary runs completed and the artifact digest audit was 44/44 PASS. The deterministic host assessment is:
+The engineering boundary, provider admission, accepted freeze and first real matched execution are complete. Corrected protocol generation is code-owned as `r4-matched-v3`; a newly recorded provider-blocked design uses `r4-matched-v3-blocked-provider`. The operator CLI does not choose these labels. The guarded `run` command is a thin layer over `verify_campaign()` and `run_campaign()`: it requires explicit research admission, accepted provider admission, provider config, campaign directory and the exact human-reviewed accepted freeze ID. It cannot probe, freeze, record a blocker, change protocol/research settings, retry, force, reset or use fixture/blocked authority as a real campaign. Browser/Workbench receives no campaign-run control. The v1/v2 blocked artifacts under `configs/research/r4_matched_*_blocked/` are immutable history and retain their old +0.002 Agent-value semantics. In particular, the retained historical v2 artifact has status `BLOCKED_PROVIDER_ADMISSION`, protocol ID `r4-matched-protocol-56a7f58549c2bc2d9cba2c78` and freeze ID `r4-campaign-freeze-51cdf9a05864e90ffe5310bd`; it is never accepted by the runner. Those v1/v2 labels cannot be reused for newly generated corrected artifacts. Real 2025 source admission contains no factor/portfolio evaluation results.
 
-```text
-AgentValue = INCONCLUSIVE
-basis = research_efficiency_under_exhaustive_oracle
-successful_agent_runs = 0
-median_portfolio_evaluation_saving = 3
-deterministic_portfolio_evaluations = 4
-deterministic_oracle = null
-candidate_decision = NO_ADAPTIVE_CANDIDATE
-candidate_id = null
-decision_authority = deterministic_host
-```
+The [accepted freeze evidence record](../../../configs/research/r4_matched_v3_accepted/README.md) binds ProviderAdmission `r4-provider-admission-b78a63f33352d5a01bf2a4ca`, ResearchAdmission `r4-research-admission-61df92c1caacb80e369f538f`, freeze `r4-campaign-freeze-1d12fade12cb269d2b4da416` and protocol `r4-matched-protocol-191d511a8addb59081d261e8`. Exact freeze verification passed twice and 34/34 invariants passed. The full freeze stays local immutable authority; the public attestation is an ID/hash reference only. The [accepted campaign result record](../../../configs/research/r4_matched_v3_result/README.md) similarly references the original immutable CampaignResult rather than reconstructing it.
 
-The Primary run assessments are fixed as follows:
+Provider admission remains exact and fail-closed. The real R4 runtime exposes its typed capability contract as `capability_set = capabilities.manifest()`. The non-research provider probe sends the same public `r4_manifest()` together with a frozen exact `PROBE_ACTION`, empty state/resources/feedback and `research_history = false`; it supplies no market data, factor evidence, PnL, research objective or campaign result. `provider_binding()` includes a deterministic `probe_contract_digest`, so changes to the R4 manifest, exact probe action or probe-context semantics change future provider-admission identity. A valid but different R4 action remains `probe_contract_mismatch`; the acceptance threshold is not weakened to “any valid action.” Strict decoder failures retain only a bounded allowlisted `strict_action_error_code`, never raw model output or exception text.
 
-| Run | completion_status | portfolio evaluations | saving | oracle_noninferior | efficiency_success |
-| --- | --- | ---: | ---: | --- | --- |
-| selection-01 | `COMPLETE_NO_CANDIDATE` | 0 | 4 | false | false |
-| selection-02 | `COMPLETE_NO_CANDIDATE` | 1 | 3 | false | false |
-| selection-03 | `COMPLETE_NO_CANDIDATE` | 1 | 3 | false | false |
+The original 2026-09-06 non-research probe failed before it retained an accepted identity/usage receipt. A later separately authorized real non-research probe on **2026-09-07** reached the transport boundary successfully: credential use/endpoint/quota succeeded, the response identified `deepseek-v4-pro`, response ID and system fingerprint were present, prompt/completion/cache usage was complete, and conservative cost accounting was retained in a verified transport receipt. It then failed in `phase = strict_action`; no `ProviderAdmission` was created. That failed attempt remains valid history. After probe hardening, a later separately authorized 2026-09-07 non-research probe passed the exact typed action and produced the accepted ProviderAdmission and v3 freeze above. Independent freeze review returned `EVIDENCE_ACCEPTED`. None of those earlier evidence-recording phases executed a financial campaign.
 
-Median saving of 3 is not positive Agent-value evidence because the frozen economic-completeness gate produced no complete deterministic oracle.
+The execution operator was merged before the accepted v3 freeze because `campaign_implementation()` binds tracked `src/`, `scripts/`, Workspace executable code and dependency intents, including `scripts/r4_campaign.py`. Adding or changing the operator after freeze creation would cause implementation drift and invalidate that freeze. The actual completed order was provider admission → source admission verification → freeze → verify → independent review of the exact freeze ID → STOP → separately authorized real campaign run → independent result review → canonical result recording. Result recording and PR merge do not authorize another run.
 
-### Economic completeness limit
+The corrected Primary protocol fixes the same three R3 executable frontier definitions and the FactorSet minimum size of two. The Agent-admissible factor sets are therefore exactly the full three-factor pool plus its three two-factor subsets: four sets total. Deterministic selection evaluates exactly those four sets, and every portfolio evaluation runs all five frozen allocators, yielding 20 reachable factor-set/allocator strategies. Primary factor discovery remains forbidden. Protocol construction derives this search space from the frozen IDs, FactorSet bounds and allocator catalog and requires exact equality between Agent-admissible and deterministic factor sets before it can claim `deterministic_search = exhaustive`. The deterministic Primary arm is consequently structurally exhaustive for the frozen Primary search space; a future pool whose deterministic schedule does not cover the Agent space cannot silently reuse exhaustive-oracle semantics.
 
-The deterministic search **structurally** covered all four frozen factor sets and all five allocators, so 20/20 deterministic strategy keys were present. Economic completeness is different: 0/20 deterministic strategies had complete required three-fold evidence. Every deterministic strategy had `evaluable_folds = 0/3`; unavailable sessions ranged from 39 to 64. Across 30 total Primary candidate rows, none was complete under the frozen Candidate completeness rule.
+Each Agent selection run retains four factor-set proposal slots and four portfolio evaluation slots. Three independent Agent runs share the objective, starting evidence, provider configuration and budgets. Agent-value assessment uses each run's explicit final factor-set/allocator choice only as a selection; the deterministic host resolves its stable factor-set/allocator strategy key against the deterministic economic oracle when that oracle is complete. Run-specific candidate IDs do not create economic superiority. Candidate viability separately ranks completed Primary pairs. “Static equal weight” describes allocation, not historical factor existence: all campaign evidence is retrospective exposed development, and seed registrations retain the actual 2026 research clock.
 
-Therefore `deterministic_evidence_complete = false` and `deterministic_oracle = null`. The accepted terminal is a **coverage/completeness-driven `NO_ADAPTIVE_CANDIDATE`**, not a negative-return-driven terminal. It must not be summarized as “all tested strategies lost money,” “economic performance proved negative,” or “Agent was proven ineffective.” The precise finding is that complete fold-level economic evidence was unavailable for every Primary strategy, so the frozen Candidate Gate found no viable candidate and Agent-value assessment remained `INCONCLUSIVE`.
+Per Agent run: 48 tool calls, 1,048,576 total tokens, 2,400,000 microusd peak-tariff ceiling and 7,200 seconds. Proposal/evaluation ceilings deny that category while allowing remaining bounded inspection/finalization; hard resource ceilings or finalize stop the run. Deterministic execution uses zero LLM calls/tokens/cost. Exploratory discovery has three proposal slots, three factor-evaluation slots, four set proposals and four portfolio evaluations per independent run. It has no separately identified discovery-value claim and cannot supply the Primary oracle, Agent-value assessment or candidate.
 
-### Why the result is not SYSTEM_FAILURE
+Factor feedback is frozen to the first fold's evaluation window; portfolio feedback covers all three calendar-defined folds. Each fold uses its first 20 TRAIN sessions for scaler/GMM fit, its first 40 sessions for TRAIN, and the remaining sessions for fold evaluation. Historical performance release, train-only Ridge, normalization, exposure, 15m clock, one-bar delay, four-bar holding and 0/1/5/10bp costs are unchanged. No feedback-window adjustment is allowed after results.
 
-Candidate completeness and campaign system failure are separate host gates. All deterministic evaluations completed as `PORTFOLIO_EVALUATED` and all required Primary runs completed. Discovery-03 ended `SLOT_ATTEMPTS_EXHAUSTED`, which is an admitted campaign-run terminal rather than an infrastructure system failure. The deterministic host therefore validly emitted `NO_ADAPTIVE_CANDIDATE` rather than `SYSTEM_FAILURE`.
+Failures and duplicates remain accounted. Infrastructure retries and repairs are zero. Transport uncertainty, timeout, quota, evaluator infrastructure failure or audit inconsistency cause system failure; negative economics never justify retry. Duplicate economic requests replay the existing result and do not spend a second evaluation slot. Untyped rejection consumes a tool attempt and conservatively debits proposal categories.
 
-### Resource and reliability observations
+Primary Agent value is `research_efficiency_under_exhaustive_oracle`, not performance superiority over an already exhaustive deterministic search. All three Primary runs must complete with authoritative campaign/ResearchLedger resource accounting. A run is an efficiency success only when its selected strategy is no worse than a complete deterministic oracle under the frozen economic ordering and it saves at least one portfolio evaluation relative to the four-evaluation deterministic search. Overall `SUPPORTED` requires at least two of three such successes and median portfolio-evaluation saving of at least one across the three required runs. Missing required metrics or resource/economic completeness evidence is `INCONCLUSIVE`; provider/evaluator/audit infrastructure failure remains `INCONCLUSIVE` for Agent value and follows the existing `SYSTEM_FAILURE` campaign terminal. Performance superiority is not identifiable inside this exhausted finite Primary space.
 
-Accepted aggregate provider accounting is 100 verified calls, 317104 input tokens, 10452 output tokens, 327556 charged tokens and 437643 microusd ledger cost. This is ledger/provider accounting, not a reconciled provider invoice. Total portfolio evaluations were six: four deterministic and one each in selection-02 and selection-03.
+Candidate viability remains independent and unchanged: all three folds evaluable, zero unresolved sessions, mean fold return at 5bp strictly positive, worst fold at least -0.01, and mean fold return at 10bp nonnegative. Ranking remains lexicographic: higher mean/worst 5bp economics, lower drawdown/turnover/concentration, fewer factors, less runtime Agent dependence, then canonical ID. A deterministic baseline can produce an AdaptiveStrategy candidate when Agent value is unsupported. The builder defaults Agent role to research/development only and grants no Alpha/PAPER/live or independent-confirmation authority.
 
-The campaign retained 62 rejected Agent action attempts. Discovery-03 used 48 provider calls, ended `SLOT_ATTEMPTS_EXHAUSTED`, and retained 44 rejected actions, 43 of them `candidate_not_proposed_in_run`. ProviderAdmission still proved entry into the typed R4 interface; these observations instead establish a material autonomous tool-use reliability limitation. The contract is not weakened to hide that evidence. The limitation is tracked separately in the backlog.
+### Accepted CampaignResult
 
-## Authority and routing
+The accepted CampaignResult is `r4-campaign-result-d32ec253d62eb4f9349896b0`, SHA256 `5f9cb2b687f5b5750255c4d91e6db273fdf2577a8ce71f33365cddf19789c8ac`; the accepted review bundle SHA256 is `5e387790ec9b6d3198a2439c02900c1817d742de1b123c854f2ca31d4328c69d`. Exactly one real campaign invocation completed with no automatic retry, rerun or provider fallback. Completed runs were deterministic, selection-01, selection-02, selection-03, discovery-01, discovery-02 and discovery-03. Artifact digest audit was 44/44 PASS.
 
-The accepted CampaignResult remains `development_only = true` with `independent_confirmation = false`, `alpha_authority = false`, `paper_authority = false`, `live_authority = false` and `r5_eligible = false`.
+The deterministic-host assessment is `AgentValue = INCONCLUSIVE`, `successful_agent_runs = 0`, median portfolio-evaluation saving 3, `deterministic_oracle = null`, `candidate_decision = NO_ADAPTIVE_CANDIDATE`, `candidate_id = null`. Selection-01/02/03 completed as `COMPLETE_NO_CANDIDATE` with portfolio evaluations 0/1/1, savings 4/3/3, `oracle_noninferior = false` and `efficiency_success = false` for each.
 
-No development-candidate artifact exists and no AdaptiveStrategy was accepted. Accordingly:
+The critical limitation is economic completeness, not structural search coverage. All 20 deterministic factor-set/allocator strategies were structurally present, but 0/20 had complete three-fold economic evidence. Every deterministic strategy had `evaluable_folds = 0/3`, unavailable sessions ranged from 39 to 64, and all 30 Primary candidate rows were incomplete under the frozen Candidate completeness rule. Therefore `deterministic_evidence_complete = false` and no deterministic economic oracle could be constructed. Median saving 3 is not positive Agent-value evidence. The terminal is coverage/completeness-driven `NO_ADAPTIVE_CANDIDATE`, not a claim that all tested strategies lost money or that economic performance/Agent effectiveness was proven negative.
 
-```text
-R4 terminal = NO_ADAPTIVE_CANDIDATE
-R5 = NOT STARTED
-Alpha = NOT CONFIRMED
-PAPER = NO
-Live = NO
-```
+This result is not `SYSTEM_FAILURE`. All deterministic evaluations completed as `PORTFOLIO_EVALUATED`, all required Primary runs completed, and discovery-03 ended `SLOT_ATTEMPTS_EXHAUSTED`, an admitted normal campaign-run terminal. Candidate completeness and infrastructure failure remain distinct host semantics.
 
-The current roadmap already permits WORKBENCH-2 productization after stable R4 semantics and permits a future **new versioned R4 cycle** after `NO_ADAPTIVE_CANDIDATE`. This accepted campaign must not be rerun because of its result, and this result record does not choose automatically between those future roadmap branches. R5 remains conditional on a future R4 AdaptiveStrategy candidate.
+Accepted aggregate provider accounting is 100 verified calls, 317104 input tokens, 10452 output tokens, 327556 charged tokens and 437643 microusd ledger cost. The campaign retained 62 rejected Agent actions. Discovery-03 used 48 provider calls, retained 44 rejected actions and ended `SLOT_ATTEMPTS_EXHAUSTED`; 43 rejections were `candidate_not_proposed_in_run`. ProviderAdmission remains valid; this is retained as a real autonomous tool-use reliability limitation rather than hidden or reclassified.
+
+The result remains `development_only = true`, `independent_confirmation = false`, `alpha_authority = false`, `paper_authority = false`, `live_authority = false` and `r5_eligible = false`. No development-candidate artifact or AdaptiveStrategy exists, so R5 does not start. A future research attempt must be a new versioned R4 cycle rather than a result-driven rerun of this matched campaign. WORKBENCH-2 remains allowed by the existing roadmap; this result record does not force which future route is chosen.
 
 ## Exit gate (unchanged)
 
@@ -176,4 +278,4 @@ R4 result is explicitly development-only
 
 If Agent adds no measurable value, reduce its allocation role in the frozen candidate rather than forcing an Agent-positive conclusion.
 
-For this cycle, every exit condition above is satisfied through the accepted explicit `NO_ADAPTIVE_CANDIDATE` terminal. This does not create a candidate or grant any higher authority.
+For this first cycle, the exit gate is satisfied by the completed matched comparison and the accepted explicit `NO_ADAPTIVE_CANDIDATE` terminal. This closes R4 without creating an AdaptiveStrategy or any Alpha/PAPER/Live/R5 authority.
