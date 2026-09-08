@@ -15,10 +15,14 @@ const majorRoutes = [
 ] as const;
 
 test("Workbench bilingual high-contrast smoke preserves route context", async ({ page }) => {
-  await page.addInitScript((key) => window.localStorage.removeItem(key), LOCALE_KEY);
   await page.route("**/api/**", async (route) => {
     await route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ detail: "offline i18n/theme smoke" }) });
   });
+
+  // Clear any previous preference exactly once. Re-running this as an init script on
+  // every navigation would defeat the locale-persistence contract under test.
+  await page.goto("/");
+  await page.evaluate((key) => localStorage.removeItem(key), LOCALE_KEY);
 
   const context = "?run=run-i18n&factor=factor-i18n&experiment=exp-i18n";
   await page.goto(`/agent${context}`);
