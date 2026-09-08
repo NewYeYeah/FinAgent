@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -200,16 +201,19 @@ const decisions = {
 };
 
 function renderPage(initial = `/strategy/${seriesId}?portfolio=${validationId}&asset=${encodeURIComponent(asset)}`) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
-    <MemoryRouter initialEntries={[initial]}>
-      <WorkbenchQueryProvider>
-        <WorkbenchContextProvider>
-          <Routes>
-            <Route path="/strategy/:seriesId" element={<StrategyDecisionExplorerPage />} />
-          </Routes>
-        </WorkbenchContextProvider>
-      </WorkbenchQueryProvider>
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[initial]}>
+        <WorkbenchQueryProvider>
+          <WorkbenchContextProvider>
+            <Routes>
+              <Route path="/strategy/:seriesId" element={<StrategyDecisionExplorerPage />} />
+            </Routes>
+          </WorkbenchContextProvider>
+        </WorkbenchQueryProvider>
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 
@@ -218,6 +222,7 @@ describe("StrategyDecisionExplorerPage", () => {
     vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL) => {
       const url = String(input);
       if (url === "/api/v4/strategy-series") return json(catalog);
+      if (url === "/api/v3/linked-strategy") return json({ schema_version: "linked", items: [], default_cycle_id: null, historical_strategy_series_count: 1, historical_strategy_relation: "unbound_unless_explicit_candidate_binding", read_only: true, canonical_identity_only: true, browser_recomputation: false, hidden_reasoning: "not_persisted_not_projected" });
       if (url.endsWith(`/api/v4/strategy-series/${seriesId}`)) return json(detail);
       if (url.endsWith(`/api/v4/strategy-series/${seriesId}/dimensions`)) return json(dimensions);
       if (url.includes(`/api/v4/strategy-series/${seriesId}/decisions?`)) return json(decisions);

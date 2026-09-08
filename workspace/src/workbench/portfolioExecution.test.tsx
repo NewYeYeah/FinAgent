@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
@@ -253,18 +254,21 @@ function LocationProbe() {
 }
 
 function renderPage(initial: string) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
-    <MemoryRouter initialEntries={[initial]}>
-      <WorkbenchQueryProvider>
-        <WorkbenchContextProvider>
-          <LocationProbe />
-          <Routes>
-            <Route path="/portfolio/:validationId" element={<PortfolioInteractivePage />} />
-            <Route path="/execution/:validationId" element={<ExecutionInteractivePage />} />
-          </Routes>
-        </WorkbenchContextProvider>
-      </WorkbenchQueryProvider>
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[initial]}>
+        <WorkbenchQueryProvider>
+          <WorkbenchContextProvider>
+            <LocationProbe />
+            <Routes>
+              <Route path="/portfolio/:validationId" element={<PortfolioInteractivePage />} />
+              <Route path="/execution/:validationId" element={<ExecutionInteractivePage />} />
+            </Routes>
+          </WorkbenchContextProvider>
+        </WorkbenchQueryProvider>
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 
@@ -273,6 +277,7 @@ describe("V4-4 Portfolio / Execution Interactive Pack", () => {
     vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL) => {
       const url = String(input);
       if (url === "/api/v4/portfolio-execution") return response(catalog);
+      if (url === "/api/v3/linked-strategy") return response({ schema_version: "linked", items: [], default_cycle_id: null, historical_strategy_series_count: 1, historical_strategy_relation: "unbound_unless_explicit_candidate_binding", read_only: true, canonical_identity_only: true, browser_recomputation: false, hidden_reasoning: "not_persisted_not_projected" });
       if (url === `/api/v4/portfolio-execution/${validationId}`) return response(detail);
       if (url.includes(`/api/v4/portfolio-execution/${validationId}/series?`)) return response(series);
       if (url.includes(`/api/v4/portfolio-execution/${validationId}/analytics?`)) return response(analytics);
