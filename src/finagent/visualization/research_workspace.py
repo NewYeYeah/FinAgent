@@ -142,12 +142,12 @@ class ResearchWorkspaceProjection:
             return []
         with _read_only(self.agent_audit_path) as connection:
             rows = connection.execute(
-                "SELECT r.run_id,r.payload_json,r.decision_json,t.sequence,t.call_id,"
+                "SELECT r.rowid,r.run_id,r.payload_json,r.decision_json,t.sequence,t.call_id,"
                 "t.request_json,t.result_json FROM agent_runs r "
                 "JOIN agent_tool_calls t ON t.run_id=r.run_id ORDER BY r.rowid,t.sequence"
             ).fetchall()
         output: list[dict[str, Any]] = []
-        for run_id, payload_raw, decision_raw, sequence, call_id, request_raw, result_raw in rows:
+        for run_ordinal, run_id, payload_raw, decision_raw, sequence, call_id, request_raw, result_raw in rows:
             payload = _json_object(payload_raw, label="agent run payload")
             context = _object(payload.get("context"))
             metadata = _object(context.get("metadata"))
@@ -162,6 +162,8 @@ class ResearchWorkspaceProjection:
             output.append(
                 {
                     "run_id": str(run_id),
+                    "run_ordinal": int(run_ordinal),
+                    "run_started_at": str(context.get("started_at", "")),
                     "sequence": int(sequence),
                     "call_id": str(call_id),
                     "objective": str(task.get("objective", "")),
@@ -248,6 +250,11 @@ class ResearchWorkspaceProjection:
                 "experiment_id": experiment_id or None,
                 "identity": experiment_id or attempt_id,
                 "identity_kind": "experiment_id" if experiment_id else "attempt_call_id",
+                "attempt_order": {
+                    "run_ordinal": record["run_ordinal"],
+                    "tool_sequence": record["sequence"],
+                    "run_started_at": record["run_started_at"],
+                },
                 "canonical_experiment_identity_available": bool(experiment_id),
                 "run_id": record["run_id"],
                 "project_id": record["project_id"],
@@ -315,13 +322,18 @@ class ResearchWorkspaceProjection:
         ]
         if not matches:
             raise KeyError(identity)
-        if len(matches) > 1:
-            # Duplicate experiment attempts are separate persisted trials; selecting
-            # the canonical experiment id returns the latest attempt deterministically.
-            matches.sort(key=lambda item: (item["run_id"], item["attempt_id"]))
+        matches.sort(
+            key=lambda item: (
+                int(_object(item.get("attempt_order")).get("run_ordinal", -1)),
+                int(_object(item.get("attempt_order")).get("tool_sequence", -1)),
+            )
+        )
         return {
             "schema_version": "finagent.workspace.research-experiment-detail.v1",
             "item": matches[-1],
+            "attempts": matches,
+            "attempt_count": len(matches),
+            "selection_semantics": "persisted_agent_audit_run_ordinal_then_tool_sequence",
             "read_only": True,
             "browser_recomputation": False,
             "hidden_reasoning": "not_persisted_not_projected",
@@ -383,6 +395,7 @@ class ResearchWorkspaceProjection:
 
     def cycles(self) -> dict[str, object]:
         items: list[dict[str, Any]] = []
+        unresolved: list[dict[str, Any]] = []
         seen: set[str] = set()
         for root in self.cycle_paths:
             candidates = (
@@ -411,9 +424,20 @@ class ResearchWorkspaceProjection:
                     except (OSError, json.JSONDecodeError):
                         loaded = {}
                     resources = loaded if isinstance(loaded, Mapping) else {}
+                accepted = value.get("review_disposition") == "R4_RESULT_ACCEPTED"
+                if not accepted:
+                    unresolved.append(
+                        {
+                            "cycle_id": cycle_id,
+                            "relation": "review_disposition",
+                            "reason": "accepted_review_disposition_missing_or_unrecognized",
+                        }
+                    )
                 items.append(
                     {
                         "cycle_id": cycle_id,
+                        "accepted": accepted,
+                        "review_status": "accepted" if accepted else "not_accepted",
                         "protocol_id": value.get("protocol_id"),
                         "protocol_version": value.get("protocol_version"),
                         "review_disposition": value.get("review_disposition"),
@@ -446,6 +470,7 @@ class ResearchWorkspaceProjection:
         return {
             "schema_version": "finagent.workspace.research-cycles.v1",
             "items": items,
+            "unresolved": unresolved,
             "read_only": True,
             "browser_recomputation": False,
         }
@@ -498,7 +523,28 @@ class ResearchWorkspaceProjection:
                 "thread_id": record["thread_id"],
                 "run_id": record["run_id"],
             }
-            if tool == "read_literature" and result.get("outcome") == "LITERATURE_READ":
+            if tool == "inspect_market_state" and result.get("outcome") == "MARKET_STATE_INSPECTED":
+                market_state = _object(result.get("market_state"))
+                model_id = str(market_state.get("model_id", ""))
+                if model_id:
+                    node(
+                        "market_state",
+                        model_id,
+                        label=f"MarketState · {model_id}",
+                        href=f"/market?market_model={quote(model_id, safe='')}",
+                        context={**run_context, "market_state_model_id": model_id},
+                        details=market_state,
+                    )
+                else:
+                    unresolved.append(
+                        {
+                            "run_id": record["run_id"],
+                            "call_id": record["call_id"],
+                            "relation": "market_state_model_identity",
+                            "reason": "persisted_market_state_model_id_unavailable",
+                        }
+                    )
+            elif tool == "read_literature" and result.get("outcome") == "LITERATURE_READ":
                 literature = _object(result.get("record"))
                 record_id = str(literature.get("record_id", "") or args.get("record_id", ""))
                 if record_id:
@@ -621,11 +667,20 @@ class ResearchWorkspaceProjection:
 
         for cycle in self.cycles()["items"]:
             cycle_id = str(cycle["cycle_id"])
+            if cycle.get("accepted") is not True:
+                unresolved.append(
+                    {
+                        "cycle_id": cycle_id,
+                        "relation": "accepted_cycle_lineage",
+                        "reason": "cycle_not_explicitly_accepted",
+                    }
+                )
+                continue
             cycle_node = node(
                 "research_cycle",
                 cycle_id,
                 label=str(cycle.get("protocol_version") or cycle_id),
-                status=str(cycle.get("review_disposition") or "accepted").lower(),
+                status="accepted",
                 details={"protocol_id": cycle.get("protocol_id")},
             )
             economic = _object(cycle.get("economic_evidence"))
@@ -675,7 +730,7 @@ class ResearchWorkspaceProjection:
         return {
             "schema_version": "finagent.workspace.research-workspace-status.v1",
             "agent_audit_configured": self.agent_configured,
-            "accepted_cycle_count": len(cycles["items"]),
+            "accepted_cycle_count": sum(item.get("accepted") is True for item in cycles["items"]),
             "read_only": True,
             "browser_recomputation": False,
             "hidden_reasoning": "not_persisted_not_projected",

@@ -14,6 +14,12 @@ The first slice upgraded the Agent surface around the existing `ResearchCapabili
 
 The UI must retain the accepted R4 facts as first-class negative product state: terminal `NO_ADAPTIVE_CANDIDATE`, AgentValue `INCONCLUSIVE`, no AdaptiveStrategy, no R5 start, no confirmed Alpha, no accepted PAPER and no Live authorization. Rejected actions and `SLOT_ATTEMPTS_EXHAUSTED` remain observable reliability evidence. The accepted `r4-matched-v3` campaign is an evidence reference and must not be rerun by this stage.
 
+### Current third slice: Market State + Factor Intelligence
+
+The third vertical slice extends the existing Factor Tear Sheet and adds a first-class Market State surface. It projects only persisted causal MarketState model/state rows, FactorLibrary lifecycle/evaluations, persisted adaptive allocator weight snapshots, Agent audit links and accepted research evidence. React does not fit GMMs, cluster, smooth, infer missing states, recompute factor/economic statistics or create research authority. Missing bindings remain explicitly unavailable/unresolved.
+
+Touched Factor server-state is migrated to `@tanstack/react-query`; untouched Workbench consumers may still use the legacy custom query client, so B-102 remains open. The accepted R4 terminal remains `NO_ADAPTIVE_CANDIDATE` with AgentValue `INCONCLUSIVE`, 0/20 complete deterministic strategies and 62 rejected Agent actions; these completeness/reliability facts do not imply all factors lose money, MarketState is invalid, or Agent value is proven negative. `r4-matched-v3` remains evidence-only and must not be rerun.
+
 ## Existing baseline to reuse
 
 Already present:

@@ -73,14 +73,14 @@ Realtime/PAPER/reconciliation/safety modules exist but have not been accepted as
 **Affects:** R4 thin console, WORKBENCH-2  
 **State:** OPEN
 
-The pre-WORKBENCH-2 Agent baseline was audit-oriented. The first WORKBENCH-2 slice reorganized that surface around a research objective/session, Project → Thread → Run navigation, persisted Agent action/result/decision cards, research context, accepted negative terminal state and evidence/config identities. The second slice adds first-class persisted Experiments/comparison and a canonical Research Graph with unresolved-lineage handling. These are implementation milestones only: no fresh task-based human usability baseline has been recorded, so B-101 remains open until the stage's real-artifact human acceptance work is completed.
+The pre-WORKBENCH-2 Agent baseline was audit-oriented. The first WORKBENCH-2 slice reorganized that surface around a research objective/session, Project → Thread → Run navigation, persisted Agent action/result/decision cards, research context, accepted negative terminal state and evidence/config identities. The second slice adds first-class persisted Experiments/comparison and a canonical Research Graph with unresolved-lineage handling. The third slice adds persisted causal MarketState and FactorLibrary intelligence while retaining the existing Factor Tear Sheet. These are implementation milestones only: no fresh task-based human usability baseline has been recorded, so B-101 remains open until the stage's real-artifact human acceptance work is completed.
 
 ### B-102 — Custom Workbench query client duplicates mature server-state tooling
 
 **Affects:** WORKBENCH-2  
 **State:** OPEN
 
-`workspace/src/workbench/query.tsx` still implements cache/stale/in-flight/invalidation behavior for untouched surfaces. The Agent Workspace first slice migrated its touched Agent/Research reads, and the Experiments/Research Graph slice also uses `@tanstack/react-query` for list/detail/comparison/graph/cycle server-state plus SSE-driven graph invalidation. No new custom-query consumer is added. Other Workbench consumers remain on the existing wrapper, so B-102 is only partially progressed and remains OPEN; continue migration only when those surfaces are touched for product work.
+`workspace/src/workbench/query.tsx` still implements cache/stale/in-flight/invalidation behavior for untouched surfaces. The Agent Workspace first slice migrated its touched Agent/Research reads, and the Experiments/Research Graph slice also uses `@tanstack/react-query` for list/detail/comparison/graph/cycle server-state plus SSE-driven graph invalidation. The Market State + Factor Intelligence slice uses TanStack Query for new Market/Factor intelligence reads and migrates the existing touched Factor Tear Sheet server-state calls from the custom query client. Other Workbench consumers remain on the existing wrapper, so B-102 is only partially progressed and remains OPEN; continue migration only when those surfaces are touched for product work.
 
 ### B-103 — Legacy Streamlit Research UI
 

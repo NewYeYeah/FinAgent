@@ -31,7 +31,7 @@ const rejected = { ...failed, attempt_id: "call-rejected", identity: "call-rejec
 
 const cycles = {
   schema_version: "finagent.workspace.research-cycles.v1", read_only: true, browser_recomputation: false,
-  items: [{ cycle_id: "cycle-a", protocol_id: "protocol-a", protocol_version: "r4-matched-v3", review_disposition: "R4_RESULT_ACCEPTED", terminal: "NO_ADAPTIVE_CANDIDATE", agent_value: "INCONCLUSIVE", candidate_id: null,
+  items: [{ cycle_id: "cycle-a", accepted: true, review_status: "accepted", protocol_id: "protocol-a", protocol_version: "r4-matched-v3", review_disposition: "R4_RESULT_ACCEPTED", terminal: "NO_ADAPTIVE_CANDIDATE", agent_value: "INCONCLUSIVE", candidate_id: null,
     economic_evidence: { deterministic_strategy_count: 20, complete_deterministic_strategy_count: 0, deterministic_evidence_complete: false }, provider_usage: {}, agent_reliability: { rejected_action_attempts: 62 }, resource_summary: {}, authority: { alpha_authority: false, paper_authority: false, live_authority: false }, evidence: {} }],
 };
 

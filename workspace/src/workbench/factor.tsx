@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import ReactECharts from "echarts-for-react";
 import { ArrowRight, FlaskConical, ShieldCheck } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -20,6 +21,7 @@ import {
   type WorkbenchContextKey,
 } from "./context";
 import { factorTearSheetApi } from "./factorApi";
+import { FactorIntelligencePanel } from "./factorIntelligence";
 import type {
   FactorCandidateSummaryV4,
   FactorCorrelationV4,
@@ -28,7 +30,6 @@ import type {
   FactorSeriesItemV4,
   FactorSeriesRowV4,
 } from "./factorTypes";
-import { useWorkbenchQuery } from "./query";
 import "./factor.css";
 
 function number(value: number | null | undefined, digits = 3): string {
@@ -226,9 +227,9 @@ function ProvenanceLane({ provenance }: { provenance: FactorProvenanceV4 }) {
   );
 }
 
-export function FactorTearSheetIndexPage() {
+function FactorTearSheetIndexContent() {
   const navigate = useNavigate();
-  const query = useWorkbenchQuery({ key: ["factor-series-v4"], queryFn: factorTearSheetApi.catalog });
+  const query = useQuery({ queryKey: ["factor-series-v4"], queryFn: factorTearSheetApi.catalog });
   if (query.isPending) return <LoadingState />;
   if (query.error) return <ErrorState error={query.error} />;
   const catalog = query.data;
@@ -256,16 +257,16 @@ export function FactorTearSheetIndexPage() {
   );
 }
 
-export function FactorTearSheetPage() {
+function FactorTearSheetContent() {
   const { seriesId: encodedSeriesId } = useParams();
   const navigate = useNavigate();
   const { context, select } = useWorkbenchContext();
   const seriesId = encodedSeriesId ? decodeURIComponent(encodedSeriesId) : "";
   const [labelName, setLabelName] = useState<string>("");
 
-  const catalogQuery = useWorkbenchQuery({ key: ["factor-series-v4"], queryFn: factorTearSheetApi.catalog });
-  const detailQuery = useWorkbenchQuery({ key: ["factor-series-detail-v4", seriesId], queryFn: () => factorTearSheetApi.detail(seriesId), enabled: Boolean(seriesId) });
-  const dimensionsQuery = useWorkbenchQuery({ key: ["factor-series-dimensions-v4", seriesId], queryFn: () => factorTearSheetApi.dimensions(seriesId), enabled: Boolean(seriesId) });
+  const catalogQuery = useQuery({ queryKey: ["factor-series-v4"], queryFn: factorTearSheetApi.catalog });
+  const detailQuery = useQuery({ queryKey: ["factor-series-detail-v4", seriesId], queryFn: () => factorTearSheetApi.detail(seriesId), enabled: Boolean(seriesId) });
+  const dimensionsQuery = useQuery({ queryKey: ["factor-series-dimensions-v4", seriesId], queryFn: () => factorTearSheetApi.dimensions(seriesId), enabled: Boolean(seriesId) });
   const dimensions = dimensionsQuery.data;
   const activeFactor = context.factor_id && dimensions?.factors.some((item) => item.feature_digest === context.factor_id)
     ? context.factor_id
@@ -288,25 +289,23 @@ export function FactorTearSheetPage() {
     if (dimensions && !labelName) setLabelName(dimensions.primary_label);
   }, [dimensions, labelName]);
 
-  const summaryQuery = useWorkbenchQuery({ key: ["factor-summary-v4", seriesId], queryFn: () => factorTearSheetApi.summary(seriesId), enabled: Boolean(seriesId) });
-  const correlationQuery = useWorkbenchQuery({ key: ["factor-correlation-v4", seriesId], queryFn: () => factorTearSheetApi.correlations(seriesId), enabled: Boolean(seriesId) });
-  const provenanceQuery = useWorkbenchQuery({ key: ["factor-provenance-v4", seriesId], queryFn: () => factorTearSheetApi.provenance(seriesId), enabled: Boolean(seriesId) });
-  const heatmapQuery = useWorkbenchQuery({ key: ["factor-heatmap-v4", seriesId, activeFactor, activeLabel], queryFn: () => factorTearSheetApi.heatmap(seriesId, { featureDigest: activeFactor, labelName: activeLabel, metric: "rank_ic" }), enabled: Boolean(seriesId && activeFactor && activeLabel) });
+  const summaryQuery = useQuery({ queryKey: ["factor-summary-v4", seriesId], queryFn: () => factorTearSheetApi.summary(seriesId), enabled: Boolean(seriesId) });
+  const correlationQuery = useQuery({ queryKey: ["factor-correlation-v4", seriesId], queryFn: () => factorTearSheetApi.correlations(seriesId), enabled: Boolean(seriesId) });
+  const provenanceQuery = useQuery({ queryKey: ["factor-provenance-v4", seriesId], queryFn: () => factorTearSheetApi.provenance(seriesId), enabled: Boolean(seriesId) });
+  const heatmapQuery = useQuery({ queryKey: ["factor-heatmap-v4", seriesId, activeFactor, activeLabel], queryFn: () => factorTearSheetApi.heatmap(seriesId, { featureDigest: activeFactor, labelName: activeLabel, metric: "rank_ic" }), enabled: Boolean(seriesId && activeFactor && activeLabel) });
 
   const rowFilters = { featureDigest: activeFactor, foldId, start, end, limit: 5000 };
-  const icQuery = useWorkbenchQuery({ key: ["factor-ic-v4", seriesId, activeFactor, foldId, start, end, activeLabel], queryFn: () => factorTearSheetApi.rows(seriesId, { ...rowFilters, seriesKind: "ic", metric: "rank_ic", labelName: activeLabel }), enabled: Boolean(seriesId && activeFactor && activeLabel) });
-  const rollingQuery = useWorkbenchQuery({ key: ["factor-rolling-v4", seriesId, activeFactor, foldId, start, end, activeLabel], queryFn: () => factorTearSheetApi.rows(seriesId, { ...rowFilters, seriesKind: "ic", metric: "rolling_rank_ic", labelName: activeLabel }), enabled: Boolean(seriesId && activeFactor && activeLabel) });
-  const turnoverQuery = useWorkbenchQuery({ key: ["factor-turnover-v4", seriesId, activeFactor, foldId, start, end], queryFn: () => factorTearSheetApi.rows(seriesId, { ...rowFilters, seriesKind: "turnover", metric: "one_way_turnover", labelName: dimensions?.primary_label }), enabled: Boolean(seriesId && activeFactor && dimensions?.primary_label) });
-  const coverageQuery = useWorkbenchQuery({ key: ["factor-coverage-v4", seriesId, activeFactor, foldId, start, end], queryFn: () => factorTearSheetApi.rows(seriesId, { ...rowFilters, seriesKind: "coverage", metric: "coverage" }), enabled: Boolean(seriesId && activeFactor) });
+  const icQuery = useQuery({ queryKey: ["factor-ic-v4", seriesId, activeFactor, foldId, start, end, activeLabel], queryFn: () => factorTearSheetApi.rows(seriesId, { ...rowFilters, seriesKind: "ic", metric: "rank_ic", labelName: activeLabel }), enabled: Boolean(seriesId && activeFactor && activeLabel) });
+  const rollingQuery = useQuery({ queryKey: ["factor-rolling-v4", seriesId, activeFactor, foldId, start, end, activeLabel], queryFn: () => factorTearSheetApi.rows(seriesId, { ...rowFilters, seriesKind: "ic", metric: "rolling_rank_ic", labelName: activeLabel }), enabled: Boolean(seriesId && activeFactor && activeLabel) });
+  const turnoverQuery = useQuery({ queryKey: ["factor-turnover-v4", seriesId, activeFactor, foldId, start, end], queryFn: () => factorTearSheetApi.rows(seriesId, { ...rowFilters, seriesKind: "turnover", metric: "one_way_turnover", labelName: dimensions?.primary_label }), enabled: Boolean(seriesId && activeFactor && dimensions?.primary_label) });
+  const coverageQuery = useQuery({ queryKey: ["factor-coverage-v4", seriesId, activeFactor, foldId, start, end], queryFn: () => factorTearSheetApi.rows(seriesId, { ...rowFilters, seriesKind: "coverage", metric: "coverage" }), enabled: Boolean(seriesId && activeFactor) });
 
-  const decayQuery = useWorkbenchQuery({
-    key: ["factor-decay-v4", seriesId, activeFactor, foldId, start, end, dimensions?.labels.join("|")],
+  const decayQuery = useQuery({ queryKey: ["factor-decay-v4", seriesId, activeFactor, foldId, start, end, dimensions?.labels.join("|")],
     queryFn: async () => Promise.all((dimensions?.labels ?? []).map(async (label) => ({ label, data: await factorTearSheetApi.rows(seriesId, { ...rowFilters, seriesKind: "ic", metric: "rank_ic", labelName: label }) }))),
     enabled: Boolean(seriesId && activeFactor && dimensions?.labels.length),
   });
 
-  const navQuery = useWorkbenchQuery({
-    key: ["factor-nav-v4", seriesId, activeFactor, foldId, start, end, dimensions?.quantiles.join("|")],
+  const navQuery = useQuery({ queryKey: ["factor-nav-v4", seriesId, activeFactor, foldId, start, end, dimensions?.quantiles.join("|")],
     queryFn: async () => {
       const quantiles = await Promise.all((dimensions?.quantiles ?? []).map(async (quantile) => ({ name: `Q${quantile}`, data: await factorTearSheetApi.rows(seriesId, { ...rowFilters, seriesKind: "quantile", metric: "nav", labelName: dimensions?.primary_label, quantile }) })));
       const longShort = await factorTearSheetApi.rows(seriesId, { ...rowFilters, seriesKind: "long_short", metric: "nav", labelName: dimensions?.primary_label });
@@ -415,4 +414,20 @@ export function FactorTearSheetPage() {
       </Panel>
     </div>
   );
+}
+
+
+function FactorQueryBoundary({ children }: { children: ReactNode }) {
+  const [client] = useState(() => new QueryClient({
+    defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false, staleTime: 1_500 } },
+  }));
+  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+}
+
+export function FactorTearSheetIndexPage() {
+  return <FactorQueryBoundary><FactorIntelligencePanel /><FactorTearSheetIndexContent /></FactorQueryBoundary>;
+}
+
+export function FactorTearSheetPage() {
+  return <FactorQueryBoundary><FactorIntelligencePanel /><FactorTearSheetContent /></FactorQueryBoundary>;
 }

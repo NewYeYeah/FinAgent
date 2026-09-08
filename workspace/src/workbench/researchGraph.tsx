@@ -25,6 +25,7 @@ const LANE: Record<string, number> = {
   literature: 0,
   evidence: 0,
   research_cycle: 0,
+  market_state: 1,
   hypothesis: 1,
   factor: 2,
   factor_set: 2,
@@ -73,6 +74,7 @@ function canonicalPatch(node: ResearchGraphNode): Partial<Record<keyof Workbench
     "factor_id",
     "experiment_id",
     "research_cycle_id",
+    "market_state_model_id",
   ];
   for (const key of allowed) {
     const value = node.context[key];

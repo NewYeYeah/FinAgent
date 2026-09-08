@@ -16,6 +16,7 @@ describe("WorkbenchContext URL contract", () => {
       run_id: "run-a",
       program_id: "program-a",
       factor_id: "factor-a",
+      market_state_model_id: "market-model-a",
       portfolio_validation_id: "a4-validation-a",
       asset_id: "600519.SH",
       order_id: "order-a",
@@ -30,6 +31,7 @@ describe("WorkbenchContext URL contract", () => {
     expect(serialized.get("run")).toBe("run-a");
     expect(serialized.get("program")).toBe("program-a");
     expect(serialized.get("factor")).toBe("factor-a");
+    expect(serialized.get("market_model")).toBe("market-model-a");
     expect(serialized.get("portfolio")).toBe("a4-validation-a");
     expect(serialized.get("asset")).toBe("600519.SH");
     expect(serialized.get("order")).toBe("order-a");
@@ -41,6 +43,7 @@ describe("WorkbenchContext URL contract", () => {
       run_id: "run-a",
       program_id: "program-a",
       factor_id: "factor-a",
+      market_state_model_id: "market-model-a",
       portfolio_validation_id: "a4-validation-a",
       asset_id: "600519.SH",
       order_id: "order-a",

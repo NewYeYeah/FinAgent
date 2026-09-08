@@ -3,6 +3,7 @@ export interface ResearchExperiment {
   experiment_id: string | null;
   identity: string;
   identity_kind: "experiment_id" | "attempt_call_id";
+  attempt_order?: { run_ordinal: number; tool_sequence: number; run_started_at: string };
   canonical_experiment_identity_available: boolean;
   run_id: string;
   project_id: string;
@@ -50,6 +51,9 @@ export interface ResearchExperimentsResponse {
 export interface ResearchExperimentDetailResponse {
   schema_version: string;
   item: ResearchExperiment;
+  attempts?: ResearchExperiment[];
+  attempt_count?: number;
+  selection_semantics?: string;
   read_only: true;
   browser_recomputation: false;
   hidden_reasoning: "not_persisted_not_projected";
@@ -70,6 +74,8 @@ export interface ResearchComparisonResponse {
 
 export interface ResearchCycle {
   cycle_id: string;
+  accepted: boolean;
+  review_status: string;
   protocol_id?: string | null;
   protocol_version?: string | null;
   review_disposition?: string | null;
@@ -87,6 +93,7 @@ export interface ResearchCycle {
 export interface ResearchCyclesResponse {
   schema_version: string;
   items: ResearchCycle[];
+  unresolved?: Array<Record<string, unknown>>;
   read_only: true;
   browser_recomputation: false;
 }

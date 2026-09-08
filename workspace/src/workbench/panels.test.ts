@@ -25,7 +25,13 @@ describe("PanelRegistry", () => {
       status: "available",
       route: "/factors",
       slot: "chart",
-      context_keys: ["program_id", "factor_id", "date_range", "fold_id"],
+      context_keys: ["program_id", "factor_id", "market_state_model_id", "experiment_id", "date_range", "fold_id"],
+    });
+    expect(defaultPanelRegistry.get("market")).toMatchObject({
+      status: "available",
+      route: "/market",
+      slot: "chart",
+      context_keys: ["market_state_model_id", "factor_id", "experiment_id", "run_id"],
     });
     expect(defaultPanelRegistry.get("portfolio")).toMatchObject({
       status: "available",

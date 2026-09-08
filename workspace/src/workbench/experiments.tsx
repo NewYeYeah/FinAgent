@@ -150,7 +150,7 @@ function ExperimentsContent() {
   const items = listQuery.data?.items ?? [];
   const selected = detailQuery.data?.item;
   const selectedIds = [...compared];
-  const accepted = cyclesQuery.data?.items.find((cycle) => cycle.terminal === "NO_ADAPTIVE_CANDIDATE") ?? cyclesQuery.data?.items[0];
+  const accepted = cyclesQuery.data?.items.find((cycle) => cycle.accepted === true && cycle.terminal === "NO_ADAPTIVE_CANDIDATE");
 
   return <div className="experiments-page">
     <header className="experiments-header"><div><span className="eyebrow">Workbench-2 · persisted trials</span><h1>Experiments</h1><p>Directly inspect and compare persisted R4 trial/evaluation results. React selects and renders; it does not calculate RankIC, PnL, allocator results or rankings.</p></div><div className="experiment-contract-stack"><span>GET-only</span><span>server projection authoritative</span><span>hidden reasoning excluded</span></div></header>

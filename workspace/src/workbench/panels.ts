@@ -5,6 +5,7 @@ export type WorkbenchModule =
   | "agent"
   | "experiments"
   | "research-graph"
+  | "market"
   | "strategy"
   | "factors"
   | "portfolio"
@@ -60,9 +61,10 @@ export const defaultPanelRegistry = new PanelRegistry([
   { panel_id: "command-center", module: "command-center", title: "Command Center", route: "/", status: "available", context_keys: ["program_id", "portfolio_validation_id", "reserve_id"], slot: "main" },
   { panel_id: "agent", module: "agent", title: "Agent", route: "/agent", status: "available", context_keys: ["project_id", "thread_id", "run_id"], slot: "main" },
   { panel_id: "experiments", module: "experiments", title: "Experiments", route: "/experiments", status: "available", context_keys: ["project_id", "thread_id", "run_id", "experiment_id", "comparison_ids"], slot: "main" },
-  { panel_id: "research-graph", module: "research-graph", title: "Research Graph", route: "/research-graph", status: "available", context_keys: ["project_id", "thread_id", "run_id", "experiment_id", "factor_id", "research_cycle_id", "graph_node_id"], slot: "chart" },
+  { panel_id: "research-graph", module: "research-graph", title: "Research Graph", route: "/research-graph", status: "available", context_keys: ["project_id", "thread_id", "run_id", "experiment_id", "factor_id", "research_cycle_id", "graph_node_id", "market_state_model_id"], slot: "chart" },
+  { panel_id: "market", module: "market", title: "Market", route: "/market", status: "available", context_keys: ["market_state_model_id", "factor_id", "experiment_id", "run_id"], slot: "chart" },
   { panel_id: "strategy", module: "strategy", title: "Strategy", route: "/strategy", status: "available", context_keys: ["portfolio_validation_id", "asset_id", "date_range", "session_date", "fold_id"], slot: "chart" },
-  { panel_id: "factors", module: "factors", title: "Factors", route: "/factors", status: "available", context_keys: ["program_id", "factor_id", "date_range", "fold_id"], slot: "chart" },
+  { panel_id: "factors", module: "factors", title: "Factors", route: "/factors", status: "available", context_keys: ["program_id", "factor_id", "market_state_model_id", "experiment_id", "date_range", "fold_id"], slot: "chart" },
   { panel_id: "portfolio", module: "portfolio", title: "Portfolio", route: "/portfolio", status: "available", context_keys: ["portfolio_validation_id", "date_range", "session_date", "fold_id"], slot: "chart" },
   { panel_id: "execution", module: "execution", title: "Execution", route: "/execution", status: "available", context_keys: ["portfolio_validation_id", "asset_id", "order_id", "date_range", "session_date", "fold_id"], slot: "chart" },
   { panel_id: "risk", module: "risk", title: "Risk", status: "reserved", context_keys: ["strategy_id", "portfolio_validation_id", "date_range"], slot: "chart" },

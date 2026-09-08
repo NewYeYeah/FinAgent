@@ -16,6 +16,7 @@ export interface WorkbenchContextState {
   comparison_ids?: string;
   research_cycle_id?: string;
   graph_node_id?: string;
+  market_state_model_id?: string;
   program_id?: string;
   factor_id?: string;
   portfolio_validation_id?: string;
@@ -37,6 +38,7 @@ export type WorkbenchInteractionEvent =
   | "run_selected"
   | "experiment_selected"
   | "graph_node_selected"
+  | "market_state_selected"
   | "asset_selected"
   | "date_range_selected"
   | "session_selected"
@@ -52,6 +54,7 @@ const CONTEXT_PARAM_BY_KEY: Record<WorkbenchContextKey, string> = {
   comparison_ids: "compare",
   research_cycle_id: "cycle",
   graph_node_id: "graph_node",
+  market_state_model_id: "market_model",
   program_id: "program",
   factor_id: "factor",
   portfolio_validation_id: "portfolio",

@@ -42,6 +42,7 @@ import { AgentWorkbenchPage, LegacyAgentRunRedirect } from "./workbench/agent";
 import { ExperimentsPage } from "./workbench/experiments";
 import { ResearchGraphPage } from "./workbench/researchGraph";
 import { FactorTearSheetIndexPage, FactorTearSheetPage } from "./workbench/factor";
+import { MarketStatePage } from "./workbench/market";
 import {
   ExecutionInteractivePage,
   PortfolioExecutionIndexPage,
@@ -468,6 +469,7 @@ export default function App() {
             <Route path="/execution/:validationId" element={<ExecutionInteractivePage />} />
             <Route path="/strategy" element={<StrategyDecisionExplorerPage />} />
             <Route path="/strategy/:seriesId" element={<StrategyDecisionExplorerPage />} />
+            <Route path="/market" element={<MarketStatePage />} />
             <Route path="/factors" element={<FactorTearSheetIndexPage />} />
             <Route path="/factors/:seriesId" element={<FactorTearSheetPage />} />
             <Route path="/governance" element={<GovernanceIndexPage />} />
