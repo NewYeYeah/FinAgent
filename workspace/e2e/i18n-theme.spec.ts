@@ -28,7 +28,8 @@ test("Workbench bilingual high-contrast smoke preserves route context", async ({
   await expect(page.getByRole("navigation", { name: "FinAgent Workbench modules" })).toContainText("Research Graph");
   await expect(page.getByTestId("workbench-context-bar")).toContainText("run-i18n");
 
-  const chinese = page.getByTestId("locale-toggle").getByRole("button", { name: "中文" });
+  const localeToggle = page.getByTestId("locale-toggle");
+  const chinese = localeToggle.getByRole("button", { name: "中文" });
   await chinese.click();
   await expect(html).toHaveAttribute("lang", "zh-CN");
   await expect(page.getByRole("navigation", { name: "FinAgent Workbench 模块" })).toContainText("研究图谱");
@@ -36,8 +37,12 @@ test("Workbench bilingual high-contrast smoke preserves route context", async ({
   await expect(page.getByTestId("workbench-context-bar")).toContainText("factor-i18n");
   await expect.poll(() => page.evaluate((key) => localStorage.getItem(key), LOCALE_KEY)).toBe("zh-CN");
 
-  await chinese.focus();
-  const focusStyle = await chinese.evaluate((element) => {
+  // Verify the actual keyboard-focus contract. :focus-visible is intentionally not
+  // asserted for pointer/programmatic focus, so move from 中文 to EN via Shift+Tab.
+  await page.keyboard.press("Shift+Tab");
+  const english = localeToggle.getByRole("button", { name: "EN" });
+  await expect(english).toBeFocused();
+  const focusStyle = await english.evaluate((element) => {
     const style = getComputedStyle(element);
     return { outlineStyle: style.outlineStyle, outlineWidth: style.outlineWidth };
   });
