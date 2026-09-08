@@ -127,8 +127,21 @@ const emptyPortfolio = {
   notices: [],
 };
 
+const emptyLinkedStrategy = {
+  schema_version: "finagent.workspace.linked-strategy-index.v1",
+  items: [],
+  default_cycle_id: null,
+  historical_strategy_series_count: 1,
+  historical_strategy_relation: "unbound_unless_explicit_candidate_binding",
+  read_only: true,
+  canonical_identity_only: true,
+  browser_recomputation: false,
+  hidden_reasoning: "not_persisted_not_projected",
+};
+
 test("HW-1.0-RS no-alpha UX stays complete and explicit instead of fabricating a portfolio", async ({ page }) => {
   await page.route("http://127.0.0.1:8766/api/v3/control/**", (route) => route.abort("connectionrefused"));
+  await page.route("**/api/v3/linked-strategy", (route) => route.fulfill({ json: emptyLinkedStrategy }));
   await page.route("**/api/v4/strategy-series", (route) => route.fulfill({ json: strategyCatalog }));
   await page.route(`**/api/v4/strategy-series/${strategySeriesId}`, (route) => route.fulfill({ json: strategyDetail }));
   await page.route(`**/api/v4/strategy-series/${strategySeriesId}/dimensions`, (route) => route.fulfill({ json: strategyDimensions }));
