@@ -77,7 +77,7 @@ jobs:
           )
           new = (
               '    const panel = await screen.findByRole("region", { name: "Linked strategy analytics" });\n'
-              '    expect(panel).toHaveTextContent("candidate-a");\n'
+              '    await waitFor(() => expect(panel).toHaveTextContent("candidate-a"));\n'
               '    expect(panel).toHaveTextContent("resolved");\n'
               '    expect(panel).toHaveTextContent("Strategy evidence persisted");\n'
               '    expect(panel).toHaveTextContent("Portfolio / execution persisted");\n'
