@@ -60,9 +60,10 @@ r3_primary_development_cost_bps = 5
 r3_complete_pilot_runs = 12
 r3_selected_cash_runs = 12
 r3_independent_confirmation = false
+agent_incremental_value = "not_established"
 r4_outcome = "NO_ADAPTIVE_CANDIDATE"
 r4_agent_value = "INCONCLUSIVE"
-agent_incremental_value = "inconclusive_no_complete_deterministic_oracle"
+r4_agent_incremental_value = "inconclusive_no_complete_deterministic_oracle"
 
 [capability]
 factor_graph = "implemented"
