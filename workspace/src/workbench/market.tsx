@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Activity, Link2, LockKeyhole } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { EmptyState, ErrorState, LoadingState, PageHeader, Panel, StatusBadge } from "../components";
