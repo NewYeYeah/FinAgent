@@ -43,6 +43,7 @@ export function useWorkbenchSse<TProjection>({
 
     setStatus("connecting");
     const source = new EventSource(workspaceEventSourceUrl(path));
+    const seenEventIds = new Set<string>();
 
     const open = () => setStatus("open");
     const error = () => setStatus("reconnecting");
@@ -51,7 +52,10 @@ export function useWorkbenchSse<TProjection>({
       try {
         const envelope = JSON.parse(event.data) as WorkbenchSseEventV3<TProjection>;
         if (envelope.event_type !== eventType || envelope.identity !== identity) return;
-        setLastEventId(envelope.event_id || event.lastEventId || "");
+        const stableEventId = envelope.event_id || event.lastEventId || "";
+        if (stableEventId && seenEventIds.has(stableEventId)) return;
+        if (stableEventId) seenEventIds.add(stableEventId);
+        setLastEventId(stableEventId);
         setLastProjection(envelope.projection);
         callbackRef.current?.(envelope.projection, envelope);
       } catch {

@@ -13,6 +13,7 @@
     "e2e": "playwright test"
   },
   "dependencies": {
+    "@tanstack/react-query": "5.102.8",
     "@tanstack/react-table": "^8.21.3",
     "@xyflow/react": "^12.8.5",
     "echarts": "^6.0.0",

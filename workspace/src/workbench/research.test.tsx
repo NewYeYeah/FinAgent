@@ -1,8 +1,9 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { ReactNode } from "react";
 import { afterEach, expect, it, vi } from "vitest";
 import { controlApi } from "../api";
-import { WorkbenchQueryProvider } from "./query";
 import { ResearchContext, ResearchObjective, ResearchToolCard } from "./research";
 import type { ResearchMetrics, ResearchState } from "./researchTypes";
 
@@ -19,10 +20,15 @@ const state: ResearchState = { objective: "Evaluate controlled development hypot
   explicit_decision: { critique: "Fixture establishes no independent evidence", next_action: "Stop the hypothesis" },
   candidate: { outcome: "NO_CANDIDATE_RECOMMENDED", decision: "No candidate: fixture only" }, history_cutoff: "step-7", development_only: true, alpha_authority: false, paper_authority: false, live_authority: false };
 
+function renderWithQuery(children: ReactNode) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  return render(<QueryClientProvider client={client}>{children}</QueryClientProvider>);
+}
+
 it("shows admission unavailable and never starts a fake run", async () => {
   vi.spyOn(controlApi, "researchStatus").mockResolvedValue({ provider_available: false, cancel_supported: false });
   const start = vi.spyOn(controlApi, "startResearch");
-  render(<WorkbenchQueryProvider><ResearchObjective onStarted={vi.fn()} /></WorkbenchQueryProvider>);
+  renderWithQuery(<ResearchObjective onStarted={vi.fn()} />);
   expect(await screen.findByText("Provider unavailable / not admitted")).toBeVisible();
   await userEvent.type(screen.getByLabelText("Set the research objective"), "Research objective");
   expect(screen.getByRole("button", { name: "Start bounded research run" })).toBeDisabled();
@@ -34,7 +40,7 @@ it("sends only a high-level objective and reuses the request identity on uncerta
   const start = vi.spyOn(controlApi, "startResearch").mockRejectedValueOnce(new Error("Transport interrupted"))
     .mockResolvedValueOnce({ status: 202, data: { run_id: "run-a", command_run_id: "cmd-a", state: "accepted", provider: { provider_available: true, cancel_supported: false } } });
   const onStarted = vi.fn();
-  render(<WorkbenchQueryProvider><ResearchObjective onStarted={onStarted} /></WorkbenchQueryProvider>);
+  renderWithQuery(<ResearchObjective onStarted={onStarted} />);
   await screen.findByText("admitted · bounded");
   await userEvent.type(screen.getByLabelText("Set the research objective"), "Investigate diversification");
   await userEvent.click(screen.getByRole("button", { name: "Start bounded research run" }));
@@ -59,13 +65,22 @@ it("shows retrospective evidence, comparator economics and policy without a raw 
 
 it("shows real proposal time and explicit current research state", () => {
   render(<><ResearchToolCard status="succeeded" tool={{ tool: "propose_factor", arguments: {}, policy: { outcome: "allow", reason: "Typed graph" }, result: { outcome: "VALIDATED", proposal: { factor_id: "factor-new", proposed_at: "2026-09-06T12:00:00Z", proposal_context_id: "context-a", history_cutoff: "step-3" } } }} /><ResearchContext state={state} /></>);
-  for (const text of ["Proposed now", "2026-09-06T12:00:00Z", "Current factor set", "factor-a", "factor-b", "regime_conditional", "Remaining budget", "Stop the hypothesis", "No candidate: fixture only"]) expect(screen.getByText(text)).toBeVisible();
+  for (const text of ["Proposed now", "2026-09-06T12:00:00Z", "Current factor set", "factor-a", "factor-b", "regime_conditional", "Remaining budget", "Stop the hypothesis", "No candidate: fixture only", "model-a"]) expect(screen.getByText(text)).toBeVisible();
   expect(screen.getByText(/Alpha: not confirmed/)).toBeVisible();
+  expect(screen.getByText(/PAPER: not accepted/)).toBeVisible();
   expect(screen.getByText(/Live: not authorized/)).toBeVisible();
 });
 
 it("makes a rejected lifecycle request and its policy reason visible", () => {
   render(<ResearchToolCard status="denied" tool={{ tool: "retire_hypothesis", arguments: { factor_id: "factor-a", status: "ACTIVE", reason: "Promote" }, policy: { outcome: "deny", reason: "invalid_lifecycle_transition" }, result: { outcome: "REJECTED", code: "invalid_lifecycle_transition" } }} />);
+  expect(screen.getByText(/Action rejected/)).toBeVisible();
   expect(screen.getByText("Policy deny")).toBeVisible();
   expect(screen.getAllByText(/invalid_lifecycle_transition/).length).toBeGreaterThan(0);
+});
+
+it("treats exhausted resource state as first-class product state", () => {
+  const exhausted: ResearchState = { ...state, resources: { ...state.resources, status: "SLOT_ATTEMPTS_EXHAUSTED", remaining_evaluations: 0 } };
+  render(<ResearchContext state={exhausted} />);
+  expect(screen.getByText(/Budget \/ slot exhaustion/)).toBeVisible();
+  expect(screen.getByText(/SLOT_ATTEMPTS_EXHAUSTED/)).toBeVisible();
 });

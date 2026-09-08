@@ -6,6 +6,14 @@ Turn the existing evidence-heavy historical Workbench into the main interactive 
 
 Workbench 2.0 is a product/interaction stage, not a second research engine.
 
+## Current development slice
+
+WORKBENCH-2 is now the active development stage. The first slice is the Agent Workspace only; this does **not** mean the stage or its exit gate is accepted.
+
+This slice upgrades the Agent surface around the existing `ResearchCapabilityRuntime`, R4 Controller, persisted audit projection, AG-UI adapter, normalized SSE, WorkbenchContext and Evidence Plane. Touched Agent server-state uses `@tanstack/react-query`; untouched Workbench pages may still use the custom query client until they are naturally migrated.
+
+The UI must retain the accepted R4 facts as first-class negative product state: terminal `NO_ADAPTIVE_CANDIDATE`, AgentValue `INCONCLUSIVE`, no AdaptiveStrategy, no R5 start, no confirmed Alpha, no accepted PAPER and no Live authorization. Rejected actions and `SLOT_ATTEMPTS_EXHAUSTED` remain observable reliability evidence. The accepted `r4-matched-v3` campaign is an evidence reference and must not be rerun by this stage.
+
 ## Existing baseline to reuse
 
 Already present:
@@ -133,7 +141,7 @@ manual/programmatic/Agent provenance
 Agent decision history
 ```
 
-Preserve existing IC/decay/heatmap/bootstrap/multiplicity/correlation views where their evidence remains valid.
+Preserve existing IC/decay/heatmap/bootstrap/multiplicity/correlation/provenance views where their evidence remains valid.
 
 ### 5. Market State surface
 

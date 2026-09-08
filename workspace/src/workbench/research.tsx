@@ -1,7 +1,8 @@
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { controlApi } from "../api";
 import { StatusBadge } from "../components";
-import { useWorkbenchQuery } from "./query";
+import { agentQueryKeys } from "./agentQueries";
 import type { ResearchMarketState, ResearchState, ResearchTool } from "./researchTypes";
 import "./research.css";
 
@@ -19,25 +20,33 @@ const titles: Record<string, string> = {
 
 export function ResearchObjective({ onStarted }: { onStarted: (runId: string) => void }) {
   const [objective, setObjective] = useState("");
-  const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [requestId, setRequestId] = useState(() => `research-${crypto.randomUUID()}`);
-  const provider = useWorkbenchQuery({ key: ["r4", "provider-status"], queryFn: controlApi.researchStatus });
+  const provider = useQuery({
+    queryKey: agentQueryKeys.providerStatus(),
+    queryFn: controlApi.researchStatus,
+    retry: false,
+    staleTime: 5_000,
+  });
+  const startMutation = useMutation({ mutationFn: controlApi.startResearch });
   const available = provider.data?.provider_available === true;
+  const busy = startMutation.isPending;
+
   async function start() {
-    setBusy(true); setMessage("");
+    setMessage("");
     try {
-      const response = await controlApi.startResearch({ request_id: requestId, objective: objective.trim() });
+      const response = await startMutation.mutateAsync({ request_id: requestId, objective: objective.trim() });
       if (response.status >= 400) throw new Error(response.data.provider?.reason ?? "Research start denied");
       setMessage(`Research run ${response.data.state}`);
       setRequestId(`research-${crypto.randomUUID()}`);
       onStarted(response.data.run_id);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Research start failed");
-    } finally { setBusy(false); }
+    }
   }
+
   return <section className="research-objective" aria-label="Research objective control">
-    <div><strong>Research objective</strong><span className="research-scope">Development only</span></div>
+    <div><strong>Research objective / session</strong><span className="research-scope">Development only</span></div>
     <label htmlFor="research-objective">Set the research objective</label>
     <textarea id="research-objective" disabled={busy} value={objective} onChange={(e) => { setObjective(e.target.value); setRequestId(`research-${crypto.randomUUID()}`); }} maxLength={1000} rows={2} placeholder="Describe the admitted hypothesis or comparison to investigate." />
     <div className="research-start-row"><button type="button" disabled={!available || !objective.trim() || busy} onClick={() => void start()}>{busy ? "Starting…" : "Start bounded research run"}</button>
@@ -59,8 +68,11 @@ function RetrospectiveNotice() {
 
 export function ResearchToolCard({ tool, status }: { tool: ResearchTool; status: string }) {
   const r = tool.result;
-  return <article className={`research-tool-card research-tool-${tool.tool}`} aria-label={titles[tool.tool] ?? tool.tool}>
+  const normalizedStatus = status.toLowerCase();
+  const rejected = tool.policy.outcome === "deny" || r?.outcome === "REJECTED" || ["denied", "failed", "rejected"].includes(normalizedStatus);
+  return <article className={`research-tool-card research-tool-${tool.tool} ${rejected ? "research-tool-negative" : ""}`} aria-label={titles[tool.tool] ?? tool.tool}>
     <header><strong>{titles[tool.tool] ?? tool.tool}</strong><StatusBadge value={r?.outcome ?? status} tone="neutral" /></header>
+    {rejected && <p className="research-negative-state" role="status"><strong>{normalizedStatus === "failed" ? "Action failed" : "Action rejected"}</strong> · {r?.code ?? tool.policy.reason}</p>}
     <div className="research-policy"><strong>Policy {tool.policy.outcome}</strong> · {tool.policy.reason.replace(/_/g, " ")}</div>
     {r?.evaluation_mode === "adaptive_development_retrospective" && <RetrospectiveNotice />}
     {r?.admission_semantics && <small>Admission: {r.admission_semantics}</small>}
@@ -92,15 +104,21 @@ export function ResearchToolCard({ tool, status }: { tool: ResearchTool; status:
 }
 
 export function ResearchContext({ state }: { state: ResearchState }) {
+  const exhausted = state.resources.status.toUpperCase().includes("EXHAUSTED") || [
+    state.resources.remaining_tool_calls,
+    state.resources.remaining_evaluations,
+    state.resources.remaining_tokens,
+    state.resources.remaining_cost_microusd,
+  ].some((value) => value <= 0);
   return <div className="research-context">
-    <section className="agent-inspector-block"><h3>Remaining budget</h3><dl className="agent-inspector-grid">
+    <section className="agent-inspector-block"><h3>Remaining budget</h3>{exhausted && <p className="research-negative-state" role="status"><strong>Budget / slot exhaustion</strong> · {state.resources.status}</p>}<dl className="agent-inspector-grid">
       <div><dt>Tool calls</dt><dd>{state.resources.remaining_tool_calls}</dd></div><div><dt>Evaluations</dt><dd>{state.resources.remaining_evaluations}</dd></div>
       <div><dt>Tokens</dt><dd>{state.resources.remaining_tokens.toLocaleString()}</dd></div><div><dt>Cost</dt><dd>${(state.resources.remaining_cost_microusd / 1_000_000).toFixed(4)}</dd></div>
     </dl></section>
     <section className="agent-inspector-block"><h3>Current factor set</h3>{state.factor_set ? <ul className="research-factor-list">{state.factor_set.factor_ids.map((id) => <li key={id} className="mono">{id}</li>)}</ul> : <p>Not selected</p>}<h3>Preferred allocator</h3><strong>{state.allocator?.allocator ?? "Not selected"}</strong></section>
-    <section className="agent-inspector-block"><h3>MarketState</h3>{state.market_state ? <MarketSnapshot state={state.market_state} /> : <p>No state inspected yet</p>}</section>
-    <section className="agent-inspector-block"><h3>Latest experiment</h3>{state.latest_experiment ? <div><p className="mono">{state.latest_experiment.experiment_id}</p><p>5bp mean fold: {percent(state.latest_experiment.metrics.mean_fold_return_5bp)}</p><p>Worst fold: {percent(state.latest_experiment.metrics.worst_fold_return_5bp)}</p><RetrospectiveNotice /></div> : <p>No completed portfolio evaluation</p>}</section>
+    <section className="agent-inspector-block" id="current-market-state"><h3>MarketState</h3>{state.market_state ? <MarketSnapshot state={state.market_state} /> : <p>No state inspected yet</p>}</section>
+    <section className="agent-inspector-block"><h3>Latest experiment</h3>{state.latest_experiment ? <div><p className="mono">{state.latest_experiment.experiment_id}</p><p>Preferred allocator: {state.latest_experiment.preferred_allocator}</p><p>5bp mean fold: {percent(state.latest_experiment.metrics.mean_fold_return_5bp)}</p><p>Worst fold: {percent(state.latest_experiment.metrics.worst_fold_return_5bp)}</p><RetrospectiveNotice /></div> : <p>No completed portfolio evaluation</p>}</section>
     <section className="agent-inspector-block"><h3>Explicit next decision</h3><p>{state.explicit_decision?.next_action ?? "No next action recorded"}</p><h3>Development candidate</h3><p>{state.candidate?.decision ?? "None proposed"}</p></section>
-    <section className="agent-inspector-block"><h3>Authority</h3><p className="research-authority">Development only<br />Alpha: not confirmed<br />PAPER: not accepted<br />Live: not authorized<br />Independent confirmation: false</p></section>
+    <section className="agent-inspector-block"><h3>Authority</h3><p className="research-authority">Development only<br />Alpha: {state.alpha_authority ? "confirmed" : "not confirmed"}<br />PAPER: {state.paper_authority ? "accepted" : "not accepted"}<br />Live: {state.live_authority ? "authorized" : "not authorized"}<br />Independent confirmation: false</p></section>
   </div>;
 }

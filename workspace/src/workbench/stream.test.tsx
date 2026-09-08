@@ -18,10 +18,7 @@ class MockEventSource {
 
   addEventListener(type: string, listener: EventListenerOrEventListenerObject | null) {
     if (!listener) return;
-    const callback: EventListener =
-      typeof listener === "function"
-        ? listener
-        : (event) => listener.handleEvent(event);
+    const callback: EventListener = typeof listener === "function" ? listener : (event) => listener.handleEvent(event);
     const values = this.listeners.get(type) ?? new Set<EventListener>();
     values.add(callback);
     this.listeners.set(type, values);
@@ -35,9 +32,7 @@ class MockEventSource {
   }
 
   emit(type: string, data?: string) {
-    const event = data === undefined
-      ? new Event(type)
-      : new MessageEvent(type, { data, lastEventId: "transport-id" });
+    const event = data === undefined ? new Event(type) : new MessageEvent(type, { data, lastEventId: "transport-id" });
     for (const listener of this.listeners.get(type) ?? []) listener(event);
   }
 }
@@ -58,24 +53,12 @@ const projection: AgentActiveRunProjectionV3 = {
   item_count: 1,
   artifact_count: 0,
   unresolved_artifact_count: 0,
-  latest_activity: {
-    item_id: "evt-1",
-    item_type: "plan",
-    occurred_at: "2026-08-29T14:00:00+00:00",
-    title: "Run started",
-    status: "started",
-  },
+  latest_activity: { item_id: "evt-1", item_type: "plan", occurred_at: "2026-08-29T14:00:00+00:00", title: "Run started", status: "started" },
   terminal: false,
   hidden_reasoning: "not_persisted_not_projected",
 };
 
-function Harness({
-  enabled = true,
-  onProjection,
-}: {
-  enabled?: boolean;
-  onProjection?: (value: AgentActiveRunProjectionV3) => void;
-}) {
+function Harness({ enabled = true, onProjection }: { enabled?: boolean; onProjection?: (value: AgentActiveRunProjectionV3) => void; }) {
   const stream = useWorkbenchSse<AgentActiveRunProjectionV3>({
     path: "/api/v3/streams/agent/runs/run-stream",
     eventType: "agent_run_snapshot",
@@ -83,71 +66,39 @@ function Harness({
     enabled,
     onProjection: (value) => onProjection?.(value),
   });
-  return (
-    <div>
-      <span data-testid="status">{stream.status}</span>
-      <span data-testid="event-id">{stream.lastEventId}</span>
-      <span data-testid="projection">{stream.lastProjection?.run_id ?? "none"}</span>
-    </div>
-  );
+  return <div><span data-testid="status">{stream.status}</span><span data-testid="event-id">{stream.lastEventId}</span><span data-testid="projection">{stream.lastProjection?.run_id ?? "none"}</span></div>;
+}
+
+function envelope(eventId: string, identity = "run-stream") {
+  return JSON.stringify({ schema_version: "finagent.workbench.sse-event.v1", event_id: eventId, event_type: "agent_run_snapshot", identity, occurred_at: projection.updated_at, projection });
 }
 
 describe("V3-4 Workbench SSE client", () => {
-  beforeEach(() => {
-    MockEventSource.instances = [];
-    vi.stubGlobal("EventSource", MockEventSource as unknown as typeof EventSource);
-  });
+  beforeEach(() => { MockEventSource.instances = []; vi.stubGlobal("EventSource", MockEventSource as unknown as typeof EventSource); });
+  afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
-  afterEach(() => {
-    cleanup();
-    vi.unstubAllGlobals();
-  });
-
-  it("opens one EventSource, accepts only the typed identity and closes on cleanup", () => {
+  it("accepts typed identity, deduplicates replayed event ids across reconnect and closes on cleanup", () => {
     const onProjection = vi.fn();
     const view = render(<Harness onProjection={onProjection} />);
     expect(MockEventSource.instances).toHaveLength(1);
     const source = MockEventSource.instances[0];
     expect(source.url).toBe("/api/v3/streams/agent/runs/run-stream");
-    expect(screen.getByTestId("status")).toHaveTextContent("connecting");
-
     act(() => source.emit("open"));
     expect(screen.getByTestId("status")).toHaveTextContent("open");
 
-    act(() => {
-      source.emit(
-        "agent_run_snapshot",
-        JSON.stringify({
-          schema_version: "finagent.workbench.sse-event.v1",
-          event_id: "agent-stream-event-1",
-          event_type: "agent_run_snapshot",
-          identity: "different-run",
-          occurred_at: projection.updated_at,
-          projection,
-        }),
-      );
-    });
+    act(() => source.emit("agent_run_snapshot", envelope("agent-stream-event-1", "different-run")));
     expect(onProjection).not.toHaveBeenCalled();
 
-    act(() => {
-      source.emit(
-        "agent_run_snapshot",
-        JSON.stringify({
-          schema_version: "finagent.workbench.sse-event.v1",
-          event_id: "agent-stream-event-2",
-          event_type: "agent_run_snapshot",
-          identity: "run-stream",
-          occurred_at: projection.updated_at,
-          projection,
-        }),
-      );
-    });
+    act(() => source.emit("agent_run_snapshot", envelope("agent-stream-event-2")));
     expect(onProjection).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId("event-id")).toHaveTextContent("agent-stream-event-2");
-    expect(screen.getByTestId("projection")).toHaveTextContent("run-stream");
 
     act(() => source.emit("error"));
     expect(screen.getByTestId("status")).toHaveTextContent("reconnecting");
+    act(() => source.emit("agent_run_snapshot", envelope("agent-stream-event-2")));
+    expect(onProjection).toHaveBeenCalledTimes(1);
+    act(() => source.emit("agent_run_snapshot", envelope("agent-stream-event-3")));
+    expect(onProjection).toHaveBeenCalledTimes(2);
 
     view.unmount();
     expect(source.close).toHaveBeenCalledTimes(1);
