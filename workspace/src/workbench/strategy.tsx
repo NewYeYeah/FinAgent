@@ -433,7 +433,7 @@ export function StrategyDecisionExplorerPage() {
         </Panel>
       ) : null}
 
-      {decisionsQuery.isPending ? <LoadingState /> : decisionsQuery.error ? <ErrorState error={decisionsQuery.error} /> : rows.length ? (
+      {decisionsQuery.isLoading ? <LoadingState /> : decisionsQuery.error ? <ErrorState error={decisionsQuery.error} /> : rows.length ? (
         <>
           <Panel
             title={hasAuthoritativeOhlc ? "Authoritative OHLC & execution timeline" : "Authoritative close-price & execution timeline"}
