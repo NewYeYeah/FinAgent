@@ -1,0 +1,67 @@
+{
+  "schema_version": "finagent.r4-campaign-resource-summary.v1",
+  "accounting_scope": "ledger_provider_accounting_not_reconciled_provider_invoice",
+  "aggregate": {
+    "provider_calls": 100,
+    "input_tokens": 317104,
+    "output_tokens": 10452,
+    "charged_tokens": 327556,
+    "cost_microusd": 437643,
+    "cost_usd_representation": 0.437643,
+    "portfolio_evaluations": 6,
+    "factor_proposals_or_evaluations": 0
+  },
+  "all_real_agent_runs_usage_breakdown_verified": true,
+  "runs": {
+    "deterministic": {
+      "provider_calls": 0,
+      "portfolio_evaluations": 4,
+      "execution_result": "completed_with_four_PORTFOLIO_EVALUATED_results"
+    },
+    "selection-01": {
+      "terminal": "NO_CANDIDATE_RECOMMENDED",
+      "provider_calls": 3,
+      "charged_tokens": 6738,
+      "cost_microusd": 9310,
+      "portfolio_evaluations": 0
+    },
+    "selection-02": {
+      "terminal": "NO_CANDIDATE_RECOMMENDED",
+      "provider_calls": 12,
+      "charged_tokens": 40498,
+      "cost_microusd": 54815,
+      "portfolio_evaluations": 1
+    },
+    "selection-03": {
+      "terminal": "NO_CANDIDATE_RECOMMENDED",
+      "provider_calls": 8,
+      "charged_tokens": 31196,
+      "cost_microusd": 39901,
+      "portfolio_evaluations": 1
+    },
+    "discovery-01": {
+      "terminal": "NO_CANDIDATE_RECOMMENDED",
+      "provider_calls": 15,
+      "charged_tokens": 61819,
+      "cost_microusd": 89871,
+      "portfolio_evaluations": 0
+    },
+    "discovery-02": {
+      "terminal": "NO_CANDIDATE_RECOMMENDED",
+      "provider_calls": 14,
+      "charged_tokens": 57788,
+      "cost_microusd": 82093,
+      "portfolio_evaluations": 0
+    },
+    "discovery-03": {
+      "terminal": "SLOT_ATTEMPTS_EXHAUSTED",
+      "provider_calls": 48,
+      "charged_tokens": 129517,
+      "cost_microusd": 161653,
+      "portfolio_evaluations": 0,
+      "rejected_actions": 44,
+      "candidate_not_proposed_in_run": 43
+    }
+  },
+  "rejected_action_attempts_total": 62
+}
