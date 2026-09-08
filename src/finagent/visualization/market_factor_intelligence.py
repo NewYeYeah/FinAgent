@@ -14,7 +14,7 @@ import sqlite3
 from collections.abc import Mapping, Sequence
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from finagent.research.factor_library import FactorLibrary
 from finagent.research.market_state_gmm import MarketStateModel
@@ -349,7 +349,10 @@ class MarketFactorIntelligenceProjection:
             return [], []
         experiments = []
         try:
-            for item in self.research_workspace.experiments()["items"]:
+            experiment_items = cast(
+                list[dict[str, Any]], self.research_workspace.experiments()["items"]
+            )
+            for item in experiment_items:
                 if factor_id in item.get("factor_ids", ()):
                     experiments.append(
                         {
@@ -365,7 +368,8 @@ class MarketFactorIntelligenceProjection:
         decisions = []
         try:
             graph = self.research_workspace.graph()
-            for node in graph["nodes"]:
+            graph_nodes = cast(list[dict[str, Any]], graph["nodes"])
+            for node in graph_nodes:
                 if node.get("kind") != "agent_decision":
                     continue
                 details = _object(node.get("details"))
@@ -589,7 +593,8 @@ class MarketFactorIntelligenceProjection:
 
     def market(self, model_id: str) -> dict[str, object]:
         payload = self.markets()
-        item = next((value for value in payload["items"] if value["model_id"] == model_id), None)
+        market_items = cast(list[dict[str, Any]], payload["items"])
+        item = next((value for value in market_items if value["model_id"] == model_id), None)
         if item is None:
             raise KeyError(model_id)
         return {
@@ -605,10 +610,12 @@ class MarketFactorIntelligenceProjection:
     def status(self) -> dict[str, object]:
         markets = self.markets()
         factors = self.factors()
+        market_items = cast(list[dict[str, Any]], markets["items"])
+        factor_items = cast(list[dict[str, Any]], factors["items"])
         return {
             "schema_version": "finagent.workspace.market-factor-status.v1",
-            "market_model_count": len(markets["items"]),
-            "factor_count": len(factors["items"]),
+            "market_model_count": len(market_items),
+            "factor_count": len(factor_items),
             "read_only": True,
             "browser_recomputation": False,
             "causal_projection": True,

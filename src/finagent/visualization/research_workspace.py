@@ -11,7 +11,7 @@ import json
 import sqlite3
 from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from urllib.parse import quote
 
 from .semantic import EvidenceContractError
@@ -313,9 +313,10 @@ class ResearchWorkspaceProjection:
 
     def experiment(self, identity: str) -> dict[str, object]:
         payload = self.experiments()
+        experiment_items = cast(list[dict[str, Any]], payload["items"])
         matches = [
             item
-            for item in payload["items"]
+            for item in experiment_items
             if item["identity"] == identity
             or item["experiment_id"] == identity
             or item["attempt_id"] == identity
@@ -665,7 +666,8 @@ class ResearchWorkspaceProjection:
                     if allocator_id:
                         edge(decision_node, node("allocator", allocator_id, context=run_context, details=allocator), "selects_allocator")
 
-        for cycle in self.cycles()["items"]:
+        cycle_items = cast(list[dict[str, Any]], self.cycles()["items"])
+        for cycle in cycle_items:
             cycle_id = str(cycle["cycle_id"])
             if cycle.get("accepted") is not True:
                 unresolved.append(
@@ -727,10 +729,11 @@ class ResearchWorkspaceProjection:
 
     def status(self) -> dict[str, object]:
         cycles = self.cycles()
+        cycle_items = cast(list[dict[str, Any]], cycles["items"])
         return {
             "schema_version": "finagent.workspace.research-workspace-status.v1",
             "agent_audit_configured": self.agent_configured,
-            "accepted_cycle_count": sum(item.get("accepted") is True for item in cycles["items"]),
+            "accepted_cycle_count": sum(item.get("accepted") is True for item in cycle_items),
             "read_only": True,
             "browser_recomputation": False,
             "hidden_reasoning": "not_persisted_not_projected",
