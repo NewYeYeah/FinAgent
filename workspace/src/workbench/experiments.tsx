@@ -165,7 +165,7 @@ function ExperimentsContent() {
       <main>{selectedIdentity && detailQuery.isPending ? <LoadingState label="Loading experiment detail" /> : detailQuery.error ? <ErrorState error={detailQuery.error} /> : selected ? <ExperimentDetail item={selected} /> : <div className="experiment-empty experiment-detail-empty">Select an experiment or failed/rejected attempt. Empty and incomplete evidence remain explicit.</div>}
         <ComparisonPanel ids={selectedIds} />
       </main>
-      <WorkbenchInspectorSlot title="Experiment authority"><div className="experiment-inspector"><h3>Selection</h3><p className="mono">{selectedIdentity ?? "none"}</p><h3>Comparison</h3><p>{selectedIds.length ? selectedIds.join(" · ") : "none"}</p><Link to={`/research-graph${workbenchContextSearch(context)}`}>Open Research Graph</Link><p><LockKeyhole size={12} /> Hidden chain-of-thought is not persisted or exposed.</p><p>Missing experiment IDs, metrics, model/provider identity or lineage stay unavailable; the UI does not infer them.</p></div></WorkbenchInspectorSlot>
+      <WorkbenchInspectorSlot title="Experiment authority"><div className="experiment-inspector"><h3>Selection</h3><p className="mono">{selectedIdentity ?? "none"}</p><h3>Comparison</h3><p>{selectedIds.length ? selectedIds.join(" · ") : "none"}</p><Link to={`/research-graph${workbenchContextSearch(context)}`}>Open Research Graph</Link><p><LockKeyhole size={12} /> Hidden chain-of-thought is not persisted or projected.</p><p>Missing experiment IDs, metrics, model/provider identity or lineage stay unavailable; the UI does not infer them.</p></div></WorkbenchInspectorSlot>
     </div>
   </div>;
 }
