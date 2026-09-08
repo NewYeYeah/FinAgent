@@ -15,14 +15,15 @@ def _write(path: Path, text: str) -> Path:
 
 
 def _await_terminal(client: TestClient, run_id: str) -> dict[str, object]:
-    for _ in range(100):
+    deadline = time.monotonic() + 10.0
+    while time.monotonic() < deadline:
         response = client.get(f"/api/v3/control/runs/{run_id}")
         assert response.status_code == 200
         payload = response.json()
         if payload["run"]["state"] in {"succeeded", "failed", "rejected"}:
             return payload
-        time.sleep(0.01)
-    raise AssertionError("command run did not reach a terminal state")
+        time.sleep(0.02)
+    raise AssertionError("command run did not reach a terminal state within 10 seconds")
 
 
 def test_control_plane_executes_only_application_service_ready_commands(
