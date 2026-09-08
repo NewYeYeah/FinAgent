@@ -44,6 +44,9 @@ const cycles = {
   browser_recomputation: false,
   items: [{
     cycle_id: "cycle-a",
+    accepted: true,
+    review_status: "accepted",
+    review_disposition: "R4_RESULT_ACCEPTED",
     protocol_version: "r4-matched-v3",
     terminal: "NO_ADAPTIVE_CANDIDATE",
     agent_value: "INCONCLUSIVE",
