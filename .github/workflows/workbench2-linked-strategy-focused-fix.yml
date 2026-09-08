@@ -1,0 +1,133 @@
+name: workbench2-linked-strategy-focused-fix
+
+on:
+  push:
+    branches: [codex/workbench2-linked-strategy-analytics]
+    paths:
+      - ".github/workflows/workbench2-linked-strategy-focused-fix.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  validate-and-apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/workbench2-linked-strategy-analytics
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: workspace/package-lock.json
+      - uses: astral-sh/setup-uv@v6
+      - name: Apply exact local fixes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          research_path = Path("src/finagent/visualization/research_workspace.py")
+          text = research_path.read_text(encoding="utf-8")
+          old = '''            terminal = str(cycle.get("terminal", ""))
+            terminal_node: str | None = None
+            if terminal:
+                terminal_node = node(
+'''
+          new = '''            terminal = str(cycle.get("terminal", ""))
+            cycle_terminal_node: str | None = None
+            if terminal:
+                cycle_terminal_node = node(
+'''
+          if text.count(old) != 1:
+              raise SystemExit(f"expected one accepted-cycle terminal declaration, found {text.count(old)}")
+          text = text.replace(old, new, 1)
+          old = '                edge(evaluation_node, terminal_node, "supports_terminal")\n            binding = _object(cycle.get("strategy_binding"))'
+          new = '                edge(evaluation_node, cycle_terminal_node, "supports_terminal")\n            binding = _object(cycle.get("strategy_binding"))'
+          if text.count(old) != 1:
+              raise SystemExit("accepted-cycle supports_terminal anchor missing")
+          text = text.replace(old, new, 1)
+          old = '                if terminal_node is not None:\n                    edge(terminal_node, candidate_node, "candidate_terminal")'
+          new = '                if cycle_terminal_node is not None:\n                    edge(cycle_terminal_node, candidate_node, "candidate_terminal")'
+          if text.count(old) != 1:
+              raise SystemExit("accepted-cycle candidate_terminal anchor missing")
+          research_path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+          test_path = Path("workspace/src/workbench/linkedStrategy.test.tsx")
+          text = test_path.read_text(encoding="utf-8")
+          old = 'import { cleanup, render, screen, waitFor } from "@testing-library/react";'
+          new = 'import { cleanup, render, screen, waitFor, within } from "@testing-library/react";'
+          if text.count(old) != 1:
+              raise SystemExit("linkedStrategy test import anchor missing")
+          text = text.replace(old, new, 1)
+          old = '''    await screen.findByText("candidate-a");
+    const panel = screen.getByRole("region", { name: "Linked strategy analytics" });
+    expect(panel).toHaveTextContent("candidate-a");
+    expect(panel).toHaveTextContent("resolved");
+    expect(panel).toHaveTextContent("Strategy evidence persisted");
+    expect(panel).toHaveTextContent("Portfolio / execution persisted");
+    expect(panel).toHaveTextContent("Attribution: unavailable");
+    expect(screen.getByRole("link", { name: /Portfolio/ })).toHaveAttribute("href", expect.stringContaining("/portfolio/portfolio-a"));
+    expect(screen.getByRole("link", { name: /Execution \\/ PnL/ })).toHaveAttribute("href", expect.stringContaining("/execution/portfolio-a"));
+    await waitFor(() => expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("candidate-a"));
+    expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("cycle-candidate");
+'''
+          new = '''    const panel = await screen.findByRole("region", { name: "Linked strategy analytics" });
+    expect(panel).toHaveTextContent("candidate-a");
+    expect(panel).toHaveTextContent("resolved");
+    expect(panel).toHaveTextContent("Strategy evidence persisted");
+    expect(panel).toHaveTextContent("Portfolio / execution persisted");
+    expect(panel).toHaveTextContent("Attribution: unavailable");
+    const scoped = within(panel);
+    expect(scoped.getByRole("link", { name: /Market State/ })).toHaveAttribute("href", expect.stringContaining("market_model=market-model-a"));
+    expect(scoped.getByRole("link", { name: /Factor 1/ })).toHaveAttribute("href", expect.stringContaining("factor=factor-a"));
+    expect(scoped.getByRole("link", { name: /Experiment 1/ })).toHaveAttribute("href", expect.stringContaining("experiment=exp-a"));
+    expect(scoped.getByRole("link", { name: /Strategy evidence/ })).toHaveAttribute("href", expect.stringContaining("/strategy/strategy-series-a"));
+    expect(scoped.getByRole("link", { name: /^Portfolio/ })).toHaveAttribute("href", expect.stringContaining("/portfolio/portfolio-a"));
+    expect(scoped.getByRole("link", { name: /Execution \\/ PnL/ })).toHaveAttribute("href", expect.stringContaining("/execution/portfolio-a"));
+    expect(panel).toHaveTextContent("Browser financial/statistical recomputation = false");
+    await waitFor(() => expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("candidate-a"));
+    expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("cycle-candidate");
+'''
+          if text.count(old) != 1:
+              raise SystemExit("candidate test contract anchor missing")
+          test_path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+      - name: Sync Python environment
+        run: uv sync --frozen --all-extras
+      - name: Focused Python validation
+        run: |
+          uv run --frozen mypy --follow-imports=silent \
+            src/finagent/visualization/research_workspace.py \
+            src/finagent/visualization/linked_strategy_analytics.py \
+            src/finagent/visualization/linked_strategy_analytics_routes.py
+          uv run --frozen pytest -q \
+            tests/test_linked_strategy_analytics_v3.py \
+            tests/test_research_workspace_v3.py
+      - name: Install frontend
+        working-directory: workspace
+        run: npm ci
+      - name: Focused frontend validation
+        working-directory: workspace
+        run: |
+          npm run typecheck
+          npm test -- src/workbench/linkedStrategy.test.tsx
+          npm test
+          npm run build
+      - name: Install Chromium
+        working-directory: workspace
+        run: npx playwright install --with-deps chromium
+      - name: Linked strategy browser validation
+        working-directory: workspace
+        run: npx playwright test e2e/linked-strategy-analytics.spec.ts
+      - name: Docs and diff validation
+        run: |
+          uv run --frozen python scripts/check_docs.py
+          git diff --check
+      - name: Commit validated fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/finagent/visualization/research_workspace.py workspace/src/workbench/linkedStrategy.test.tsx
+          git commit -m "fix(workbench): settle linked strategy CI contracts"
+          git push origin HEAD:codex/workbench2-linked-strategy-analytics
