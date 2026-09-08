@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const noCandidate = {
   schema_version: "linked",
@@ -56,7 +56,7 @@ const candidate = {
   },
 };
 
-async function routeCommon(page: Parameters<typeof test>[0]["page"], detail: typeof noCandidate | typeof candidate) {
+async function routeCommon(page: Page, detail: typeof noCandidate | typeof candidate) {
   await page.route("**/api/v4/strategy-series", (route) => route.fulfill({ json: { schema_version: "strategy", read_only: true, items: [], warnings: [] } }));
   await page.route("**/api/v3/linked-strategy", (route) => route.fulfill({ json: { schema_version: "index", items: [{ cycle_id: detail.cycle.cycle_id, mode: detail.mode, strategy_binding_status: detail.strategy_binding.status, r5_eligible: detail.r5.eligible }], default_cycle_id: detail.cycle.cycle_id, historical_strategy_series_count: 1, historical_strategy_relation: "unbound_unless_explicit_candidate_binding", read_only: true, canonical_identity_only: true, browser_recomputation: false, hidden_reasoning: "not_persisted_not_projected" } }));
   await page.route(`**/api/v3/linked-strategy/cycles/${detail.cycle.cycle_id}`, (route) => route.fulfill({ json: detail }));
