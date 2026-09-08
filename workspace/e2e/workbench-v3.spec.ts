@@ -104,7 +104,9 @@ test("V3-2A provides deterministic linked Agent navigation without control autho
   await page.route("**/api/v3/agent/runs/run-v3", (route) => route.fulfill({ json: run }));
   await page.goto("/agent");
 
-  await expect(page.getByText("Project → Thread → Run")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Research Workspace" })).toBeVisible();
+  await expect(page.getByText("Project / Thread / Run")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Accepted R4 terminal" }).getByText("NO_ADAPTIVE_CANDIDATE")).toBeVisible();
   await page.getByRole("button", { name: /Workbench research/i }).click();
   await expect(page).toHaveURL(/project=project-v3/);
   await page.getByRole("button", { name: /Research thread/i }).click();
@@ -112,7 +114,7 @@ test("V3-2A provides deterministic linked Agent navigation without control autho
   await page.getByRole("button", { name: /Review V3 evidence/i }).click();
   await expect(page).toHaveURL(/run=run-v3/);
   await expect(page.getByText("Run finished")).toBeVisible();
-  await expect(page.getByText("Run Inspector")).toBeVisible();
+  await expect(page.getByText("Research Inspector")).toBeVisible();
   await expect(page.getByTestId("workbench-context-bar")).toContainText("run-v3");
   await expect(page.getByRole("button", { name: "Config" })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Commands" })).toBeDisabled();
