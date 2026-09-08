@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("echarts-for-react", () => ({ default: () => <div data-testid="echarts" /> }));
@@ -109,15 +109,20 @@ describe("Workbench-2 linked strategy analytics", () => {
     detail = candidate;
     window.history.pushState({}, "", "/strategy?cycle=cycle-candidate&strategy=candidate-a");
     render(<App />);
-    await screen.findByText("candidate-a");
-    const panel = screen.getByRole("region", { name: "Linked strategy analytics" });
-    expect(panel).toHaveTextContent("candidate-a");
+    const panel = await screen.findByRole("region", { name: "Linked strategy analytics" });
+    await waitFor(() => expect(panel).toHaveTextContent("candidate-a"));
     expect(panel).toHaveTextContent("resolved");
     expect(panel).toHaveTextContent("Strategy evidence persisted");
     expect(panel).toHaveTextContent("Portfolio / execution persisted");
     expect(panel).toHaveTextContent("Attribution: unavailable");
-    expect(screen.getByRole("link", { name: /Portfolio/ })).toHaveAttribute("href", expect.stringContaining("/portfolio/portfolio-a"));
-    expect(screen.getByRole("link", { name: /Execution \/ PnL/ })).toHaveAttribute("href", expect.stringContaining("/execution/portfolio-a"));
+    const scoped = within(panel);
+    expect(scoped.getByRole("link", { name: /Market State/ })).toHaveAttribute("href", expect.stringContaining("market_model=market-model-a"));
+    expect(scoped.getByRole("link", { name: /Factor 1/ })).toHaveAttribute("href", expect.stringContaining("factor=factor-a"));
+    expect(scoped.getByRole("link", { name: /Experiment 1/ })).toHaveAttribute("href", expect.stringContaining("experiment=exp-a"));
+    expect(scoped.getByRole("link", { name: /Strategy evidence/ })).toHaveAttribute("href", expect.stringContaining("/strategy/strategy-series-a"));
+    expect(scoped.getByRole("link", { name: /^Portfolio/ })).toHaveAttribute("href", expect.stringContaining("/portfolio/portfolio-a"));
+    expect(scoped.getByRole("link", { name: /Execution \/ PnL/ })).toHaveAttribute("href", expect.stringContaining("/execution/portfolio-a"));
+    expect(panel).toHaveTextContent("Browser financial/statistical recomputation = false");
     await waitFor(() => expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("candidate-a"));
     expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("cycle-candidate");
   });

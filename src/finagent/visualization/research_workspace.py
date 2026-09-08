@@ -809,9 +809,9 @@ class ResearchWorkspaceProjection:
                 details=economic,
             )
             terminal = str(cycle.get("terminal", ""))
-            terminal_node: str | None = None
+            cycle_terminal_node: str | None = None
             if terminal:
-                terminal_node = node(
+                cycle_terminal_node = node(
                     "terminal",
                     cycle_id,
                     label=terminal,
@@ -825,7 +825,7 @@ class ResearchWorkspaceProjection:
                     },
                 )
                 edge(cycle_node, evaluation_node, "attests_economic_evidence")
-                edge(evaluation_node, terminal_node, "supports_terminal")
+                edge(evaluation_node, cycle_terminal_node, "supports_terminal")
             binding = _object(cycle.get("strategy_binding"))
             candidate_id = str(cycle.get("candidate_id", "") or "").strip()
             if binding and candidate_id:
@@ -846,8 +846,8 @@ class ResearchWorkspaceProjection:
                         "portfolio_validation_id": binding.get("portfolio_validation_id"),
                     },
                 )
-                if terminal_node is not None:
-                    edge(terminal_node, candidate_node, "candidate_terminal")
+                if cycle_terminal_node is not None:
+                    edge(cycle_terminal_node, candidate_node, "candidate_terminal")
                 model_id = str(binding.get("market_state_model_id", "") or "").strip()
                 if model_id:
                     market_node = node(
