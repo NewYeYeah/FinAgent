@@ -36,7 +36,7 @@ Historical listed-equity OHLCV and broker CFDs differ in contract/margin/session
 **Affects:** R4  
 **State:** RESOLVED
 
-The [accepted evidence record](../../configs/research/r4_matched_v3_accepted/README.md) is the canonical recording boundary for the independently reviewed `EVIDENCE_ACCEPTED` milestone. On 2026-09-07, a separately authorized real non-research `deepseek-v4-pro` probe passed the exact R4 typed action. ProviderAdmission verified; an ACCEPTED `r4-matched-v3` freeze was generated on executable main `edf7c1942b3acf97926390e45bd46c8ac9aacbee`, verified twice with the exact freeze ID, and passed 34/34 invariants. The real 2025 development source/evaluator admission was reused. No campaign was executed.
+The [accepted evidence record](../../configs/research/r4_matched_v3_accepted/README.md) is the canonical recording boundary for the independently reviewed `EVIDENCE_ACCEPTED` milestone. On 2026-09-07, a separately authorized real non-research `deepseek-v4-pro` probe passed the exact R4 typed action. ProviderAdmission verified; an ACCEPTED `r4-matched-v3` freeze was generated on executable main `edf7c1942b3acf97926390e45bd46c8ac9aacbee`, verified twice with the exact freeze ID, and passed 34/34 invariants. The real 2025 development source/evaluator admission was reused.
 
 - ProviderAdmission: `r4-provider-admission-b78a63f33352d5a01bf2a4ca`; SHA256 `a785e02fcb52f546c1e4cf8a7a08a33e90644323d2cba8722937b99f599e6098`.
 - ResearchAdmission: `r4-research-admission-61df92c1caacb80e369f538f`.
@@ -44,18 +44,20 @@ The [accepted evidence record](../../configs/research/r4_matched_v3_accepted/REA
 - Protocol: `r4-matched-protocol-191d511a8addb59081d261e8` / `r4-matched-v3`.
 - Successful probe request SHA256: `88cfa12ac119059ae8b2295d92714160e61c40fa6c7b07c4af5faecc418f2a4c`; contract `r4-provider-probe-contract-fe25be88367262b64ee310ec`.
 
-The full freeze remains immutable local authority because it embeds local input-binding paths; the repository contains only its sanitized attestation and exact ID/hash. That attestation cannot replace the execution freeze. Resolving admission does not establish Agent value, an AdaptiveStrategy, Alpha, PAPER, Live or R5 eligibility. The 2026-09-06 insufficient-receipt failure and earlier 2026-09-07 transport-success/strict-action failure remain historical facts. The historical [v2 blocked freeze](../../configs/research/r4_matched_v2_blocked/campaign_freeze.json) remains non-executable; no failure was erased or reinterpreted.
+The full freeze remains immutable local authority because it embeds local input-binding paths; the repository contains only its sanitized attestation and exact ID/hash. Resolving admission did not establish Agent value, an AdaptiveStrategy, Alpha, PAPER, Live or R5 eligibility. The 2026-09-06 insufficient-receipt failure and earlier 2026-09-07 transport-success/strict-action failure remain historical facts.
 
-### B-006 — Accepted campaign freeze; matched comparison pending
+### B-006 — Accepted R4 matched campaign comparison
 
 **Affects:** R4  
-**State:** OPEN
+**State:** RESOLVED
 
-Controller/Console and all five deterministic allocators are implemented. The Primary campaign protocol proves the three-factor/minimum-size-two search space before applying its host gate: four admissible factor sets, five allocators and 20 reachable strategies. The deterministic Primary schedule exactly covers all four factor sets and is therefore the exhaustive deterministic oracle for this frozen search space. Primary Agent value is `research_efficiency_under_exhaustive_oracle`: three required Agent runs are assessed from host/ResearchLedger-derived portfolio-evaluation accounting, at least two must select an oracle-noninferior strategy while saving at least one of the four deterministic evaluations, and median saving across all three required runs must be at least one. Performance superiority over this exhausted finite space is not identifiable and is not the current support condition. Candidate viability/ranking remains independent and unchanged. Discovery remains exploratory, has no separately identified incremental-value claim, and cannot affect the Primary oracle/value/candidate.
+The previously authorized real `r4-matched-v3` campaign was executed exactly once and independently reviewed as `R4_RESULT_ACCEPTED`. The repository-safe [result record](../../configs/research/r4_matched_v3_result/README.md) references CampaignResult `r4-campaign-result-d32ec253d62eb4f9349896b0`, SHA256 `5f9cb2b687f5b5750255c4d91e6db273fdf2577a8ce71f33365cddf19789c8ac`, without reconstructing the immutable local result.
 
-The guarded real campaign execution operator is now implemented as a thin CLI over the existing `verify_campaign()` and `run_campaign()` application authority. A real `run` requires explicit research admission, provider admission, provider config, campaign directory and exact human-reviewed freeze ID; it exposes no protocol-version, research-rule, retry, force, reset or browser execution authority. Blocked and fixture freezes are not accepted as real execution authority, and an already committed campaign result replays without provider/evaluator calls. The accepted v3 freeze binds the already merged operator. Later executable changes invalidate that freeze and require a separate drift review.
+All seven required runs completed, with no automatic retry, rerun or provider fallback. Artifact integrity was 44/44 PASS. The deterministic host returned AgentValue `INCONCLUSIVE`, `deterministic_oracle = null` and terminal `NO_ADAPTIVE_CANDIDATE` with `candidate_id = null`.
 
-The v1/v2 blocked artifacts, including v2 freeze `r4-campaign-freeze-51cdf9a05864e90ffe5310bd`, retain their historical superseded semantics and remain non-executable. B-005's provider admission blocker has been removed: an independently reviewed accepted `r4-matched-v3` freeze now exists, with `campaign_executed = false`. The guarded runner remains unexecuted. The real matched comparison is pending as a separately governed offline execution after a new explicit plan/authorization, never automatically on evidence PR merge. No Agent-value result, accepted AdaptiveStrategy or R4 terminal exists. Exposure timing, multi-year inputs, CopilotKit and query migration remain deferred.
+The no-candidate terminal is completeness-driven, not a negative-return claim. The deterministic search structurally covered 20/20 factor-set/allocator strategies, but 0/20 had complete three-fold economic evidence: every deterministic strategy had `evaluable_folds = 0/3` and unavailable-session counts ranged from 39 to 64. Therefore no complete deterministic economic oracle existed, and median portfolio-evaluation saving of 3 is not positive Agent-value evidence. This accepted outcome is not `SYSTEM_FAILURE`.
+
+B-006 closure records the matched campaign result only. It does not establish Alpha, accept PAPER, authorize Live, create an AdaptiveStrategy or make R5 eligible. A future research attempt must use a new versioned R4 cycle rather than rerun this accepted campaign because of its result.
 
 ### B-007 — PAPER is not end-to-end accepted
 
@@ -114,6 +116,24 @@ The admitted U.S. minute dataset does not declare a complete redistribution lice
 **State:** OPEN
 
 The R3 primary 5 bps model is a research scenario, not a measured universal execution cost. Preserve cost sensitivity and bind stronger broker-compatible cost evidence before R5/PAPER economic claims.
+
+### B-108 — R4 economic-support completeness / unavailable sessions
+
+**Affects:** future versioned R4 research  
+**State:** OPEN
+
+The accepted `r4-matched-v3` campaign structurally covered 20 deterministic strategies, but none had complete three-fold economic evidence. Every deterministic strategy had `evaluable_folds = 0/3`, with unavailable-session counts from 39 to 64; all 30 Primary candidate rows were incomplete under the frozen Candidate completeness rule. This prevented construction of a deterministic economic oracle and made Agent-value assessment `INCONCLUSIVE`.
+
+The root cause is not established by the accepted evidence. Diagnose the unavailable-session/economic-support mechanism before a future versioned R4 cycle relies on comparable economic evidence. Do not pre-classify it as a source or evaluator bug without evidence.
+
+### B-109 — R4 Agent discovery/tool-use reliability
+
+**Affects:** future versioned R4 research  
+**State:** OPEN
+
+The accepted campaign retained 62 rejected Agent action attempts. Discovery-03 consumed 48 provider calls and ended `SLOT_ATTEMPTS_EXHAUSTED`; 44 actions were rejected in that run, including 43 `candidate_not_proposed_in_run` rejections. ProviderAdmission remained valid: the limitation is observed autonomous tool-use reliability under the admitted contract, not provider admission.
+
+This does not invalidate the accepted R4 terminal and does not block WORKBENCH-2. Address it before claiming stronger autonomous discovery capability in a future R4 cycle; do not weaken the tool contract merely to improve rejection statistics.
 
 ## P2 / intentionally deferred
 
