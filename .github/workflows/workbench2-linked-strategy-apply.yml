@@ -5,6 +5,7 @@ on:
     branches: [codex/workbench2-linked-strategy-analytics]
     paths:
       - "scripts/_workbench2_linked_strategy_patch.py"
+      - "scripts/_workbench2_linked_strategy_patch_fix.py"
       - ".github/workflows/workbench2-linked-strategy-apply.yml"
 
 permissions:
@@ -20,11 +21,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Normalize patch anchor
+        run: python scripts/_workbench2_linked_strategy_patch_fix.py
       - name: Apply linked strategy patch
         run: python scripts/_workbench2_linked_strategy_patch.py
       - name: Commit implementation and self-clean
         run: |
-          git rm scripts/_workbench2_linked_strategy_patch.py .github/workflows/workbench2-linked-strategy-apply.yml
+          git rm scripts/_workbench2_linked_strategy_patch.py scripts/_workbench2_linked_strategy_patch_fix.py .github/workflows/workbench2-linked-strategy-apply.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
