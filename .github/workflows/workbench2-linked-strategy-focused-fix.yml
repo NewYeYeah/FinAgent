@@ -29,16 +29,18 @@ jobs:
 
           research_path = Path("src/finagent/visualization/research_workspace.py")
           text = research_path.read_text(encoding="utf-8")
-          old = '''            terminal = str(cycle.get("terminal", ""))
-            terminal_node: str | None = None
-            if terminal:
-                terminal_node = node(
-'''
-          new = '''            terminal = str(cycle.get("terminal", ""))
-            cycle_terminal_node: str | None = None
-            if terminal:
-                cycle_terminal_node = node(
-'''
+          old = (
+              '            terminal = str(cycle.get("terminal", ""))\n'
+              '            terminal_node: str | None = None\n'
+              '            if terminal:\n'
+              '                terminal_node = node(\n'
+          )
+          new = (
+              '            terminal = str(cycle.get("terminal", ""))\n'
+              '            cycle_terminal_node: str | None = None\n'
+              '            if terminal:\n'
+              '                cycle_terminal_node = node(\n'
+          )
           if text.count(old) != 1:
               raise SystemExit(f"expected one accepted-cycle terminal declaration, found {text.count(old)}")
           text = text.replace(old, new, 1)
@@ -60,35 +62,37 @@ jobs:
           if text.count(old) != 1:
               raise SystemExit("linkedStrategy test import anchor missing")
           text = text.replace(old, new, 1)
-          old = '''    await screen.findByText("candidate-a");
-    const panel = screen.getByRole("region", { name: "Linked strategy analytics" });
-    expect(panel).toHaveTextContent("candidate-a");
-    expect(panel).toHaveTextContent("resolved");
-    expect(panel).toHaveTextContent("Strategy evidence persisted");
-    expect(panel).toHaveTextContent("Portfolio / execution persisted");
-    expect(panel).toHaveTextContent("Attribution: unavailable");
-    expect(screen.getByRole("link", { name: /Portfolio/ })).toHaveAttribute("href", expect.stringContaining("/portfolio/portfolio-a"));
-    expect(screen.getByRole("link", { name: /Execution \\/ PnL/ })).toHaveAttribute("href", expect.stringContaining("/execution/portfolio-a"));
-    await waitFor(() => expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("candidate-a"));
-    expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("cycle-candidate");
-'''
-          new = '''    const panel = await screen.findByRole("region", { name: "Linked strategy analytics" });
-    expect(panel).toHaveTextContent("candidate-a");
-    expect(panel).toHaveTextContent("resolved");
-    expect(panel).toHaveTextContent("Strategy evidence persisted");
-    expect(panel).toHaveTextContent("Portfolio / execution persisted");
-    expect(panel).toHaveTextContent("Attribution: unavailable");
-    const scoped = within(panel);
-    expect(scoped.getByRole("link", { name: /Market State/ })).toHaveAttribute("href", expect.stringContaining("market_model=market-model-a"));
-    expect(scoped.getByRole("link", { name: /Factor 1/ })).toHaveAttribute("href", expect.stringContaining("factor=factor-a"));
-    expect(scoped.getByRole("link", { name: /Experiment 1/ })).toHaveAttribute("href", expect.stringContaining("experiment=exp-a"));
-    expect(scoped.getByRole("link", { name: /Strategy evidence/ })).toHaveAttribute("href", expect.stringContaining("/strategy/strategy-series-a"));
-    expect(scoped.getByRole("link", { name: /^Portfolio/ })).toHaveAttribute("href", expect.stringContaining("/portfolio/portfolio-a"));
-    expect(scoped.getByRole("link", { name: /Execution \\/ PnL/ })).toHaveAttribute("href", expect.stringContaining("/execution/portfolio-a"));
-    expect(panel).toHaveTextContent("Browser financial/statistical recomputation = false");
-    await waitFor(() => expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("candidate-a"));
-    expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("cycle-candidate");
-'''
+          old = (
+              '    await screen.findByText("candidate-a");\n'
+              '    const panel = screen.getByRole("region", { name: "Linked strategy analytics" });\n'
+              '    expect(panel).toHaveTextContent("candidate-a");\n'
+              '    expect(panel).toHaveTextContent("resolved");\n'
+              '    expect(panel).toHaveTextContent("Strategy evidence persisted");\n'
+              '    expect(panel).toHaveTextContent("Portfolio / execution persisted");\n'
+              '    expect(panel).toHaveTextContent("Attribution: unavailable");\n'
+              '    expect(screen.getByRole("link", { name: /Portfolio/ })).toHaveAttribute("href", expect.stringContaining("/portfolio/portfolio-a"));\n'
+              '    expect(screen.getByRole("link", { name: /Execution \\/ PnL/ })).toHaveAttribute("href", expect.stringContaining("/execution/portfolio-a"));\n'
+              '    await waitFor(() => expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("candidate-a"));\n'
+              '    expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("cycle-candidate");\n'
+          )
+          new = (
+              '    const panel = await screen.findByRole("region", { name: "Linked strategy analytics" });\n'
+              '    expect(panel).toHaveTextContent("candidate-a");\n'
+              '    expect(panel).toHaveTextContent("resolved");\n'
+              '    expect(panel).toHaveTextContent("Strategy evidence persisted");\n'
+              '    expect(panel).toHaveTextContent("Portfolio / execution persisted");\n'
+              '    expect(panel).toHaveTextContent("Attribution: unavailable");\n'
+              '    const scoped = within(panel);\n'
+              '    expect(scoped.getByRole("link", { name: /Market State/ })).toHaveAttribute("href", expect.stringContaining("market_model=market-model-a"));\n'
+              '    expect(scoped.getByRole("link", { name: /Factor 1/ })).toHaveAttribute("href", expect.stringContaining("factor=factor-a"));\n'
+              '    expect(scoped.getByRole("link", { name: /Experiment 1/ })).toHaveAttribute("href", expect.stringContaining("experiment=exp-a"));\n'
+              '    expect(scoped.getByRole("link", { name: /Strategy evidence/ })).toHaveAttribute("href", expect.stringContaining("/strategy/strategy-series-a"));\n'
+              '    expect(scoped.getByRole("link", { name: /^Portfolio/ })).toHaveAttribute("href", expect.stringContaining("/portfolio/portfolio-a"));\n'
+              '    expect(scoped.getByRole("link", { name: /Execution \\/ PnL/ })).toHaveAttribute("href", expect.stringContaining("/execution/portfolio-a"));\n'
+              '    expect(panel).toHaveTextContent("Browser financial/statistical recomputation = false");\n'
+              '    await waitFor(() => expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("candidate-a"));\n'
+              '    expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("cycle-candidate");\n'
+          )
           if text.count(old) != 1:
               raise SystemExit("candidate test contract anchor missing")
           test_path.write_text(text.replace(old, new, 1), encoding="utf-8")
