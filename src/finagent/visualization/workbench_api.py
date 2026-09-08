@@ -19,6 +19,8 @@ from finagent.application import (
 from .factor_tearsheet import FactorTearSheetProjection
 from .factor_tearsheet_routes import attach_factor_tearsheet_routes
 from .linked_analytics_acceptance import LinkedAnalyticsAcceptanceProjection
+from .linked_strategy_analytics import LinkedStrategyAnalyticsProjection
+from .linked_strategy_analytics_routes import attach_linked_strategy_analytics_routes
 from .linked_analytics_acceptance_routes import attach_linked_analytics_acceptance_routes
 from .portfolio_execution import PortfolioExecutionInteractiveProjection
 from .portfolio_execution_routes import attach_portfolio_execution_routes
@@ -150,6 +152,13 @@ def create_workspace_app(
         factor_tearsheet,
         portfolio_execution,
     )
+    linked_strategy_analytics = LinkedStrategyAnalyticsProjection(
+        app.state.research_workspace,
+        app.state.market_factor_intelligence,
+        strategy_explorer,
+        portfolio_execution,
+        evidence_ids=tuple(item.evidence_id for item in app.state.catalog.items()),
+    )
 
     app.state.config_registry = config_registry
     app.state.command_catalog = command_catalog
@@ -160,6 +169,7 @@ def create_workspace_app(
     app.state.factor_tearsheet = factor_tearsheet
     app.state.portfolio_execution = portfolio_execution
     app.state.linked_analytics_acceptance = linked_analytics_acceptance
+    app.state.linked_strategy_analytics = linked_strategy_analytics
     app.state.command_store_path = (
         Path(command_store_path).expanduser() if command_store_path else None
     )
@@ -168,6 +178,7 @@ def create_workspace_app(
     attach_factor_tearsheet_routes(app, factor_tearsheet)
     attach_portfolio_execution_routes(app, portfolio_execution)
     attach_linked_analytics_acceptance_routes(app, linked_analytics_acceptance)
+    attach_linked_strategy_analytics_routes(app, linked_strategy_analytics)
 
     @app.get("/api/v3/workbench/status")
     def get_v3_workbench_status() -> dict[str, object]:
@@ -186,6 +197,7 @@ def create_workspace_app(
             "factor_tearsheet": factor_tearsheet.status(),
             "portfolio_execution": portfolio_execution.status(),
             "linked_analytics_acceptance": linked_analytics_acceptance.status(),
+            "linked_strategy_analytics": linked_strategy_analytics.status(),
             "config_descriptor_count": len(projection.descriptors),
             "config_snapshot_count": len(projection.snapshots),
             "config_warning_count": len(projection.warnings),

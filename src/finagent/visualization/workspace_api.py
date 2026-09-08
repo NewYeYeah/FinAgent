@@ -362,7 +362,9 @@ def create_workspace_app(
     catalog = WorkspaceEvidenceCatalog(report_paths, git_sha=git_sha)
     agent_artifact_catalog = build_agent_artifact_catalog(catalog.bundles())
     agent_path = Path(agent_audit_path).expanduser() if agent_audit_path else None
-    research_workspace = ResearchWorkspaceProjection(agent_path)
+    research_workspace = ResearchWorkspaceProjection(
+        agent_path, cycle_paths=(*report_paths, "configs/research")
+    )
     market_factor_intelligence = MarketFactorIntelligenceProjection(
         report_paths, research_workspace=research_workspace
     )

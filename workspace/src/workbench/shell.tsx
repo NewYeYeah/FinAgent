@@ -17,6 +17,7 @@ import {
   SlidersHorizontal,
   Workflow,
 } from "lucide-react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { NavLink, useLocation } from "react-router-dom";
 import { useState, type ReactNode } from "react";
 
@@ -244,12 +245,17 @@ export function WorkbenchShell({ children }: { children: ReactNode }) {
 }
 
 export function WorkbenchProviders({ children }: { children: ReactNode }) {
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false, staleTime: 1_500 } },
+  }));
   return (
-    <WorkbenchQueryProvider>
-      <WorkbenchContextProvider>
-        <ControlPlaneProvider>{children}</ControlPlaneProvider>
-      </WorkbenchContextProvider>
-    </WorkbenchQueryProvider>
+    <QueryClientProvider client={queryClient}>
+      <WorkbenchQueryProvider>
+        <WorkbenchContextProvider>
+          <ControlPlaneProvider>{children}</ControlPlaneProvider>
+        </WorkbenchContextProvider>
+      </WorkbenchQueryProvider>
+    </QueryClientProvider>
   );
 }
 

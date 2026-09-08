@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -22,7 +23,7 @@ import {
 } from "./context";
 import { MarketBarExecutionChart } from "./marketBarChart";
 import { marketBarApi } from "./marketBars";
-import { useWorkbenchQuery } from "./query";
+import { LinkedStrategyContextPanel } from "./linkedStrategy";
 import type {
   StrategyDecisionRowV4,
   StrategySeriesItemV4,
@@ -228,8 +229,8 @@ export function StrategyDecisionExplorerPage() {
   const { context, select } = useWorkbenchContext();
   const routeSeriesId = encodedSeriesId ? decodeURIComponent(encodedSeriesId) : undefined;
 
-  const catalogQuery = useWorkbenchQuery({
-    key: ["strategy-series-v4"],
+  const catalogQuery = useQuery({
+    queryKey: ["strategy-series-v4"],
     queryFn: workspaceApi.strategySeriesV4,
   });
   const catalog = catalogQuery.data;
@@ -241,13 +242,13 @@ export function StrategyDecisionExplorerPage() {
     : contextSeries ?? catalog?.items[0];
   const seriesId = activeSeries?.series_id ?? routeSeriesId ?? "";
 
-  const detailQuery = useWorkbenchQuery({
-    key: ["strategy-series-detail-v4", seriesId],
+  const detailQuery = useQuery({
+    queryKey: ["strategy-series-detail-v4", seriesId],
     queryFn: () => workspaceApi.strategySeriesDetailV4(seriesId),
     enabled: Boolean(seriesId),
   });
-  const dimensionsQuery = useWorkbenchQuery({
-    key: ["strategy-series-dimensions-v4", seriesId],
+  const dimensionsQuery = useQuery({
+    queryKey: ["strategy-series-dimensions-v4", seriesId],
     queryFn: () => workspaceApi.strategySeriesDimensionsV4(seriesId),
     enabled: Boolean(seriesId),
   });
@@ -274,8 +275,8 @@ export function StrategyDecisionExplorerPage() {
     }
   }, [activeSeries, asset, context.asset_id, context.portfolio_validation_id, select]);
 
-  const decisionsQuery = useWorkbenchQuery({
-    key: ["strategy-decisions-v4", seriesId, asset, start, end, foldId],
+  const decisionsQuery = useQuery({
+    queryKey: ["strategy-decisions-v4", seriesId, asset, start, end, foldId],
     queryFn: () => workspaceApi.strategyDecisionsV4(seriesId, {
       asset,
       start,
@@ -287,8 +288,8 @@ export function StrategyDecisionExplorerPage() {
     staleTime: 60_000,
   });
   const rows = decisionsQuery.data?.items ?? [];
-  const marketBarsQuery = useWorkbenchQuery({
-    key: ["strategy-market-bars-ac2", seriesId, asset, start, end],
+  const marketBarsQuery = useQuery({
+    queryKey: ["strategy-market-bars-ac2", seriesId, asset, start, end],
     queryFn: () => marketBarApi.bars(seriesId, {
       asset,
       start,
@@ -314,6 +315,7 @@ export function StrategyDecisionExplorerPage() {
     return (
       <div className="page">
         <PageHeader eyebrow="V4.2 · Strategy" title="Strategy Decision Explorer" description="No verified V4-0 StrategyDecisionSeries is configured." />
+        <LinkedStrategyContextPanel />
         <EmptyState title="No StrategyDecisionSeries" detail="Materialize V4-0 beside an A4 report under a configured Workspace report root, then restart the Evidence Plane." />
       </div>
     );
@@ -362,6 +364,8 @@ export function StrategyDecisionExplorerPage() {
           Open A4 cockpit <ArrowRight size={15} />
         </Link>
       </PageHeader>
+
+      <LinkedStrategyContextPanel activeStrategySeriesId={activeSeries.series_id} portfolioValidationId={activeSeries.portfolio_validation_id} />
 
       <div className="strategy-authority-banner">
         <ShieldCheck size={18} />
@@ -481,7 +485,7 @@ export function StrategyDecisionExplorerPage() {
             <Panel title="Frozen factor family" subtitle="Identity context only. Per-asset component contributions are not persisted by V4-0 and are deliberately not inferred here.">
               <div className="strategy-factor-list">
                 {activeSeries.selected_feature_digests.map((digest) => (
-                  <Link key={digest} to={`/factor/${encodeURIComponent(digest)}${workbenchContextSearch(context)}`} className="strategy-factor-chip">
+                  <Link key={digest} to={`/factors?factor=${encodeURIComponent(digest)}${workbenchContextSearch(context) ? `&${workbenchContextSearch(context).slice(1)}` : ""}`} className="strategy-factor-chip">
                     <Database size={14} /><span className="mono">{digest}</span>
                   </Link>
                 ))}

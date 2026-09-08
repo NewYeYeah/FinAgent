@@ -20,6 +20,7 @@ from .semantic import EvidenceContractError
 _EXPERIMENT_TOOLS = {"evaluate_factor", "evaluate_portfolio"}
 _TERMINAL_OUTCOMES = {"DEVELOPMENT_CANDIDATE_PROPOSED", "NO_CANDIDATE_RECOMMENDED"}
 _FAILED_OUTCOMES = {"TOOL_FAILED", "EVALUATOR_TIMEOUT", "AUDIT_FAILED"}
+_LINKED_STRATEGY_BINDING_SCHEMA = "finagent.workbench-linked-strategy-binding.v1"
 
 
 def _object(value: object) -> Mapping[str, Any]:
@@ -394,13 +395,83 @@ class ResearchWorkspaceProjection:
             "browser_recomputation": False,
         }
 
-    def cycles(self) -> dict[str, object]:
+    def _strategy_bindings(self) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         items: list[dict[str, Any]] = []
         unresolved: list[dict[str, Any]] = []
+        seen: dict[str, dict[str, Any]] = {}
+        for root in self.cycle_paths:
+            candidates = (
+                (root,)
+                if root.is_file() and root.name == "linked_strategy_binding.json"
+                else tuple(root.rglob("linked_strategy_binding.json"))
+                if root.is_dir()
+                else ()
+            )
+            for path in candidates:
+                try:
+                    value = json.loads(path.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError):
+                    unresolved.append(
+                        {
+                            "relation": "strategy_binding",
+                            "reason": "persisted_binding_unreadable",
+                            "path": path.as_posix(),
+                        }
+                    )
+                    continue
+                if not isinstance(value, Mapping) or value.get("schema_version") != _LINKED_STRATEGY_BINDING_SCHEMA:
+                    continue
+                binding_id = str(value.get("binding_id", "")).strip()
+                cycle_id = str(value.get("cycle_id", "")).strip()
+                candidate_id = str(value.get("candidate_id", "")).strip()
+                if not binding_id or not cycle_id or not candidate_id:
+                    unresolved.append(
+                        {
+                            "relation": "strategy_binding",
+                            "reason": "binding_identity_cycle_candidate_required",
+                            "path": path.as_posix(),
+                        }
+                    )
+                    continue
+                item: dict[str, Any] = {
+                    "schema_version": _LINKED_STRATEGY_BINDING_SCHEMA,
+                    "binding_id": binding_id,
+                    "cycle_id": cycle_id,
+                    "candidate_id": candidate_id,
+                    "strategy_series_id": str(value.get("strategy_series_id", "") or "").strip() or None,
+                    "portfolio_validation_id": str(value.get("portfolio_validation_id", "") or "").strip() or None,
+                    "market_state_model_id": str(value.get("market_state_model_id", "") or "").strip() or None,
+                    "factor_ids": _unique(value.get("factor_ids", ()) if isinstance(value.get("factor_ids"), Sequence) and not isinstance(value.get("factor_ids"), (str, bytes)) else ()),
+                    "experiment_ids": _unique(value.get("experiment_ids", ()) if isinstance(value.get("experiment_ids"), Sequence) and not isinstance(value.get("experiment_ids"), (str, bytes)) else ()),
+                    "evidence_ids": _unique(value.get("evidence_ids", ()) if isinstance(value.get("evidence_ids"), Sequence) and not isinstance(value.get("evidence_ids"), (str, bytes)) else ()),
+                    "agent_run_id": str(value.get("agent_run_id", "") or "").strip() or None,
+                    "attribution_evidence_id": str(value.get("attribution_evidence_id", "") or "").strip() or None,
+                    "source_path": path.as_posix(),
+                    "read_only_reference": True,
+                }
+                previous = seen.get(binding_id)
+                if previous is not None and previous != item:
+                    unresolved.append(
+                        {
+                            "binding_id": binding_id,
+                            "cycle_id": cycle_id,
+                            "relation": "strategy_binding",
+                            "reason": "conflicting_payloads_share_binding_id",
+                        }
+                    )
+                    continue
+                if previous is None:
+                    seen[binding_id] = item
+                    items.append(item)
+        return items, unresolved
+
+    def cycles(self) -> dict[str, object]:
+        items: list[dict[str, Any]] = []
+        bindings, unresolved = self._strategy_bindings()
         seen: set[str] = set()
         for root in self.cycle_paths:
             candidates = (
-                (root,) if root.is_file() else tuple(root.rglob("campaign_result_attestation.json"))
+                (root,) if root.is_file() and root.name == "campaign_result_attestation.json" else tuple(root.rglob("campaign_result_attestation.json"))
                 if root.is_dir()
                 else ()
             )
@@ -426,6 +497,7 @@ class ResearchWorkspaceProjection:
                         loaded = {}
                     resources = loaded if isinstance(loaded, Mapping) else {}
                 accepted = value.get("review_disposition") == "R4_RESULT_ACCEPTED"
+                candidate_id = str(value.get("candidate_id", "") or "").strip() or None
                 if not accepted:
                     unresolved.append(
                         {
@@ -434,6 +506,43 @@ class ResearchWorkspaceProjection:
                             "reason": "accepted_review_disposition_missing_or_unrecognized",
                         }
                     )
+                cycle_bindings = [item for item in bindings if item["cycle_id"] == cycle_id]
+                strategy_binding: dict[str, Any] | None = None
+                if cycle_bindings:
+                    if not accepted:
+                        unresolved.append(
+                            {
+                                "cycle_id": cycle_id,
+                                "relation": "strategy_binding",
+                                "reason": "binding_ignored_for_cycle_not_explicitly_accepted",
+                            }
+                        )
+                    elif candidate_id is None:
+                        unresolved.append(
+                            {
+                                "cycle_id": cycle_id,
+                                "relation": "strategy_binding",
+                                "reason": "binding_ignored_for_accepted_no_candidate_cycle",
+                            }
+                        )
+                    elif len(cycle_bindings) != 1:
+                        unresolved.append(
+                            {
+                                "cycle_id": cycle_id,
+                                "relation": "strategy_binding",
+                                "reason": "multiple_bindings_for_cycle",
+                            }
+                        )
+                    elif cycle_bindings[0]["candidate_id"] != candidate_id:
+                        unresolved.append(
+                            {
+                                "cycle_id": cycle_id,
+                                "relation": "strategy_binding",
+                                "reason": "binding_candidate_id_mismatch",
+                            }
+                        )
+                    else:
+                        strategy_binding = dict(cycle_bindings[0])
                 items.append(
                     {
                         "cycle_id": cycle_id,
@@ -444,7 +553,8 @@ class ResearchWorkspaceProjection:
                         "review_disposition": value.get("review_disposition"),
                         "terminal": value.get("candidate_decision"),
                         "agent_value": value.get("agent_value"),
-                        "candidate_id": value.get("candidate_id"),
+                        "candidate_id": candidate_id,
+                        "strategy_binding": strategy_binding,
                         "economic_evidence": dict(_object(value.get("economic_evidence"))),
                         "provider_usage": dict(_object(value.get("provider_usage"))),
                         "agent_reliability": dict(_object(value.get("agent_reliability"))),
@@ -678,11 +788,15 @@ class ResearchWorkspaceProjection:
                     }
                 )
                 continue
+            cycle_context = {"research_cycle_id": cycle_id}
+            cycle_href = f"/strategy?cycle={quote(cycle_id, safe='')}"
             cycle_node = node(
                 "research_cycle",
                 cycle_id,
                 label=str(cycle.get("protocol_version") or cycle_id),
                 status="accepted",
+                href=cycle_href,
+                context=cycle_context,
                 details={"protocol_id": cycle.get("protocol_id")},
             )
             economic = _object(cycle.get("economic_evidence"))
@@ -691,15 +805,19 @@ class ResearchWorkspaceProjection:
                 cycle_id,
                 label="Economic evidence completeness",
                 status="incomplete" if economic.get("deterministic_evidence_complete") is False else "complete",
+                context=cycle_context,
                 details=economic,
             )
             terminal = str(cycle.get("terminal", ""))
+            terminal_node: str | None = None
             if terminal:
                 terminal_node = node(
                     "terminal",
                     cycle_id,
                     label=terminal,
                     status="accepted_terminal",
+                    href=cycle_href,
+                    context=cycle_context,
                     details={
                         "agent_value": cycle.get("agent_value"),
                         "candidate_id": cycle.get("candidate_id"),
@@ -708,6 +826,111 @@ class ResearchWorkspaceProjection:
                 )
                 edge(cycle_node, evaluation_node, "attests_economic_evidence")
                 edge(evaluation_node, terminal_node, "supports_terminal")
+            binding = _object(cycle.get("strategy_binding"))
+            candidate_id = str(cycle.get("candidate_id", "") or "").strip()
+            if binding and candidate_id:
+                strategy_context = {
+                    "research_cycle_id": cycle_id,
+                    "strategy_id": candidate_id,
+                }
+                candidate_node = node(
+                    "strategy_candidate",
+                    candidate_id,
+                    label=f"AdaptiveStrategy candidate · {candidate_id}",
+                    status="development_candidate",
+                    href=f"/strategy?strategy={quote(candidate_id, safe='')}&cycle={quote(cycle_id, safe='')}",
+                    context=strategy_context,
+                    details={
+                        "binding_id": binding.get("binding_id"),
+                        "strategy_series_id": binding.get("strategy_series_id"),
+                        "portfolio_validation_id": binding.get("portfolio_validation_id"),
+                    },
+                )
+                if terminal_node is not None:
+                    edge(terminal_node, candidate_node, "candidate_terminal")
+                model_id = str(binding.get("market_state_model_id", "") or "").strip()
+                if model_id:
+                    market_node = node(
+                        "market_state",
+                        model_id,
+                        href=f"/market?market_model={quote(model_id, safe='')}",
+                        context={**strategy_context, "market_state_model_id": model_id},
+                    )
+                    edge(market_node, candidate_node, "candidate_market_state")
+                for factor_id in _unique(binding.get("factor_ids", ())):
+                    factor_node = node(
+                        "factor",
+                        factor_id,
+                        href=f"/factors?factor={quote(factor_id, safe='')}",
+                        context={**strategy_context, "factor_id": factor_id},
+                    )
+                    edge(factor_node, candidate_node, "candidate_factor")
+                for experiment_id in _unique(binding.get("experiment_ids", ())):
+                    experiment_node = node(
+                        "experiment",
+                        experiment_id,
+                        href=f"/experiments?experiment={quote(experiment_id, safe='')}",
+                        context={**strategy_context, "experiment_id": experiment_id},
+                    )
+                    edge(experiment_node, candidate_node, "supports_candidate")
+                strategy_series_id = str(binding.get("strategy_series_id", "") or "").strip()
+                portfolio_id = str(binding.get("portfolio_validation_id", "") or "").strip()
+                strategy_node: str | None = None
+                if strategy_series_id:
+                    strategy_node = node(
+                        "strategy",
+                        strategy_series_id,
+                        label=f"Strategy evidence · {strategy_series_id}",
+                        href=f"/strategy/{quote(strategy_series_id, safe='')}?strategy={quote(candidate_id, safe='')}&cycle={quote(cycle_id, safe='')}",
+                        context={**strategy_context, "portfolio_validation_id": portfolio_id} if portfolio_id else strategy_context,
+                        details={"binding_id": binding.get("binding_id")},
+                    )
+                    edge(candidate_node, strategy_node, "explicit_persisted_binding")
+                else:
+                    unresolved.append(
+                        {
+                            "cycle_id": cycle_id,
+                            "relation": "candidate_strategy_series",
+                            "reason": "explicit_strategy_series_id_unavailable",
+                        }
+                    )
+                if portfolio_id:
+                    portfolio_context = {
+                        **strategy_context,
+                        "portfolio_validation_id": portfolio_id,
+                    }
+                    portfolio_node = node(
+                        "portfolio",
+                        portfolio_id,
+                        href=f"/portfolio/{quote(portfolio_id, safe='')}",
+                        context=portfolio_context,
+                    )
+                    execution_node = node(
+                        "execution",
+                        portfolio_id,
+                        label=f"Execution evidence · {portfolio_id}",
+                        href=f"/execution/{quote(portfolio_id, safe='')}",
+                        context=portfolio_context,
+                    )
+                    edge(strategy_node or candidate_node, portfolio_node, "targets_portfolio")
+                    edge(portfolio_node, execution_node, "historical_execution")
+                agent_run_id = str(binding.get("agent_run_id", "") or "").strip()
+                if agent_run_id:
+                    agent_node = node(
+                        "agent_run",
+                        agent_run_id,
+                        href=f"/agent?run={quote(agent_run_id, safe='')}",
+                        context={**strategy_context, "run_id": agent_run_id},
+                    )
+                    edge(agent_node, candidate_node, "agent_candidate_decision")
+                for evidence_id in _unique(binding.get("evidence_ids", ())):
+                    evidence_node = node(
+                        "evidence",
+                        evidence_id,
+                        href=f"/evidence/{quote(evidence_id, safe='')}",
+                        context=strategy_context,
+                    )
+                    edge(evidence_node, candidate_node, "candidate_evidence")
             unresolved.append(
                 {
                     "cycle_id": cycle_id,

@@ -102,6 +102,7 @@ function MarketContent() {
 
     <div className="market-linked-actions">
       <Link to={`/research-graph${search}`}><Activity size={13} /> Research Graph</Link>
+      <Link to={`/strategy${search}`}><Link2 size={12} /> Strategy / terminal</Link>
       {item.linked_experiment_ids.map((experimentId) => <Link key={experimentId} to={`/experiments?experiment=${encodeURIComponent(experimentId)}${search ? `&${search.slice(1)}` : ""}`}><Link2 size={12} /> experiment:{experimentId}</Link>)}
     </div>
     <p className="market-authority-note"><LockKeyhole size={12} /> Hidden chain-of-thought is not persisted or projected. Browser financial/statistical recomputation = false.</p>

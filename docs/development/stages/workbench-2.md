@@ -16,7 +16,7 @@ The UI must retain the accepted R4 facts as first-class negative product state: 
 
 ### Current third slice: Market State + Factor Intelligence
 
-The third vertical slice extends the existing Factor Tear Sheet and adds a first-class Market State surface. It projects only persisted causal MarketState model/state rows, FactorLibrary lifecycle/evaluations, persisted adaptive allocator weight snapshots, Agent audit links and accepted research evidence. React does not fit GMMs, cluster, smooth, infer missing states, recompute factor/economic statistics or create research authority. Missing bindings remain explicitly unavailable/unresolved.
+The third vertical slice, `Market State + Factor Intelligence`, is in Development, and the fourth major product slice, `Linked Strategy Analytics`, now links accepted R4 terminal/candidate evidence to existing Strategy/Portfolio/Execution surfaces by explicit canonical identity only.
 
 Touched Factor server-state is migrated to `@tanstack/react-query`; untouched Workbench consumers may still use the legacy custom query client, so B-102 remains open. The accepted R4 terminal remains `NO_ADAPTIVE_CANDIDATE` with AgentValue `INCONCLUSIVE`, 0/20 complete deterministic strategies and 62 rejected Agent actions; these completeness/reliability facts do not imply all factors lose money, MarketState is invalid, or Agent value is proven negative. `r4-matched-v3` remains evidence-only and must not be rerun.
 
@@ -255,7 +255,7 @@ A likely decomposition:
 2. Experiments + Research Graph.
 3. Market State + Factor Intelligence.
 4. Adaptive Strategy linked analytics.
-5. usability/real-artifact acceptance if not cleanly included in prior slices.
+5. real-artifact task-based human usability acceptance after the four major product slices.
 
 The exact count should follow reviewability and product coherence.
 

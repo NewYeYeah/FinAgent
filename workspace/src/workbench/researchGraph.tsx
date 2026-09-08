@@ -33,6 +33,11 @@ const LANE: Record<string, number> = {
   evaluation: 4,
   agent_decision: 5,
   allocator: 6,
+  strategy_candidate: 7,
+  strategy: 8,
+  portfolio: 9,
+  execution: 10,
+  agent_run: 6,
   terminal: 7,
 };
 
@@ -75,6 +80,8 @@ function canonicalPatch(node: ResearchGraphNode): Partial<Record<keyof Workbench
     "experiment_id",
     "research_cycle_id",
     "market_state_model_id",
+    "strategy_id",
+    "portfolio_validation_id",
   ];
   for (const key of allowed) {
     const value = node.context[key];
@@ -87,6 +94,9 @@ function canonicalPatch(node: ResearchGraphNode): Partial<Record<keyof Workbench
     output.experiment_id = node.identity;
   }
   if (node.kind === "factor" && !output.factor_id) output.factor_id = node.identity;
+  if (node.kind === "strategy_candidate" && !output.strategy_id) output.strategy_id = node.identity;
+  if (node.kind === "portfolio" && !output.portfolio_validation_id) output.portfolio_validation_id = node.identity;
+  if (node.kind === "execution" && !output.portfolio_validation_id) output.portfolio_validation_id = node.identity;
   return output;
 }
 

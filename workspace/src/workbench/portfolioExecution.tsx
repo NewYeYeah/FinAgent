@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import { ArrowRight, BriefcaseBusiness, ListTree, ShieldCheck } from "lucide-react";
@@ -19,6 +20,7 @@ import {
   workbenchContextSearch,
   type WorkbenchContextKey,
 } from "./context";
+import { LinkedStrategyContextPanel } from "./linkedStrategy";
 import { portfolioExecutionApi } from "./portfolioExecutionApi";
 import type {
   MonthlyReturnV4,
@@ -27,7 +29,6 @@ import type {
   PortfolioSeriesPointV4,
   StrategyDecisionRowV4,
 } from "./portfolioExecutionTypes";
-import { useWorkbenchQuery } from "./query";
 import "./portfolioExecution.css";
 
 function pct(value: number | null | undefined, digits = 2): string {
@@ -204,7 +205,7 @@ function WeightChart({ rows }: { rows: StrategyDecisionRowV4[] }) {
 
 export function PortfolioExecutionIndexPage({ mode }: { mode: "portfolio" | "execution" }) {
   const navigate = useNavigate();
-  const query = useWorkbenchQuery({ key: ["portfolio-execution-v44"], queryFn: portfolioExecutionApi.catalog });
+  const query = useQuery({ queryKey: ["portfolio-execution-v44"], queryFn: portfolioExecutionApi.catalog });
   if (query.isPending) return <LoadingState />;
   if (query.error) return <ErrorState error={query.error} />;
   const catalog = query.data;
@@ -212,6 +213,7 @@ export function PortfolioExecutionIndexPage({ mode }: { mode: "portfolio" | "exe
     return (
       <div className="page">
         <PageHeader eyebrow="V4.4 · Linked analytics" title={mode === "portfolio" ? "Portfolio" : "Execution"} description="No A4 validation with a verified V4-0 StrategyDecisionSeries is configured." />
+        <LinkedStrategyContextPanel />
         <EmptyState title="No linked A4 + V4-0 evidence" detail="Materialize V4-0 beside the immutable A4 report and ledger, then restart the Evidence Plane." />
       </div>
     );
@@ -219,6 +221,7 @@ export function PortfolioExecutionIndexPage({ mode }: { mode: "portfolio" | "exe
   return (
     <div className="page v44-page">
       <PageHeader eyebrow="V4.4 · Linked analytics" title={mode === "portfolio" ? "Portfolio Interactive Pack" : "Execution Interactive Pack"} description="A4 portfolio authority linked to immutable V4-0 decision evidence." />
+      <LinkedStrategyContextPanel />
       <div className="v44-card-grid">
         {catalog.items.map((item) => (
           <button key={item.portfolio_validation_id} type="button" className="v44-select-card" onClick={() => navigate(`/${mode}/${encodeURIComponent(item.portfolio_validation_id)}`)}>
@@ -238,10 +241,10 @@ export function PortfolioInteractivePage() {
   const validationId = decodeURIComponent(encodedValidationId);
   const { context, select } = useWorkbenchContext();
   const range = dateRange(context.date_range);
-  const catalog = useWorkbenchQuery({ key: ["portfolio-execution-v44"], queryFn: portfolioExecutionApi.catalog });
-  const detail = useWorkbenchQuery({ key: ["portfolio-execution-detail", validationId], enabled: Boolean(validationId), queryFn: () => portfolioExecutionApi.detail(validationId) });
-  const series = useWorkbenchQuery({ key: ["portfolio-execution-series", validationId, context.fold_id, range.start, range.end], enabled: Boolean(validationId), queryFn: () => portfolioExecutionApi.series(validationId, { foldId: context.fold_id, start: range.start, end: range.end, limit: 5000 }) });
-  const analytics = useWorkbenchQuery({ key: ["portfolio-execution-analytics", validationId, context.fold_id, range.start, range.end], enabled: Boolean(validationId), queryFn: () => portfolioExecutionApi.analytics(validationId, { foldId: context.fold_id, start: range.start, end: range.end }) });
+  const catalog = useQuery({ queryKey: ["portfolio-execution-v44"], queryFn: portfolioExecutionApi.catalog });
+  const detail = useQuery({ queryKey: ["portfolio-execution-detail", validationId], enabled: Boolean(validationId), queryFn: () => portfolioExecutionApi.detail(validationId) });
+  const series = useQuery({ queryKey: ["portfolio-execution-series", validationId, context.fold_id, range.start, range.end], enabled: Boolean(validationId), queryFn: () => portfolioExecutionApi.series(validationId, { foldId: context.fold_id, start: range.start, end: range.end, limit: 5000 }) });
+  const analytics = useQuery({ queryKey: ["portfolio-execution-analytics", validationId, context.fold_id, range.start, range.end], enabled: Boolean(validationId), queryFn: () => portfolioExecutionApi.analytics(validationId, { foldId: context.fold_id, start: range.start, end: range.end }) });
 
   useEffect(() => {
     const item = detail.data?.item;
@@ -267,6 +270,7 @@ export function PortfolioInteractivePage() {
       <PageHeader eyebrow="V4.4 · Portfolio" title={validationId} description="Authoritative A4 NAV/aggregate evidence with explicitly derived linked performance views.">
         <Link className="button secondary" to={`/execution/${encodeURIComponent(validationId)}${workbenchContextSearch(nextContext)}`}>Open Execution <ArrowRight size={15} /></Link>
       </PageHeader>
+      <LinkedStrategyContextPanel activeStrategySeriesId={item.strategy_series_id} portfolioValidationId={validationId} />
       <div className="v44-authority-banner"><ShieldCheck size={18} /><div><strong>A4 portfolio authority + server-side presentation derivatives</strong><span>No NAV, return, drawdown, rolling statistic, monthly return or cost aggregate is reconstructed in React.</span></div><AuthorityBadge value="authoritative + derived" /></div>
       <div className="v44-toolbar">
         <label><span>Portfolio</span><select value={validationId} onChange={(event) => {
@@ -311,8 +315,8 @@ export function ExecutionInteractivePage() {
   const validationId = decodeURIComponent(encodedValidationId);
   const { context, select } = useWorkbenchContext();
   const range = dateRange(context.date_range);
-  const detail = useWorkbenchQuery({ key: ["portfolio-execution-detail", validationId], enabled: Boolean(validationId), queryFn: () => portfolioExecutionApi.detail(validationId) });
-  const allRows = useWorkbenchQuery({ key: ["portfolio-execution-decisions-all", validationId], enabled: Boolean(validationId), queryFn: () => portfolioExecutionApi.decisions(validationId, { limit: 5000 }) });
+  const detail = useQuery({ queryKey: ["portfolio-execution-detail", validationId], enabled: Boolean(validationId), queryFn: () => portfolioExecutionApi.detail(validationId) });
+  const allRows = useQuery({ queryKey: ["portfolio-execution-decisions-all", validationId], enabled: Boolean(validationId), queryFn: () => portfolioExecutionApi.decisions(validationId, { limit: 5000 }) });
 
   const assets = useMemo(() => [...new Set((allRows.data?.items ?? []).map((row) => row.asset))].sort(), [allRows.data?.items]);
   const orders = useMemo(() => [...new Set((allRows.data?.items ?? []).map((row) => row.client_order_id).filter((value): value is string => Boolean(value)))].sort(), [allRows.data?.items]);
@@ -329,8 +333,8 @@ export function ExecutionInteractivePage() {
     if (Object.keys(patch).length) select(patch, "evidence_selected", { replace: true });
   }, [assets, context.asset_id, context.date_range, context.portfolio_validation_id, detail.data?.item, select, validationId]);
 
-  const decisions = useWorkbenchQuery({
-    key: ["portfolio-execution-decisions", validationId, context.asset_id, context.order_id, context.session_date, context.fold_id, range.start, range.end],
+  const decisions = useQuery({
+    queryKey: ["portfolio-execution-decisions", validationId, context.asset_id, context.order_id, context.session_date, context.fold_id, range.start, range.end],
     enabled: Boolean(validationId),
     queryFn: () => portfolioExecutionApi.decisions(validationId, {
       asset: context.asset_id,
@@ -342,8 +346,8 @@ export function ExecutionInteractivePage() {
       limit: 5000,
     }),
   });
-  const analytics = useWorkbenchQuery({
-    key: ["portfolio-execution-analytics-execution", validationId, context.asset_id, context.order_id, context.session_date, context.fold_id, range.start, range.end],
+  const analytics = useQuery({
+    queryKey: ["portfolio-execution-analytics-execution", validationId, context.asset_id, context.order_id, context.session_date, context.fold_id, range.start, range.end],
     enabled: Boolean(validationId),
     queryFn: () => portfolioExecutionApi.analytics(validationId, {
       asset: context.asset_id,
@@ -367,6 +371,7 @@ export function ExecutionInteractivePage() {
       <PageHeader eyebrow="V4.4 · Execution" title={validationId} description="Authoritative V4-0 target/order/fill/weight/PnL rows with derived filtered attribution.">
         <Link className="button secondary" to={`/portfolio/${encodeURIComponent(validationId)}${workbenchContextSearch(contextForPortfolio)}`}>Open Portfolio <ArrowRight size={15} /></Link>
       </PageHeader>
+      <LinkedStrategyContextPanel activeStrategySeriesId={item.strategy_series_id} portfolioValidationId={validationId} />
       <div className="v44-authority-banner"><ShieldCheck size={18} /><div><strong>V4-0 StrategyDecisionSeries is the execution authority</strong><span>Target/realized weights, client_order_id, quantities, prices, costs, PnL and constraint codes are consumed directly; aggregation is server-side and labeled derived.</span></div><AuthorityBadge value="authoritative + derived" /></div>
       <div className="v44-toolbar execution">
         <label><span>Asset</span><select value={context.asset_id ?? ""} onChange={(event) => select({ asset_id: event.target.value || null, order_id: null }, "asset_selected")}><option value="">All assets</option>{assets.map((asset) => <option key={asset} value={asset}>{asset}</option>)}</select></label>

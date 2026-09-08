@@ -39,6 +39,7 @@ export type WorkbenchInteractionEvent =
   | "experiment_selected"
   | "graph_node_selected"
   | "market_state_selected"
+  | "strategy_selected"
   | "asset_selected"
   | "date_range_selected"
   | "session_selected"
