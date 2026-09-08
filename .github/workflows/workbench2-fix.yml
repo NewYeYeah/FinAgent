@@ -1,0 +1,31 @@
+name: workbench2-apply-experiment-graph-fixes
+
+on:
+  push:
+    branches:
+      - codex/workbench2-experiments-graph
+    paths:
+      - scripts/_workbench2_experiments_graph_fix.py
+      - .github/workflows/workbench2-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/workbench2-experiments-graph
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python scripts/_workbench2_experiments_graph_fix.py
+      - run: rm scripts/_workbench2_experiments_graph_fix.py .github/workflows/workbench2-fix.yml
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(workbench): preserve experiment graph context"
+          git push origin HEAD:codex/workbench2-experiments-graph
