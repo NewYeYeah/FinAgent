@@ -92,7 +92,8 @@ describe("Workbench-2 linked strategy analytics", () => {
   it("treats the accepted NO_ADAPTIVE_CANDIDATE path as first-class evidence", async () => {
     window.history.pushState({}, "", "/strategy?cycle=cycle-no");
     render(<App />);
-    const panel = await screen.findByRole("region", { name: "Linked strategy analytics" });
+    await screen.findByText("NO_ADAPTIVE_CANDIDATE");
+    const panel = screen.getByRole("region", { name: "Linked strategy analytics" });
     expect(panel).toHaveTextContent("NO_ADAPTIVE_CANDIDATE");
     expect(panel).toHaveTextContent("AgentValue INCONCLUSIVE");
     expect(panel).toHaveTextContent("0/20 complete deterministic strategies");
@@ -108,7 +109,8 @@ describe("Workbench-2 linked strategy analytics", () => {
     detail = candidate;
     window.history.pushState({}, "", "/strategy?cycle=cycle-candidate&strategy=candidate-a");
     render(<App />);
-    const panel = await screen.findByRole("region", { name: "Linked strategy analytics" });
+    await screen.findByText("candidate-a");
+    const panel = screen.getByRole("region", { name: "Linked strategy analytics" });
     expect(panel).toHaveTextContent("candidate-a");
     expect(panel).toHaveTextContent("resolved");
     expect(panel).toHaveTextContent("Strategy evidence persisted");

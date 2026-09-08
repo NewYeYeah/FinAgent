@@ -240,7 +240,7 @@ describe("StrategyDecisionExplorerPage", () => {
 
     expect(await screen.findByText("Signal → target → order → fill → realized PnL")).toBeInTheDocument();
     expect(screen.getByText(/No verified MarketBarSeries is bound/i)).toBeInTheDocument();
-    expect(screen.getByText("Authoritative close-price & execution timeline")).toBeInTheDocument();
+    expect(await screen.findByText("Authoritative close-price & execution timeline")).toBeInTheDocument();
     expect(screen.getByText("Target vs realized weight")).toBeInTheDocument();
     expect(screen.getByText("Frozen alpha context")).toBeInTheDocument();
     expect(screen.getByText("Gross-to-net PnL & execution costs")).toBeInTheDocument();

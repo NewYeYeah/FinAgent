@@ -339,7 +339,7 @@ describe("V4-4 Portfolio / Execution Interactive Pack", () => {
       expect(calls.some((value) => value.includes("limit=5000"))).toBe(true);
     });
 
-    expect(screen.getAllByText(orderId).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(orderId)).length).toBeGreaterThan(0);
     expect(screen.getByText("A3 constraint attribution")).toBeInTheDocument();
     expect(screen.getByText(/no order identity is synthesized/i)).toBeInTheDocument();
   });
