@@ -147,7 +147,8 @@ describe("V3-3 Agent Workbench deep links", () => {
 
   it("navigates Project → Thread → Run and preserves context in typed references", async () => {
     render(<App />);
-    expect(await screen.findByText("Project → Thread → Run")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Research Workspace" })).toBeInTheDocument();
+    expect(screen.getByText("Project / Thread / Run")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: /A-share research/i }));
     await waitFor(() => expect(window.location.search).toContain("project=project-a"));
     expect(window.location.search).not.toContain("ctx_event");
@@ -160,7 +161,7 @@ describe("V3-3 Agent Workbench deep links", () => {
     await userEvent.click(await screen.findByRole("button", { name: /Inspect factor evidence/i }));
     await waitFor(() => expect(window.location.search).toContain("run=run-a"));
     expect(await screen.findByText("Run started")).toBeInTheDocument();
-    expect(screen.getByText("Run Inspector")).toBeInTheDocument();
+    expect(screen.getByText("Research Inspector")).toBeInTheDocument();
     const verifiedLinks = screen.getAllByRole("link", { name: /verified-evidence/i });
     expect(verifiedLinks.length).toBeGreaterThanOrEqual(2);
     for (const link of verifiedLinks) {
@@ -170,17 +171,17 @@ describe("V3-3 Agent Workbench deep links", () => {
       expect(href).toContain("thread=thread-a");
       expect(href).toContain("run=run-a");
     }
-    const typedRun = screen.getByRole("link", { name: /Typed Run reference/i });
+    const typedRun = screen.getByRole("link", { name: /Typed Run evidence reference/i });
     expect(typedRun.getAttribute("href")).toContain("/ref/agent_run/run-a?");
     expect(typedRun.getAttribute("href")).toContain("run=run-a");
     expect(screen.getByText(/unresolved:unknown-audit-id/i)).toBeInTheDocument();
-    expect(screen.getByText(/not_persisted_not_projected/i)).toBeInTheDocument();
+    expect(screen.getByText(/Hidden chain-of-thought is not persisted or projected/i)).toBeInTheDocument();
     expect(screen.getByTestId("workbench-context-bar")).toHaveTextContent("run-a");
   });
 
   it("keeps control-plane authority conditional on the separate service", async () => {
     render(<App />);
-    await screen.findByText("Project → Thread → Run");
+    await screen.findByRole("heading", { name: "Research Workspace" });
     expect(screen.getByRole("button", { name: "Config" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Commands" })).toBeDisabled();
     expect(screen.queryByRole("button", { name: /execute|promote|order|reserve/i })).not.toBeInTheDocument();
