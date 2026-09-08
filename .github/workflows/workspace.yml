@@ -40,6 +40,7 @@ on:
       - "tests/test_research_workspace_v3.py"
       - "tests/test_market_factor_intelligence_v3.py"
       - "tests/test_research_workspace_attempt_hardening_v3.py"
+      - "tests/test_linked_strategy_analytics_v3.py"
       - "pyproject.toml"
       - ".github/workflows/workspace.yml"
   push:
@@ -81,6 +82,7 @@ on:
       - "tests/test_research_workspace_v3.py"
       - "tests/test_market_factor_intelligence_v3.py"
       - "tests/test_research_workspace_attempt_hardening_v3.py"
+      - "tests/test_linked_strategy_analytics_v3.py"
       - "pyproject.toml"
       - ".github/workflows/workspace.yml"
 
@@ -125,6 +127,7 @@ jobs:
           tests/test_research_workspace_v3.py
           tests/test_market_factor_intelligence_v3.py
           tests/test_research_workspace_attempt_hardening_v3.py
+          tests/test_linked_strategy_analytics_v3.py
       - name: Compile entry points
         run: >-
           python -m py_compile
@@ -157,6 +160,8 @@ jobs:
           src/finagent/visualization/portfolio_execution_routes.py
           src/finagent/visualization/linked_analytics_acceptance.py
           src/finagent/visualization/linked_analytics_acceptance_routes.py
+          src/finagent/visualization/linked_strategy_analytics.py
+          src/finagent/visualization/linked_strategy_analytics_routes.py
           scripts/run_workspace.py
           scripts/run_workbench_control.py
           scripts/run_local_ashare_factor_research.py
@@ -237,6 +242,8 @@ jobs:
             src/finagent/visualization/portfolio_execution_routes.py \
             src/finagent/visualization/linked_analytics_acceptance.py \
             src/finagent/visualization/linked_analytics_acceptance_routes.py \
+            src/finagent/visualization/linked_strategy_analytics.py \
+            src/finagent/visualization/linked_strategy_analytics_routes.py \
             scripts/run_workspace.py \
             scripts/run_workbench_control.py \
             scripts/run_local_ashare_factor_research.py \
@@ -265,6 +272,7 @@ jobs:
             tests/test_research_workspace_v3.py \
             tests/test_market_factor_intelligence_v3.py \
             tests/test_research_workspace_attempt_hardening_v3.py \
+            tests/test_linked_strategy_analytics_v3.py \
             --select E4,E7,E9,F
       - name: Type check
         run: >-
@@ -296,5 +304,7 @@ jobs:
           src/finagent/visualization/portfolio_execution_routes.py
           src/finagent/visualization/linked_analytics_acceptance.py
           src/finagent/visualization/linked_analytics_acceptance_routes.py
+          src/finagent/visualization/linked_strategy_analytics.py
+          src/finagent/visualization/linked_strategy_analytics_routes.py
       - name: Dependency consistency
         run: python -m pip check
