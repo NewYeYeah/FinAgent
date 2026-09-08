@@ -4,7 +4,21 @@ This is **not** a chronological changelog. It preserves only completed work and 
 
 R4 Controller milestone: the existing bounded R3 runtime now executes offline research loops over the deterministic R4 core, including current-time FactorGraph proposals evaluated retrospectively without backdating. Complete trial/audit history and the thin Console make explicit actions, results, budgets and authority inspectable. This establishes engineering capability only: no real LLM campaign or matched Agent comparison was executed, and no AdaptiveStrategy/Alpha/PAPER/live acceptance follows.
 
-R4 campaign engineering milestone: matched resource/tool/failure/terminal rules and immutable freeze verification now run through a full synthetic campaign using the existing runtime, ledger, audit and deterministic evaluator. Real 2025 source lineage and train-prefix MarketState admission were bound without factor/portfolio PnL evaluation. The single real non-research provider probe failed verification; no accepted real campaign freeze or financial campaign exists. The blocked freeze preserves the design and failed admission lineage. This does not establish Agent value or advance R4/Alpha/PAPER/live authority.
+R4 campaign engineering milestone: matched resource/tool/failure/terminal rules and immutable freeze verification now run through a full synthetic campaign using the existing runtime, ledger, audit and deterministic evaluator. Real 2025 source lineage and train-prefix MarketState admission were bound without factor/portfolio PnL evaluation. At that engineering milestone, the first real non-research provider probe failed verification; no accepted real campaign freeze or financial campaign existed. The blocked freeze preserves the design and failed admission lineage. This does not establish Agent value or advance R4/Alpha/PAPER/live authority.
+
+## R4 accepted provider admission and v3 freeze
+
+The 2026-09-07 offline admission/freeze milestone has completed independent review with `EVIDENCE_ACCEPTED`; its [repository-safe evidence record](../../configs/research/r4_matched_v3_accepted/README.md) is recorded on 2026-09-08. A separately authorized real non-research `deepseek-v4-pro` probe passed the exact typed R4 action, created verified ProviderAdmission, and allowed an ACCEPTED `r4-matched-v3` freeze on executable main `edf7c1942b3acf97926390e45bd46c8ac9aacbee`. Exact freeze verification passed twice and all 34/34 recorded invariants passed.
+
+- ProviderAdmission: `r4-provider-admission-b78a63f33352d5a01bf2a4ca`; SHA256 `a785e02fcb52f546c1e4cf8a7a08a33e90644323d2cba8722937b99f599e6098`.
+- Successful probe request SHA256: `88cfa12ac119059ae8b2295d92714160e61c40fa6c7b07c4af5faecc418f2a4c`; probe contract `r4-provider-probe-contract-fe25be88367262b64ee310ec`.
+- Reused ResearchAdmission: `r4-research-admission-61df92c1caacb80e369f538f`.
+- CampaignFreeze: `r4-campaign-freeze-1d12fade12cb269d2b4da416`; SHA256 `c7ae0d5151f818b3dc190c223cf1663a5d547c1b4ef0c5771553dc50741e41c3`.
+- Protocol: `r4-matched-protocol-191d511a8addb59081d261e8` / `r4-matched-v3`.
+
+History remains cumulative: the 2026-09-06 failure had insufficient receipt evidence; the earlier 2026-09-07 attempt verified transport/model/usage but failed strict action; only the separately authorized later attempt after hardening passed exact action admission. Old failure artifacts and hashes remain unchanged. No result-dependent retry, fallback or threshold weakening is implied by the later success.
+
+B-005 is resolved at the evidence-recording boundary; B-006 remains OPEN. `campaign_executed = false` and `r4_stage_exit = false`. Agent incremental value is unestablished, AdaptiveStrategy is not accepted, Alpha is not confirmed, and PAPER/Live/R5 authority is unchanged. The full original freeze remains local immutable authority because it embeds local input-binding paths; only its exact ID/hash and sanitized attestation are public. This development phase records existing evidence without any new real probe, admission, freeze or campaign.
 
 ## 1. A-share historical line
 

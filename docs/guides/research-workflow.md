@@ -222,39 +222,39 @@ Retrospective artifacts bind `evaluation_mode = adaptive_development_retrospecti
 
 `scripts/r4_campaign.py` provides explicit `probe`, `admit-source`, `freeze`, `verify`, `record-blocker` and `run` commands. Normal Workbench startup does not discover keys, select another provider or acquire campaign authority, and there is no browser campaign-run POST. The explicit profile is `r4_deepseek_v4_pro`; its existing StrictDeepSeek transport uses thinking disabled, temperature 0.7, strict JSON and one attempt. This does not change the shared generic-provider default.
 
-Provider probing remains a separately authorized non-research action; do not run it as part of ordinary development or CI. The original 2026-09-06 attempt failed before a verified identity/usage receipt was retained. A later separately authorized real probe on **2026-09-07** produced a complete verified transport receipt: authenticated endpoint/quota transport succeeded, `deepseek-v4-pro` response identity was present, response ID and system fingerprint were available, prompt/completion/cache usage was complete, and conservative cost accounting was retained. The attempt then failed at `phase = strict_action`; no `ProviderAdmission` was created. B-005 therefore remains OPEN, but transport/model/usage reachability for that attempt is established and should no longer be described as wholly unverified.
+Provider probing remains a separately authorized non-research action; do not run it as part of ordinary development or CI. The original 2026-09-06 attempt failed before a verified identity/usage receipt was retained. An earlier separately authorized real probe on **2026-09-07** produced a complete verified transport receipt: authenticated endpoint/quota transport succeeded, `deepseek-v4-pro` response identity was present, response ID and system fingerprint were available, prompt/completion/cache usage was complete, and conservative cost accounting was retained. The attempt then failed at `phase = strict_action`; no `ProviderAdmission` was created. That failure remains historical evidence. After hardening, a later separately authorized 2026-09-07 non-research probe passed the exact R4 action and created accepted ProviderAdmission. Its accepted v3 freeze passed two exact-ID verifications and 34/34 invariants, and independent review returned `EVIDENCE_ACCEPTED`. The [accepted evidence record](../../configs/research/r4_matched_v3_accepted/README.md) resolves B-005. B-006 remains OPEN: no real matched campaign, Agent-value result, accepted AdaptiveStrategy or R4 terminal exists.
 
 The hardened probe aligns its provider-visible contract with the actual R4 capability runtime. Its context contains the public `r4_manifest()` as `capability_set`, a frozen exact `PROBE_ACTION`, `research_history = false`, empty state/resources/feedback, and no market values, factor evidence, PnL, research objective or campaign result. The model must still return the exact target action; “any valid R4 action” is not sufficient. A valid but different typed action records `probe_contract_mismatch`. A strict decoder failure records `probe_action_contract_failed` plus only a bounded allowlisted `strict_action_error_code`; raw returned action text, raw exception/provider content, hidden reasoning and credentials are never persisted. The existing verified transport receipt is retained when available.
 
 `provider_binding()` now includes `probe_contract_digest`, derived from the frozen probe context/action contract. A change to `r4_manifest()`, `PROBE_ACTION` or the probe-context semantics therefore changes provider admission identity. The binding remains secret-free and contains no local path. The transport still has one attempt and no fallback. A failed output directory is immutable evidence and cannot be retried in place.
 
-The real source admission was created with:
+The historical v1 source admission was created with this command (history only, not an instruction to recreate admission):
 
 ```powershell
 .venv/Scripts/python.exe scripts/r4_campaign.py admit-source --source-config configs/research/r4_development_2025.json --output reports/r4_campaign_admission/development_2025_v1
 ```
 
-This binds the existing annual R2 artifact, calendar, plan/evidence, explicit universe and actual-time seed registrations. It fits only the TRAIN-prefix state model; it does not run factor/portfolio economics. Do not overwrite that directory. Its immutable manifest is also embedded in the historical [v2 blocked design](../../configs/research/r4_matched_v2_blocked/campaign_freeze.json).
+This binds the existing annual R2 artifact, calendar, plan/evidence, explicit universe and actual-time seed registrations. It fits only the TRAIN-prefix state model; it does not run factor/portfolio economics. Do not overwrite that directory. Its immutable manifest is also embedded in the historical [v2 blocked design](../../configs/research/r4_matched_v2_blocked/campaign_freeze.json). The accepted v3 freeze instead reuses ResearchAdmission `r4-research-admission-61df92c1caacb80e369f538f`, retained in the existing `development_2025_v2_main_289c1418` admission directory. Reuse the matching immutable admission; do not rebuild or rename it for publication.
 
 The corrected protocol version is code-owned by `src/finagent/research/r4_campaign_protocol.py`: normal accepted freeze generation uses `r4-matched-v3`, while a newly recorded provider-blocked design uses `r4-matched-v3-blocked-provider`. The operator CLI does not expose protocol-version selection; ordinary commands inherit those canonical versions automatically. Test-only variants such as `r4-matched-v3-test` are restricted to fixture generation and are not valid real freezes.
 
-A future real campaign is deliberately a multi-step human-governed sequence. Do not combine freeze and run in one shell expression or wrapper:
+A real campaign is deliberately a multi-step human-governed sequence. For the accepted evidence recorded above, steps 1–5 have completed and execution remains stopped. Do not repeat completed admission/freeze work for this evidence PR or combine freeze and run in one shell expression or wrapper:
 
 1. obtain a separately authorized successful provider probe/admission;
 2. verify the intended source admission;
 3. create a fresh accepted v3 freeze;
 4. verify the freeze against current provider/source/code/environment bindings;
-5. **STOP and independently review the exact `campaign_freeze_id`;**
-6. only then run the exact reviewed freeze ID.
+5. independently review the exact `campaign_freeze_id`, then **STOP**;
+6. only under a separately authorized local execution plan, revalidate bindings and run that exact reviewed freeze ID. Evidence recording or PR merge is not this authorization.
 
-The commands after a successful future provider admission are:
+For a separately authorized future admission cycle, the creation/verification commands are shown below. They must not regenerate the already accepted freeze for publication:
 
 ```powershell
 python scripts/r4_campaign.py freeze --research-admission RESEARCH_ADMISSION_DIRECTORY --provider-admission ACCEPTED_PROVIDER_JSON --output NEW_CAMPAIGN_DIRECTORY
 python scripts/r4_campaign.py verify --research-admission RESEARCH_ADMISSION_DIRECTORY --provider-admission ACCEPTED_PROVIDER_JSON --output NEW_CAMPAIGN_DIRECTORY --accepted-freeze-id EXACT_ACCEPTED_ID
 ```
 
-After the separate human review step, execute only that exact accepted freeze:
+Only when a new local campaign execution plan explicitly authorizes it after review, the operator command for the original full freeze is:
 
 ```powershell
 python scripts/r4_campaign.py run --research-admission RESEARCH_ADMISSION_DIRECTORY --provider-admission ACCEPTED_PROVIDER_JSON --output NEW_CAMPAIGN_DIRECTORY --accepted-freeze-id EXACT_ACCEPTED_ID --config configs/llm.toml
@@ -270,6 +270,6 @@ If an already-recorded failed provider lineage must be retained under the correc
 python scripts/r4_campaign.py record-blocker --research-admission RESEARCH_ADMISSION_DIRECTORY --probe-directory FAILED_PROBE_DIRECTORY --output NEW_BLOCKED_DIRECTORY
 ```
 
-The historical v1/v2 blocked directories and their old `minimum_mean_fold_improvement = 0.002` semantics are immutable evidence. Their labels (`r4-matched-v1[-blocked-provider]` and `r4-matched-v2[-blocked-provider]`) are superseded and cannot label a newly generated corrected artifact. The historical v2 blocked ID cannot satisfy real `verify` or `run`; a future real campaign requires a newly generated accepted v3 freeze after provider admission.
+The historical v1/v2 blocked directories and their old `minimum_mean_fold_improvement = 0.002` semantics are immutable evidence. Their labels (`r4-matched-v1[-blocked-provider]` and `r4-matched-v2[-blocked-provider]`) are superseded and cannot label a newly generated corrected artifact. The historical v2 blocked ID cannot satisfy real `verify` or `run`. The separately reviewed accepted v3 freeze now exists; use its original full artifact and exact ID only under the next explicit execution authorization.
 
-`campaign_implementation()` binds tracked executable `src/`, `scripts/`, Workspace code and dependency intents, including `scripts/r4_campaign.py`. Therefore this execution operator must land before any future accepted freeze. Any later executable change causes implementation drift and requires a new freeze; an existing accepted freeze is never modified to tolerate new code. No local OHLCV or secrets belong in Git.
+`campaign_implementation()` binds tracked executable `src/`, `scripts/`, Workspace code and dependency intents, including `scripts/r4_campaign.py`. The accepted freeze was generated after this execution operator merged on main `edf7c1942b3acf97926390e45bd46c8ac9aacbee`. Any later executable change causes implementation drift and requires a new freeze; an existing accepted freeze is never modified to tolerate new code. No local OHLCV or secrets belong in Git. The full accepted freeze also stays local because its embedded input bindings contain absolute local paths. The public sanitized attestation records the original ID/hash and is neither a replacement freeze nor an executable input. Never edit the full freeze, re-freeze, or run a campaign merely to publish evidence.

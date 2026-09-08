@@ -1,0 +1,50 @@
+{
+  "alpha_authority": false,
+  "attestation_role": "evidence_reference_only_not_an_execution_freeze",
+  "campaign_executed": false,
+  "campaign_freeze_id": "r4-campaign-freeze-1d12fade12cb269d2b4da416",
+  "campaign_freeze_sha256": "c7ae0d5151f818b3dc190c223cf1663a5d547c1b4ef0c5771553dc50741e41c3",
+  "development_only": true,
+  "fixture_only": false,
+  "freeze_invariant_audit": "PASS",
+  "freeze_invariant_check_count": 34,
+  "freeze_verification": "PASS",
+  "freeze_verification_count": 2,
+  "frozen_executable_main_sha": "edf7c1942b3acf97926390e45bd46c8ac9aacbee",
+  "full_freeze_storage": "local_immutable_not_redistributed",
+  "independent_confirmation": false,
+  "live_authority": false,
+  "paper_authority": false,
+  "protocol_facts": {
+    "agent_value_rule": {
+      "basis": "research_efficiency_under_exhaustive_oracle",
+      "deterministic_oracle_portfolio_evaluations": 4,
+      "median_evaluation_saving_at_least": 1,
+      "minimum_evaluation_saving_per_successful_run": 1,
+      "minimum_successful_runs": 2,
+      "required_runs": 3
+    },
+    "candidate_rule": {
+      "maximum_unresolved_sessions": 0,
+      "mean_fold_return_10bp_at_least": 0.0,
+      "mean_fold_return_5bp_strictly_greater_than": 0.0,
+      "required_folds": 3,
+      "worst_fold_return_5bp_at_least": -0.01
+    },
+    "primary_search_space": {
+      "admissible_factor_set_count": 4,
+      "allocator_count": 5,
+      "deterministic_search": "exhaustive",
+      "initial_factor_count": 3,
+      "reachable_candidate_count": 20
+    }
+  },
+  "protocol_id": "r4-matched-protocol-191d511a8addb59081d261e8",
+  "protocol_version": "r4-matched-v3",
+  "provider_admission_id": "r4-provider-admission-b78a63f33352d5a01bf2a4ca",
+  "r4_stage_exit": false,
+  "r5_eligible": false,
+  "research_admission_id": "r4-research-admission-61df92c1caacb80e369f538f",
+  "schema_version": "finagent.r4-accepted-freeze-attestation.v1",
+  "status": "ACCEPTED"
+}

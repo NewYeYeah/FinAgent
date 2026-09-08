@@ -1,0 +1,31 @@
+{
+  "authority_isolation": "PASS",
+  "campaign_execution": "NOT_EXECUTED",
+  "campaign_freeze_sha256": "c7ae0d5151f818b3dc190c223cf1663a5d547c1b4ef0c5771553dc50741e41c3",
+  "freeze_invariant_audit": "PASS",
+  "freeze_invariant_check_count": 34,
+  "freeze_verification": "PASS",
+  "freeze_verification_count": 2,
+  "full_freeze_storage": "local_immutable_not_redistributed",
+  "prior_failed_probe_preservation": {
+    "failure_sha256": "24d28f1f6e1bdbe70bf47d8ae982c55841fa8f370acfd65abbf365f2ffcc791d",
+    "modified": false,
+    "probe_request_sha256": "0753b8771cb9921fadb29b28d3980b28f60a9f2123bd831954c576cf13bfb4c3"
+  },
+  "probe_request_sha256": "88cfa12ac119059ae8b2295d92714160e61c40fa6c7b07c4af5faecc418f2a4c",
+  "provider_admission_sha256": "a785e02fcb52f546c1e4cf8a7a08a33e90644323d2cba8722937b99f599e6098",
+  "provider_receipt_arithmetic": "PASS",
+  "published_evidence_local_path_scan": "PASS",
+  "record_scope": "previously_completed_offline_evidence_only",
+  "review_disposition": "EVIDENCE_ACCEPTED",
+  "review_disposition_source": "independent_review_reported_in_operator_instruction",
+  "schema_version": "finagent.r4-evidence-review.v1",
+  "secret_marker_scan": "PASS",
+  "verified_identities": {
+    "campaign_freeze_id": "r4-campaign-freeze-1d12fade12cb269d2b4da416",
+    "probe_contract_digest": "r4-provider-probe-contract-fe25be88367262b64ee310ec",
+    "protocol_id": "r4-matched-protocol-191d511a8addb59081d261e8",
+    "provider_admission_id": "r4-provider-admission-b78a63f33352d5a01bf2a4ca",
+    "research_admission_id": "r4-research-admission-61df92c1caacb80e369f538f"
+  }
+}
