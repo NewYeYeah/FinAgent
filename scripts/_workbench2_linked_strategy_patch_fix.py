@@ -10,6 +10,9 @@ new = '''    '<Link to={`/research-graph${workbenchContextSearch(context)}`}>Ope
 '''
 if old in text:
     text = text.replace(old, new, 1)
+marker = "# Workspace CI explicitly covers the new projection/routes/tests; existing checks remain intact."
+if marker in text:
+    text = text.split(marker, 1)[0] + '\nprint("linked strategy integration patch applied")\n'
 patch_path.write_text(text, encoding="utf-8")
 
 
