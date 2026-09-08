@@ -96,6 +96,32 @@ jobs:
           if text.count(old) != 1:
               raise SystemExit("candidate test contract anchor missing")
           test_path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+          e2e_path = Path("workspace/e2e/linked-strategy-analytics.spec.ts")
+          text = e2e_path.read_text(encoding="utf-8")
+          old = (
+              '  await expect(page.getByRole("link", { name: /Market State/ })).toHaveAttribute("href", /market_model=market-model-a/);\n'
+              '  await expect(page.getByRole("link", { name: /Factor 1/ })).toHaveAttribute("href", /factor=factor-a/);\n'
+              '  await expect(page.getByRole("link", { name: /Experiment 1/ })).toHaveAttribute("href", /experiment=exp-a/);\n'
+              '  await expect(page.getByRole("link", { name: /^Portfolio/ })).toHaveAttribute("href", /\\/portfolio\\/portfolio-a/);\n'
+              '  await expect(page.getByRole("link", { name: /Execution \\/ PnL/ })).toHaveAttribute("href", /\\/execution\\/portfolio-a/);\n'
+              '  await expect(page.getByRole("link", { name: /Research Graph/ })).toHaveAttribute("href", /strategy=candidate-a/);\n'
+              '  await expect(page.getByRole("link", { name: /Agent run/ })).toHaveAttribute("href", /run=run-r4/);\n'
+          )
+          new = (
+              '  await expect(panel.getByRole("link", { name: /Market State/ })).toHaveAttribute("href", /market_model=market-model-a/);\n'
+              '  await expect(panel.getByRole("link", { name: /Factor 1/ })).toHaveAttribute("href", /factor=factor-a/);\n'
+              '  await expect(panel.getByRole("link", { name: /Experiment 1/ })).toHaveAttribute("href", /experiment=exp-a/);\n'
+              '  await expect(panel.getByRole("link", { name: /Strategy evidence/ })).toHaveAttribute("href", /\\/strategy\\/strategy-series-a/);\n'
+              '  await expect(panel.getByRole("link", { name: /^Portfolio/ })).toHaveAttribute("href", /\\/portfolio\\/portfolio-a/);\n'
+              '  await expect(panel.getByRole("link", { name: /Execution \\/ PnL/ })).toHaveAttribute("href", /\\/execution\\/portfolio-a/);\n'
+              '  await expect(panel.getByRole("link", { name: /Research Graph/ })).toHaveAttribute("href", /strategy=candidate-a/);\n'
+              '  await expect(panel.getByRole("link", { name: /Agent run/ })).toHaveAttribute("href", /run=run-r4/);\n'
+              '  await expect(panel).toContainText("Browser financial/statistical recomputation = false");\n'
+          )
+          if text.count(old) != 1:
+              raise SystemExit("candidate Playwright canonical-link anchor missing")
+          e2e_path.write_text(text.replace(old, new, 1), encoding="utf-8")
           PY
       - name: Sync Python environment
         run: uv sync --frozen --all-extras
@@ -132,6 +158,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/finagent/visualization/research_workspace.py workspace/src/workbench/linkedStrategy.test.tsx
+          git add src/finagent/visualization/research_workspace.py workspace/src/workbench/linkedStrategy.test.tsx workspace/e2e/linked-strategy-analytics.spec.ts
           git commit -m "fix(workbench): settle linked strategy CI contracts"
           git push origin HEAD:codex/workbench2-linked-strategy-analytics
