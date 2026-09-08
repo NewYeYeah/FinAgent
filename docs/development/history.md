@@ -2,13 +2,13 @@
 
 This is **not** a chronological changelog. It preserves only completed work and negative results that constrain or materially inform the active roadmap. Exact implementation details remain in Git and pull-request history.
 
-R4 Controller milestone: the existing bounded R3 runtime now executes offline research loops over the deterministic R4 core, including current-time FactorGraph proposals evaluated retrospectively without backdating. Complete trial/audit history and the thin Console make explicit actions, results, budgets and authority inspectable. This establishes engineering capability only: no real LLM campaign or matched Agent comparison was executed, and no AdaptiveStrategy/Alpha/PAPER/live acceptance follows.
+R4 Controller milestone: the existing bounded R3 runtime now executes offline research loops over the deterministic R4 core, including current-time FactorGraph proposals evaluated retrospectively without backdating. Complete trial/audit history and the thin Console make explicit actions, results, budgets and authority inspectable. This established engineering capability before the matched campaign and did not itself imply AdaptiveStrategy/Alpha/PAPER/live acceptance.
 
-R4 campaign engineering milestone: matched resource/tool/failure/terminal rules and immutable freeze verification now run through a full synthetic campaign using the existing runtime, ledger, audit and deterministic evaluator. Real 2025 source lineage and train-prefix MarketState admission were bound without factor/portfolio PnL evaluation. At that engineering milestone, the first real non-research provider probe failed verification; no accepted real campaign freeze or financial campaign existed. The blocked freeze preserves the design and failed admission lineage. This does not establish Agent value or advance R4/Alpha/PAPER/live authority.
+R4 campaign engineering milestone: matched resource/tool/failure/terminal rules and immutable freeze verification ran through a full synthetic campaign using the existing runtime, ledger, audit and deterministic evaluator. Real 2025 source lineage and train-prefix MarketState admission were bound without factor/portfolio PnL evaluation. At that engineering milestone, the first real non-research provider probe failed verification; no accepted real campaign freeze or financial campaign existed. The blocked freeze preserves the design and failed admission lineage.
 
 ## R4 accepted provider admission and v3 freeze
 
-The 2026-09-07 offline admission/freeze milestone has completed independent review with `EVIDENCE_ACCEPTED`; its [repository-safe evidence record](../../configs/research/r4_matched_v3_accepted/README.md) is recorded on 2026-09-08. A separately authorized real non-research `deepseek-v4-pro` probe passed the exact typed R4 action, created verified ProviderAdmission, and allowed an ACCEPTED `r4-matched-v3` freeze on executable main `edf7c1942b3acf97926390e45bd46c8ac9aacbee`. Exact freeze verification passed twice and all 34/34 recorded invariants passed.
+The 2026-09-07 offline admission/freeze milestone completed independent review with `EVIDENCE_ACCEPTED`; its [repository-safe evidence record](../../configs/research/r4_matched_v3_accepted/README.md) was recorded on 2026-09-08. A separately authorized real non-research `deepseek-v4-pro` probe passed the exact typed R4 action, created verified ProviderAdmission, and allowed an ACCEPTED `r4-matched-v3` freeze on executable main `edf7c1942b3acf97926390e45bd46c8ac9aacbee`. Exact freeze verification passed twice and all 34/34 recorded invariants passed.
 
 - ProviderAdmission: `r4-provider-admission-b78a63f33352d5a01bf2a4ca`; SHA256 `a785e02fcb52f546c1e4cf8a7a08a33e90644323d2cba8722937b99f599e6098`.
 - Successful probe request SHA256: `88cfa12ac119059ae8b2295d92714160e61c40fa6c7b07c4af5faecc418f2a4c`; probe contract `r4-provider-probe-contract-fe25be88367262b64ee310ec`.
@@ -18,7 +18,29 @@ The 2026-09-07 offline admission/freeze milestone has completed independent revi
 
 History remains cumulative: the 2026-09-06 failure had insufficient receipt evidence; the earlier 2026-09-07 attempt verified transport/model/usage but failed strict action; only the separately authorized later attempt after hardening passed exact action admission. Old failure artifacts and hashes remain unchanged. No result-dependent retry, fallback or threshold weakening is implied by the later success.
 
-B-005 is resolved at the evidence-recording boundary; B-006 remains OPEN. `campaign_executed = false` and `r4_stage_exit = false`. Agent incremental value is unestablished, AdaptiveStrategy is not accepted, Alpha is not confirmed, and PAPER/Live/R5 authority is unchanged. The full original freeze remains local immutable authority because it embeds local input-binding paths; only its exact ID/hash and sanitized attestation are public. This development phase records existing evidence without any new real probe, admission, freeze or campaign.
+B-005 was resolved at the admission evidence-recording boundary. The full original freeze remains local immutable authority because it embeds local input-binding paths; only its exact ID/hash and sanitized attestation are public. That development phase recorded existing evidence without any new real probe, admission, freeze or campaign.
+
+## R4 accepted matched v3 campaign result
+
+A later, separately authorized Offline Testing Phase executed the reviewed `r4-matched-v3` freeze exactly once. Independent campaign-result review returned `R4_RESULT_ACCEPTED`; the repository-safe [result record](../../configs/research/r4_matched_v3_result/README.md) records the accepted identity without reconstructing the immutable local `campaign_result.json`.
+
+- Execution main: `276846f5d83abe9753614e90a24613e176859f61`.
+- CampaignResult: `r4-campaign-result-d32ec253d62eb4f9349896b0`; SHA256 `5f9cb2b687f5b5750255c4d91e6db273fdf2577a8ce71f33365cddf19789c8ac`.
+- Campaign review bundle SHA256: `5e387790ec9b6d3198a2439c02900c1817d742de1b123c854f2ca31d4328c69d`.
+- Run invocation count: 1; automatic retry: no; rerun: no; provider fallback: no.
+- Completed runs: deterministic, selection-01, selection-02, selection-03, discovery-01, discovery-02, discovery-03.
+- Verified provider calls: 100; charged tokens: 327556; ledger cost: 437643 microusd.
+- Artifact integrity: 44/44 bound artifact digests PASS, with zero missing/mismatch.
+- AgentValue: `INCONCLUSIVE`; successful Agent runs: 0; median portfolio-evaluation saving: 3; deterministic oracle: null.
+- Deterministic host terminal: `NO_ADAPTIVE_CANDIDATE`; `candidate_id = null`; no development-candidate artifact or AdaptiveStrategy exists.
+
+The economic limitation is essential to the interpretation. The deterministic search structurally covered 4 factor sets x 5 allocators = 20 strategy keys, but **0/20** had complete economic evidence under the required three-fold rule. Every deterministic strategy had `evaluable_folds = 0/3`, with unavailable-session counts from 39 to 64, and all 30 Primary candidate rows were incomplete. Thus no deterministic economic oracle could be constructed. The accepted terminal is coverage/completeness-driven; it is not evidence that all strategies lost money, not proof of negative economic performance, and not proof that the Agent was ineffective.
+
+The result is also not `SYSTEM_FAILURE`. Deterministic evaluations completed as `PORTFOLIO_EVALUATED`, all required Primary runs completed, and discovery-03 ended the admitted terminal `SLOT_ATTEMPTS_EXHAUSTED`. Candidate completeness and campaign infrastructure failure remain separate host gates.
+
+The campaign also retained negative operational evidence: 62 rejected Agent action attempts overall. Discovery-03 used 48 provider calls, retained 44 rejected actions and ended `SLOT_ATTEMPTS_EXHAUSTED`; 43 of those rejections were `candidate_not_proposed_in_run`. ProviderAdmission remained valid, so this is retained as an autonomous tool-use reliability limitation rather than reclassified as admission failure.
+
+B-006 is resolved by the accepted matched-campaign terminal. That does not establish Alpha success. The result remains development-only with no independent confirmation, Alpha/PAPER/Live authority or R5 eligibility. R5 does not start because no AdaptiveStrategy candidate exists. A future research attempt must be a new versioned R4 cycle rather than a result-driven rerun; WORKBENCH-2 remains allowed by the current roadmap.
 
 ## 1. A-share historical line
 
@@ -137,26 +159,11 @@ R3-CLOSE passed: 216 focused local tests, 25-file strict typing/lint, documentat
 
 ## R4 first executable research objects
 
-The MarketState + FactorLibrary slice adds a causal, reproducible scikit-learn GMM
-and a durable registry over real FactorGraphs. Existing R2 Parquet/calendar
-fixtures now execute fit → project → materialize → global/state metrics → persisted
-query, with negative/failure outcomes and unavailable data retained. R3 runtime,
-graph engine, economic accounting and the deterministic R2 regime remain reusable.
-This is an engineering milestone validated on controlled synthetic OHLCV, not a
-new real-market research campaign, confirmed Alpha, or an R4 stage exit. GMM's
-incremental information and adaptive allocation remain unestablished.
+The MarketState + FactorLibrary slice adds a causal, reproducible scikit-learn GMM and a durable registry over real FactorGraphs. Existing R2 Parquet/calendar fixtures execute fit → project → materialize → global/state metrics → persisted query, with negative/failure outcomes and unavailable data retained. R3 runtime, graph engine, economic accounting and the deterministic R2 regime remain reusable. This was an engineering milestone validated on controlled synthetic OHLCV, not a new real-market research campaign or confirmed Alpha.
 
 ## R4 deterministic allocation baselines
 
-The second R4 slice adds session-released factor-performance history, canonical
-same-bar normalization and five deterministic allocators with a causal multi-fold
-portfolio evaluator. Each fold fits a fresh GMM on its declared TRAIN prefix,
-accumulates subsequent causal state/performance pairs, and fits positive Ridge
-only on matured TRAIN examples. Complete FactorWeightSeries and economic evidence
-are persisted using existing R3 accounting and FactorLibrary storage. Three-fold
-controlled Parquet fixtures verify future-mutation isolation, replay and the CLI.
-This establishes executable baselines, not a real-market campaign, profitable
-adaptive allocation, incremental GMM/Agent value, or an R4 exit.
+The second R4 slice adds session-released factor-performance history, canonical same-bar normalization and five deterministic allocators with a causal multi-fold portfolio evaluator. Each fold fits a fresh GMM on its declared TRAIN prefix, accumulates subsequent causal state/performance pairs, and fits positive Ridge only on matured TRAIN examples. Complete FactorWeightSeries and economic evidence are persisted using existing R3 accounting and FactorLibrary storage. Controlled Parquet fixtures verify future-mutation isolation, replay and the CLI. This established executable baselines, not Alpha/PAPER/live authority.
 
 ## 7. Existing Workbench capability
 
